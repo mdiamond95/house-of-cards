@@ -20,6 +20,7 @@ Read this fully before doing anything. Sessions in this repo do not share memory
 5. No universal calendar. Each house has its own personal clock starting at 1867. Clocks sync only on direct shared events between named houses. Global events never sync clocks. On succession the new holder's clock resets to personal 1867; biological ages are not reset.
 6. Founding grants must be evaluated for cohort fit against the current climate state before execution. This is mandatory, not advisory.
 7. Rank ladder and remaining mechanics are defined in Mechanics Sections 1–3 of the baseline workbook. Extract them in Phase 1; do not guess them.
+8. The game runs more than one era-cohort of Section 10 events in parallel (see docs/RECONSTRUCTION.md). Never collapse the climate ledgers into one number; always state which era-cohort a climate value belongs to.
 
 ## Conventions
 - Canadian English spelling throughout (colour, honour, centre, defence).
@@ -39,7 +40,7 @@ Read this fully before doing anything. Sessions in this repo do not share memory
 - `hoc/` — package: schema.sql, db.py, rules.py, turn.py, export/
 - `scripts/` — one-off migration scripts (extract.py, load.py)
 - `tests/` — pytest; fixtures drawn from real logged cases
-- `data/baseline/` — frozen migration baseline workbook (do not modify)
+- `data/seed/` — reconstructed canonical data (see docs/RECONSTRUCTION.md); values change only via reconstruction commits
 - `data/reference/` — ridings, adjacency, simplified geometry; `raw/` holds Elections Canada source files
 - `data/extract/` — JSON produced by extract.py
 - `outputs/` — generated workbook, map.svg, and `dump/` CSV+JSON; regenerated every turn

@@ -1,0 +1,23 @@
+seq,house,predecessor,successor,transition,personal_date,nature,batch,source
+1,Richard-Arseneau,Octavien Richard-Arseneau,Alexandre Richard-Arseneau,G1→G2,,clean,pre-WWI group,metrics 2026-04-27
+2,Richard-Arseneau,Alexandre Richard-Arseneau,Olivier Richard-Arseneau,G2→G3,,clean,pre-WWI group,metrics 2026-04-27
+3,Whitcombe,Cedric Whitcombe,Edwin Whitcombe,G1→G2,,clean,pre-WWI group; founder name conflict noted,metrics 2026-04-27
+4,Fitzroy-Crane,Eliza Fitzroy-Crane,Charlotte Fitzroy-Crane,G1→G2,1918 (as recorded),clean; female-line via 1898 retroactive special remainder,pre-WWI group,metrics 2026-04-27
+5,MacNeil,Hector MacNeil,Ruairidh MacNeil,G1→G2,,clean,pre-WWI group,metrics 2026-04-27
+6,Tupper-Blair,Gordon Tupper-Blair,Charles Gordon Tupper-Blair,G1→G2,,disorderly; no named heir,WWI cascade,handoff 2026-04-25
+7,Pereira,Abraham Pereira,David Pereira,G1→G2,,clean,WWI cascade,handoff 2026-04-25
+8,Tessier,Hyacinthe-Olivier Tessier,Paul-Léonard Tessier,G1→G2,,clean,WWI cascade,handoff 2026-04-25
+9,Létourneau,Jean-Baptiste Létourneau,Édouard-Hyacinthe Létourneau,G1→G2,,clean,WWI cascade,handoff 2026-04-25
+10,MacDonald,Ronald 'Raghnall' Angus MacDonald,Donald Angus MacDonald,G1→G2,winter MacDonald personal 1901,clean; predecessor bio 96,13-house cascade,cascade 2026-04-27
+11,Galbraith,Andrew MacIntyre Galbraith,Hugh Galbraith,G1→G2,spring Galbraith personal 1908,clean; predecessor bio 89,13-house cascade,cascade 2026-04-27
+12,Letendre dit Batoche,Jean-Baptiste Letendre dit Batoche,Alexandre Letendre dit Batoche,G1→G2,spring Letendre personal 1909,clean; predecessor bio 95,13-house cascade,cascade 2026-04-27
+13,Wallace,James Strachan Wallace,Alexander James Wallace,G1→G2,autumn Wallace personal 1909,clean; predecessor bio 86,13-house cascade,cascade 2026-04-27
+14,Garland,Sir Cornelius Whitbourne Garland,James Edward Garland (nephew),G1→G2,autumn Garland personal 1909,clean; predecessor bio 100,13-house cascade,cascade 2026-04-27
+15,Stanton-Greville,Col. Sir Randolph Horatio Stanton-Greville,Edmund Stanton-Greville,G1→G2,autumn SG personal 1910,clean; predecessor bio 95; first Indigenous delegation at a tracker funeral (Tyendinaga),13-house cascade,cascade 2026-04-27
+16,Delany,Josiah Cornelius Delany,Cornelius Delany,G1→G2,summer Delany personal 1910,clean; predecessor bio 92,13-house cascade,cascade 2026-04-27
+17,Blaikie,Sir Malcolm Lauder Blaikie,Robert Lauder Blaikie,G1→G2,Blaikie personal 1916,clean; predecessor bio 98,13-house cascade,cascade 2026-04-27
+18,Sinclair-McKay,Mary Isabelle Sinclair-McKay,Isabelle Ruth McKay,G1→G2,spring SinM personal 1920,clean; female-line under founding-grant special remainder; predecessor bio 92,13-house cascade,cascade 2026-04-27
+19,Hall,Sir William Hall VC,Edward Jacob Hall,G1→G2,spring Hall personal 1920,clean; predecessor bio 92; first TB↔Hall correspondence,13-house cascade,cascade 2026-04-27
+20,Ross,Sir Alexander Morrison Ross,Alexander James Ross,G1→G2,Ross personal 1922,clean; predecessor bio 87,13-house cascade,cascade 2026-04-27
+21,Kilmartin,Sir Alasdair Kilmartin,Donald Kilmartin,G1→G2,autumn Kilmartin personal 1923,clean; predecessor bio 88,13-house cascade,cascade 2026-04-27
+22,Wilmot-Hazen,Sir Edward John Wilmot-Hazen Sr.,Sir Edward John Wilmot-Hazen Jr.,G1→G2,Wilmot-Hazen personal 1925,clean; predecessor bio 93,13-house cascade,cascade 2026-04-27
