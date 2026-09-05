@@ -8,7 +8,8 @@ Read this fully before doing anything. Sessions in this repo do not share memory
 - At migration baseline: 33 active houses, 2 historically removed houses, roughly 145 ridings claimed. Societal climate most recently at −1 Significant Conservative (following the Regulation 17 / Ontario Bilingual Schools Crisis event). Narrative era roughly 1867–1918 on house personal clocks.
 
 ## Source of truth
-- Until Phase 3 is complete: `data/baseline/Riding_Tracker_v4.xlsx` (sheets: Riding Tracker, Mechanics). The Riding Tracker rows are canonical for house colours and riding data. Mechanics Section 4 (colour registry) is derived and known to drift; reconcile from the Riding Tracker, never the other way round.
+- The original workbook no longer exists. See `docs/RECONSTRUCTION.md`.
+- Until Phase 3 is complete: `data/seed/*.csv`. These are canonical for houses, holdings, ranks and colours. Do not edit values; add reconstructed data only in the manner described in docs/RECONSTRUCTION.md.
 - After Phase 3: `hoc.db`. Everything in `outputs/` is regenerated from it.
 
 ## Hard rules (these have all been broken before and corrected by hand)
@@ -47,7 +48,7 @@ Read this fully before doing anything. Sessions in this repo do not share memory
 ## Working pattern
 - One build step or one game turn per session. Work on a branch, commit with a clear message, push, open a PR.
 - Make one commit per logical change; keep the diff reviewable on a phone.
-- Never modify `data/baseline/`.
+- Never modify values in `data/seed/` except through a reconstruction commit as defined in docs/RECONSTRUCTION.md.
 - Do not add dependencies beyond openpyxl, shapely and pytest without noting it in the status block.
 
 ## Required end-of-session status block
