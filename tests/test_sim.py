@@ -33,6 +33,12 @@ COLLAPSE_FLOOR = 20
 CLAIMED_FRACTION = 0.8
 CLAIMED_BY_SEASON = (90, 200)
 
+# Phase 9d's conflict bounds. A game whose houses only ever cooperate is not a
+# game about power, and one that only ever fights is not this one.
+DISPUTES_PER_GENERATION = (0.6, 1.5)
+CHALLENGES_PER_RUN = (15, 25)
+MAX_COOPERATION_RATIO = 4  # compacts + marriages, against disputes + challenges
+
 
 @pytest.fixture(scope="module")
 def rules():
@@ -419,6 +425,16 @@ def test_smoke_three_seeds_stay_within_the_sanity_targets(tmp_path, rules):
             except ValueError:
                 continue
 
+        counts = world.conn.execute(
+            "SELECT"
+            " (SELECT COUNT(*) FROM events WHERE kind = 'relational'"
+            "  AND (title LIKE '%wins a dispute%' OR title LIKE '%loses a dispute%')) AS disputes,"
+            " (SELECT COUNT(*) FROM events WHERE kind = 'challenge') AS challenges,"
+            " (SELECT COUNT(*) FROM events WHERE title LIKE '%form a compact%') AS compacts,"
+            " (SELECT COUNT(*) FROM events WHERE title LIKE '%joined by marriage%') AS marriages,"
+            " (SELECT COUNT(*) FROM persons WHERE role = 'holder') AS generations"
+        ).fetchone()
+
         bounds = world.conn.execute(
             "SELECT MIN(capital) AS a, MAX(capital) AS b, MIN(influence) AS c,"
             " MAX(influence) AS d, MIN(cohesion) AS e, MAX(cohesion) AS f,"
@@ -426,7 +442,10 @@ def test_smoke_three_seeds_stay_within_the_sanity_targets(tmp_path, rules):
         ).fetchone()
         results.append(
             {"seed": seed, "peak": peak, "final": final, "claimed_at": claimed_at,
-             "bounds": tuple(bounds), "natures": natures}
+             "bounds": tuple(bounds), "natures": natures,
+             "disputes": counts["disputes"], "challenges": counts["challenges"],
+             "cooperation": counts["compacts"] + counts["marriages"],
+             "generations": counts["generations"]}
         )
         world.conn.close()
 
@@ -456,6 +475,24 @@ def test_smoke_three_seeds_stay_within_the_sanity_targets(tmp_path, rules):
         ):
             assert 0 <= low <= 100 and 0 <= high <= 100, f"{label} left 0-100: {low}-{high}"
         assert 0 <= ambition_min and ambition_max <= 10
+
+    # Phase 9d: conflict has to be a live part of the game in every seed, not a
+    # rounding error. Friction (rules 0.6) is what makes it so.
+    for result in results:
+        per_generation = result["disputes"] / max(1, result["generations"])
+        assert DISPUTES_PER_GENERATION[0] <= per_generation <= DISPUTES_PER_GENERATION[1], (
+            f"seed {result['seed']}: {per_generation:.2f} disputes per house-generation,"
+            f" outside {DISPUTES_PER_GENERATION}"
+        )
+        assert CHALLENGES_PER_RUN[0] <= result["challenges"] <= CHALLENGES_PER_RUN[1], (
+            f"seed {result['seed']}: {result['challenges']} challenges,"
+            f" outside {CHALLENGES_PER_RUN}"
+        )
+        conflict = result["disputes"] + result["challenges"]
+        assert result["cooperation"] <= MAX_COOPERATION_RATIO * conflict, (
+            f"seed {result['seed']}: {result['cooperation']} compacts and marriages against"
+            f" {conflict} disputes and challenges, over {MAX_COOPERATION_RATIO}x"
+        )
 
     # PART B: the late game has to actually happen somewhere across the seeds.
     # These are the mechanisms that keep a full map moving (§7b, §9), so a run in

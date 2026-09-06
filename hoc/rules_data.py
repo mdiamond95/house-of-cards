@@ -131,6 +131,7 @@ class RulesBundle:
     founding: dict
     succession: dict
     responses: dict
+    friction: dict
     events: list
     communities: list
     places: list
@@ -292,6 +293,21 @@ def _load_responses(rules_dir):
     return _read_json(rules_dir / "responses.json")
 
 
+def _load_friction(rules_dir):
+    """Per-pair friction (rules 0.6). Validated for the one thing that would be
+    silently wrong: a threshold outside the stated range."""
+    data = _read_json(rules_dir / "friction.json")
+    low, high = data["range"]
+    threshold = data["flashpoint"]["threshold"]
+    if not low <= threshold <= high:
+        raise RulesDataError(
+            f"friction.flashpoint.threshold {threshold} is outside the range {low}-{high}"
+        )
+    if not low <= data["flashpoint"]["resets_to"] <= high:
+        raise RulesDataError("friction.flashpoint.resets_to is outside the range")
+    return data
+
+
 def _parse_direct_effect(raw, event_name):
     raw = (raw or "").strip()
     if not raw:
@@ -400,6 +416,7 @@ def load_rules(path="rules"):
     founding = _load_founding(rules_dir)
     succession = _load_succession(rules_dir)
     responses = _load_responses(rules_dir)
+    friction = _load_friction(rules_dir)
     events = _load_events(rules_dir)
     communities = _load_communities(rules_dir)
     places = _load_places(rules_dir)
@@ -414,6 +431,7 @@ def load_rules(path="rules"):
         founding=founding,
         succession=succession,
         responses=responses,
+        friction=friction,
         events=events,
         communities=communities,
         places=places,

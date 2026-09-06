@@ -289,6 +289,19 @@ CREATE TABLE objectives (
 
 CREATE INDEX idx_objectives_house ON objectives(house);
 
+-- Friction between two houses that share a land border (rules/friction.json).
+-- Stored per unordered pair with the names in sorted order, exactly as relations
+-- are, so there is never a second row for the same border. A pair with no row
+-- has no friction; rows persist after a flashpoint, reset rather than deleted,
+-- because a border that has quarrelled once quarrels sooner the next time.
+CREATE TABLE friction (
+    house_a  TEXT NOT NULL REFERENCES houses(house),
+    house_b  TEXT NOT NULL REFERENCES houses(house),
+    value    INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (house_a, house_b),
+    CHECK (house_a < house_b)
+);
+
 -- One row per played season: the seed it was played under, where its log lives,
 -- and the two counts the smoke test watches. rules_version records which
 -- rules/CHANGELOG.md version the season was played under, so a later rules
