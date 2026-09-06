@@ -1,0 +1,46 @@
+name: Pages
+
+# Publishes outputs/site to GitHub Pages on every push to main. The site is a
+# generated view that is committed with each turn, so this workflow only
+# uploads it — it does not rebuild the database.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "outputs/site/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; let a run in progress finish rather than cancelling it.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the site was exported
+        run: |
+          test -f outputs/site/index.html \
+            || { echo "outputs/site/index.html is missing — run 'python -m hoc export' and commit outputs/"; exit 1; }
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: outputs/site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

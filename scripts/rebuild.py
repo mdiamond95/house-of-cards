@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from hoc import db  # noqa: E402  (after sys.path setup)
-from hoc.export import dump, map as map_export, workbook  # noqa: E402
+from hoc.export import dump, map as map_export, site, workbook  # noqa: E402
 from hoc.turn import TurnError, apply_turn  # noqa: E402
 
 TURNS_DIR = ROOT / "turns"
@@ -46,6 +46,7 @@ def rebuild(db_path, export=True):
         dump.write_dump(conn)
         workbook.write_workbook(conn)
         map_export.write_maps(conn)
+        site.write_site(conn)
     return conn
 
 

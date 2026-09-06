@@ -12,6 +12,18 @@ Run tests:
 
     python -m pytest
 
+## Viewing the game
+
+The generated site lives in `outputs/site/` and is published to GitHub Pages on every push to `main` by `.github/workflows/pages.yml`:
+
+**https://mdiamond95.github.io/house-of-cards/**
+
+The site has to be switched on once: **Settings → Pages → Build and deployment → Source: GitHub Actions**. Until that is done the workflow will run but the URL will 404. In the meantime `outputs/map.svg` renders directly in GitHub's file view, and `outputs/dump/state.json` is readable as text.
+
+The site is built by `python -m hoc export` along with everything else in `outputs/`, so it is committed with each turn and the workflow only uploads it — deployment never rebuilds the database.
+
+Pages: map with tappable ridings, a page per house (holder, holdings, house block, successions, relations, events), all 343 ridings by province, both climate ledgers, the chronicle of turns, and an about page listing what remains unrecovered.
+
 ## Rebuilding the database
 
     python scripts/rebuild.py
