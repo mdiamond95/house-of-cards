@@ -38,8 +38,9 @@ Read this fully before doing anything. Sessions in this repo do not share memory
 - The adjacency register (Section 10) is single-column, label-only.
 
 ## Repository layout
-- `hoc/` — package: schema.sql, db.py, rules.py, turn.py, export/
-- `scripts/` — one-off migration scripts (extract.py, load.py)
+- `hoc/` — package: schema.sql, db.py, names.py, rules.py, turnfile.py, turn.py, `__main__.py` (CLI), export/
+- `scripts/` — one-off build scripts: build_ridings.py, build_adjacency.py, build_geometry.py, load_seed.py
+- `turns/` — one JSON file per turn, `NNNN_<slug>.json` (see docs/TURN_FILE.md)
 - `tests/` — pytest; fixtures drawn from real logged cases
 - `data/seed/` — reconstructed canonical data (see docs/RECONSTRUCTION.md); values change only via reconstruction commits
 - `data/reference/` — ridings, adjacency, simplified geometry; `raw/` holds Elections Canada source files
@@ -52,6 +53,16 @@ Read this fully before doing anything. Sessions in this repo do not share memory
 - Make one commit per logical change; keep the diff reviewable on a phone.
 - Never modify values in `data/seed/` except through a reconstruction commit as defined in docs/RECONSTRUCTION.md.
 - Do not add dependencies beyond openpyxl, shapely and pytest without noting it in the status block.
+
+## Turn procedure
+Run a game turn in exactly these steps. The format of a turn file is in docs/TURN_FILE.md.
+
+1. **Read the state first.** Run `python -m hoc status`, then read `outputs/dump/state.json` for the houses the directive touches — holder, generation, clock, holdings, colours. Write nothing until you have.
+2. **Check any expansion before writing it.** Run `python -m hoc check <house> <riding>`. If it fails, pick another riding that the data supports, or stop and report the problem to the director. Never write narrative for a move that has not passed the check. Water-only adjacency passes with a warning — surface that warning in your status block, never bury it.
+3. **Write `turns/NNNN_<slug>.json`.** Operations first, then the narrative. The narrative is Canadian spelling, about 500 words, rich prose rather than bullet lists, anchored only in what the data records — no invented settlers, dates, relations or colours. Dates are personal years on the house's own clock; there is no universal calendar, so never write a shared year for houses that did not meet.
+4. **Apply it.** `python -m hoc apply turns/NNNN_<slug>.json`. This validates, applies and re-exports in one transaction. If it fails, fix the turn file and run it again. Never edit `hoc.db` by hand, and never hand-edit anything in `outputs/`.
+5. **Commit `hoc.db`, the turn file and `outputs/` together**, so the database and its generated views never disagree. Push, open a PR.
+6. **Give the director the narrative in full in the message, then close with the STATUS block.** The narrative goes in the body so it can be read in chat without opening the repo; the STATUS block stays last, as the section below requires.
 
 ## Required end-of-session status block
 The director works from a phone and copies your final message back into a planning conversation. Always end your final message with exactly this block, plainly formatted, nothing after it:
