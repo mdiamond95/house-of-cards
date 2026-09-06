@@ -36,18 +36,36 @@ To load the seed alone, without replaying any turns:
 
 `hoc.db` is a derived artefact. The loader deletes and rebuilds it from scratch out of `data/reference/*.csv` (343 ridings and their land adjacency, from the 2023 Representation Order boundaries) and the active scenario's `seed/*.csv` (for `legacy`, the reconstructed houses, holdings, holders, successions, climate ledgers and relations), then prints a row count per table. Run it after any reconstruction commit that changes the seed. The reference CSVs themselves are rebuilt from the raw boundary file by `scripts/build_ridings.py`, `scripts/build_adjacency.py` and `scripts/build_geometry.py` — see `data/reference/raw/SOURCE.md` for provenance.
 
-## Autoplay
+## Playing the game
 
-The v2 engine plays the game itself: houses hold stats and objectives, draw actions from the weighted tables in `rules/`, respond to a deck of real Canadian events on their own personal clocks, and age, die, succeed and fail without a director writing turns.
+The game plays itself, and the director watches it from the site and pushes it along from the site's **Console**.
 
-    python -m hoc scenario use new         # switch off the frozen reconstruction
-    python -m hoc sim new --seed 42        # season 1: exactly one house is founded
-    python -m hoc sim run 50               # play fifty seasons
+The engine holds houses with stats and objectives that draw actions from the weighted tables in `rules/`, respond to a deck of real Canadian events on their own personal clocks, quarrel across their borders, marry, buy and challenge for ridings, absorb failing neighbours, split into cadet lines, and age, die, succeed and fail without anyone writing a turn.
+
+### From the console
+
+The console is a page on the site. It holds no credentials of its own: the director pastes in a fine-grained GitHub token, it is kept in that browser's local storage and sent only to `api.github.com`, and a Disconnect button drops it. Open the console with no token and everything still renders — the controls are simply disabled and say why.
+
+Every control ends as a dispatch of `.github/workflows/engine.yml`, which does the work, runs the suite, exports the site and commits the result. That is the only automated path by which the game changes, and it is the one that checks itself.
+
+- **Run seasons** — 1, 5, 10, 25 or 50, with pause conditions (a house removed, a challenge, a Major event, a house reaching Marquis, a partition, an extinction). The run halts at the first condition met and the summary says which one and which season.
+- **Intervene** — set or veto an objective, force a house's next action, grant a house, adjust a stat with a reason, set a clock, record a relation. Each builds a turn file, shows it for review, and applies it between seasons.
+- **Rules** — the numeric fields of the rules tables, with the last CHANGELOG note beside them. A proposed change shows its diff, needs a note, and lands as a version bump with an entry. The console cannot add, remove or rename a rule; that is a design decision and belongs in a Code session.
+- **Narrate** — builds a block of instructions for a Claude Code session to write prose for a range of seasons from the season logs and the chronicle. The console calls nothing: the director copies the block and pastes it. What comes back lands in `narratives/` and shows up as expandable prose in the chronicle.
+- **Rebuild** — replays the whole game from the seed and the season logs and checks it reproduces the committed database exactly.
+
+### From a Code session
+
+The same things, without the browser:
+
+    python -m hoc sim status                      # where the game stands
     python -m hoc sim run 50 --stop-on removal,major
-    python -m hoc sim status
+    python -m hoc apply scenarios/new/turns/NNNN_sSSSS-intervention.json
+    python -m hoc narrate 40 60 --tone intimate   # the block, printed
+    python scripts/rebuild.py                     # replay from the record
 
-Houses correspond, form compacts, marry, quarrel, buy and challenge for ridings, absorb failing neighbours and split into cadet lines when a large house's holder dies leaving two heirs. Every draw comes from a seed derived from the world seed and the season number alone, and each season writes `scenarios/new/seasons/NNNN.json` recording every roll with the purpose it was drawn for — so a world replays identically from its seed, and any outcome can be traced to the roll that caused it. Tuning the game means editing a table in `rules/` and recording it in `rules/CHANGELOG.md`; it never means editing `hoc/sim.py`.
+Every draw comes from a seed derived from the world seed and the season number alone, and each season writes `scenarios/new/seasons/NNNN.json` recording every roll with the purpose it was drawn for — so a world replays identically from its seed, and any outcome can be traced to the roll that caused it. Tuning the game means editing a table in `rules/` and recording it in `rules/CHANGELOG.md`; it never means editing `hoc/sim.py`.
 
-`python -m hoc scenario use legacy` switches back to the reconstructed playthrough, which the turn runner still drives.
+`python -m hoc scenario use legacy` switches back to the reconstructed 2026 playthrough, which the turn runner still drives and which is published, frozen, at the site's Archive.
 
 See `CLAUDE.md` for game rules and working conventions, `scenarios/legacy/RECONSTRUCTION.md` for what is reconstructed and what is still missing, and `docs/BUILD_PLAN.md` for the migration phases.
