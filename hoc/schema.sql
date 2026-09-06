@@ -266,6 +266,9 @@ CREATE TABLE persons (
     age     INTEGER,
     role    TEXT NOT NULL CHECK (role IN ('holder', 'heir', 'heir2', 'other')),
     alive   INTEGER NOT NULL DEFAULT 1 CHECK (alive IN (0, 1)),
+    -- §7's Marriage alliance needs both houses to have an unmarried heir, and
+    -- says so: "tracked as flag". Without it one heir marries every neighbour.
+    married INTEGER NOT NULL DEFAULT 0 CHECK (married IN (0, 1)),
     born_season   INTEGER,
     died_season   INTEGER
 );

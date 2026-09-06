@@ -7,7 +7,9 @@
   },
   "partition": {
     "condition": "two or more heirs named, holdings >= 4",
-    "effect": "The senior heir takes the seat and the contiguous core; the junior heir founds a cadet house of the same community and tag in the outer holdings, with a \"kin\" relation to the parent."
+    "effect": "The senior heir takes the seat and the contiguous core; the junior heir founds a cadet house of the same community and tag in the outer holdings, with a \"kin\" relation to the parent.",
+    "min_holdings": 9,
+    "min_heirs": 2
   },
   "disorderly_succession": {
     "condition": "no heir",
@@ -15,7 +17,9 @@
     "capital_delta": -10,
     "sig_minus_risk": "with one neighbour",
     "successor_age_formula": "35 + d20",
-    "riding_loss": "see losing_ridings.disorderly_succession"
+    "riding_loss": "see losing_ridings.disorderly_succession",
+    "sig_minus_probability": 0.5,
+    "sig_minus_note": "§9 says a disorderly succession carries a 'Sig- risk with one neighbour' but gives no probability. Authored as 0.5 in rules version 0.5 — see rules/CHANGELOG.md."
   },
   "extinction": {
     "triggers": [
@@ -27,7 +31,9 @@
   },
   "heirs": {
     "second_heir_condition": "first heir aged 25+ and holdings >= 4",
-    "second_heir_effect": "naming a second heir raises cohesion +3 now and enables partition later"
+    "second_heir_effect": "naming a second heir raises cohesion +3 now and enables partition later",
+    "second_heir_min_holdings": 9,
+    "second_heir_min_age": 25
   },
   "losing_ridings": {
     "contraction_sale": {
@@ -60,5 +66,9 @@
       "Fully surrounded houses that also have cohesion < 40 draw a \"Siege\" objective: survive 10 seasons without losing a riding, or seek a protector (Marriage alliance / compact) with the strongest neighbour"
     ],
     "map_full_behaviour": "When the map is full (no unclaimed riding anywhere), founding stops by itself. The engine of change becomes succession: disorderly successions, partitions and extinctions return ridings to play or redistribute them, and founding resumes wherever land reopens. Regional fullness is tracked so that the Prairies can be in a land-rush while Nova Scotia is already in its dynastic phase."
+  },
+  "marriage_alliance": {
+    "dispute_block_seasons": 20,
+    "note": "§7: future disputes between two houses joined by marriage are blocked for 20 seasons."
   }
 }

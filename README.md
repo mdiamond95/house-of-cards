@@ -46,7 +46,7 @@ The v2 engine plays the game itself: houses hold stats and objectives, draw acti
     python -m hoc sim run 50 --stop-on removal,major
     python -m hoc sim status
 
-Every draw comes from a seed derived from the world seed and the season number alone, and each season writes `scenarios/new/seasons/NNNN.json` recording every roll with the purpose it was drawn for — so a world replays identically from its seed, and any outcome can be traced to the roll that caused it. Tuning the game means editing a table in `rules/` and recording it in `rules/CHANGELOG.md`; it never means editing `hoc/sim.py`.
+Houses correspond, form compacts, marry, quarrel, buy and challenge for ridings, absorb failing neighbours and split into cadet lines when a large house's holder dies leaving two heirs. Every draw comes from a seed derived from the world seed and the season number alone, and each season writes `scenarios/new/seasons/NNNN.json` recording every roll with the purpose it was drawn for — so a world replays identically from its seed, and any outcome can be traced to the roll that caused it. Tuning the game means editing a table in `rules/` and recording it in `rules/CHANGELOG.md`; it never means editing `hoc/sim.py`.
 
 `python -m hoc scenario use legacy` switches back to the reconstructed playthrough, which the turn runner still drives.
 

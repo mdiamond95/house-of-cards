@@ -10,6 +10,7 @@ import json
 import random
 import sys
 import time
+from collections import Counter
 from pathlib import Path
 
 import pytest
@@ -409,6 +410,15 @@ def test_smoke_three_seeds_stay_within_the_sanity_targets(tmp_path, rules):
              if ridings >= CLAIMED_FRACTION * sim.TOTAL_RIDINGS),
             None,
         )
+        natures = Counter()
+        for row in world.conn.execute(
+            "SELECT mechanical_delta FROM events WHERE source = 'engine'"
+        ):
+            try:
+                natures[json.loads(row["mechanical_delta"] or "{}").get("nature")] += 1
+            except ValueError:
+                continue
+
         bounds = world.conn.execute(
             "SELECT MIN(capital) AS a, MAX(capital) AS b, MIN(influence) AS c,"
             " MAX(influence) AS d, MIN(cohesion) AS e, MAX(cohesion) AS f,"
@@ -416,7 +426,7 @@ def test_smoke_three_seeds_stay_within_the_sanity_targets(tmp_path, rules):
         ).fetchone()
         results.append(
             {"seed": seed, "peak": peak, "final": final, "claimed_at": claimed_at,
-             "bounds": tuple(bounds)}
+             "bounds": tuple(bounds), "natures": natures}
         )
         world.conn.close()
 
@@ -446,6 +456,18 @@ def test_smoke_three_seeds_stay_within_the_sanity_targets(tmp_path, rules):
         ):
             assert 0 <= low <= 100 and 0 <= high <= 100, f"{label} left 0-100: {low}-{high}"
         assert 0 <= ambition_min and ambition_max <= 10
+
+    # PART B: the late game has to actually happen somewhere across the seeds.
+    # These are the mechanisms that keep a full map moving (§7b, §9), so a run in
+    # which none of them ever fires is a game that has quietly stopped playing.
+    totals = Counter()
+    for result in results:
+        totals.update(result["natures"])
+    for nature in ("partition", "absorption", "extinction"):
+        assert totals[nature] >= 1, (
+            f"no {nature} occurred across seeds {SMOKE_SEEDS}:"
+            f" {dict(totals)} ({detail})"
+        )
 
     assert elapsed < SMOKE_TIME_BUDGET, (
         f"the smoke run took {elapsed:.0f}s, over the {SMOKE_TIME_BUDGET}s budget"
