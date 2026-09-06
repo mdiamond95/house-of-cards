@@ -45,3 +45,15 @@ Recovery queue (holder names still missing): Polkinghorne, Ashworth, Akatsiak, H
 - Generation state follows the 2026-04-27 cascade. The 2026-05-04 tally (21 G1, 6 G2, 1 G3) is treated as a founding-era-perspective statement, not current state.
 - Île-des-Soeurs: seed corrected to the official two-letter spelling; name_key normalisation folds œ/oe so either form resolves.
 Rationale: the 25–27 April sources were written as deliberate handoff and reconciliation text; the 4 May session's prose had degraded and is the weaker witness where they disagree.
+
+## Rules not recovered (Phase 4)
+
+`hoc/rules.py` encodes the mechanics that were recoverable. These were not, and are handled as explicit parameters or flagged first encodings rather than invented formulae:
+
+- **Clock-sync year semantics.** Which personal year two houses meet at when a direct shared event syncs their clocks. `sync_clocks(conn, event_id, personal_year)` takes the year from the turn. What *is* recovered and enforced: only direct shared events between named houses sync (kinds relational, challenge, incursion, transfer), and global events never do.
+- **Section 10 delta calculator.** How a societal event's magnitude and tag produced a climate delta. `climate_shift(...)` takes `delta` explicitly and derives nothing from magnitude or tag; the cumulative values already in `climate` are recorded exactly as the sources stated them and must not be used to back out the rule.
+- **Cohort-fit thresholds.** `cohort_fit(...)` is a first encoding, not a recovered rule: any non-zero climate is decisive, zero is neutral, Mixed is always neutral. The director may refine the thresholds (for example requiring a magnitude of 2 before a climate counts as decisive); the rule lives in one function so it can be changed in one place.
+- **Rank ladder, single-step vs multi-step.** The ladder itself is recovered (Baron/Baroness < Viscount/Viscountess < Earl/Countess < Marquis/Marchioness < Duke/Duchess). Whether elevations were limited to one step was not, so `elevate(...)` allows multi-step moves on the evidence of Sinclair-McKay going Baroness → Countess. Downward moves are refused.
+- **Water-adjacency register.** `adjacency` holds land edges only (894 of them). The water-only register was a manually maintained list in the workbook and is empty here, so `validate_expansion` can currently only return the water warning for edges the director adds. Until it is populated, a genuine water-only expansion will read as "not adjacent".
+
+Also unrecovered and therefore left to the director: the seat_order a re-acquired riding should take (the engine appends at the tail), and whether a transferred riding keeps its old colour (the engine gives it the receiving house's secondary colour, as an expansion would).
