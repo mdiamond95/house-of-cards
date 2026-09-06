@@ -26,7 +26,19 @@ def _export_all(conn, out_dir=None):
     written.extend(map_export.write_maps(conn, **kwargs))
     site_files = site.write_site(conn, **kwargs)
     written.append(site_files[0].parent)  # the site is many files; report the directory
+
+    # The archive is rebuilt on every export, from its own scenario, so the
+    # frozen playthrough and the live game can never drift apart.
+    written.append(_build_archive(**kwargs))
     return written
+
+
+def _build_archive(out_dir=None):
+    sys.path.insert(0, str(db.PACKAGE_ROOT.parent / "scripts"))
+    import build_archive
+
+    files = build_archive.build_archive(**({} if out_dir is None else {"out_dir": out_dir}))
+    return files[0].parent
 
 
 def cmd_apply(args):

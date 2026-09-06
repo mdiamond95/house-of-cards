@@ -23,7 +23,8 @@ from hoc import db, scenario  # noqa: E402  (after sys.path setup)
 from hoc.export import dump, map as map_export, site, workbook  # noqa: E402
 from hoc.turn import TurnError, apply_turn  # noqa: E402
 
-import load_seed  # noqa: E402  (same directory; imported after sys.path setup)
+import build_archive  # noqa: E402  (same directory; imported after sys.path setup)
+import load_seed  # noqa: E402
 
 
 def turn_files(name=None):
@@ -82,6 +83,7 @@ def rebuild(db_path, export=True, name=None, verbose=True):
         workbook.write_workbook(conn)
         map_export.write_maps(conn)
         site.write_site(conn)
+        build_archive.build_archive()
     return conn
 
 

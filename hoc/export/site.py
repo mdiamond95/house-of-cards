@@ -30,6 +30,14 @@ REPO_URL = "https://github.com/mdiamond95/house-of-cards"
 # carries, since a wall-clock timestamp would churn the diff on every export.
 _GENERATED_FROM = ""
 
+# Set while the archive is being rendered. The archive is the same site built
+# from a different scenario, so rather than a second exporter it is a mode: the
+# nav points back at the live game instead of forward into itself, and every
+# page carries a banner saying which world the reader is in.
+_ARCHIVE = False
+ARCHIVE_DIRNAME = "archive"
+ARCHIVE_BANNER = "Archive — the 2026 playthrough"
+
 __all__ = ["write_site", "DEFAULT_OUT_DIR", "SITE_DIRNAME"]
 
 
@@ -91,7 +99,19 @@ def page(title, body, depth=0, subtitle=None):
         ("climate.html", "Climate"),
         ("about.html", "About"),
     ]
-    links = "".join(f'<a href="{up}{href}">{esc(label)}</a>' for href, label in nav)
+    if _ARCHIVE:
+        # Out of the archive rather than deeper into it: one more "../" than the
+        # page's own depth reaches the live site's root.
+        nav.append((f"{up}../index.html", "← The live game"))
+    else:
+        nav.append((f"{ARCHIVE_DIRNAME}/index.html", "Archive"))
+    links = "".join(
+        f'<a href="{href if href.startswith("../") else up + href}">{esc(label)}</a>'
+        for href, label in nav
+    )
+    banner = (
+        f'<p class="banner">{esc(ARCHIVE_BANNER)}</p>' if _ARCHIVE else ""
+    )
     sub = f'<p class="subtitle">{subtitle}</p>' if subtitle else ""
     footer = f'<footer>{esc(_GENERATED_FROM)}</footer>' if _GENERATED_FROM else ""
     return (
@@ -104,7 +124,7 @@ def page(title, body, depth=0, subtitle=None):
         "</head>\n<body>\n"
         f'<header><a class="wordmark" href="{up}index.html">House of Cards</a>'
         f'<nav>{links}</nav></header>\n'
-        f"<main>\n<h1>{esc(title)}</h1>\n{sub}\n{body}\n{footer}\n</main>\n"
+        f"<main>\n{banner}\n<h1>{esc(title)}</h1>\n{sub}\n{body}\n{footer}\n</main>\n"
         "</body>\n</html>\n"
     )
 
@@ -399,7 +419,7 @@ def _index(conn, features, borders, slugs):
 
     latest = _latest_season(conn)
     scrubber = ""
-    if latest and latest > 1:
+    if latest and latest > 1 and not _ARCHIVE:
         # Only worth showing once there is history to scrub through; a
         # one-season world has nothing to say that the map is not already saying.
         scrubber = (
@@ -1156,7 +1176,16 @@ def _about_page(conn, slugs):
         ' <span class="unrecovered">not recovered</span>.</p>\n'
         f'<p><a href="{REPO_URL}/blob/main/scenarios/legacy/RECONSTRUCTION.md">Read the full reconstruction'
         " record on GitHub</a>.</p>\n"
-        f'<h3>Holders whose name was never recovered <span class="count">{len(unnamed)}</span></h3>\n'
+        + (
+            ""
+            if _ARCHIVE else
+            '<h2>The archive</h2>\n<p class="prose">The game this site shows is played by the'
+            " engine, season by season. The playthrough that came before it — written turn by"
+            " turn by the director between 2026 and the migration, and reconstructed from"
+            " transcripts after the workbook was lost — is kept frozen and readable in full:"
+            f' <a href="{ARCHIVE_DIRNAME}/index.html">the 2026 playthrough</a>.</p>\n'
+        )
+        + f'<h3>Holders whose name was never recovered <span class="count">{len(unnamed)}</span></h3>\n'
         f"{house_list(unnamed)}\n"
         f'<h3>Houses with no Section 5 block recovered <span class="count">{len(blockless)}</span></h3>\n'
         f"{house_list(blockless)}\n"
@@ -1287,6 +1316,9 @@ code { font-size: 0.78rem; color: var(--muted); }
 .sparks td { vertical-align: middle; }
 .chart-key { font-size: 0.75rem; color: var(--muted); margin: 0.1rem 0 0.8rem; }
 .kin { font-size: 0.85rem; color: var(--muted); }
+.banner { font-family: var(--serif); font-size: 0.85rem; color: var(--muted); background: #f2eee4;
+          border: 1px solid var(--rule); border-left: 3px solid var(--accent);
+          padding: 0.5rem 0.7rem; margin: 0 0 0.8rem; }
 
 .scrubber { display: flex; align-items: center; gap: 0.6rem; margin: 0.6rem 0 0.2rem; }
 .scrubber input[type=range] { flex: 1; min-width: 0; }
@@ -1331,17 +1363,27 @@ def _slugs(conn):
     return slugs
 
 
-def write_site(conn, out_dir=DEFAULT_OUT_DIR):
-    """Write outputs/site/. Returns the paths written."""
-    site_dir = Path(out_dir) / SITE_DIRNAME
+def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False):
+    """Write a site. Returns the paths written.
+
+    `subdir` and `archive` are how the Archive is built: the same exporter, the
+    same pages, a different scenario's database, rendered one directory deeper
+    with a banner and the nav pointing back out.
+    """
+    site_dir = Path(out_dir) / subdir
     houses_dir = site_dir / "houses"
     houses_dir.mkdir(parents=True, exist_ok=True)
 
-    global _GENERATED_FROM
+    global _GENERATED_FROM, _ARCHIVE
+    _ARCHIVE = archive
     turn = _latest_turn(conn)
-    _GENERATED_FROM = (
-        f"generated from turn {turn:04d}" if turn is not None else "generated before any turn"
-    )
+    season = _latest_season(conn)
+    if season:
+        _GENERATED_FROM = f"generated at season {season}"
+    elif turn is not None:
+        _GENERATED_FROM = f"generated from turn {turn:04d}"
+    else:
+        _GENERATED_FROM = "generated before any turn"
 
     slugs = _slugs(conn)
     index_features = map_export.projected_site_features()
@@ -1376,4 +1418,5 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR):
 
     # GitHub Pages would otherwise run the output through Jekyll.
     write(site_dir / ".nojekyll", "")
+    _ARCHIVE = False
     return written
