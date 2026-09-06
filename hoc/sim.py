@@ -45,7 +45,7 @@ __all__ = ["SimError", "LoggingRandom", "World", "RULES_VERSION"]
 # The rules/CHANGELOG.md version these seasons are played under (§11): a season
 # keeps the version it was played under so a later rules change never silently
 # reinterprets it.
-RULES_VERSION = "0.4"
+RULES_VERSION = "0.6"
 
 STAT_RANGE = (0, 100)
 AMBITION_RANGE = (0, 10)
@@ -123,6 +123,11 @@ MAX_OBJECTIVES = 3
 OBJECTIVES_AT_FOUNDING = 2
 DEFEND_THE_SEAT_SEASONS = 3
 SIEGE_SEASONS = 10
+
+# How often the engine writes a stat snapshot for every living house. Five keeps
+# a 300-season sparkline sixty points long and timeline.json well inside its
+# size budget; hoc/export/timeline.py reads whatever spacing it finds.
+SNAPSHOT_EVERY = 5
 
 
 class SimError(Exception):
@@ -241,6 +246,7 @@ class World:
         # make it wrong; it only removes the repetition inside one house's turn,
         # where legal_actions and action_weights ask the same questions over.
         self._turn_cache = {}
+        self._expansion_claims = {}
         self.log = []
         self.chronicle = []
 
@@ -1468,6 +1474,152 @@ class World:
                 return heir
         return None
 
+
+    # ------------------------------------------------------------- friction --
+    #
+    # Grievance had to come from somewhere. Through PART B the only source of a
+    # Sig− was a disorderly succession, so borders stayed quiet and the game ran
+    # overwhelmingly cooperative. Friction (rules/friction.json, rules 0.6) is
+    # the slow pressure between two houses that share a land border: it builds
+    # while their tags oppose, while either is boxed in or ambitious, and it
+    # cools while they are bound by friendship or marriage.
+
+    def bordering_pairs(self):
+        """Every unordered pair of active houses sharing a land border, once."""
+        return [
+            (row["a"], row["b"])
+            for row in self.conn.execute(
+                "SELECT DISTINCT MIN(mine.house, theirs.house) AS a,"
+                "                MAX(mine.house, theirs.house) AS b"
+                " FROM holdings mine"
+                " JOIN adjacency adj ON adj.adjacency_type = 'land'"
+                "   AND (adj.fed_id_a = mine.fed_id OR adj.fed_id_b = mine.fed_id)"
+                " JOIN holdings theirs ON theirs.released_event_id IS NULL"
+                "   AND theirs.fed_id = CASE WHEN adj.fed_id_a = mine.fed_id"
+                "                            THEN adj.fed_id_b ELSE adj.fed_id_a END"
+                " JOIN houses ha ON ha.house = mine.house AND ha.status = 'active'"
+                " JOIN houses hb ON hb.house = theirs.house AND hb.status = 'active'"
+                " WHERE mine.released_event_id IS NULL AND mine.house <> theirs.house"
+                " ORDER BY a, b"
+            )
+        ]
+
+    def friction_between(self, house_a, house_b):
+        low, high = self._pair(house_a, house_b)
+        row = self.conn.execute(
+            "SELECT value FROM friction WHERE house_a = ? AND house_b = ?", (low, high)
+        ).fetchone()
+        return 0 if row is None else row["value"]
+
+    def _set_friction(self, house_a, house_b, value):
+        low, high = self._pair(house_a, house_b)
+        bounds = self.rules.friction["range"]
+        value = clamp(value, bounds[0], bounds[1])
+        self.conn.execute(
+            "INSERT INTO friction (house_a, house_b, value) VALUES (?, ?, ?)"
+            " ON CONFLICT(house_a, house_b) DO UPDATE SET value = excluded.value",
+            (low, high, value),
+        )
+        return value
+
+    def _friction_delta(self, row_a, row_b, marker):
+        """One season's movement on one border, from rules/friction.json."""
+        spec = self.rules.friction["per_season"]
+
+        # Friction is pressure that has not yet found an outlet. A pair already
+        # standing in a grievance has found one, so their border holds where it
+        # is until the quarrel is settled — otherwise the same two houses fall
+        # out again every ten seasons and the map fills with recurring feuds.
+        if marker in (GRIEVANCE, HOSTILE):
+            return spec["open_quarrel"]["value"]
+
+        tags = {row_a["tag"], row_b["tag"]}
+        delta = 0
+        moved = False
+
+        if tags == {"Progressive", "Conservative"}:
+            delta += spec["opposed_tags"]["value"]
+            moved = True
+        if row_a["enclosed"] or row_b["enclosed"]:
+            delta += spec["either_enclosed"]["value"]
+            moved = True
+        if row_a["ambition"] >= 7 or row_b["ambition"] >= 7:
+            delta += spec["high_ambition"]["value"]
+            moved = True
+        if marker in (FRIENDLY, COMPACT, KIN):
+            delta += spec["bound"]["value"]
+            moved = True
+
+        if not moved:
+            delta += spec["decay"]["value"]
+        return delta
+
+    def _grievance_template(self, row_a, row_b, rng):
+        templates = self.rules.friction["grievances"]
+        key = "|".join(sorted((row_a["tag"] or "Mixed", row_b["tag"] or "Mixed")))
+        options = templates.get(key) or templates["default"]
+        return rng.choice(options, purpose="friction.grievance")
+
+    def _lapse_grievances(self, season):
+        """A grievance nobody has pressed for long enough stops being one.
+
+        Without this the map's stock of open Sig− relations only grows: every
+        flashpoint adds one and only a dispute, reconciliation or cession ever
+        removes one, so after a hundred seasons every house has someone to
+        quarrel with at all times. Lapsing is not settlement — the marker goes to
+        resolved, not to friendship — it is the quarrel ceasing to be worth the
+        trouble.
+        """
+        window = self.rules.friction["grievance_lapse"]["seasons"]
+        for row in self.conn.execute(
+            "SELECT id, house_a, house_b, event_id FROM relations WHERE marker = ?",
+            (GRIEVANCE,),
+        ).fetchall():
+            made = self._relation_season(row["house_a"], row["house_b"])
+            if made is not None and (season - made) >= window:
+                self.conn.execute(
+                    "UPDATE relations SET marker = ?, event_text = ? WHERE id = ?",
+                    (RESOLVED, "lapsed: no longer pressed", row["id"]),
+                )
+
+    def _run_friction(self, season, rng):
+        """Move every border, then let the hottest ones break (rules 0.6)."""
+        self._lapse_grievances(season)
+        spec = self.rules.friction["flashpoint"]
+        profiles = {}
+
+        for house_a, house_b in self.bordering_pairs():
+            for house in (house_a, house_b):
+                if house not in profiles:
+                    profiles[house] = self.house_row(house)
+            row_a, row_b = profiles[house_a], profiles[house_b]
+            marker = self.relation_marker(house_a, house_b)
+
+            value = self.friction_between(house_a, house_b)
+            value = self._set_friction(
+                house_a, house_b, value + self._friction_delta(row_a, row_b, marker)
+            )
+
+            if value < spec["threshold"]:
+                continue
+            # A border at the threshold is ready to break, not obliged to.
+            if rng.die(6, purpose=f"friction.flashpoint.{house_a}|{house_b}") >= spec["succeeds_on"]:
+                if marker not in (KIN, COMPACT):
+                    grievance = self._grievance_template(row_a, row_b, rng)
+                    band = self.band_for(self.personal_year(house_a))
+                    event_id = self.record(
+                        "relational",
+                        f"{row_a['peerage']} and {row_b['peerage']} fall out",
+                        [house_a, house_b],
+                        season,
+                        band=band,
+                        line=f"Season {season} · {row_a['peerage']} and {row_b['peerage']} "
+                             f"fall out over {grievance}.",
+                        delta={"marker": GRIEVANCE, "cause": "friction", "grievance": grievance},
+                    )
+                    self.set_relation(house_a, house_b, GRIEVANCE, event_id, grievance)
+            self._set_friction(house_a, house_b, spec["resets_to"])
+
     # ---------------------------------------------------------- action loop --
 
     def legal_actions(self, house):
@@ -1657,6 +1809,32 @@ class World:
         fed_id = rng.choice(targets, purpose=f"expand.target.{house}")
         name = self._riding_name(fed_id)
 
+        # Contested expansion (rules 0.6): if another house already reached for
+        # this riding this season, the two roll off. The loser walks away with a
+        # grievance, which is how a land rush turns into a quarrel.
+        rival = self._expansion_claims.get(fed_id)
+        if rival is not None and rival["house"] != house:
+            mine = rng.two_d6(purpose=f"contest.{house}.{fed_id}")
+            if mine <= rival["roll"]:
+                self._grievance_from_contest(house, rival["house"], name, season, band)
+                self.set_stats(house, capital=-5)
+                return {"action": "Expand", "success": False, "note": "lost the contest",
+                        "riding": name, "to": rival["house"]}
+            # We outbid the house that took it: it loses the riding again.
+            self._grievance_from_contest(rival["house"], house, name, season, band)
+            self.conn.execute(
+                "UPDATE holdings SET released_event_id = acquired_event_id"
+                " WHERE house = ? AND fed_id = ? AND released_event_id IS NULL",
+                (rival["house"], fed_id),
+            )
+            self._renumber(rival["house"])
+            self._expansion_claims[fed_id] = {"house": house, "roll": mine}
+        else:
+            self._expansion_claims[fed_id] = {
+                "house": house,
+                "roll": rng.two_d6(purpose=f"contest.{house}.{fed_id}"),
+            }
+
         event_id = self.record(
             "expansion",
             f"{row['peerage']} takes {name}",
@@ -1679,6 +1857,21 @@ class World:
         )
         self.set_stats(house, capital=-15)
         return {"action": "Expand", "success": True, "riding": name}
+
+    def _grievance_from_contest(self, loser, winner, riding, season, band):
+        """The house that lost a contested riding carries the grievance."""
+        if self.relation_marker(loser, winner) in (KIN, COMPACT):
+            return
+        event_id = self.record(
+            "relational",
+            f"{self.house_row(loser)['peerage']} loses {riding} to"
+            f" {self.house_row(winner)['peerage']}",
+            [loser, winner],
+            season,
+            band=band,
+            delta={"marker": GRIEVANCE, "cause": "contested expansion", "riding": riding},
+        )
+        self.set_relation(loser, winner, GRIEVANCE, event_id, f"contested claim to {riding}")
 
     def _do_invest(self, house, season, rng, success, band, roll):
         self.set_stats(house, capital=8)
@@ -1786,7 +1979,28 @@ class World:
         # Prefer a house we already know: correspondence deepens before it spreads.
         known = [o for o in reachable if self.relation_marker(house, o) == ACQUAINTED]
         other = self._pick(rng, known or reachable, f"correspond.target.{house}")
-        if other is None or not success:
+        if other is None:
+            return {"action": "Correspond", "success": False}
+
+        # A natural 2 is the letter that gives offence (rules 0.6). §7 gave
+        # Correspond no failure effect at all, which made it a free action.
+        fumble = self.rules.friction["correspond_fumble"]
+        if roll == fumble["natural"] and self.relation_marker(house, other) not in (KIN, COMPACT):
+            other_row = self.house_row(other)
+            event_id = self.record(
+                "relational",
+                f"{row['peerage']} gives offence to {other_row['peerage']}",
+                [house, other],
+                season,
+                band=band,
+                line=f"Season {season} · a letter from {row['peerage']} gives offence to "
+                     f"{other_row['peerage']}.",
+                delta={"marker": GRIEVANCE, "cause": "correspondence"},
+            )
+            self.set_relation(house, other, GRIEVANCE, event_id, "a letter that gave offence")
+            return {"action": "Correspond", "success": False, "with": other, "fumble": True}
+
+        if not success:
             return {"action": "Correspond", "success": False}
 
         current = self.relation_marker(house, other)
@@ -1889,7 +2103,8 @@ class World:
         self.set_stats(other, cohesion=-10)
         # §7: the grievance either resolves or hardens into open hostility, which
         # is what makes a Challenge legal later.
-        marker = HOSTILE if rng.chance(0.5, purpose=f"dispute.hardens.{house}") else RESOLVED
+        hardens = self.rules.friction["dispute_outcome"]["hardens_probability"]
+        marker = HOSTILE if rng.chance(hardens, purpose=f"dispute.hardens.{house}") else RESOLVED
         event_id = self.record(
             "relational",
             f"{row['peerage']} wins a dispute with {other_row['peerage']}",
@@ -1945,7 +2160,7 @@ class World:
         total = (roll if roll is not None else rng.two_d6(f"challenge.roll.{house}")) + modifier
         if total < self.actions["Challenge (11b)"].target:
             self.set_stats(house, ambition=-2, influence=-5)
-            self.record(
+            event_id = self.record(
                 "challenge",
                 f"{row['peerage']} fails against {other_row['peerage']}",
                 [house, other],
@@ -1954,6 +2169,12 @@ class World:
                 line=f"Season {season} · {row['peerage']} challenges "
                      f"{other_row['peerage']} and fails.",
                 delta={"outcome": "failed", "total": total},
+            )
+            # The attempt spends the hostility (rules 0.6): the quarrel stands,
+            # but the moment for arms has passed.
+            self.set_relation(
+                house, other, self.rules.friction["challenge_outcome"]["failure_marker"],
+                event_id, "a challenge that failed",
             )
             return {"action": "Challenge (11b)", "success": False, "with": other}
 
@@ -2362,7 +2583,13 @@ class World:
         # 1. Clocks and ages.
         self._age_everyone(season)
 
+        # Borders warm or cool before anyone acts, so a grievance struck this
+        # season is available to the houses that act after it (rules 0.6).
+        self._turn_cache = {}
+        self._run_friction(season, rng)
+
         outcomes = []
+        self._expansion_claims = {}
         for row in self.active_houses():
             house = row["house"]
             self._turn_cache = {}
@@ -2381,6 +2608,17 @@ class World:
             outcome = self.take_action(house, season, rng)
             if outcome:
                 outcomes.append(outcome)
+                self.conn.execute(
+                    "INSERT INTO house_actions (season_no, house, action, success, detail)"
+                    " VALUES (?, ?, ?, ?, ?)",
+                    (
+                        season,
+                        house,
+                        outcome.get("action", "—"),
+                        1 if outcome.get("success") else 0,
+                        outcome.get("riding") or outcome.get("with") or outcome.get("note"),
+                    ),
+                )
 
             # 6. Objectives, then the §7c debt check.
             self._check_objectives(house, season, rng)
@@ -2412,7 +2650,24 @@ class World:
             return None
         return self.found_house(season, rng=rng)
 
+    def _snapshot(self, season):
+        """Every living house's stats, kept so the site can draw a history the
+        live tables cannot: house_stats holds only the present."""
+        if season != 1 and season % SNAPSHOT_EVERY != 0:
+            return
+        self.conn.execute(
+            "INSERT OR REPLACE INTO stat_snapshots"
+            " (season_no, house, capital, influence, cohesion, ambition, holdings)"
+            " SELECT ?, s.house, s.capital, s.influence, s.cohesion, s.ambition,"
+            "        (SELECT COUNT(*) FROM holdings h WHERE h.house = s.house"
+            "         AND h.released_event_id IS NULL)"
+            " FROM house_stats s JOIN houses ho ON ho.house = s.house"
+            " WHERE ho.status = 'active'",
+            (season,),
+        )
+
     def _write_season(self, season, outcomes, founded):
+        self._snapshot(season)
         houses_after = self.conn.execute(
             "SELECT COUNT(*) AS n FROM houses WHERE status = 'active'"
         ).fetchone()["n"]

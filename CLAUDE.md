@@ -25,6 +25,17 @@ Read this fully before doing anything. Sessions in this repo do not share memory
 8. The game runs more than one era-cohort of Section 10 events in parallel (see scenarios/legacy/RECONSTRUCTION.md). Never collapse the climate ledgers into one number; always state which era-cohort a climate value belongs to.
 9. A turn narrative may use house detail only if it is in hoc.db (house_blocks, holders, holdings, relations, events). Detail supplied in a directive that is not yet in the database must be added to scenarios/legacy/seed/house_blocks.csv in a reconstruction commit in the same PR before the turn is applied.
 
+## Autoplay
+
+The live game is the **new** scenario, played by the engine. `scenarios/current.txt` says so and `hoc.db` holds it.
+
+- Seasons are run only through `python -m hoc sim run N`. Never advance the game by editing the database, and never hand-write a season file — `scenarios/new/seasons/NNNN.json` is written by the engine as its audit trail, and `scripts/rebuild.py` replays the game from the world seed to check it.
+- `python -m hoc sim status` says where the game stands. `python -m hoc sim run N --stop-on removal,challenge,major,marquis` stops early on anything worth the director's attention.
+- Hand-written turn files remain available for director interventions — a grant, a correction, a scripted event. Apply one **between** seasons with `python -m hoc apply <turnfile>`, never in the middle of a run, and commit it with the database as any turn is.
+- Tuning the game means editing a table in `rules/` and recording it in `rules/CHANGELOG.md` with the metric that motivated it. It never means editing `hoc/sim.py`.
+- Never edit `hoc.db` by hand. It is derived: the seed CSVs plus the season logs (and any turn files) are the record, and the database is what they produce.
+- The reconstructed 2026 playthrough is frozen in the **legacy** scenario and published at `outputs/site/archive/`, rebuilt on every export. `python -m hoc scenario use legacy` switches back to it; the turn procedure below is about that game.
+
 ## Conventions
 - Canadian English spelling throughout (colour, honour, centre, defence).
 - Narrative for a turn is about 500 words, rich prose, not bullet lists; the runner warns above 550 words and refuses above 600.
@@ -57,7 +68,7 @@ Read this fully before doing anything. Sessions in this repo do not share memory
 - Do not add dependencies beyond openpyxl, shapely and pytest without noting it in the status block.
 
 ## Turn procedure
-Run a game turn in exactly these steps. The format of a turn file is in docs/TURN_FILE.md.
+This is the legacy scenario's procedure, and the procedure for a director intervention in the live game. Run a game turn in exactly these steps. The format of a turn file is in docs/TURN_FILE.md.
 
 1. **Read the state first.** Run `python -m hoc status`, then read `outputs/dump/state.json` for the houses the directive touches — holder, generation, clock, holdings, colours. Write nothing until you have.
 2. **Check any expansion before writing it.** Run `python -m hoc check <house> <riding>`. If it fails, pick another riding that the data supports, or stop and report the problem to the director. Never write narrative for a move that has not passed the check. Water-only adjacency passes with a warning — surface that warning in your status block, never bury it.

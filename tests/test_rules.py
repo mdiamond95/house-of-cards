@@ -8,7 +8,7 @@ import importlib.util
 
 import pytest
 
-from hoc import rules
+from hoc import rules, scenario
 from hoc.rules import RuleError
 
 ROOT = __import__("pathlib").Path(__file__).resolve().parent.parent
@@ -23,7 +23,7 @@ def _load_seed_module():
 
 @pytest.fixture
 def conn(tmp_path):
-    connection = _load_seed_module().build(tmp_path / "hoc.db")
+    connection = _load_seed_module().build(tmp_path / "hoc.db", seed=scenario.seed_dir("legacy"))
     yield connection
     connection.close()
 

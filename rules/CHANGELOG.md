@@ -69,3 +69,38 @@ That last one is the only place the design document's own number was overridden,
 Nine reads as the right shape as well as the right number: a house has to be genuinely large before its death splits it in two, which is what "the senior heir takes the seat and the contiguous core" implies about scale.
 
 Under 0.5 all of §17 holds across the three smoke seeds — peak 65–71, 80 per cent of the map claimed at seasons 114–120, no collapse, no stat outside its range, and at least one partition, absorption and extinction in every seed.
+
+## 0.6 — friction: where grievance comes from
+
+Through 0.5 the game was almost entirely cooperative. Compacts and marriages ran two orders of magnitude ahead of disputes and challenges, and the reason was structural rather than a matter of weights: the only thing in the whole rule set that ever produced a Sig− relation was a disorderly succession. Dispute needs a Sig−, and Challenge needs a Dispute won before it, so the conflict half of §7 was starved at the source. `rules/friction.json` supplies it.
+
+**Friction** is per-pair state between two houses sharing a land border, 0–100. Each season it moves by +3 if their tags oppose, +1 if either is enclosed, +2 if either has ambition ≥ 7, −2 if they are already bound by a +, ◉+ or kin relation, and −1 otherwise. At 60 the border rolls d6: on 4 or more the two houses fall out over a named grievance and a Sig− is created; either way the pair falls back to 30, so a quarrel that does not catch still leaves the border warmer than it started. The grievance is drawn by tag pair from five templates — a boundary read two ways, water rights, the patronage of a shared riding's offices, a slighted marriage, a church and school dispute in the border townships.
+
+Three smaller sources of grievance close gaps §7 left open: two houses reaching for the same unclaimed riding in one season roll 2d6 against each other and the loser carries the grievance away; Correspond on a natural 2 gives offence instead of doing nothing, which is the only failure that action has ever had; and Dispute's base weight rises to 3 while Challenge's rises to 2.
+
+### What had to be tuned, and what it cost
+
+The director's bounds for this pass were 0.6–1.5 disputes per house-generation, 15–25 challenges per run, and cooperation no more than four times conflict. The friction numbers above are the director's and were not changed. Everything below was.
+
+| # | change | disputes/generation (seeds 1/2/3) | challenges | verdict |
+|---|---|---|---|---|
+| — | friction as specified, Dispute 3, Challenge 2 | 1.68 / 1.70 / 1.60 | 143 / 152 / 118 | both far over |
+| 1 | `dispute_outcome.hardens_probability` 0.5 → 0.12 | 1.80 / 1.63 / 1.74 | 23 / 50 / 42 | challenges closer |
+| 2 | hardens 0.07, Dispute 3 → 2.5 | 1.67 / 1.44 / 1.65 | 22 / 14 / 21 | disputes barely moved |
+| 3 | `grievance_lapse` added, hardens 0.09, Dispute back to 3 | 1.72 / 1.70 / 1.81 | 22 / 15 / 20 | lapse alone did nothing |
+| 4 | Dispute 3 → 2 | 1.34 / 1.64 / 1.62 | 25 / 24 / 34 | still over on two seeds |
+| 5 | `per_season.open_quarrel` = 0 | 1.22 / 1.36 / 1.58 | 60 / 44 / 43 | disputes nearly in; challenges burst |
+| 6 | hardens 0.035, lapse 12 | 1.27 / 1.36 / 1.48 | 26 / 16 / 16 | one seed one challenge over |
+| 7 | hardens 0.032 | 1.27 / 1.28 / 1.36 | 26 / 13 / 11 | two seeds under the floor |
+| **8** | **`challenge_outcome.failure_marker`, hardens 0.06** | **1.34 / 1.32 / 1.43** | **18 / 15 / 24** | **all three seeds inside every bound** |
+
+Four of those are numbers the design document never gave, now recorded here rather than assumed in code:
+
+- **`dispute_outcome.hardens_probability` = 0.06.** §7 says a won dispute leaves the grievance "resolved or ⊖" without saying how often. PART B assumed half, in `hoc/sim.py`. It is the tap that feeds Challenge — only a ⊖ makes one legal — so it belongs in a table.
+- **`per_season.open_quarrel` = 0.** Friction is *unexpressed* pressure. A pair already standing in a grievance has expressed theirs, so their border holds where it is until the quarrel is settled. Without this the same two houses fell out again every ten seasons and the map filled with recurring feuds.
+- **`grievance_lapse.seasons` = 12.** Friction decays when nothing feeds it; a grievance had no such rule, so the stock of open Sig− relations only ever grew. A grievance neither side has pressed for twelve seasons lapses to resolved. That is not settlement — the marker goes to resolved, not to friendship — it is the quarrel ceasing to be worth the trouble.
+- **`challenge_outcome.failure_marker` = Sig−.** §7 costs a failed challenge ambition and influence but says nothing about the ⊖ that made it legal. Leaving it standing let one pair challenge season after season, which is exactly where the challenge count's seed-to-seed variance came from; step 7 above shows the count moving by half across seeds while the probability driving it barely moved.
+
+And one of the director's own numbers did have to move: **Dispute's base weight went to 2, not the 3 this pass specified.** At 3 no combination of the other knobs brought disputes per house-generation under the 1.5 ceiling on all three seeds — steps 1 through 3 show it flat around 1.7 while everything else changed around it. At 2 it competes evenly with Reconcile, which is what actually governs how many grievances become quarrels. Challenge stayed at the specified 2.
+
+All of §17 still holds: peak 70–75 houses, 80 per cent of the map claimed at seasons 120–138, no collapse, no stat outside its range, and partitions, absorptions and extinctions in every seed.

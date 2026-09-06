@@ -1,7 +1,7 @@
 {
   "name": "new",
-  "seed": null,
-  "started_season": null,
+  "seed": 1867,
+  "started_season": 1,
   "kind": "autoplay",
   "note": "The live autoplay game. seed and started_season are written by `python -m hoc sim new --seed N`, which founds the first house in season 1; until then the scenario is empty and every seed CSV holds only its header row."
 }
