@@ -1,8 +1,9 @@
 import csv
-import re
 from pathlib import Path
 
 import pytest
+
+from hoc.names import name_key
 
 ROOT = Path(__file__).resolve().parent.parent
 REFERENCE = ROOT / "data" / "reference"
@@ -12,13 +13,6 @@ SEED = ROOT / "data" / "seed"
 def load(path):
     with open(path, newline="", encoding="utf-8") as f:
         return list(csv.DictReader(f))
-
-
-def name_key(name):
-    key = name.replace("—", "-").replace("–", "-")
-    key = key.replace("’", "'").replace("‘", "'")
-    key = re.sub(r"\s+", " ", key).strip()
-    return key.casefold()
 
 
 def test_ridings_shape():
