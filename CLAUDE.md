@@ -4,7 +4,7 @@ Read this fully before doing anything. Sessions in this repo do not share memory
 
 ## What the game is
 - Alternate 1867 Canadian Confederation. Fictional noble houses hold peerages over real federal ridings (343 ridings, 2023 Representation Order).
-- The game director (Mark, Edmonton AB) issues one-line directives. Claude writes narrative and executes the mechanics.
+- The game director issues one-line directives. Claude writes narrative and executes the mechanics.
 - At migration baseline: 33 active houses, 2 historically removed houses, roughly 145 ridings claimed. Societal climate most recently at −1 Significant Conservative (following the Regulation 17 / Ontario Bilingual Schools Crisis event). Narrative era roughly 1867–1918 on house personal clocks.
 
 ## Source of truth
