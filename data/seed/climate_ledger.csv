@@ -1,0 +1,17 @@
+era_cohort,seq,event,magnitude,tag,cumulative_after,source
+later-era,1,La Grande Guerre (WWI),Major,Global,0,handoff 2026-04-25
+later-era,2,La Grippe Espagnole (Spanish Flu),Significant,Global,+1,handoff 2026-04-25
+later-era,3,The Persons Case,Significant,Progressive,+3,handoff 2026-04-25
+later-era,4,La Grande Contraction (Long Contraction),Major,Conservative,-2,metrics 2026-05-04
+later-era,5,La Fondation du Commonwealth Coopératif (CCF Founding),Major,Progressive,+1,metrics 2026-05-04
+later-era,6,NOT YET IDENTIFIED (trajectory shows +1 → +3),,,+3,metrics 2026-05-04 trajectory only
+later-era,7,Internment,Major,regressive,0,metrics 2026-05-04
+founding-era,1,Confederation Extension,Major,Mixed,0,Regulation 17 entry 2026-05-04
+founding-era,2,CPR Strike,Significant,Mixed,0,Regulation 17 entry 2026-05-04
+founding-era,3,Smallpox,Significant,Progressive,+1,Regulation 17 entry 2026-05-04
+founding-era,4,Chinese Immigration Act,Significant,Conservative,-1,Regulation 17 entry 2026-05-04
+founding-era,5,North-West Resistance,Major,Mixed-Conservative,-1,Regulation 17 entry 2026-05-04
+founding-era,6,Boer War,Major,Conservative,-1,Regulation 17 entry 2026-05-04
+founding-era,7,Regulation 17 / Ontario Bilingual Schools Crisis 1912-27,Major,Conservative,-1,Regulation 17 entry 2026-05-04 (inserted between Boer War and Komagata Maru)
+founding-era,8,Halifax Explosion,Major,Mixed,0,Regulation 17 entry 2026-05-04
+founding-era,9,Komagata Maru,Major,Conservative,-1,Regulation 17 entry 2026-05-04

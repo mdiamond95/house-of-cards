@@ -1,0 +1,36 @@
+house,peerage,rank,status,principal_seat,primary_hex,secondary_hex,riding_count,notes
+Whitcombe,Viscount Whitcombe of Muskoka,Viscount,active,Parry Sound—Muskoka,#2E5E3A,#4A7A55,10,
+Fitzroy-Crane,Marchioness Fitzroy-Crane of Saanich,Marchioness,active,Saanich—Gulf Islands,#8E4585,#B57FB0,21,
+Richard-Arseneau,Marquis Richard-Arseneau de la Chaleur,Marquis,active,Acadie—Bathurst,#2D6E6B,#5E9490,17,
+MacNeil,Viscount MacNeil of Boisdale,Viscount,active,Sydney—Glace Bay,#6B2E2E,#9C6B6B,6,
+Pereira,Viscount Pereira of Mount Royal,Viscount,active,Ville-Marie—Le Sud-Ouest—Île-des-Sœurs,#283969,#5566A0,6,
+Letendre dit Batoche,Baron Letendre dit Batoche de la Rivière-Rouge,Baron,active,St. Boniface—St. Vital,#7A5A1C,,1,secondary exists per director but never mapped
+Wallace,Viscount Wallace of Rosedale,Viscount,active,Toronto Centre,#A44A1F,#C27550,7,
+Sinclair-McKay,Countess Sinclair-McKay of Kinookimaw,Countess,active,Regina—Wascana,#3A6B8F,#6693B8,5,
+Tessier,Baron Tessier de Saint-Jérôme,Baron,active,Laurentides—Labelle,#4B3A6B,#5D4270,4,
+Stanton-Greville,Viscount Stanton-Greville of Adolphustown,Viscount,active,Bay of Quinte,#8B1A1A,#B65757,7,
+Galbraith,Baron Galbraith of Oxford,Baron,active,Oxford,#7A8C3D,,1,secondary exists per director but never mapped
+Garland,Viscount Garland of Avalon,Viscount,active,Avalon,#4A6B5E,#6B8C7A,6,
+MacDonald,Viscount MacDonald of the Prince's Island,Viscount,active,Cardigan,#3F5A6B,#5F7A8B,7,
+Blaikie,Baron Blaikie of Westmount,Baron,active,Notre-Dame-de-Grâce—Westmount,#2C3A4A,,1,secondary exists per director but never mapped
+Delany,Viscount Delany of Chatham,Viscount,active,Chatham-Kent—Leamington,#6B3416,#C6A664,4,
+Létourneau,Baron Létourneau de Gatineau,Baron,active,Hull—Aylmer,#4A6B3E,,1,secondary exists per director but never mapped
+Lockhart,Baron Lockhart of Waterton,Baron,active,Foothills,#7A6144,#9C8766,3,
+Ross,Baron Ross of Assiniboia,Baron,active,Selkirk—Interlake—Eastman,#5B7F8A,#7A9DAB,4,
+Hall,Earl Hall of Preston,Earl,active,Sackville—Bedford—Preston,#5C2E3D,#7A4D5A,5,
+Wilmot-Hazen,Baron Wilmot-Hazen of Saint John,Baron,active,Saint John—St. Croix,#4A3828,#A88860,2,
+Ashworth,Baron Ashworth of Winnipeg,Baron,active,Winnipeg Centre,#A68554,#C9AC81,3,
+Polkinghorne,Baron Polkinghorne of Kootenay,Baron,active,Columbia—Kootenay—Southern Rockies,#2A4F5F,#5A7F8F,3,
+Macleod,Viscount Macleod of Bow Valley,Viscount,active,Bow River,#5C4B2E,#A89169,4,
+Wilson,Baroness Wilson of Rockcliffe,Baroness,active,Ottawa—Vanier—Gloucester,#7B3F7B,#B07AB0,1,secondary from old Section 4 registry; not yet on map
+Cardinal,Viscount Cardinal of Norway House,Viscount,active,Churchill—Keewatinook Aski,#2D5F5F,#5C8585,2,
+Hryhoryshyn,Viscount Hryhoryshyn of Star,Viscount,active,Lakeland,#C8B600,#E8D620,2,
+Klassen-Reimer,Baron Klassen-Reimer of Winkler,Baron,active,Portage—Lisgar,#4A6B47,#6A8B67,2,
+Akatsiak,Viscount Akatsiak of Mittimatalik,Viscount,active,Nunavut,#4FA8C8,#7CC8DC,2,
+Anand,Baron Anand of Don Valley,Baron,active,Don Valley North,#C8501F,#E8703F,2,
+Calabrese,Baron Calabrese of Saint-Léonard,Baron,active,Saint-Léonard—Saint-Michel,#2D7A4F,,1,secondary exists per director but never mapped
+Trondek,Baron Trondek of Dawson,Baron,active,Yukon,#7A6332,,1,secondary exists per director but never mapped
+Boyer-Lavallée,Baron Boyer-Lavallée of Carlton Trail,Baron,active,Carlton Trail—Eagle Creek,#A04A2D,,1,secondary exists per director but never mapped
+FitzWilliam-Macklem,Baron FitzWilliam-Macklem of Lincoln,Baron,active,Niagara West,#5D2A1F,,1,secondary exists per director but never mapped
+Tupper-Blair,,,removed,,,,0,ridings transferred to Hall of Preston; navy palette retired with the house
+Kilmartin,Baron Kilmartin of Sudbury,Baron,removed,Sudbury,#5A4B3F,,0,retired; Sudbury now held by Whitcombe of Muskoka
