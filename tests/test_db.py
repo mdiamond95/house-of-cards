@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from hoc import db
+from hoc import db, scenario
 
 ROOT = Path(__file__).resolve().parent.parent
 SEED = ROOT / "scenarios" / "legacy" / "seed"
@@ -21,10 +21,14 @@ def _load_seed_module():
 
 @pytest.fixture(scope="module")
 def conn(tmp_path_factory):
-    """Rebuild the database from the seed into a temporary path."""
+    """Rebuild the reconstructed game into a temporary path.
+
+    The scenario is named rather than left to default: hoc.db holds the live
+    autoplay game now, and this test is about the legacy one.
+    """
     load_seed = _load_seed_module()
     db_path = tmp_path_factory.mktemp("db") / "hoc.db"
-    connection = load_seed.build(db_path)
+    connection = load_seed.build(db_path, seed=scenario.seed_dir("legacy"))
     yield connection
     connection.close()
 

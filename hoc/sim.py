@@ -45,7 +45,7 @@ __all__ = ["SimError", "LoggingRandom", "World", "RULES_VERSION"]
 # The rules/CHANGELOG.md version these seasons are played under (§11): a season
 # keeps the version it was played under so a later rules change never silently
 # reinterprets it.
-RULES_VERSION = "0.4"
+RULES_VERSION = "0.6"
 
 STAT_RANGE = (0, 100)
 AMBITION_RANGE = (0, 10)

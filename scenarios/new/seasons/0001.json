@@ -1,0 +1,80 @@
+{
+ "season": 1,
+ "seed": 1867,
+ "rules_version": "0.6",
+ "draws": [
+  {
+   "purpose": "founding.community",
+   "result": "Irish Catholic"
+  },
+  {
+   "purpose": "founding.tag",
+   "result": "Mixed"
+  },
+  {
+   "purpose": "founding.rank",
+   "result": "Baron"
+  },
+  {
+   "purpose": "unattributed",
+   "result": "f"
+  },
+  {
+   "purpose": "unattributed",
+   "result": "Cashin"
+  },
+  {
+   "purpose": "unattributed",
+   "result": "Mary"
+  },
+  {
+   "purpose": "unattributed",
+   "result": "Dundas"
+  },
+  {
+   "purpose": "founding.colour",
+   "result": 55
+  },
+  {
+   "purpose": "founding.colour",
+   "result": 30
+  },
+  {
+   "purpose": "founding.capital",
+   "result": 8
+  },
+  {
+   "purpose": "founding.influence",
+   "result": 8
+  },
+  {
+   "purpose": "founding.cohesion",
+   "result": 14
+  },
+  {
+   "purpose": "founding.ambition",
+   "result": 3
+  },
+  {
+   "purpose": "founding.holder_age",
+   "result": 17
+  },
+  {
+   "purpose": "founding.objective",
+   "result": "Secure succession"
+  },
+  {
+   "purpose": "founding.objective",
+   "result": "Defend the seat"
+  }
+ ],
+ "actions": [],
+ "founded": "Cashin",
+ "chronicle": [
+  "Season 1 · Baron Cashin of Dundas is created, seated at Kingston and the Islands."
+ ],
+ "houses_after": 1,
+ "ridings_after": 1,
+ "kind": "initial",
+ "seat": "Kingston and the Islands"
+}

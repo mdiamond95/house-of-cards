@@ -67,7 +67,7 @@
   });
 
   var timeline = null;
-  var UNCLAIMED = '#e8e4dc';
+  var UNCLAIMED = '#E5E5E5';
 
   function ownersAt(season) {
     var owners = {};

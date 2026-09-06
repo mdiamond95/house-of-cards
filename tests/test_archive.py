@@ -101,3 +101,29 @@ def test_archive_mode_does_not_leak_into_the_next_render(tmp_path):
 
     assert site.ARCHIVE_BANNER not in index
     assert "← The live game" not in index
+
+
+def test_switching_scenarios_sweeps_the_previous_games_house_pages(tmp_path):
+    """Regression: rendering a different game into the same directory used to
+    leave the old game's houses standing in the live site — readable, linkable
+    and wrong. Only the archive is allowed to hold the old world."""
+    legacy = load_seed.build(tmp_path / "legacy.db", seed=scenario.seed_dir("legacy"))
+    site.write_site(legacy, out_dir=tmp_path)
+    houses_dir = tmp_path / site.SITE_DIRNAME / "houses"
+    assert len(list(houses_dir.glob("*.html"))) > 30
+    legacy.close()
+
+    from hoc import sim
+
+    fresh = load_seed.build(tmp_path / "fresh.db", seed=scenario.seed_dir("new"))
+    world = sim.World(fresh, world_seed=1867)
+    world.initialise(1867)
+    site.write_site(fresh, out_dir=tmp_path)
+
+    remaining = {path.stem for path in houses_dir.glob("*.html")}
+    expected = {
+        site.slugify(row["house"])
+        for row in fresh.execute("SELECT house FROM houses")
+    }
+    assert remaining == expected
+    assert len(remaining) == 1

@@ -517,7 +517,7 @@ MAP_JS = """(function () {
   });
 
   var timeline = null;
-  var UNCLAIMED = '#e8e4dc';
+  var UNCLAIMED = '__UNCLAIMED_FILL__';
 
   function ownersAt(season) {
     var owners = {};
@@ -1396,7 +1396,7 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
         written.append(path)
 
     write(site_dir / "style.css", STYLE)
-    write(site_dir / "map.js", MAP_JS)
+    write(site_dir / "map.js", MAP_JS.replace("__UNCLAIMED_FILL__", map_export.UNCLAIMED_FILL))
     write(site_dir / "jump.js", JUMP_JS)
 
     # The scrubber reads the whole history from one file; nothing else does.
@@ -1415,6 +1415,14 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
 
     for house_row in _houses(conn):
         write(houses_dir / f"{slugs[house_row['house']]}.html", _house_page(conn, house_row, slugs))
+
+    # Sweep pages belonging to no house in this database. Without this, switching
+    # the active scenario leaves the previous game's houses standing in the live
+    # site — readable, linkable and wrong.
+    current = {f"{slug}.html" for slug in slugs.values()}
+    for stale in houses_dir.glob("*.html"):
+        if stale.name not in current:
+            stale.unlink()
 
     # GitHub Pages would otherwise run the output through Jekyll.
     write(site_dir / ".nojekyll", "")

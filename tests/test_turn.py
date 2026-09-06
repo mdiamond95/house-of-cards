@@ -11,6 +11,8 @@ from pathlib import Path
 
 import pytest
 
+from hoc import scenario
+
 from hoc.export import dump, map as map_export, workbook
 from hoc.turn import TurnError, apply_turn
 
@@ -26,7 +28,7 @@ def _load_seed_module():
 
 @pytest.fixture
 def conn(tmp_path):
-    connection = _load_seed_module().build(tmp_path / "hoc.db")
+    connection = _load_seed_module().build(tmp_path / "hoc.db", seed=scenario.seed_dir("legacy"))
     yield connection
     connection.close()
 

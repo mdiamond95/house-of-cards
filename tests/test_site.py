@@ -6,6 +6,8 @@ from pathlib import Path
 
 import pytest
 
+from hoc import scenario
+
 from hoc.export import site
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -26,7 +28,9 @@ def built(tmp_path_factory):
     """Build the site from a database rebuilt from the seed plus every turn."""
     from hoc.turn import apply_turn
 
-    conn = _load_seed_module().build(tmp_path_factory.mktemp("db") / "hoc.db")
+    conn = _load_seed_module().build(
+        tmp_path_factory.mktemp("db") / "hoc.db", seed=scenario.seed_dir("legacy")
+    )
     for path in sorted((ROOT / "scenarios" / "legacy" / "turns").glob("[0-9][0-9][0-9][0-9]_*.json")):
         apply_turn(conn, path)
 
@@ -137,7 +141,7 @@ def test_output_is_deterministic(built, tmp_path):
     shows only what the turn changed."""
     from hoc.turn import apply_turn
 
-    conn = _load_seed_module().build(tmp_path / "hoc.db")
+    conn = _load_seed_module().build(tmp_path / "hoc.db", seed=scenario.seed_dir("legacy"))
     for path in sorted((ROOT / "scenarios" / "legacy" / "turns").glob("[0-9][0-9][0-9][0-9]_*.json")):
         apply_turn(conn, path)
     site.write_site(conn, out_dir=tmp_path / "out")
