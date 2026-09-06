@@ -38,3 +38,9 @@ Known conflicts (recorded, not resolved):
 Design consequence for Phase 3: the `events` table needs an `era_cohort` column, and climate must be stored per era-cohort, not as a single scalar. Personal-clock placement of an event is per house and may be blank.
 
 Recovery queue (holder names still missing): Polkinghorne, Ashworth, Akatsiak, Hryhoryshyn, Klassen-Reimer, FitzWilliam-Macklem, Cardinal; confirm Wilson. Secondary colours for eight single-riding houses remain director-supplied only.
+
+## Decisions — 5 September 2026 (made by Claude on the director's delegated authority)
+- Whitcombe founder is Cedric Whitcombe; "Edward Joshua" from the 2026-05-04 session is recorded as a variant and not used.
+- Tupper-Blair founder is Gordon Tupper-Blair; "Sir Charles" and heir "Hartley" from the 2026-05-04 session are recorded as variants and not used.
+- Generation state follows the 2026-04-27 cascade. The 2026-05-04 tally (21 G1, 6 G2, 1 G3) is treated as a founding-era-perspective statement, not current state.
+Rationale: the 25–27 April sources were written as deliberate handoff and reconciliation text; the 4 May session's prose had degraded and is the weaker witness where they disagree.
