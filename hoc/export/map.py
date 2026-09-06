@@ -28,7 +28,10 @@ MAX_BYTES = 3 * 1024 * 1024
 # Lambert Conformal Conic, the projection the old map used.
 PROJECTION = "+proj=lcc +lat_1=49 +lat_2=77 +lat_0=49 +lon_0=-95 +datum=WGS84 +units=m +no_defs"
 
-__all__ = ["write_maps", "DEFAULT_OUT_DIR"]
+__all__ = [
+    "write_maps", "DEFAULT_OUT_DIR", "UNCLAIMED_FILL", "PROJECTION",
+    "projected_features", "viewport", "path_data", "house_fills",
+]
 
 
 def _polygons(geometry):
@@ -67,7 +70,7 @@ def _bounds(features):
     return min(xs), min(ys), max(xs), max(ys)
 
 
-def _fills(conn, use_secondary):
+def house_fills(conn, use_secondary):
     """fed_id -> fill colour, and the house riding counts for the legend."""
     fills = {}
     counts = {}
@@ -95,7 +98,7 @@ def _fills(conn, use_secondary):
     return fills, legend
 
 
-def _path_data(rings, to_svg, precision):
+def path_data(rings, to_svg, precision):
     parts = []
     for ring in rings:
         if len(ring) < 3:
@@ -135,7 +138,7 @@ def _render(features, fills, legend, title, precision):
     ]
     for feature in features:
         fill = fills.get(feature["fed_id"], UNCLAIMED_FILL)
-        data = _path_data(feature["rings"], to_svg, precision)
+        data = path_data(feature["rings"], to_svg, precision)
         if not data:
             continue
         out.append(f'<path fill="{fill}" d="{data}"/>')
@@ -160,6 +163,24 @@ def _render(features, fills, legend, title, precision):
     return "\n".join(out)
 
 
+def projected_features():
+    """Every riding as projected rings. Shared by the SVG map and the site map."""
+    transformer = Transformer.from_crs("EPSG:4326", PROJECTION, always_xy=True)
+    return _project_features(transformer)
+
+
+def viewport(features, width, margin=0):
+    """Fit the features to a given width. Returns (height, to_svg)."""
+    min_x, min_y, max_x, max_y = _bounds(features)
+    scale = (width - 2 * margin) / (max_x - min_x)
+    height = (max_y - min_y) * scale + 2 * margin
+
+    def to_svg(x, y):
+        return (margin + (x - min_x) * scale, margin + (max_y - y) * scale)
+
+    return height, to_svg
+
+
 def write_maps(conn, out_dir=DEFAULT_OUT_DIR):
     """Write outputs/map.svg and outputs/map_secondary.svg. Returns the paths.
 
@@ -177,7 +198,7 @@ def write_maps(conn, out_dir=DEFAULT_OUT_DIR):
         ("map.svg", False, "House of Cards — ridings by house"),
         ("map_secondary.svg", True, "House of Cards — principal seats in primary colour"),
     ):
-        fills, legend = _fills(conn, use_secondary)
+        fills, legend = house_fills(conn, use_secondary)
         for precision in (1, 0):
             svg = _render(features, fills, legend, title, precision)
             if len(svg.encode("utf-8")) <= MAX_BYTES:

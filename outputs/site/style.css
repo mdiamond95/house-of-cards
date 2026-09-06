@@ -1,0 +1,126 @@
+/* House of Cards — one stylesheet, mobile first. */
+:root {
+  --paper: #fbfaf7;
+  --ink: #1f1c17;
+  --muted: #6d675c;
+  --rule: #e3ded3;
+  --accent: #6b4f2a;
+  --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+header {
+  border-bottom: 1px solid var(--rule);
+  padding: 0.75rem 1rem 0.5rem;
+}
+.wordmark {
+  display: block;
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  text-decoration: none;
+}
+nav { display: flex; flex-wrap: wrap; gap: 0.9rem; margin-top: 0.4rem; }
+nav a { font-size: 0.82rem; color: var(--muted); text-decoration: none; }
+nav a:hover, nav a:focus { color: var(--accent); text-decoration: underline; }
+main { padding: 1rem 1rem 4rem; max-width: 40rem; margin: 0 auto; }
+h1 { font-family: var(--serif); font-size: 1.6rem; line-height: 1.2; margin: 0.4rem 0 0.2rem; font-weight: 600; }
+h2 { font-family: var(--serif); font-size: 1.15rem; margin: 2rem 0 0.5rem; font-weight: 600;
+     border-top: 1px solid var(--rule); padding-top: 0.9rem; }
+h3 { font-size: 0.95rem; margin: 1.2rem 0 0.3rem; font-weight: 600; }
+p { margin: 0.5rem 0; }
+a { color: var(--accent); }
+.subtitle { font-family: var(--serif); color: var(--muted); margin: 0 0 1rem; }
+.lede { color: var(--muted); }
+.count { font-family: var(--sans); font-size: 0.75rem; font-weight: 400; color: var(--muted); }
+.meta, .source, .footnote, .confidence { font-size: 0.8rem; color: var(--muted); }
+.source { font-style: italic; }
+.unrecovered { color: var(--muted); font-style: italic; }
+
+/* Prose gets the serif and a narrower measure: this is a reference work. */
+.prose { font-family: var(--serif); font-size: 1.02rem; line-height: 1.62; max-width: 34rem; }
+.narrative p { margin: 0.75rem 0; }
+.narrative p:first-child { margin-top: 0.4rem; }
+
+.status { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; padding: 0.6rem 0;
+          border-bottom: 1px solid var(--rule); font-size: 0.8rem; color: var(--muted); }
+.stat b { color: var(--ink); font-size: 0.95rem; }
+
+.map-figure { margin: 0.8rem 0 0; }
+#map { width: 100%; height: auto; display: block; background: #fff; border: 1px solid var(--rule); }
+#map path { cursor: pointer; }
+.hint { font-size: 0.78rem; color: var(--muted); }
+.panel { position: relative; border: 1px solid var(--rule); background: #fff;
+         padding: 0.7rem 2rem 0.7rem 0.8rem; margin-top: 0.6rem; }
+.panel h3 { margin: 0 0 0.15rem; font-family: var(--serif); font-size: 1rem; }
+.panel p { margin: 0.15rem 0; font-size: 0.88rem; }
+.panel-meta { color: var(--muted); font-size: 0.8rem; }
+#panel-close { position: absolute; top: 0.3rem; right: 0.4rem; border: 0; background: none;
+               font-size: 1.2rem; line-height: 1; color: var(--muted); cursor: pointer; }
+
+.swatch { display: inline-block; width: 0.8rem; height: 0.8rem; border: 1px solid rgba(0,0,0,0.18);
+          vertical-align: -0.08rem; margin-right: 0.35rem; }
+.swatch-row { display: inline-flex; align-items: center; margin-right: 0.9rem; }
+.swatch-label { color: var(--muted); font-size: 0.75rem; margin-left: 0.3rem; }
+
+ul, ol { padding-left: 1.1rem; }
+.legend { list-style: none; padding: 0; margin: 0.4rem 0 0; }
+.legend li { border-bottom: 1px solid var(--rule); }
+.legend a { display: flex; align-items: center; gap: 0.1rem; padding: 0.5rem 0;
+            text-decoration: none; color: var(--ink); }
+.legend-name { flex: 1; }
+.legend-count { color: var(--muted); font-size: 0.82rem; }
+
+.facts { display: grid; grid-template-columns: 1fr; gap: 0; margin: 0.6rem 0; }
+.facts dt { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+            color: var(--muted); margin-top: 0.7rem; }
+.facts dd { margin: 0.1rem 0 0; }
+
+table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.88rem; }
+th, td { text-align: left; padding: 0.4rem 0.4rem 0.4rem 0; border-bottom: 1px solid var(--rule);
+         vertical-align: top; }
+th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted);
+     font-weight: 600; }
+td.num { text-align: right; }
+code { font-size: 0.78rem; color: var(--muted); }
+
+.block { margin-bottom: 1rem; }
+.line { margin: 0.5rem 0; }
+.line li { margin-bottom: 0.5rem; }
+.line .meta { display: block; }
+.relations { list-style: none; padding: 0; }
+.relations li { border-bottom: 1px solid var(--rule); padding: 0.5rem 0; }
+.relations .marker { display: inline-block; min-width: 2.4rem; font-size: 1rem; }
+.relations .meta { display: block; }
+
+.ridings { list-style: none; padding: 0; margin: 0.3rem 0 0; }
+.ridings li { display: flex; flex-wrap: wrap; gap: 0.3rem 0.6rem; justify-content: space-between;
+              padding: 0.45rem 0; border-bottom: 1px solid var(--rule); font-size: 0.9rem; }
+.riding { flex: 1 1 60%; }
+.unclaimed { color: var(--muted); font-style: italic; }
+.seat { color: var(--muted); font-size: 0.75rem; }
+
+.turn { margin-bottom: 2rem; }
+.directive { font-family: var(--serif); font-style: italic; color: var(--ink);
+             border-left: 2px solid var(--accent); padding-left: 0.7rem; margin: 0.4rem 0 0.8rem; }
+.event { margin-bottom: 1.4rem; }
+.house-list { line-height: 1.9; }
+footer { margin-top: 3rem; padding-top: 0.8rem; border-top: 1px solid var(--rule); font-size: 0.75rem; color: var(--muted); }
+
+@media (min-width: 40rem) {
+  main { padding: 1.5rem 2rem 5rem; }
+  h1 { font-size: 2rem; }
+  .facts { grid-template-columns: 12rem 1fr; }
+  .facts dt { margin-top: 0.35rem; }
+  .facts dd { margin-top: 0.35rem; }
+}

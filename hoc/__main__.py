@@ -10,7 +10,7 @@ import argparse
 import sys
 
 from hoc import db, rules
-from hoc.export import dump, map as map_export, workbook
+from hoc.export import dump, map as map_export, site, workbook
 from hoc.turn import TurnError, apply_turn
 
 
@@ -19,6 +19,8 @@ def _export_all(conn, out_dir=None):
     written = list(dump.write_dump(conn, **kwargs))
     written.append(workbook.write_workbook(conn, **kwargs))
     written.extend(map_export.write_maps(conn, **kwargs))
+    site_files = site.write_site(conn, **kwargs)
+    written.append(site_files[0].parent)  # the site is many files; report the directory
     return written
 
 

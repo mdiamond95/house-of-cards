@@ -292,8 +292,8 @@ def test_exporters_run_on_the_loaded_database(conn, tmp_path):
 
 
 def test_secondary_map_distinguishes_the_principal_seat(conn, tmp_path):
-    fills_primary, _ = map_export._fills(conn, use_secondary=False)
-    fills_secondary, _ = map_export._fills(conn, use_secondary=True)
+    fills_primary, _ = map_export.house_fills(conn, use_secondary=False)
+    fills_secondary, _ = map_export.house_fills(conn, use_secondary=True)
 
     seat = conn.execute(
         "SELECT fed_id FROM holdings WHERE house = 'Whitcombe' AND seat_order = 1"
