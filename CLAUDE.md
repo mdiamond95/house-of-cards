@@ -10,8 +10,8 @@ Read this fully before doing anything. Sessions in this repo do not share memory
 ## Source of truth
 - The original workbook no longer exists. See `docs/RECONSTRUCTION.md`.
 - `hoc.db` is canonical (Phase 3 complete). Everything in `outputs/` is regenerated from it.
-- `hoc.db` is a derived artefact: it is rebuilt from scratch from `data/seed/*.csv` plus `data/reference/*.csv` by `python scripts/load_seed.py`. The seed CSVs remain the audited input and the record of provenance — do not edit their values; add reconstructed data only in the manner described in docs/RECONSTRUCTION.md, then rebuild.
-- Game state produced by turns lives in `hoc.db` alone (events, turns, narrative). Once a turn has been written to the database, the database is ahead of the seed and the seed is not regenerated from it.
+- `hoc.db` is a derived artefact: `python scripts/rebuild.py` reconstructs it from scratch out of `data/seed/*.csv` plus `data/reference/*.csv` and then replays every file in `turns/`. The seed CSVs and the turn files are the reproducible record; the database is what they produce. The seed CSVs remain the audited input and the record of provenance — do not edit their values; add reconstructed data only in the manner described in docs/RECONSTRUCTION.md, then rebuild.
+- Game state produced by turns lives in the turn files and, once applied, in `hoc.db` (events, turns, narrative). The seed is never regenerated from the database.
 
 ## Hard rules (these have all been broken before and corrected by hand)
 1. Never fabricate. No house attributes, riding names, relationships, dates or colours that are not in the data. If something is missing, record it as missing (e.g. TBD) and flag it in your final status.
@@ -26,7 +26,7 @@ Read this fully before doing anything. Sessions in this repo do not share memory
 
 ## Conventions
 - Canadian English spelling throughout (colour, honour, centre, defence).
-- Narrative for a turn is capped at about 500 words, rich prose, not bullet lists.
+- Narrative for a turn is about 500 words, rich prose, not bullet lists; the runner warns above 550 words and refuses above 600.
 - Mechanics Section 5 house-block updates are short-form appends: Holdings always; Economic when operation type changes; Political when named political figures attend or relational events occur; Cultural only for genuinely new nodes. Transaction log entries stay detailed.
 - Section 13 watch items: zero or one per turn, only for genuinely unresolved structural questions.
 
@@ -40,7 +40,7 @@ Read this fully before doing anything. Sessions in this repo do not share memory
 
 ## Repository layout
 - `hoc/` — package: schema.sql, db.py, names.py, rules.py, turnfile.py, turn.py, `__main__.py` (CLI), export/
-- `scripts/` — one-off build scripts: build_ridings.py, build_adjacency.py, build_geometry.py, load_seed.py
+- `scripts/` — build scripts: build_ridings.py, build_adjacency.py, build_geometry.py, load_seed.py, rebuild.py
 - `turns/` — one JSON file per turn, `NNNN_<slug>.json` (see docs/TURN_FILE.md)
 - `tests/` — pytest; fixtures drawn from real logged cases
 - `data/seed/` — reconstructed canonical data (see docs/RECONSTRUCTION.md); values change only via reconstruction commits

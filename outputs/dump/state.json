@@ -2135,6 +2135,18 @@
   },
   "events": [
     {
+      "id": 42,
+      "turn_id": 2,
+      "kind": "other",
+      "era_cohort": null,
+      "title": "Clocks resumed from last recorded anchor",
+      "narrative": "Every house resumes at personal 1867, its last recorded anchor — a founding grant for the founding generation, an accession reset for the rest. The personal years elapsed between that anchor and the rebuild were not recovered and are not estimated. From here, clocks move only when a turn moves them: explicitly, house by house, or by a sync on a direct shared event.",
+      "mechanical_delta": null,
+      "source": "turn",
+      "created_at": "2026-09-06 03:38:14",
+      "houses": []
+    },
+    {
       "id": 41,
       "turn_id": 1,
       "kind": "expansion",
@@ -2143,7 +2155,7 @@
       "narrative": "Calgary Centre came to the house the way most things came to Sir Alexander Donald Macleod: by ledger first, and ceremony long afterwards.\n\nThe Bureau on Stephen Avenue had been a convenience when the house took its rooms there — somewhere for the Macleod Ranching Co. to keep its accounts nearer the railhead than Bow River allowed. It did not stay a convenience. Turner Valley Petroleum Holdings lodged its subscription books in the same building; the ranching company's freight contracts followed; and by the close of the season's reconciliation the greater part of the house's commercial life was being conducted from a street the house did not hold.\n\nSir Alexander, who had taken his barony at sixty-seven and his viscountcy since, was not sentimental about the discovery. He had built outward from Bow River in the order a cattleman builds a fence: the home quarter first, then east, then south to Shepard, then the long line north to Yellowhead. Calgary Centre was the gap he had been riding around for years. He put the case in one sitting and, characteristically, on one page: the house already held the ground on three sides of its counting-house, and it was an absurdity to remain a tenant in the room where its money was counted.\n\nLady Margaret's objection was not to the taking but to the manner of it. She had watched the Bow Valley house become, by degrees, a Calgary house that kept cattle, and thought the change deserved saying out loud rather than accomplishing by lease renewals. So it was said out loud. The instrument was read at Knox Presbyterian on a Sunday of hard light, before a congregation that contained both halves of the house's awkward politics: the Liberal commercial men who banked with the Bureau, and the cooperative farmers who sold through it and mistrusted it. The Viscount, a founding director of the summer exhibition and used to standing between those two rooms, read the ochre and dun of his colours into the record and made no speech.\n\nThe letters that followed were brief and, in their way, telling. Lockhart of Waterton wrote from the south with the dryness of a neighbour who had first met the house at its investiture and had been watching its accounts ever since. From Kinookimaw, the Countess Sinclair-McKay sent a single line of congratulation that managed to be both warm and a reminder that prairie houses are counted by what they hold at the end, not by what they take in the middle. Both were filed. Neither was answered at length.\n\nWhat the acquisition did not settle was the succession of the work. Donald Alexander, thirty-one years his father's junior and still unconfirmed as operational heir, spent the week after the reading in the Stephen Avenue rooms, learning which of the two ledgers — cattle or petroleum — the house would be judged by. The Viscount, asked, declined to answer. The fence was finished. Who would ride it was another season's business.",
       "mechanical_delta": null,
       "source": "turn",
-      "created_at": "2026-09-06 03:36:41",
+      "created_at": "2026-09-06 03:38:14",
       "houses": [
         {
           "house": "Macleod",
@@ -2161,7 +2173,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Akatsiak",
@@ -2184,7 +2196,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Boyer-Lavallée",
@@ -2207,7 +2219,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Boyer-Lavallée",
@@ -2230,7 +2242,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Boyer-Lavallée",
@@ -2253,7 +2265,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Boyer-Lavallée",
@@ -2276,7 +2288,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Boyer-Lavallée",
@@ -2299,7 +2311,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Boyer-Lavallée",
@@ -2322,7 +2334,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Boyer-Lavallée",
@@ -2345,7 +2357,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "FitzWilliam-Macklem",
@@ -2368,7 +2380,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "FitzWilliam-Macklem",
@@ -2391,7 +2403,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "FitzWilliam-Macklem",
@@ -2414,7 +2426,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Ashworth",
@@ -2437,7 +2449,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "FitzWilliam-Macklem",
@@ -2460,7 +2472,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "FitzWilliam-Macklem",
@@ -2483,7 +2495,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "FitzWilliam-Macklem",
@@ -2506,7 +2518,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "FitzWilliam-Macklem",
@@ -2529,7 +2541,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "FitzWilliam-Macklem",
@@ -2552,7 +2564,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Fitzroy-Crane",
@@ -2575,7 +2587,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Fitzroy-Crane",
@@ -2598,7 +2610,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "MacNeil",
@@ -2621,7 +2633,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Hall",
@@ -2644,7 +2656,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Létourneau",
@@ -2667,7 +2679,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Létourneau",
@@ -2690,7 +2702,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Stanton-Greville",
@@ -2713,7 +2725,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Richard-Arseneau",
@@ -2736,7 +2748,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Richard-Arseneau",
@@ -2759,7 +2771,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Blaikie",
@@ -2782,7 +2794,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Blaikie",
@@ -2805,7 +2817,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Blaikie",
@@ -2828,7 +2840,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Wallace",
@@ -2851,7 +2863,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Pereira",
@@ -2874,7 +2886,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "MacDonald",
@@ -2897,7 +2909,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Delany",
@@ -2920,7 +2932,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Hall",
@@ -2943,7 +2955,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Delany",
@@ -2966,7 +2978,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Ross",
@@ -2989,7 +3001,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Ross",
@@ -3012,7 +3024,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Ashworth",
@@ -3035,7 +3047,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Macleod",
@@ -3058,7 +3070,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T03:36:41+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Lockhart",

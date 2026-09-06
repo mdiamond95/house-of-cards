@@ -38,8 +38,8 @@ is lowercase letters, digits and hyphens.
 - `event` — required. `kind` must be one of the schema's kinds: founding,
   expansion, relational, incursion, challenge, succession, societal, elevation,
   transfer, other. `houses` lists the houses taking part; every one must already
-  exist. `narrative` targets 500 words; over 500 warns, over 600 is rejected.
-- `operations` — applied in order, each mapping to one `hoc/rules.py` call.
+  exist. `narrative` targets about 500 words; over 550 warns, over 600 is rejected.
+- `operations` — applied in order, each mapping to one `hoc/rules.py` call. A turn must have at least one, unless it is a housekeeping turn recorded as `"kind": "other"`, which may have none.
 - `watch` — `add` appends open watch items; `discharge` closes existing ones by
   id. Zero or one new item per turn, only for genuinely unresolved structural
   questions.
