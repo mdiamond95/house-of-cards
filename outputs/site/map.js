@@ -30,4 +30,18 @@
     if (path) show(path);
   });
   close.addEventListener('click', function () { panel.hidden = true; });
+
+  var toggle = document.getElementById('view-toggle');
+  var borders = document.getElementById('map-borders');
+  if (toggle) {
+    var showingSouth = true;
+    toggle.addEventListener('click', function () {
+      showingSouth = !showingSouth;
+      map.setAttribute('viewBox', map.getAttribute(showingSouth ? 'data-view-south' : 'data-view-full'));
+      if (borders) {
+        borders.setAttribute('stroke-width', map.getAttribute(showingSouth ? 'data-stroke-south' : 'data-stroke-full'));
+      }
+      toggle.textContent = showingSouth ? 'Show the north' : 'Show the south';
+    });
+  }
 })();

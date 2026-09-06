@@ -1,0 +1,6 @@
+{
+  "pre_clip_total_km2": 14159247.2,
+  "post_clip_total_km2": 9658397.8,
+  "lake_area_threshold_km2": 1000,
+  "fallback_to_unclipped": []
+}

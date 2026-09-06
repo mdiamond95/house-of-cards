@@ -11,6 +11,7 @@ from hoc.export import site
 ROOT = Path(__file__).resolve().parent.parent
 
 TOP_LEVEL_PAGES = ("index.html", "ridings.html", "chronicle.html", "climate.html", "about.html")
+MAX_INDEX_BYTES = 400 * 1024
 
 
 def _load_seed_module():
@@ -46,6 +47,14 @@ def test_top_level_pages_exist(built):
         assert path.stat().st_size > 0, name
     assert (built / "style.css").exists()
     assert (built / "map.js").exists()
+
+
+def test_index_html_under_size_budget(built):
+    # On a phone the index page's inline map dominates the byte count, so this
+    # is really a check on the site-specific geometry tolerance (see
+    # scripts/build_geometry.py's build_site_geometry / SITE_PATH_BYTES_BUDGET).
+    size = (built / "index.html").stat().st_size
+    assert size <= MAX_INDEX_BYTES, f"{size} bytes exceeds the {MAX_INDEX_BYTES}-byte budget"
 
 
 def test_one_page_per_house(built):
@@ -94,10 +103,23 @@ def test_pages_are_self_contained_and_relatively_linked(built):
 
 def test_map_carries_one_path_per_riding_with_data_attributes(built):
     html = (built / "index.html").read_text(encoding="utf-8")
-    assert html.count("<path") == 343
+    # 343 riding fills plus one border-mesh path (id="map-borders") — the
+    # coastline-vs-interior-border distinction from scripts/build_geometry.py.
+    assert html.count("<path") == 344
+    assert 'id="map-borders"' in html
     assert html.count("data-riding=") == 343
     assert 'data-house="Macleod"' in html
     assert 'data-holder="Sir Alexander Donald Macleod"' in html
+
+
+def test_map_defaults_to_southern_view_with_a_north_toggle(built):
+    html = (built / "index.html").read_text(encoding="utf-8")
+    assert 'id="view-toggle"' in html
+    assert "Show the north" in html
+    assert 'data-view-south="' in html
+    assert 'data-view-full="' in html
+    assert 'data-stroke-south="' in html
+    assert 'data-stroke-full="' in html
 
 
 def test_unrecovered_values_are_named_as_such(built):

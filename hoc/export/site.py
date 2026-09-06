@@ -185,12 +185,24 @@ def _status_strip(conn):
     )
 
 
-def _index(conn, features, slugs):
+NORTHERN_TERRITORIES = {"NU", "NT", "YT"}
+BASE_STROKE_WIDTH = 0.4  # at the full-country viewBox, matching outputs/map.svg
+SOUTH_VIEW_PAD_FRACTION = 0.03
+
+
+def _extent(rings_source):
+    xs = [x for rings in rings_source for ring in rings for x, _ in ring]
+    ys = [y for rings in rings_source for ring in rings for _, y in ring]
+    return min(xs), min(ys), max(xs), max(ys)
+
+
+def _index(conn, features, borders, slugs):
     fills, legend = map_export.house_fills(conn, use_secondary=False)
     lookup = _riding_lookup(conn)
     height, to_svg = map_export.viewport(features, MAP_WIDTH)
 
     paths = []
+    southern_rings = []
     for feature in features:
         fed_id = feature["fed_id"]
         data = map_export.path_data(feature["rings"], to_svg, MAP_PRECISION)
@@ -200,22 +212,54 @@ def _index(conn, features, slugs):
         house = (row["house"] if row else None) or ""
         holder = (row["holder"] if row else None) or ""
         seat = "" if not row or row["seat_order"] is None else str(row["seat_order"])
+        province = row["province"] if row else ""
+        if province not in NORTHERN_TERRITORIES:
+            southern_rings.append(feature["rings"])
         paths.append(
             f'<path fill="{fills.get(fed_id, map_export.UNCLAIMED_FILL)}"'
             f' data-riding="{esc(row["name_en"] if row else fed_id)}"'
-            f' data-province="{esc(row["province"] if row else "")}"'
+            f' data-province="{esc(province)}"'
             f' data-house="{esc(house)}" data-holder="{esc(holder)}"'
             f' data-seat="{esc(seat)}" data-slug="{esc(slugs.get(house, ""))}"'
             f' d="{data}"/>'
         )
 
+    border_data = map_export.border_path_data(borders, to_svg, MAP_PRECISION)
+
+    # Full view: the whole country, as drawn (0,0)-(MAP_WIDTH,height). South
+    # view (the default, per the director: territories crowd out the
+    # populated south on a phone) is the bounding box of everything outside
+    # Nunavut, the Northwest Territories and Yukon, padded 3%, expressed in the
+    # same coordinate space so switching is just a viewBox swap — every riding
+    # stays in the DOM and the tap panel keeps working either way.
+    s_min_x, s_min_y, s_max_x, s_max_y = _extent(southern_rings)
+    pad_x = (s_max_x - s_min_x) * SOUTH_VIEW_PAD_FRACTION
+    pad_y = (s_max_y - s_min_y) * SOUTH_VIEW_PAD_FRACTION
+    top_left = to_svg(s_min_x - pad_x, s_max_y + pad_y)
+    bottom_right = to_svg(s_max_x + pad_x, s_min_y - pad_y)
+    south_view_box = (
+        f"{top_left[0]:.1f} {top_left[1]:.1f} "
+        f"{bottom_right[0] - top_left[0]:.1f} {bottom_right[1] - top_left[1]:.1f}"
+    )
+    full_view_box = f"0 0 {MAP_WIDTH} {height:.0f}"
+
+    # A south view narrower than the full width is a zoom-in of that factor;
+    # without correcting for it the same stroke-width would render thicker
+    # on screen than it does in the full view, since the same number of SVG
+    # user units then covers more physical pixels.
+    zoom_factor = MAP_WIDTH / (bottom_right[0] - top_left[0])
+    south_stroke_width = BASE_STROKE_WIDTH / zoom_factor
+
     svg = (
-        f'<svg id="map" viewBox="0 0 {MAP_WIDTH} {height:.0f}" role="img"'
+        f'<svg id="map" viewBox="{south_view_box}" role="img"'
         ' aria-label="Map of the 343 federal ridings, coloured by house"'
+        f' data-view-south="{south_view_box}" data-view-full="{full_view_box}"'
+        f' data-stroke-south="{south_stroke_width:.4f}" data-stroke-full="{BASE_STROKE_WIDTH}"'
         ' xmlns="http://www.w3.org/2000/svg">'
-        '<g stroke="#ffffff" stroke-width="0.6" stroke-linejoin="round">'
-        + "".join(paths)
-        + "</g></svg>"
+        '<g stroke="none">' + "".join(paths) + "</g>"
+        f'<path id="map-borders" fill="none" stroke="#ffffff" stroke-width="{south_stroke_width:.4f}"'
+        f' stroke-linejoin="round" stroke-linecap="round" pointer-events="none" d="{border_data}"/>'
+        "</svg>"
     )
 
     legend_rows = "".join(
@@ -229,6 +273,8 @@ def _index(conn, features, slugs):
     body = (
         f"{_status_strip(conn)}\n"
         '<figure class="map-figure">' + svg + "</figure>\n"
+        '<div class="map-toolbar">'
+        '<button id="view-toggle" type="button">Show the north</button></div>\n'
         '<div id="panel" class="panel" hidden>'
         '<button id="panel-close" type="button" aria-label="Close">×</button>'
         '<div id="panel-body"></div></div>\n'
@@ -272,6 +318,20 @@ MAP_JS = """(function () {
     if (path) show(path);
   });
   close.addEventListener('click', function () { panel.hidden = true; });
+
+  var toggle = document.getElementById('view-toggle');
+  var borders = document.getElementById('map-borders');
+  if (toggle) {
+    var showingSouth = true;
+    toggle.addEventListener('click', function () {
+      showingSouth = !showingSouth;
+      map.setAttribute('viewBox', map.getAttribute(showingSouth ? 'data-view-south' : 'data-view-full'));
+      if (borders) {
+        borders.setAttribute('stroke-width', map.getAttribute(showingSouth ? 'data-stroke-south' : 'data-stroke-full'));
+      }
+      toggle.textContent = showingSouth ? 'Show the north' : 'Show the south';
+    });
+  }
 })();
 """
 
@@ -651,6 +711,10 @@ a { color: var(--accent); }
 .map-figure { margin: 0.8rem 0 0; }
 #map { width: 100%; height: auto; display: block; background: #fff; border: 1px solid var(--rule); }
 #map path { cursor: pointer; }
+.map-toolbar { margin: 0.5rem 0; }
+.map-toolbar button { font: inherit; font-size: 0.82rem; padding: 0.4rem 0.8rem; border: 1px solid var(--rule);
+                       background: #fff; color: var(--ink); border-radius: 3px; cursor: pointer; }
+.map-toolbar button:hover, .map-toolbar button:focus { border-color: var(--accent); color: var(--accent); }
 .hint { font-size: 0.78rem; color: var(--muted); }
 .panel { position: relative; border: 1px solid var(--rule); background: #fff;
          padding: 0.7rem 2rem 0.7rem 0.8rem; margin-top: 0.6rem; }
@@ -745,7 +809,8 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR):
     )
 
     slugs = _slugs(conn)
-    features = map_export.projected_features()
+    index_features = map_export.projected_site_features()
+    index_borders = map_export.projected_site_borders()
 
     written = []
 
@@ -755,7 +820,7 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR):
 
     write(site_dir / "style.css", STYLE)
     write(site_dir / "map.js", MAP_JS)
-    write(site_dir / "index.html", _index(conn, features, slugs))
+    write(site_dir / "index.html", _index(conn, index_features, index_borders, slugs))
     write(site_dir / "ridings.html", _ridings_page(conn, slugs))
     write(site_dir / "climate.html", _climate_page(conn))
     write(site_dir / "chronicle.html", _chronicle_page(conn, slugs))
