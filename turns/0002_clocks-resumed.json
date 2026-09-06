@@ -1,0 +1,13 @@
+{
+  "directive": "Housekeeping: record the clock resume policy and discharge the Macleod clock watch item.",
+  "era_cohort": null,
+  "event": {
+    "kind": "other",
+    "title": "Clocks resumed from last recorded anchor",
+    "houses": [],
+    "narrative": "Every house resumes at personal 1867, its last recorded anchor — a founding grant for the founding generation, an accession reset for the rest. The personal years elapsed between that anchor and the rebuild were not recovered and are not estimated. From here, clocks move only when a turn moves them: explicitly, house by house, or by a sync on a direct shared event."
+  },
+  "operations": [],
+  "watch": {"discharge": [1]},
+  "threads": []
+}

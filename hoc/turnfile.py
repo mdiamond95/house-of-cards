@@ -26,7 +26,12 @@ __all__ = [
 ]
 
 NARRATIVE_TARGET_WORDS = 500
+NARRATIVE_WARN_WORDS = 550
 NARRATIVE_MAX_WORDS = 600
+
+# A turn is expected to change something. Housekeeping turns — a policy note, a
+# watch item discharged — are the exception and are recorded as kind 'other'.
+KIND_ALLOWING_NO_OPERATIONS = "other"
 
 FILENAME_PATTERN = re.compile(r"^(\d{4})_[a-z0-9-]+\.json$")
 
@@ -215,8 +220,11 @@ def validate(conn, data):
     words = word_count(narrative)
     if words > NARRATIVE_MAX_WORDS:
         errors.append(f"event.narrative: {words} words exceeds the {NARRATIVE_MAX_WORDS}-word limit")
-    elif words > NARRATIVE_TARGET_WORDS:
-        warnings.append(f"event.narrative: {words} words is over the {NARRATIVE_TARGET_WORDS}-word target")
+    elif words > NARRATIVE_WARN_WORDS:
+        warnings.append(
+            f"event.narrative: {words} words is over the {NARRATIVE_WARN_WORDS}-word warning"
+            f" threshold (target is about {NARRATIVE_TARGET_WORDS})"
+        )
 
     known_houses = _known_houses(conn)
     for house in event.get("houses") or []:
@@ -233,6 +241,12 @@ def validate(conn, data):
     if not isinstance(operations, list):
         errors.append("operations: must be a list")
         operations = []
+
+    if not operations and event.get("kind") != KIND_ALLOWING_NO_OPERATIONS:
+        errors.append(
+            "operations: a turn must do something; only a housekeeping turn"
+            f" (event.kind {KIND_ALLOWING_NO_OPERATIONS!r}) may have no operations"
+        )
 
     founding_ops = [op for op in operations if isinstance(op, dict) and op.get("op") == "found_house"]
     if founding_ops and era_cohort is None:
