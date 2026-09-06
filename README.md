@@ -36,4 +36,18 @@ To load the seed alone, without replaying any turns:
 
 `hoc.db` is a derived artefact. The loader deletes and rebuilds it from scratch out of `data/reference/*.csv` (343 ridings and their land adjacency, from the 2023 Representation Order boundaries) and the active scenario's `seed/*.csv` (for `legacy`, the reconstructed houses, holdings, holders, successions, climate ledgers and relations), then prints a row count per table. Run it after any reconstruction commit that changes the seed. The reference CSVs themselves are rebuilt from the raw boundary file by `scripts/build_ridings.py`, `scripts/build_adjacency.py` and `scripts/build_geometry.py` — see `data/reference/raw/SOURCE.md` for provenance.
 
+## Autoplay
+
+The v2 engine plays the game itself: houses hold stats and objectives, draw actions from the weighted tables in `rules/`, respond to a deck of real Canadian events on their own personal clocks, and age, die, succeed and fail without a director writing turns.
+
+    python -m hoc scenario use new         # switch off the frozen reconstruction
+    python -m hoc sim new --seed 42        # season 1: exactly one house is founded
+    python -m hoc sim run 50               # play fifty seasons
+    python -m hoc sim run 50 --stop-on removal,major
+    python -m hoc sim status
+
+Every draw comes from a seed derived from the world seed and the season number alone, and each season writes `scenarios/new/seasons/NNNN.json` recording every roll with the purpose it was drawn for — so a world replays identically from its seed, and any outcome can be traced to the roll that caused it. Tuning the game means editing a table in `rules/` and recording it in `rules/CHANGELOG.md`; it never means editing `hoc/sim.py`.
+
+`python -m hoc scenario use legacy` switches back to the reconstructed playthrough, which the turn runner still drives.
+
 See `CLAUDE.md` for game rules and working conventions, `scenarios/legacy/RECONSTRUCTION.md` for what is reconstructed and what is still missing, and `docs/BUILD_PLAN.md` for the migration phases.

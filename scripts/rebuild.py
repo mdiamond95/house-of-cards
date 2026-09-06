@@ -63,7 +63,10 @@ def replay_seasons(conn, name=None, verbose=True):
         return
     from hoc import sim  # imported here so a turn-only rebuild needs no engine
 
-    world = sim.World.replay(conn, paths)
+    # The engine never commits — the caller owns the transaction, exactly as the
+    # turn runner does — so the replay has to be wrapped or it rolls back on close.
+    with conn:
+        world = sim.World.replay(conn, paths, seasons_dir=scenario.seasons_dir(name))
     if verbose:
         print(f"  replayed {len(paths)} season(s) -> season {world.season_no}")
 

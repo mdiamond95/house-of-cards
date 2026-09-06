@@ -248,6 +248,7 @@ CREATE TABLE house_stats (
     tradition       TEXT,
     tag             TEXT,
     province        TEXT,
+    seat_place      TEXT,
     founded_season  INTEGER,
     removed_season  INTEGER
 );

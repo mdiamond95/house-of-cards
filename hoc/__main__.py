@@ -6,6 +6,9 @@
     python -m hoc check <house> <riding>       test an expansion, changing nothing
     python -m hoc scenario list                which games exist, and which is active
     python -m hoc scenario use <name>          switch the active scenario
+    python -m hoc sim new --seed N             start the autoplay game at season 1
+    python -m hoc sim run N                    play N seasons
+    python -m hoc sim status                   where the autoplay game stands
 """
 
 import argparse
@@ -106,6 +109,90 @@ def cmd_check(args):
     return 0 if check.ok else 1
 
 
+def _open_world(conn, seed=None):
+    from hoc import scenario as scen, sim
+
+    return sim.World(conn, world_seed=seed, seasons_dir=scen.seasons_dir())
+
+
+def cmd_sim(args):
+    from hoc import scenario as scen, sim
+
+    active = scen.current_name()
+    conn = db.connect(args.db)
+
+    if args.sim_command == "new":
+        if active != "new":
+            print(
+                f"error: the active scenario is {active!r}; run"
+                " `python -m hoc scenario use new` first",
+                file=sys.stderr,
+            )
+            return 1
+        if conn.execute("SELECT COUNT(*) AS n FROM seasons").fetchone()["n"]:
+            print(
+                "error: this world has already started; rebuild it from an empty"
+                " seed before founding season 1 again",
+                file=sys.stderr,
+            )
+            return 1
+        world = _open_world(conn, seed=args.seed)
+        with conn:
+            record = world.initialise(args.seed, seat=args.seat)
+        manifest = scen.read_manifest()
+        manifest.update({"seed": args.seed, "started_season": 1})
+        scen.write_manifest(manifest)
+        for line in record["chronicle"]:
+            print(line)
+        print(f"world seeded {args.seed}; season 1 played")
+        _export_all(conn)
+        conn.close()
+        return 0
+
+    if args.sim_command == "run":
+        try:
+            world = _open_world(conn)
+        except sim.SimError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        stop_on = tuple(s.strip() for s in (args.stop_on or "").split(",") if s.strip())
+        with conn:
+            records = world.run(args.count, stop_on=stop_on)
+        for record in records:
+            for line in record["chronicle"]:
+                print(line)
+        last = records[-1] if records else None
+        if last:
+            print(
+                f"\nplayed {len(records)} season(s) to season {last['season']}:"
+                f" {last['houses_after']} houses, {last['ridings_after']} ridings held"
+            )
+            if last.get("stopped_on"):
+                print(f"stopped on: {', '.join(last['stopped_on'])}")
+        _export_all(conn)
+        conn.close()
+        return 0
+
+    # status
+    row = conn.execute(
+        "SELECT season_no, seed, houses_after, ridings_after, rules_version"
+        " FROM seasons ORDER BY season_no DESC LIMIT 1"
+    ).fetchone()
+    print(f"scenario: {active}")
+    if row is None:
+        print("no seasons played")
+        conn.close()
+        return 0
+    print(f"season:   {row['season_no']} (seed {row['seed']}, rules {row['rules_version']})")
+    print(f"houses:   {row['houses_after']} active")
+    print(f"ridings:  {row['ridings_after']} of 343 held")
+    print("climate:")
+    for climate in conn.execute("SELECT * FROM v_current_climate ORDER BY era_cohort"):
+        print(f"  {climate['era_cohort']}: {climate['cumulative_after']}")
+    conn.close()
+    return 0
+
+
 def cmd_scenario(args):
     if args.scenario_command == "list":
         active = scenario_mod.current_name()
@@ -155,6 +242,20 @@ def build_parser():
     use_parser = scenario_sub.add_parser("use", help="make a scenario active")
     use_parser.add_argument("name")
     scenario_parser.set_defaults(func=cmd_scenario)
+
+    sim_parser = sub.add_parser("sim", help="the autoplay engine")
+    sim_sub = sim_parser.add_subparsers(dest="sim_command", required=True)
+    new_parser = sim_sub.add_parser("new", help="found season 1 of the autoplay game")
+    new_parser.add_argument("--seed", type=int, required=True)
+    new_parser.add_argument("--seat", help="riding for the first house (default: drawn)")
+    run_parser = sim_sub.add_parser("run", help="play N seasons")
+    run_parser.add_argument("count", type=int)
+    run_parser.add_argument(
+        "--stop-on",
+        help="comma-separated pause conditions: removal, challenge, major, marquis",
+    )
+    sim_sub.add_parser("status", help="where the autoplay game stands")
+    sim_parser.set_defaults(func=cmd_sim)
     return parser
 
 

@@ -1,8 +1,10 @@
 {
   "season_1": "Exactly one house is founded, by the director's choice of seat riding or by the engine's draw if none is given.",
   "p_found": {
-    "formula": "0.25 * (unclaimed_land_adjacent_ridings / 343) ** 0.5",
-    "note": "§10: probability is high on an empty map and falls smoothly as land runs out, reaching zero when the map is full. No cap on the number of houses. This is the only founding probability as of rules version 0.3; the §6 'default 0.15, halved when 40+ houses exist' statement was deleted by the director's decision — see rules/CHANGELOG.md 0.3."
+    "formula": "coefficient * (unclaimed_land_adjacent_ridings / 343) ** exponent",
+    "coefficient": 0.5,
+    "exponent": 0.5,
+    "note": "§10: probability is high on an empty map and falls smoothly as land runs out, reaching zero when the map is full. No cap on the number of houses. The §6 'default 0.15, halved when 40+ houses exist' statement was deleted in 0.3. The coefficient and exponent are separate numbers so the founding rate can be tuned in this table rather than in hoc/sim.py, as docs/ENGINE_DESIGN.md §11 requires. The design document's 0.25 was raised to 0.50 in rules version 0.4 to meet the §17 smoke targets — see rules/CHANGELOG.md for the measurements."
   },
   "region_weights": {
     "initial": {
@@ -17,7 +19,7 @@
   },
   "tag_climate_fit": "The current Confederation-band ledger sign doubles the weight of the matching tag when a new house's tag is drawn.",
   "rank_probabilities": {
-    "Baron": 0.70,
+    "Baron": 0.7,
     "Viscount": 0.25,
     "Earl": 0.05
   },
