@@ -43,4 +43,5 @@ Recovery queue (holder names still missing): Polkinghorne, Ashworth, Akatsiak, H
 - Whitcombe founder is Cedric Whitcombe; "Edward Joshua" from the 2026-05-04 session is recorded as a variant and not used.
 - Tupper-Blair founder is Gordon Tupper-Blair; "Sir Charles" and heir "Hartley" from the 2026-05-04 session are recorded as variants and not used.
 - Generation state follows the 2026-04-27 cascade. The 2026-05-04 tally (21 G1, 6 G2, 1 G3) is treated as a founding-era-perspective statement, not current state.
+- Île-des-Soeurs: seed corrected to the official two-letter spelling; name_key normalisation folds œ/oe so either form resolves.
 Rationale: the 25–27 April sources were written as deliberate handoff and reconciliation text; the 4 May session's prose had degraded and is the weaker witness where they disagree.
