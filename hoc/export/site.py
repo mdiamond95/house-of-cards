@@ -9,12 +9,15 @@ It is a generated view: nothing here is ever read back as input.
 """
 
 import html
+import json
 import unicodedata
 from pathlib import Path
 
 from hoc import scenario
 from hoc.db import HOUSE_BLOCK_FIELDS
 from hoc.export import map as map_export, timeline as timeline_export
+from hoc.export.turn_block import TEMPLATE as NARRATE_TEMPLATE, TONES
+from hoc.sim import STOP_CONDITIONS
 
 DEFAULT_OUT_DIR = Path(__file__).resolve().parent.parent.parent / "outputs"
 SITE_DIRNAME = "site"
@@ -101,10 +104,12 @@ def page(title, body, depth=0, subtitle=None):
     ]
     if _ARCHIVE:
         # Out of the archive rather than deeper into it: one more "../" than the
-        # page's own depth reaches the live site's root.
+        # page's own depth reaches the live site's root. The archive is frozen,
+        # so it carries no console link — there is nothing there to run.
         nav.append((f"{up}../index.html", "← The live game"))
     else:
         nav.append((f"{ARCHIVE_DIRNAME}/index.html", "Archive"))
+        nav.append(("console.html", "Console"))
     links = "".join(
         f'<a href="{href if href.startswith("../") else up + href}">{esc(label)}</a>'
         for href, label in nav
@@ -1058,6 +1063,56 @@ def _link_houses(text, slugs, depth):
     return out
 
 
+NARRATIVES_DIR = DEFAULT_OUT_DIR.parent / "narratives"
+
+
+def _narratives(directory=None):
+    """Season range -> prose, from narratives/NNNN-NNNN.md.
+
+    The front matter is read for the tone; the range comes from the filename, so
+    a narrative is discoverable without parsing every file's contents.
+    """
+    directory = Path(directory) if directory is not None else NARRATIVES_DIR
+    if not directory.is_dir():
+        return []
+
+    found = []
+    for path in sorted(directory.glob("[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9].md")):
+        first, _, last = path.stem.partition("-")
+        text = path.read_text(encoding="utf-8")
+        tone = ""
+        if text.startswith("---"):
+            _, _, rest = text.partition("---")
+            front, _, body = rest.partition("---")
+            for line in front.splitlines():
+                if line.strip().startswith("tone:"):
+                    tone = line.split(":", 1)[1].strip()
+            text = body
+        found.append({
+            "from": int(first),
+            "to": int(last),
+            "tone": tone,
+            "text": text.strip(),
+            "name": path.name,
+        })
+    return found
+
+
+def _narrative_html(entry):
+    """A narrative as expandable prose beneath the season it opens on."""
+    paragraphs = "".join(
+        f"<p>{esc(para.strip())}</p>"
+        for para in entry["text"].split("\n\n") if para.strip()
+    )
+    tone = f' <span class="meta">{esc(entry["tone"])}</span>' if entry["tone"] else ""
+    return (
+        '<details class="narrative-block">'
+        f'<summary>Read the narrative for seasons {entry["from"]}–{entry["to"]}{tone}</summary>'
+        f'<div class="prose narrative">{paragraphs}</div>'
+        "</details>"
+    )
+
+
 def _season_chronicle(conn, slugs):
     """The engine's chronicle: one line per thing that happened, newest season
     first, with a jump control because three hundred seasons is a long scroll."""
@@ -1083,9 +1138,15 @@ def _season_chronicle(conn, slugs):
         '<div class="jump"><label for="jump-season">Jump to</label>'
         f'<select id="jump-season">{options}</select></div>',
     ]
+    narratives = _narratives()
     for season in seasons:
         parts.append(f'<article class="season" id="season-{season}">')
         parts.append(f"<h2>Season {season}</h2>")
+        # A narrative is offered on the newest season it covers, which is where a
+        # reader working backwards meets the range first.
+        for entry in narratives:
+            if entry["to"] == season:
+                parts.append(_narrative_html(entry))
         lines = "".join(
             f'<li class="{esc(row["kind"])}">{_link_houses(row["narrative"], slugs, 0)}</li>'
             for row in by_season[season]
@@ -1193,6 +1254,650 @@ def _about_page(conn, slugs):
         f"{house_list(no_secondary)}\n"
     )
     return page("About", body, depth=0)
+
+
+# ----------------------------------------------------------------- console --
+#
+# The director's controls. The console is a static page like every other: it
+# holds no secret, calls no server of its own, and does nothing until a token is
+# pasted into it. That token lives in this browser's localStorage and nowhere
+# else — it is never written into the site, never sent anywhere but
+# api.github.com, and a Disconnect button drops it.
+#
+# Every action the console offers ends as a workflow_dispatch of engine.yml.
+# The console never writes to the repository directly, so there is exactly one
+# path by which the game changes and it is the one that runs the tests.
+
+CONSOLE_TOKEN_HELP = (
+    "a fine-grained personal access token with <b>Actions: read and write</b> and"
+    " <b>Contents: read</b> on this repository"
+)
+
+
+def _console_page(conn, slugs):
+    houses = [
+        row["house"]
+        for row in conn.execute(
+            "SELECT h.house FROM houses h JOIN house_stats s ON s.house = h.house"
+            " WHERE h.status = 'active' ORDER BY h.house"
+        )
+    ]
+    from hoc.rules_data import load_rules
+
+    rules = load_rules()
+    actions = sorted(a.action for a in rules.actions)
+    objectives = sorted(o.objective for o in rules.objectives)
+    communities = sorted({c.community for c in rules.communities})
+    ranks = ["Baron", "Viscount", "Earl", "Marquis", "Duke"]
+    tags = ["Progressive", "Conservative", "Mixed", "Outside"]
+
+    unclaimed = [
+        row["name_en"]
+        for row in conn.execute(
+            "SELECT r.name_en FROM ridings r WHERE NOT EXISTS"
+            " (SELECT 1 FROM holdings h WHERE h.fed_id = r.fed_id"
+            "  AND h.released_event_id IS NULL) ORDER BY r.name_en"
+        )
+    ]
+    season = _latest_season(conn) or 0
+
+    def options(values):
+        return "".join(f"<option>{esc(value)}</option>" for value in values)
+
+    def checkbox(value):
+        return (
+            f'<label class="check"><input type="checkbox" name="stop" value="{esc(value)}">'
+            f" {esc(value)}</label>"
+        )
+
+    stop_boxes = "".join(checkbox(name) for name in sorted(STOP_CONDITIONS))
+    season_buttons = "".join(
+        f'<button type="button" class="seasons" data-seasons="{n}">{n}</button>'
+        for n in (1, 5, 10, 25, 50)
+    )
+
+    body = f"""
+<p class="lede prose">Everything here dispatches the <code>Engine</code> workflow, which plays
+the game, runs the tests, exports the site and commits the result. The console never writes to
+the repository itself, so there is one path by which the game changes and it is the one that
+checks its work.</p>
+
+<section class="console-block" id="connect">
+  <h2>Connect</h2>
+  <p id="token-state" class="meta">Not connected.</p>
+  <div class="field">
+    <label for="token">GitHub token</label>
+    <input id="token" type="password" autocomplete="off" placeholder="github_pat_…">
+  </div>
+  <p class="footnote">The console needs {CONSOLE_TOKEN_HELP}.
+  It is kept in this browser's local storage and sent only to api.github.com — it is never part
+  of this site, and nobody else who opens this page has it. Revoke it any time at
+  <a href="https://github.com/settings/personal-access-tokens">github.com/settings/personal-access-tokens</a>.</p>
+  <div class="actions">
+    <button type="button" id="connect">Connect</button>
+    <button type="button" id="disconnect">Disconnect</button>
+  </div>
+</section>
+
+<section class="console-block">
+  <h2>Run seasons</h2>
+  <div class="actions seasons-row">{season_buttons}</div>
+  <p class="meta">Stop early on:</p>
+  <div class="checks">{stop_boxes}</div>
+  <div class="field">
+    <label for="run-note">Note</label>
+    <input id="run-note" type="text" placeholder="why you are running these seasons">
+  </div>
+  <div class="actions"><button type="button" id="run" data-needs-token>Run <span id="run-count">10</span> seasons</button></div>
+  <div id="run-status" class="status-box" hidden></div>
+</section>
+
+<section class="console-block">
+  <h2>Intervene</h2>
+  <p class="meta">Each of these builds a turn file, shows it for review, and dispatches it.
+  A stat adjustment needs a reason; the others take one if you want the record to carry it.</p>
+
+  <div class="intervention" data-op="set_objective">
+    <h3>Set an objective</h3>
+    <div class="field"><label>House</label><select data-field="house">{options(houses)}</select></div>
+    <div class="field"><label>Objective</label><select data-field="objective">{options(objectives)}</select></div>
+    <div class="field"><label>Reason</label><input type="text" data-field="reason"></div>
+    <div class="actions"><button type="button" class="build">Review</button></div>
+  </div>
+
+  <div class="intervention" data-op="veto_objective">
+    <h3>Veto an objective</h3>
+    <div class="field"><label>House</label><select data-field="house">{options(houses)}</select></div>
+    <div class="field"><label>Objective</label><select data-field="objective">{options(objectives)}</select></div>
+    <div class="field"><label>Reason</label><input type="text" data-field="reason"></div>
+    <div class="actions"><button type="button" class="build">Review</button></div>
+  </div>
+
+  <div class="intervention" data-op="force_action">
+    <h3>Force the next action</h3>
+    <div class="field"><label>House</label><select data-field="house">{options(houses)}</select></div>
+    <div class="field"><label>Action</label><select data-field="action">{options(actions)}</select></div>
+    <div class="field"><label>Reason</label><input type="text" data-field="reason"></div>
+    <div class="actions"><button type="button" class="build">Review</button></div>
+  </div>
+
+  <div class="intervention" data-op="adjust_stat">
+    <h3>Adjust a stat</h3>
+    <div class="field"><label>House</label><select data-field="house">{options(houses)}</select></div>
+    <div class="field"><label>Stat</label><select data-field="stat">{options(["capital", "influence", "cohesion", "ambition"])}</select></div>
+    <div class="field"><label>Delta</label><input type="number" data-field="delta" value="0" step="1"></div>
+    <div class="field"><label>Reason <span class="required">required</span></label><input type="text" data-field="reason"></div>
+    <div class="actions"><button type="button" class="build">Review</button></div>
+  </div>
+
+  <div class="intervention" data-op="grant_house">
+    <h3>Grant a house</h3>
+    <div class="field"><label>Community</label><select data-field="community">{options(communities)}</select></div>
+    <div class="field"><label>Seat riding</label><select data-field="riding">{options(unclaimed[:400])}</select></div>
+    <div class="field"><label>Rank</label><select data-field="rank">{options(ranks)}</select></div>
+    <div class="field"><label>Tag</label><select data-field="tag">{options(tags)}</select></div>
+    <div class="field"><label>Surname <span class="meta">optional</span></label><input type="text" data-field="surname"></div>
+    <div class="field"><label>Reason</label><input type="text" data-field="reason"></div>
+    <div class="actions"><button type="button" class="build">Review</button></div>
+  </div>
+
+  <div class="intervention" data-op="set_clock">
+    <h3>Set a clock</h3>
+    <div class="field"><label>House</label><select data-field="house">{options(houses)}</select></div>
+    <div class="field"><label>Personal year</label><input type="number" data-field="personal_year" value="1867"></div>
+    <div class="field"><label>Basis <span class="required">required</span></label><input type="text" data-field="basis"></div>
+    <div class="actions"><button type="button" class="build">Review</button></div>
+  </div>
+
+  <div class="intervention" data-op="relation">
+    <h3>Add a relation</h3>
+    <div class="field"><label>House A</label><select data-field="house_a">{options(houses)}</select></div>
+    <div class="field"><label>House B</label><select data-field="house_b">{options(houses)}</select></div>
+    <div class="field"><label>Marker</label><select data-field="marker">{options(["◎", "+", "◉+", "Sig−", "⊖", "~", "kin"])}</select></div>
+    <div class="field"><label>Text <span class="required">required</span></label><input type="text" data-field="text"></div>
+    <div class="actions"><button type="button" class="build">Review</button></div>
+  </div>
+
+  <div id="turn-review" hidden>
+    <h3>Review</h3>
+    <pre id="turn-json"></pre>
+    <div class="actions">
+      <button type="button" id="dispatch-turn" data-needs-token>Apply this turn</button>
+      <button type="button" id="cancel-turn">Cancel</button>
+    </div>
+  </div>
+  <div id="intervene-status" class="status-box" hidden></div>
+</section>
+
+<section class="console-block">
+  <h2>Rules</h2>
+  <p class="meta">Numeric fields only. The console cannot add, remove or rename a rule —
+  that is a design decision and belongs in a Code session.</p>
+  <div class="actions"><button type="button" id="load-rules" data-needs-token>Load the tables</button></div>
+  <div id="rules-fields"></div>
+  <div class="field">
+    <label for="rules-note">Note <span class="required">required</span></label>
+    <input id="rules-note" type="text" placeholder="what you observed that made you change this">
+  </div>
+  <div class="actions"><button type="button" id="propose-rules" data-needs-token>Propose change</button></div>
+  <pre id="rules-diff" hidden></pre>
+  <div id="rules-status" class="status-box" hidden></div>
+</section>
+
+<section class="console-block">
+  <h2>Narrate</h2>
+  <p class="meta">This does not call anything. It writes out a block for you to paste into a
+  Claude Code session, which writes the prose from the season logs and the chronicle, saves it
+  under <code>narratives/</code>, and opens a pull request.</p>
+  <div class="field"><label for="narrate-from">From season</label><input id="narrate-from" type="number" value="1" min="1"></div>
+  <div class="field"><label for="narrate-to">To season</label><input id="narrate-to" type="number" value="{season}" min="1"></div>
+  <div class="field"><label for="narrate-houses">Focus houses <span class="meta">optional, comma separated</span></label><input id="narrate-houses" type="text"></div>
+  <div class="field"><label for="narrate-tone">Tone</label><select id="narrate-tone">{options(sorted(TONES))}</select></div>
+  <div class="actions">
+    <button type="button" id="build-narrate">Build the block</button>
+    <button type="button" id="copy-narrate">Copy</button>
+  </div>
+  <pre id="narrate-block" hidden></pre>
+</section>
+
+<section class="console-block">
+  <h2>Rebuild and status</h2>
+  <p class="meta">Rebuild replays the game from the seed and the season logs and checks that it
+  reproduces the committed database exactly.</p>
+  <div class="actions"><button type="button" id="rebuild" data-needs-token>Verify the rebuild</button></div>
+  <div id="rebuild-status" class="status-box" hidden></div>
+  <h3>Recent engine runs</h3>
+  <div id="runs">Connect to list the engine's recent runs.</div>
+</section>
+
+<script src="console.js"></script>
+"""
+    return page("Console", body, depth=0, subtitle="The director's controls")
+
+
+CONSOLE_JS = """(function () {
+  // The console's whole contract with GitHub: dispatch one workflow, then watch
+  // it. The token is the director's own and lives only in this browser.
+  var REPO = '__REPO__';
+  var WORKFLOW = 'engine.yml';
+  var API = 'https://api.github.com/repos/' + REPO;
+  var POLL_MS = 10000;
+  var NARRATE_TEMPLATE = __NARRATE_TEMPLATE__;
+  var TONES = __TONES__;
+
+  function token() {
+    try { return localStorage.getItem('hoc-token') || ''; } catch (e) { return ''; }
+  }
+  function setToken(value) {
+    try {
+      if (value) localStorage.setItem('hoc-token', value);
+      else localStorage.removeItem('hoc-token');
+    } catch (e) { /* private mode: the console still renders, just cannot remember */ }
+  }
+
+  function el(id) { return document.getElementById(id); }
+
+  function refreshConnected() {
+    var connected = !!token();
+    var state = el('token-state');
+    if (state) {
+      state.textContent = connected
+        ? 'Connected. The token is in this browser only.'
+        : 'Not connected. Everything below renders; nothing can be dispatched.';
+      state.className = connected ? 'meta connected' : 'meta';
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('[data-needs-token]'), function (button) {
+      button.disabled = !connected;
+      button.title = connected ? '' : 'Connect a GitHub token first';
+    });
+  }
+
+  function api(path, options) {
+    options = options || {};
+    options.headers = Object.assign({
+      'Accept': 'application/vnd.github+json',
+      'Authorization': 'Bearer ' + token(),
+      'X-GitHub-Api-Version': '2022-11-28'
+    }, options.headers || {});
+    return fetch(API + path, options).then(function (response) {
+      if (response.status === 204) return null;
+      return response.json().then(function (body) {
+        if (!response.ok) {
+          throw new Error((body && body.message) || ('GitHub said ' + response.status));
+        }
+        return body;
+      });
+    });
+  }
+
+  function say(box, html, kind) {
+    if (!box) return;
+    box.hidden = false;
+    box.className = 'status-box' + (kind ? ' ' + kind : '');
+    box.innerHTML = html;
+  }
+
+  // -------------------------------------------------------------- dispatch --
+
+  function dispatch(inputs, box) {
+    say(box, 'Dispatching…');
+    var started = new Date().toISOString();
+    return api('/actions/workflows/' + WORKFLOW + '/dispatches', {
+      method: 'POST',
+      body: JSON.stringify({ ref: 'main', inputs: inputs })
+    }).then(function () {
+      say(box, 'Dispatched. Waiting for the run to appear…');
+      return watch(started, box);
+    }).catch(function (error) {
+      say(box, 'Could not dispatch: ' + error.message, 'bad');
+    });
+  }
+
+  function watch(started, box) {
+    var attempts = 0;
+    function poll() {
+      attempts += 1;
+      api('/actions/workflows/' + WORKFLOW + '/runs?per_page=5').then(function (data) {
+        var runs = (data && data.workflow_runs) || [];
+        var run = runs.filter(function (r) { return r.created_at >= started; })[0] || runs[0];
+        if (!run) {
+          if (attempts < 30) setTimeout(poll, POLL_MS);
+          return;
+        }
+        var link = '<a href="' + run.html_url + '" target="_blank" rel="noopener">run #' +
+                   run.run_number + '</a>';
+        if (run.status !== 'completed') {
+          say(box, 'Running — ' + run.status.replace('_', ' ') + ' (' + link + '). ' +
+                   'Checking again in ten seconds.');
+          if (attempts < 180) setTimeout(poll, POLL_MS);
+          return;
+        }
+        if (run.conclusion === 'success') {
+          say(box, 'Finished (' + link + '). ' +
+                   '<button type="button" onclick="location.reload()">Reload the site</button>' +
+                   '<p class="footnote">The site is rebuilt by the Pages workflow a moment ' +
+                   'after the engine commits, so give it a few seconds before reloading.</p>',
+              'good');
+        } else {
+          say(box, 'The run ' + run.conclusion + ' — nothing was committed. Open ' + link +
+                   ' for the summary explaining why.', 'bad');
+        }
+      }).catch(function (error) {
+        say(box, 'Lost track of the run: ' + error.message, 'bad');
+      });
+    }
+    setTimeout(poll, 3000);
+  }
+
+  // ------------------------------------------------------------ run seasons --
+
+  var seasons = 10;
+  Array.prototype.forEach.call(document.querySelectorAll('button.seasons'), function (button) {
+    button.addEventListener('click', function () {
+      seasons = Number(button.getAttribute('data-seasons'));
+      Array.prototype.forEach.call(document.querySelectorAll('button.seasons'), function (other) {
+        other.classList.toggle('chosen', other === button);
+      });
+      if (el('run-count')) el('run-count').textContent = seasons;
+    });
+  });
+
+  if (el('run')) {
+    el('run').addEventListener('click', function () {
+      var stops = Array.prototype.slice.call(
+        document.querySelectorAll('input[name=stop]:checked')
+      ).map(function (box) { return box.value; });
+      dispatch({
+        command: 'run',
+        seasons: String(seasons),
+        stop_on: stops.join(','),
+        note: (el('run-note') || {}).value || ''
+      }, el('run-status'));
+    });
+  }
+
+  // -------------------------------------------------------------- intervene --
+
+  var pendingTurn = null;
+
+  function fieldsOf(block) {
+    var values = {};
+    Array.prototype.forEach.call(block.querySelectorAll('[data-field]'), function (input) {
+      values[input.getAttribute('data-field')] = input.value;
+    });
+    return values;
+  }
+
+  function buildTurn(op, values) {
+    var operation = { op: op };
+    var directive;
+
+    if (op === 'set_objective' || op === 'veto_objective') {
+      operation.house = values.house;
+      operation.objective = values.objective;
+      if (values.reason) operation.reason = values.reason;
+      directive = (op === 'set_objective' ? 'Set ' : 'Veto ') + values.objective +
+                  ' for ' + values.house + '.';
+    } else if (op === 'force_action') {
+      operation.house = values.house;
+      operation.action = values.action;
+      if (values.reason) operation.reason = values.reason;
+      directive = values.house + ' is to ' + values.action + ' next season.';
+    } else if (op === 'adjust_stat') {
+      if (!values.reason) throw new Error('A stat adjustment needs a reason.');
+      operation.house = values.house;
+      operation.stat = values.stat;
+      operation.delta = Number(values.delta);
+      operation.reason = values.reason;
+      directive = 'Adjust ' + values.house + "'s " + values.stat + ' by ' + values.delta + '.';
+    } else if (op === 'grant_house') {
+      // The engine names the house from the community banks and gives it its
+      // colours, holder and opening stats; a surname here fixes only the
+      // surname, and is still checked against the denylist.
+      operation.riding = values.riding;
+      operation.community = values.community;
+      operation.rank = values.rank;
+      operation.tag = values.tag;
+      if (values.surname) operation.surname = values.surname;
+      if (values.reason) operation.reason = values.reason;
+      directive = 'Grant a ' + values.rank + ' seated at ' + values.riding + '.';
+    } else if (op === 'set_clock') {
+      if (!values.basis) throw new Error('Setting a clock needs a basis.');
+      operation.house = values.house;
+      operation.personal_year = Number(values.personal_year);
+      operation.basis = values.basis;
+      directive = values.house + "'s clock is set to " + values.personal_year + '.';
+    } else if (op === 'relation') {
+      if (values.house_a === values.house_b) throw new Error('A house cannot relate to itself.');
+      if (!values.text) throw new Error('A relation needs its text.');
+      operation.house_a = values.house_a;
+      operation.house_b = values.house_b;
+      operation.marker = values.marker;
+      operation.text = values.text;
+      directive = values.house_a + ' and ' + values.house_b + ': ' + values.marker + '.';
+    }
+
+    return {
+      directive: directive,
+      event: {
+        kind: 'other',
+        title: "Director's intervention",
+        narrative: directive,
+        houses: []
+      },
+      operations: [operation]
+    };
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.intervention .build'), function (button) {
+    button.addEventListener('click', function () {
+      var block = button.closest('.intervention');
+      var op = block.getAttribute('data-op');
+      try {
+        pendingTurn = buildTurn(op, fieldsOf(block));
+      } catch (error) {
+        say(el('intervene-status'), error.message, 'bad');
+        return;
+      }
+      el('turn-json').textContent = JSON.stringify(pendingTurn, null, 2);
+      el('turn-review').hidden = false;
+      el('turn-review').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  });
+
+  if (el('cancel-turn')) {
+    el('cancel-turn').addEventListener('click', function () {
+      pendingTurn = null;
+      el('turn-review').hidden = true;
+    });
+  }
+
+  if (el('dispatch-turn')) {
+    el('dispatch-turn').addEventListener('click', function () {
+      if (!pendingTurn) return;
+      dispatch({
+        command: 'intervene',
+        payload: JSON.stringify(pendingTurn),
+        note: pendingTurn.directive
+      }, el('intervene-status'));
+      el('turn-review').hidden = true;
+    });
+  }
+
+  // ------------------------------------------------------------------ rules --
+
+  var rulesLoaded = {};
+
+  function numericFields(prefix, value, into) {
+    Object.keys(value).forEach(function (key) {
+      var child = value[key];
+      var path = prefix ? prefix + '.' + key : key;
+      if (typeof child === 'number') into[path] = child;
+      else if (child && typeof child === 'object' && !Array.isArray(child)) {
+        numericFields(path, child, into);
+      }
+    });
+    return into;
+  }
+
+  function renderRules(file, fields) {
+    var rows = Object.keys(fields).sort().map(function (path) {
+      var id = 'rule--' + file + '--' + path;
+      return '<div class="field rule"><label for="' + id + '">' + path + '</label>' +
+             '<input id="' + id + '" type="number" step="any" data-file="' + file + '"' +
+             ' data-path="' + path + '" data-original="' + fields[path] + '"' +
+             ' value="' + fields[path] + '"></div>';
+    }).join('');
+    return '<details><summary>' + file + '</summary>' + rows + '</details>';
+  }
+
+  if (el('load-rules')) {
+    el('load-rules').addEventListener('click', function () {
+      var box = el('rules-fields');
+      box.innerHTML = 'Loading…';
+      var files = ['friction.json', 'founding.json', 'succession.json', 'responses.json'];
+      Promise.all(files.map(function (name) {
+        return api('/contents/rules/' + name).then(function (data) {
+          return { name: name, body: JSON.parse(atob(data.content.replace(/\n/g, ''))) };
+        });
+      })).then(function (loaded) {
+        box.innerHTML = loaded.map(function (entry) {
+          var fields = numericFields('', entry.body, {});
+          rulesLoaded[entry.name] = fields;
+          return renderRules(entry.name, fields);
+        }).join('');
+      }).catch(function (error) {
+        box.innerHTML = '<p class="bad">Could not read the rules: ' + error.message + '</p>';
+      });
+    });
+  }
+
+  if (el('propose-rules')) {
+    el('propose-rules').addEventListener('click', function () {
+      var note = (el('rules-note') || {}).value || '';
+      if (!note.trim()) {
+        say(el('rules-status'), 'A rules change needs a note saying what you observed.', 'bad');
+        return;
+      }
+      var patch = {};
+      var diff = [];
+      Array.prototype.forEach.call(document.querySelectorAll('input[data-path]'), function (input) {
+        var before = Number(input.getAttribute('data-original'));
+        var after = Number(input.value);
+        if (after === before) return;
+        var file = input.getAttribute('data-file');
+        patch[file] = patch[file] || {};
+        patch[file][input.getAttribute('data-path')] = after;
+        diff.push(file + ':' + input.getAttribute('data-path') + '  ' + before + ' → ' + after);
+      });
+      if (!diff.length) {
+        say(el('rules-status'), 'Nothing changed.', 'bad');
+        return;
+      }
+      el('rules-diff').hidden = false;
+      el('rules-diff').textContent = diff.join('\n');
+      dispatch({ command: 'rules', payload: JSON.stringify(patch), note: note },
+               el('rules-status'));
+    });
+  }
+
+  // --------------------------------------------------------------- narrate --
+
+  if (el('build-narrate')) {
+    el('build-narrate').addEventListener('click', function () {
+      var from = Number(el('narrate-from').value);
+      var to = Number(el('narrate-to').value);
+      if (to < from) { var swap = from; from = to; to = swap; }
+      var houses = (el('narrate-houses').value || '').split(',')
+        .map(function (name) { return name.trim(); })
+        .filter(Boolean);
+      var focus = '';
+      if (houses.length === 1) {
+        focus = ' Focus on ' + houses[0] +
+                ', and mention other houses only where they touch these.';
+      } else if (houses.length > 1) {
+        focus = ' Focus on ' + houses.slice(0, -1).join(', ') + ' and ' +
+                houses[houses.length - 1] +
+                ', and mention other houses only where they touch these.';
+      }
+      var tone = el('narrate-tone').value;
+      var span = to - from + 1;
+      var words = Math.max(300, Math.min(1200, span * 120));
+      function pad(n) { return String(n).padStart(4, '0'); }
+
+      var block = NARRATE_TEMPLATE
+        .replace(/\{season_from:04d\}/g, pad(from))
+        .replace(/\{season_to:04d\}/g, pad(to))
+        .replace(/\{season_from\}/g, from)
+        .replace(/\{season_to\}/g, to)
+        .replace(/\{focus\}/g, focus)
+        .replace(/\{tone_description\}/g, TONES[tone])
+        .replace(/\{tone\}/g, tone)
+        .replace(/\{words\}/g, words);
+
+      el('narrate-block').hidden = false;
+      el('narrate-block').textContent = block;
+    });
+  }
+
+  if (el('copy-narrate')) {
+    el('copy-narrate').addEventListener('click', function () {
+      var text = el('narrate-block').textContent;
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(function () {
+        el('copy-narrate').textContent = 'Copied';
+        setTimeout(function () { el('copy-narrate').textContent = 'Copy'; }, 2000);
+      });
+    });
+  }
+
+  // -------------------------------------------------------- rebuild, status --
+
+  if (el('rebuild')) {
+    el('rebuild').addEventListener('click', function () {
+      dispatch({ command: 'rebuild', note: 'verify the record reproduces the database' },
+               el('rebuild-status'));
+    });
+  }
+
+  function listRuns() {
+    if (!token()) return;
+    api('/actions/workflows/' + WORKFLOW + '/runs?per_page=10').then(function (data) {
+      var runs = (data && data.workflow_runs) || [];
+      if (!runs.length) { el('runs').textContent = 'No engine run yet.'; return; }
+      el('runs').innerHTML = '<ul class="runs">' + runs.map(function (run) {
+        var state = run.status === 'completed' ? (run.conclusion || '') : run.status;
+        return '<li><a href="' + run.html_url + '" target="_blank" rel="noopener">#' +
+               run.run_number + '</a> <span class="meta">' + run.display_title +
+               ' — ' + state + '</span></li>';
+      }).join('') + '</ul>';
+    }).catch(function (error) {
+      el('runs').textContent = 'Could not list runs: ' + error.message;
+    });
+  }
+
+  // ------------------------------------------------------------------ wire --
+
+  if (el('connect')) {
+    el('connect').addEventListener('click', function () {
+      setToken(el('token').value.trim());
+      el('token').value = '';
+      refreshConnected();
+      listRuns();
+    });
+  }
+  if (el('disconnect')) {
+    el('disconnect').addEventListener('click', function () {
+      setToken('');
+      refreshConnected();
+      el('runs').textContent = 'Connect to list the engine\\'s recent runs.';
+    });
+  }
+
+  refreshConnected();
+  listRuns();
+})();
+"""
 
 
 STYLE = """/* House of Cards — one stylesheet, mobile first. */
@@ -1316,6 +2021,39 @@ code { font-size: 0.78rem; color: var(--muted); }
 .sparks td { vertical-align: middle; }
 .chart-key { font-size: 0.75rem; color: var(--muted); margin: 0.1rem 0 0.8rem; }
 .kin { font-size: 0.85rem; color: var(--muted); }
+.console-block { border-top: 1px solid var(--rule); padding-top: 0.6rem; margin-top: 1.6rem; }
+.console-block h2 { border-top: 0; margin-top: 0.2rem; padding-top: 0; }
+.field { margin: 0.5rem 0; }
+.field label { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+               color: var(--muted); margin-bottom: 0.15rem; }
+.field input, .field select { font: inherit; font-size: 0.9rem; width: 100%; max-width: 22rem;
+                              padding: 0.35rem 0.4rem; border: 1px solid var(--rule);
+                              border-radius: 3px; background: #fff; color: var(--ink); }
+.field.rule { display: flex; align-items: center; gap: 0.6rem; }
+.field.rule label { flex: 1; text-transform: none; letter-spacing: 0; font-size: 0.8rem; margin: 0; }
+.field.rule input { width: 6rem; }
+.required { color: var(--accent); text-transform: none; letter-spacing: 0; }
+.actions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.6rem 0; }
+.actions button { font: inherit; font-size: 0.85rem; padding: 0.4rem 0.8rem; border: 1px solid var(--rule);
+                  background: #fff; color: var(--ink); border-radius: 3px; cursor: pointer; }
+.actions button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.actions button:disabled { opacity: 0.45; cursor: not-allowed; }
+.actions button.chosen { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.checks { display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; font-size: 0.85rem; }
+.check { display: inline-flex; align-items: center; gap: 0.25rem; }
+.intervention { border-left: 2px solid var(--rule); padding-left: 0.8rem; margin: 1rem 0; }
+.intervention h3 { margin-top: 0; }
+.status-box { border: 1px solid var(--rule); background: #fff; padding: 0.6rem 0.7rem;
+              margin: 0.5rem 0; font-size: 0.88rem; }
+.status-box.good { border-left: 3px solid #4a7a4a; }
+.status-box.bad { border-left: 3px solid #a04040; }
+.bad { color: #a04040; }
+.connected { color: #4a7a4a; }
+pre { background: #fff; border: 1px solid var(--rule); padding: 0.6rem; overflow-x: auto;
+      font-size: 0.78rem; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
+.runs { list-style: none; padding: 0; }
+.runs li { padding: 0.3rem 0; border-bottom: 1px solid var(--rule); font-size: 0.88rem; }
+
 .banner { font-family: var(--serif); font-size: 0.85rem; color: var(--muted); background: #f2eee4;
           border: 1px solid var(--rule); border-left: 3px solid var(--accent);
           padding: 0.5rem 0.7rem; margin: 0 0 0.8rem; }
@@ -1332,6 +2070,9 @@ code { font-size: 0.78rem; color: var(--muted); }
 .chronicle { list-style: none; padding: 0; margin: 0.3rem 0 0; }
 .chronicle li { padding: 0.35rem 0; border-bottom: 1px solid var(--rule); font-size: 0.9rem; }
 .chronicle li.challenge, .chronicle li.succession { font-family: var(--serif); }
+.narrative-block { margin: 0.4rem 0 0.8rem; border-left: 2px solid var(--accent); padding-left: 0.7rem; }
+.narrative-block summary { cursor: pointer; font-size: 0.85rem; color: var(--accent); }
+.narrative-block .prose { margin-top: 0.5rem; }
 
 .turn { margin-bottom: 2rem; }
 .directive { font-family: var(--serif); font-style: italic; color: var(--ink);
@@ -1412,6 +2153,17 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
     write(site_dir / "climate.html", _climate_page(conn))
     write(site_dir / "chronicle.html", _chronicle_page(conn, slugs))
     write(site_dir / "about.html", _about_page(conn, slugs))
+    if not archive:
+        # The archive is a frozen game; a console over it would offer controls
+        # that cannot do anything.
+        write(site_dir / "console.html", _console_page(conn, slugs))
+        write(
+            site_dir / "console.js",
+            CONSOLE_JS
+            .replace("__REPO__", REPO_URL.rsplit("/", 2)[-2] + "/" + REPO_URL.rsplit("/", 1)[-1])
+            .replace("__NARRATE_TEMPLATE__", json.dumps(NARRATE_TEMPLATE))
+            .replace("__TONES__", json.dumps(TONES, ensure_ascii=False)),
+        )
 
     for house_row in _houses(conn):
         write(houses_dir / f"{slugs[house_row['house']]}.html", _house_page(conn, house_row, slugs))

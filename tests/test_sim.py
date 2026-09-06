@@ -394,7 +394,7 @@ def test_a_world_replays_into_an_identical_database(tmp_path, rules):
 # ------------------------------------------------------------------- smoke --
 
 
-@pytest.mark.slow
+@pytest.mark.smoke
 def test_smoke_three_seeds_stay_within_the_sanity_targets(tmp_path, rules):
     """docs/ENGINE_DESIGN.md §17, across three seeds and 300 seasons each."""
     started = time.time()

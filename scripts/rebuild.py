@@ -13,6 +13,7 @@ Exporting is skipped when a database path other than the default is given, so a
 test rebuild does not overwrite the committed outputs/.
 """
 
+import re
 import sys
 from pathlib import Path
 
@@ -27,11 +28,29 @@ import build_archive  # noqa: E402  (same directory; imported after sys.path set
 import load_seed  # noqa: E402
 
 
+# A director's intervention is applied between two seasons, so replaying it in
+# the wrong place would change every season after it. The season it follows is
+# in its filename — 0003_s0042-adjust-cashin.json follows season 42 — and a turn
+# file without that marker belongs to a director-written game, which has no
+# seasons to interleave with and replays first.
+INTERVENTION_SEASON = re.compile(r"^\d{4}_s(\d{4})-")
+
+
 def turn_files(name=None):
     directory = scenario.turns_dir(name)
     if not directory.is_dir():
         return []
     return sorted(directory.glob("[0-9][0-9][0-9][0-9]_*.json"))
+
+
+def turn_after_season(path):
+    """The season a turn file follows, or None if it is not an intervention."""
+    match = INTERVENTION_SEASON.match(path.name)
+    return int(match.group(1)) if match else None
+
+
+def season_number(path):
+    return int(path.stem)
 
 
 def season_files(name=None):
@@ -41,8 +60,8 @@ def season_files(name=None):
     return sorted(directory.glob("[0-9][0-9][0-9][0-9].json"))
 
 
-def replay_turns(conn, name=None, verbose=True):
-    for path in turn_files(name):
+def replay_turns(conn, name=None, verbose=True, paths=None):
+    for path in turn_files(name) if paths is None else paths:
         try:
             summary = apply_turn(conn, path)
         except TurnError as exc:
@@ -52,31 +71,53 @@ def replay_turns(conn, name=None, verbose=True):
             print(f"  replayed {path.name} -> event {summary['event_id']}, holdings {summary['holdings']}")
 
 
-def replay_seasons(conn, name=None, verbose=True):
-    """Replay an autoplay scenario's season logs.
+def replay_seasons(conn, name=None, verbose=True, interventions=()):
+    """Replay an autoplay scenario's season logs, interleaving interventions.
 
     The engine is deterministic from (world seed, season number), so replay
     re-runs the season loop rather than re-applying recorded deltas; the logs
-    are the audit trail that the replay must reproduce.
+    are the audit trail that the replay must reproduce. An intervention changes
+    the state the next season starts from, so it has to go back in at the point
+    it was applied.
     """
     paths = season_files(name)
     if not paths:
         return
     from hoc import sim  # imported here so a turn-only rebuild needs no engine
 
+    pending = sorted(interventions, key=lambda item: (item[0], item[1].name))
+
     # The engine never commits — the caller owns the transaction, exactly as the
     # turn runner does — so the replay has to be wrapped or it rolls back on close.
     with conn:
-        world = sim.World.replay(conn, paths, seasons_dir=scenario.seasons_dir(name))
-    if verbose:
+        world = None
+        for path in paths:
+            season = season_number(path)
+            while pending and pending[0][0] < season:
+                _, turn_path = pending.pop(0)
+                replay_turns(conn, name, verbose=verbose, paths=[turn_path])
+            world = sim.World.replay(conn, [path], seasons_dir=scenario.seasons_dir(name),
+                                     world=world)
+        for _, turn_path in pending:
+            replay_turns(conn, name, verbose=verbose, paths=[turn_path])
+
+    if verbose and world is not None:
         print(f"  replayed {len(paths)} season(s) -> season {world.season_no}")
 
 
 def rebuild(db_path, export=True, name=None, verbose=True):
     """Load the seed, replay the scenario's record, optionally export."""
     conn = load_seed.build(db_path, seed=scenario.seed_dir(name))
-    replay_turns(conn, name, verbose=verbose)
-    replay_seasons(conn, name, verbose=verbose)
+
+    plain, interventions = [], []
+    for path in turn_files(name):
+        after = turn_after_season(path)
+        (interventions if after is not None else plain).append(
+            (after, path) if after is not None else path
+        )
+
+    replay_turns(conn, name, verbose=verbose, paths=plain)
+    replay_seasons(conn, name, verbose=verbose, interventions=interventions)
 
     if export:
         dump.write_dump(conn)

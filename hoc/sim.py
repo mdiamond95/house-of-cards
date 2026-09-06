@@ -129,6 +129,15 @@ SIEGE_SEASONS = 10
 # size budget; hoc/export/timeline.py reads whatever spacing it finds.
 SNAPSHOT_EVERY = 5
 
+# The pause conditions the director can arm a run with (§12, extended in 9e).
+STOP_CONDITIONS = frozenset(
+    {"removal", "challenge", "major", "marquis", "partition", "extinction"}
+)
+
+# How many chronicle lines a run summary carries. Enough to read what happened
+# without pasting a whole season log into a workflow summary.
+SUMMARY_CHRONICLE_LINES = 15
+
 
 class SimError(Exception):
     """The engine cannot proceed: a malformed world, not a rules outcome."""
@@ -561,12 +570,16 @@ class World:
             weights["Conservative"] *= 2
         return rng.weighted(weights, purpose="founding.tag")
 
-    def found_house(self, season, seat=None, rng=None, community=None, tag=None):
+    def found_house(self, season, seat=None, rng=None, community=None, tag=None,
+                    rank=None, surname=None):
         """Found a house (§10 and §4). Returns its name, or None if it cannot.
 
-        `seat` may be a riding name the director chose; otherwise the region and
-        seat are drawn. Everything else — community, tag, rank, names, colours,
-        stats, objectives — comes from the tables and the season's RNG.
+        `seat`, `community`, `tag`, `rank` and `surname` may each be the
+        director's choice, through the console's grant (§12); anything left
+        unspecified is drawn. Whatever the director fixes, the rest still comes
+        from the tables and the season's RNG — a granted house is initialised by
+        the same rules as one the founding roll produced, so it is not a
+        privileged object on the map.
         """
         rng = rng or self.rng_for(season)
         self._initial_climate()
@@ -605,13 +618,16 @@ class World:
         )
 
         tag = tag or self._draw_tag(rng)
-        rank = rng.weighted(self.rules.founding["rank_probabilities"], purpose="founding.rank")
+        rank = rank or rng.weighted(
+            self.rules.founding["rank_probabilities"], purpose="founding.rank"
+        )
         rank_index = self.rank_index.get(rank, 0)
 
         generator = NameGenerator(self.rules, rng)
         try:
             drawn = generator.draw_house(
-                community_obj.community, province, rank, taken_places=self.taken_places()
+                community_obj.community, province, rank,
+                taken_places=self.taken_places(), surname=surname or None,
             )
         except Exception as exc:  # a bank that cannot serve this province
             self.log.append({"purpose": "founding.abandoned", "result": str(exc)})
@@ -1771,6 +1787,26 @@ class World:
         return weights
 
     def take_action(self, house, season, rng):
+        # A director's forced action (§12) pre-empts the draw for one season and
+        # is cleared as it is taken. It bypasses the weights but not the rules:
+        # an action the house cannot legally take is still refused, and the house
+        # falls back to its ordinary draw rather than doing nothing.
+        forced = self.house_row(house)["forced_action"]
+        if forced:
+            self.conn.execute(
+                "UPDATE house_stats SET forced_action = NULL WHERE house = ?", (house,)
+            )
+            if forced in self.legal_actions(house):
+                rng.draw(f"action.{house}", {"forced_by": "director", "action": forced})
+                outcome = self.resolve_action(house, forced, season, rng)
+                if outcome is not None:
+                    outcome["forced"] = True
+                return outcome
+            rng.draw(
+                f"action.{house}",
+                {"forced_by": "director", "action": forced, "refused": "not legal this season"},
+            )
+
         legal = self.legal_actions(house)
         weights = self.action_weights(house, legal)
         name = rng.weighted(weights, purpose=f"action.{house}")
@@ -2666,6 +2702,45 @@ class World:
             (season,),
         )
 
+    def _interventions_since(self, season):
+        """Director interventions applied between the last season and this one.
+
+        They arrive as turn files, outside the season loop, so the season record
+        would otherwise have no trace of them — and a season log that cannot
+        explain why a house did something unaccountable is not an audit trail.
+        """
+        previous = self.conn.execute(
+            "SELECT MAX(season_no) AS n FROM seasons WHERE season_no < ?", (season,)
+        ).fetchone()["n"]
+        # Interventions arrive through the turn runner, which stamps its events
+        # source='turn'; what marks one as a director's intervention is the
+        # after_season key that only the §12 operations write.
+        rows = self.conn.execute(
+            "SELECT title, mechanical_delta FROM events"
+            " WHERE mechanical_delta LIKE '%after_season%' ORDER BY id"
+        ).fetchall()
+
+        # The turn runner merges each operation's delta under its own key and
+        # keeps a list per key, so an intervention's after_season sits one level
+        # down rather than at the top of the event's delta.
+        out = []
+        for row in rows:
+            try:
+                delta = json.loads(row["mechanical_delta"] or "{}")
+            except ValueError:
+                continue
+            for operation, entries in delta.items():
+                for entry in entries if isinstance(entries, list) else [entries]:
+                    if not isinstance(entry, dict):
+                        continue
+                    after = entry.get("after_season")
+                    if after is None or after >= season:
+                        continue
+                    if previous is not None and after < previous:
+                        continue
+                    out.append({"operation": operation, "title": row["title"], **entry})
+        return out
+
     def _write_season(self, season, outcomes, founded):
         self._snapshot(season)
         houses_after = self.conn.execute(
@@ -2679,6 +2754,7 @@ class World:
             "season": season,
             "seed": self.world_seed,
             "rules_version": RULES_VERSION,
+            "interventions": self._interventions_since(season),
             "draws": self.log,
             "actions": outcomes,
             "founded": founded,
@@ -2706,6 +2782,13 @@ class World:
 
     def run(self, count, stop_on=()):
         """Play `count` seasons, stopping early on any named condition."""
+        unknown = set(stop_on) - STOP_CONDITIONS
+        if unknown:
+            raise SimError(
+                f"unknown stop condition(s) {', '.join(sorted(unknown))};"
+                f" valid conditions are {', '.join(sorted(STOP_CONDITIONS))}"
+            )
+
         records = []
         for _ in range(count):
             record = self.run_season()
@@ -2716,13 +2799,51 @@ class World:
                 break
         return records
 
+    def run_summary(self, records, before):
+        """A machine-readable account of a run, for the engine workflow to parse.
+
+        `before` is the (houses, ridings) count taken before the first season, so
+        the summary can say what the run changed rather than only where it ended.
+        """
+        last = records[-1] if records else None
+        chronicle = [line for record in records for line in record["chronicle"]]
+        return {
+            "seasons_run": len(records),
+            "season_from": records[0]["season"] if records else self.season_no,
+            "season_to": last["season"] if last else self.season_no,
+            "stopped_on": (last or {}).get("stopped_on", []),
+            "stopped_at_season": last["season"] if last and last.get("stopped_on") else None,
+            "houses_before": before[0],
+            "houses_after": last["houses_after"] if last else before[0],
+            "ridings_before": before[1],
+            "ridings_after": last["ridings_after"] if last else before[1],
+            "chronicle": chronicle[-SUMMARY_CHRONICLE_LINES:],
+            "chronicle_total": len(chronicle),
+            "rules_version": RULES_VERSION,
+            "seed": self.world_seed,
+        }
+
+    def counts(self):
+        """(active houses, ridings held) right now."""
+        row = self.conn.execute(
+            "SELECT (SELECT COUNT(*) FROM houses WHERE status = 'active') AS houses,"
+            " (SELECT COUNT(*) FROM holdings WHERE released_event_id IS NULL) AS ridings"
+        ).fetchone()
+        return row["houses"], row["ridings"]
+
     def _stop_conditions(self, record):
-        """Which of §12's pause conditions this season met."""
+        """Which of §12's pause conditions this season met.
+
+        `removal` is any house leaving play — extinction or absorption alike,
+        since from the director's chair both are a house gone from the map.
+        `extinction` and `partition` are the narrower conditions, so a director
+        watching for cadet lines is not woken by every absorbed neighbour.
+        """
         hit = set()
         season = record["season"]
         rows = self.conn.execute(
             "SELECT e.kind, e.title, e.mechanical_delta FROM events e"
-            " WHERE e.source = 'engine' ORDER BY e.id DESC LIMIT 200"
+            " WHERE e.source = 'engine' ORDER BY e.id DESC LIMIT 400"
         ).fetchall()
         for row in rows:
             try:
@@ -2731,8 +2852,13 @@ class World:
                 continue
             if delta.get("season") != season:
                 continue
-            if delta.get("nature") == "extinction":
+            nature = delta.get("nature")
+            if nature in ("extinction", "absorption"):
                 hit.add("removal")
+            if nature == "extinction":
+                hit.add("extinction")
+            if nature == "partition":
+                hit.add("partition")
             if row["kind"] == "challenge":
                 hit.add("challenge")
             if delta.get("magnitude") == "Major":
@@ -2744,7 +2870,7 @@ class World:
     # ---------------------------------------------------------------- replay --
 
     @classmethod
-    def replay(cls, conn, paths, seasons_dir=None):
+    def replay(cls, conn, paths, seasons_dir=None, world=None):
         """Re-play an autoplay scenario's seasons into a freshly seeded database.
 
         The engine is deterministic from (world seed, season number), so the
@@ -2757,7 +2883,10 @@ class World:
         with open(paths[0], encoding="utf-8") as f:
             first = json.load(f)
 
-        world = cls(conn, world_seed=first["seed"], seasons_dir=seasons_dir)
+        # A caller replaying season by season (to interleave interventions)
+        # passes the world back in so its cached rules and seed are reused.
+        if world is None:
+            world = cls(conn, world_seed=first["seed"], seasons_dir=seasons_dir)
         for path in paths:
             with open(path, encoding="utf-8") as f:
                 record = json.load(f)

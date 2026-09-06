@@ -65,6 +65,18 @@ OPERATION_FIELDS = {
         ),
         ("secondary_hex", "heir_apparent", "acknowledge_cohort_mismatch"),
     ),
+    # Phase 9e director interventions (§12). `reason` is optional on three of
+    # them and required on adjust_stat, which is the only one that changes a
+    # number with no rule behind it.
+    "set_objective": (("house", "objective"), ("reason",)),
+    "veto_objective": (("house", "objective"), ("reason",)),
+    "force_action": (("house", "action"), ("reason",)),
+    "adjust_stat": (("house", "stat", "delta", "reason"), ()),
+    # A grant through the engine's own founding path: the director chooses the
+    # seat and as much else as they care to, and the banks supply the rest —
+    # name, peerage, colours, holder and opening stats. Unlike found_house it
+    # does not ask the director to invent a colour or a holder's age.
+    "grant_house": (("riding",), ("community", "rank", "tag", "surname", "reason")),
 }
 
 # Which fields of an operation name a house that must already exist.
@@ -77,7 +89,14 @@ HOUSE_FIELDS = {
     "set_clock": ("house",),
     "advance_clock": ("house",),
     "relation": ("house_a", "house_b"),
+    "set_objective": ("house",),
+    "veto_objective": ("house",),
+    "force_action": ("house",),
+    "adjust_stat": ("house",),
 }
+
+# The stats a director may adjust, and the bounds a delta is clamped into.
+ADJUSTABLE_STATS = ("capital", "influence", "cohesion", "ambition")
 
 HEX_PATTERN = re.compile(r"^#[0-9A-Fa-f]{6}$")
 
@@ -189,7 +208,63 @@ def _check_operation(conn, index, op, known_houses, errors):
         if house is not None:
             known_houses.add(house)
 
-    if op_type in ("expand", "release", "transfer", "found_house"):
+    if op_type == "adjust_stat":
+        if op.get("stat") is not None and op["stat"] not in ADJUSTABLE_STATS:
+            errors.append(
+                f"operations[{index}] (adjust_stat): stat must be one of"
+                f" {', '.join(ADJUSTABLE_STATS)}"
+            )
+        if op.get("delta") is not None and not isinstance(op["delta"], int):
+            errors.append(f"operations[{index}] (adjust_stat): delta must be an integer")
+        reason = op.get("reason")
+        if reason is not None and not str(reason).strip():
+            # Required-field checking above catches a missing reason; this catches
+            # the one that is present and says nothing.
+            errors.append(
+                f"operations[{index}] (adjust_stat): reason must say why the stat was moved"
+            )
+
+    if op_type in ("set_objective", "veto_objective"):
+        objective = op.get("objective")
+        if objective is not None:
+            from hoc.rules_data import load_rules
+
+            known = {row.objective for row in load_rules().objectives}
+            if objective not in known:
+                errors.append(
+                    f"operations[{index}] ({op_type}): unknown objective {objective!r};"
+                    f" valid objectives are {', '.join(sorted(known))}"
+                )
+
+    if op_type == "force_action":
+        action = op.get("action")
+        if action is not None:
+            from hoc.rules_data import load_rules
+
+            known = {row.action for row in load_rules().actions}
+            if action not in known:
+                errors.append(
+                    f"operations[{index}] (force_action): unknown action {action!r};"
+                    f" valid actions are {', '.join(sorted(known))}"
+                )
+
+    if op_type == "grant_house":
+        from hoc.rules_data import load_rules
+
+        bundle = load_rules()
+        community = op.get("community")
+        if community is not None:
+            known = {row.community for row in bundle.communities}
+            if community not in known:
+                errors.append(
+                    f"operations[{index}] (grant_house): unknown community {community!r}"
+                )
+        if op.get("rank") is not None and op["rank"] not in RANK_LEVEL:
+            errors.append(f"operations[{index}] (grant_house): unknown rank {op['rank']!r}")
+        if op.get("tag") is not None and op["tag"] not in CLIMATE_TAGS:
+            errors.append(f"operations[{index}] (grant_house): tag must be one of {CLIMATE_TAGS}")
+
+    if op_type in ("expand", "release", "transfer", "found_house", "grant_house"):
         riding = op.get("riding")
         if riding is not None:
             from hoc.names import name_key
