@@ -1,15 +1,17 @@
 """Command line entry point.
 
-    python -m hoc apply turns/0001_slug.json   apply a turn, then export
+    python -m hoc apply scenarios/legacy/turns/0001_slug.json
     python -m hoc export                       regenerate outputs/ from hoc.db
     python -m hoc status                       compact summary of the state
     python -m hoc check <house> <riding>       test an expansion, changing nothing
+    python -m hoc scenario list                which games exist, and which is active
+    python -m hoc scenario use <name>          switch the active scenario
 """
 
 import argparse
 import sys
 
-from hoc import db, rules
+from hoc import db, rules, scenario as scenario_mod
 from hoc.export import dump, map as map_export, site, workbook
 from hoc.turn import TurnError, apply_turn
 
@@ -104,6 +106,29 @@ def cmd_check(args):
     return 0 if check.ok else 1
 
 
+def cmd_scenario(args):
+    if args.scenario_command == "list":
+        active = scenario_mod.current_name()
+        for name in scenario_mod.scenario_names():
+            manifest = scenario_mod.read_manifest(name)
+            marker = "*" if name == active else " "
+            kind = manifest.get("kind", "unknown")
+            seed = manifest.get("seed")
+            seed_text = "no seed yet" if seed is None else f"seed {seed}"
+            print(f" {marker} {name:<8} {kind:<9} {seed_text}")
+        print("\n* is the scenario hoc.db is built from (scenarios/current.txt)")
+        return 0
+
+    try:
+        scenario_mod.set_current(args.name)
+    except scenario_mod.ScenarioError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    print(f"active scenario is now {args.name!r}")
+    print("run `python scripts/rebuild.py` to rebuild hoc.db from it")
+    return 0
+
+
 def build_parser():
     parser = argparse.ArgumentParser(prog="python -m hoc", description=__doc__)
     parser.add_argument("--db", default=str(db.DEFAULT_DB_PATH), help="path to hoc.db")
@@ -123,6 +148,13 @@ def build_parser():
     check_parser.add_argument("house")
     check_parser.add_argument("riding")
     check_parser.set_defaults(func=cmd_check)
+
+    scenario_parser = sub.add_parser("scenario", help="list or switch the active scenario")
+    scenario_sub = scenario_parser.add_subparsers(dest="scenario_command", required=True)
+    scenario_sub.add_parser("list", help="show every scenario and which is active")
+    use_parser = scenario_sub.add_parser("use", help="make a scenario active")
+    use_parser.add_argument("name")
+    scenario_parser.set_defaults(func=cmd_scenario)
     return parser
 
 

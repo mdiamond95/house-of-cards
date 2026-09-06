@@ -12,6 +12,7 @@ import html
 import unicodedata
 from pathlib import Path
 
+from hoc import scenario
 from hoc.db import HOUSE_BLOCK_FIELDS
 from hoc.export import map as map_export
 
@@ -166,21 +167,36 @@ def _riding_lookup(conn):
 # ------------------------------------------------------------------- pages --
 
 
+def _latest_season(conn):
+    row = conn.execute("SELECT MAX(season_no) AS season FROM seasons").fetchone()
+    return None if row is None else row["season"]
+
+
 def _status_strip(conn):
     counts = _counts(conn)
     turn = _latest_turn(conn)
+    season = _latest_season(conn)
     climate = "".join(
         f'<span class="stat"><b>{esc(row["cumulative_after"])}</b> {esc(row["era_cohort"])}</span>'
         for row in conn.execute("SELECT * FROM v_current_climate ORDER BY era_cohort")
     )
-    turn_text = f"turn {turn:04d}" if turn is not None else "no turns yet"
+    # An autoplay scenario counts seasons and a director-written one counts turns;
+    # show whichever the active scenario actually has, and say which game it is,
+    # so a page never leaves the reader guessing which world they are looking at.
+    if season is not None:
+        progress_text = f"season {season}"
+    elif turn is not None:
+        progress_text = f"turn {turn:04d}"
+    else:
+        progress_text = "not started"
     return (
         '<div class="status">'
+        f'<span class="stat scenario">scenario <b>{esc(scenario.current_name())}</b></span>'
         f'<span class="stat"><b>{counts["active"]}</b> active houses</span>'
         f'<span class="stat"><b>{counts["removed"]}</b> removed</span>'
         f'<span class="stat"><b>{counts["claimed"]}</b> of {counts["ridings"]} ridings held</span>'
         f"{climate}"
-        f'<span class="stat">{esc(turn_text)}</span>'
+        f'<span class="stat">{esc(progress_text)}</span>'
         "</div>"
     )
 
@@ -638,7 +654,7 @@ def _about_page(conn, slugs):
         " conversation transcripts. What follows is what the record still does not hold. Nothing"
         " on this site fills those gaps with invention: an unrecovered value is shown as"
         ' <span class="unrecovered">not recovered</span>.</p>\n'
-        f'<p><a href="{REPO_URL}/blob/main/docs/RECONSTRUCTION.md">Read the full reconstruction'
+        f'<p><a href="{REPO_URL}/blob/main/scenarios/legacy/RECONSTRUCTION.md">Read the full reconstruction'
         " record on GitHub</a>.</p>\n"
         f'<h3>Holders whose name was never recovered <span class="count">{len(unnamed)}</span></h3>\n'
         f"{house_list(unnamed)}\n"
@@ -693,6 +709,7 @@ h3 { font-size: 0.95rem; margin: 1.2rem 0 0.3rem; font-weight: 600; }
 p { margin: 0.5rem 0; }
 a { color: var(--accent); }
 .subtitle { font-family: var(--serif); color: var(--muted); margin: 0 0 1rem; }
+.stat.scenario b { text-transform: uppercase; letter-spacing: 0.06em; }
 .lede { color: var(--muted); }
 .count { font-family: var(--sans); font-size: 0.75rem; font-weight: 400; color: var(--muted); }
 .meta, .source, .footnote, .confidence { font-size: 0.8rem; color: var(--muted); }

@@ -50,7 +50,7 @@ def rows(conn, sql):
 
 
 def test_rebuild_replays_every_turn_file(rebuilt):
-    turn_files = sorted((ROOT / "turns").glob("[0-9][0-9][0-9][0-9]_*.json"))
+    turn_files = sorted((ROOT / "scenarios" / "legacy" / "turns").glob("[0-9][0-9][0-9][0-9]_*.json"))
     assert turn_files, "no turn files found to replay"
     assert db.one(rebuilt, "SELECT COUNT(*) FROM turns") == len(turn_files)
 

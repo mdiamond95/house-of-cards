@@ -1,7 +1,7 @@
 import csv
 from pathlib import Path
 
-SEED = Path(__file__).resolve().parent.parent / "data" / "seed"
+SEED = Path(__file__).resolve().parent.parent / "scenarios" / "legacy" / "seed"
 
 
 def load(name):

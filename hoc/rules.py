@@ -12,7 +12,7 @@ Where a rule was never recovered from the lost workbook, the value is an
 explicit parameter rather than a formula invented here (CLAUDE.md hard rule 1).
 Those are: the year participants sync to (`sync_clocks`), the per-event climate
 delta (`climate_shift`), and the cohort-fit thresholds (`cohort_fit`, a first
-encoding). See docs/RECONSTRUCTION.md, "Rules not recovered".
+encoding). See scenarios/legacy/RECONSTRUCTION.md, "Rules not recovered".
 """
 
 import json

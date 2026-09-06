@@ -91,7 +91,7 @@ def word_count(text):
 
 
 def turn_id_from_path(path):
-    """turns/0007_slug.json -> 7. The number is the turn id, so it must be
+    """…/turns/0007_slug.json -> 7. The number is the turn id, so it must be
     unique and ordered; the loader refuses anything else."""
     match = FILENAME_PATTERN.match(Path(path).name)
     if match is None:

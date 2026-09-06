@@ -1,0 +1,7 @@
+{
+  "name": "legacy",
+  "seed": null,
+  "started_season": null,
+  "kind": "director",
+  "note": "The reconstructed 2026 playthrough, frozen. Written turn by turn by the director rather than played by the engine, so it has no world seed and no season counter — its record is turns/, not seasons/. See RECONSTRUCTION.md for where the seed CSVs came from."
+}

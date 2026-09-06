@@ -28,12 +28,12 @@ Pages: map with tappable ridings, a page per house (holder, holdings, house bloc
 
     python scripts/rebuild.py
 
-`scripts/rebuild.py` is the reproducible path: it loads the seed and then replays every `turns/*.json` in turn order, so the database is reconstructed from files under version control. `hoc.db` is committed as a convenience — the seed CSVs plus the turn files are the record, and the database is what they produce.
+`scripts/rebuild.py` is the reproducible path: it loads the active scenario's seed and then replays that scenario's record — every `turns/*.json` in turn order for the reconstructed game, every `seasons/NNNN.json` in season order for an engine-played one — so the database is reconstructed from files under version control. `hoc.db` is committed as a convenience — the seed CSVs plus the turn files are the record, and the database is what they produce.
 
 To load the seed alone, without replaying any turns:
 
     python scripts/load_seed.py
 
-`hoc.db` is a derived artefact. The loader deletes and rebuilds it from scratch out of `data/reference/*.csv` (343 ridings and their land adjacency, from the 2023 Representation Order boundaries) and `data/seed/*.csv` (the reconstructed houses, holdings, holders, successions, climate ledgers and relations), then prints a row count per table. Run it after any reconstruction commit that changes the seed. The reference CSVs themselves are rebuilt from the raw boundary file by `scripts/build_ridings.py`, `scripts/build_adjacency.py` and `scripts/build_geometry.py` — see `data/reference/raw/SOURCE.md` for provenance.
+`hoc.db` is a derived artefact. The loader deletes and rebuilds it from scratch out of `data/reference/*.csv` (343 ridings and their land adjacency, from the 2023 Representation Order boundaries) and the active scenario's `seed/*.csv` (for `legacy`, the reconstructed houses, holdings, holders, successions, climate ledgers and relations), then prints a row count per table. Run it after any reconstruction commit that changes the seed. The reference CSVs themselves are rebuilt from the raw boundary file by `scripts/build_ridings.py`, `scripts/build_adjacency.py` and `scripts/build_geometry.py` — see `data/reference/raw/SOURCE.md` for provenance.
 
-See `CLAUDE.md` for game rules and working conventions, `docs/RECONSTRUCTION.md` for what is reconstructed and what is still missing, and `docs/BUILD_PLAN.md` for the migration phases.
+See `CLAUDE.md` for game rules and working conventions, `scenarios/legacy/RECONSTRUCTION.md` for what is reconstructed and what is still missing, and `docs/BUILD_PLAN.md` for the migration phases.

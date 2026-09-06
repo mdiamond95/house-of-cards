@@ -41,6 +41,7 @@ h3 { font-size: 0.95rem; margin: 1.2rem 0 0.3rem; font-weight: 600; }
 p { margin: 0.5rem 0; }
 a { color: var(--accent); }
 .subtitle { font-family: var(--serif); color: var(--muted); margin: 0 0 1rem; }
+.stat.scenario b { text-transform: uppercase; letter-spacing: 0.06em; }
 .lede { color: var(--muted); }
 .count { font-family: var(--sans); font-size: 0.75rem; font-weight: 400; color: var(--muted); }
 .meta, .source, .footnote, .confidence { font-size: 0.8rem; color: var(--muted); }

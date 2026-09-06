@@ -32,7 +32,7 @@ The `.shp`/`.shx`/`.dbf`/`.prj`/`.CPG` files are committed here (total ≈18 MB,
 
 ## What this is
 
-`ne_10m_land.{shp,shx,dbf,prj,cpg}` and `ne_10m_lakes.{shp,shx,dbf,prj,cpg}` — Natural Earth's 1:10,000,000-scale physical vector layers, used to clip the FED polygons to the coastline and remove major inland water bodies (see docs/RECONSTRUCTION.md and `scripts/build_geometry.py` for why: the FED digital boundary file extends into open water, so ridings bleed into lakes and sea). Public domain (Natural Earth places no restrictions on use).
+`ne_10m_land.{shp,shx,dbf,prj,cpg}` and `ne_10m_lakes.{shp,shx,dbf,prj,cpg}` — Natural Earth's 1:10,000,000-scale physical vector layers, used to clip the FED polygons to the coastline and remove major inland water bodies (see scenarios/legacy/RECONSTRUCTION.md and `scripts/build_geometry.py` for why: the FED digital boundary file extends into open water, so ridings bleed into lakes and sea). Public domain (Natural Earth places no restrictions on use).
 
 - `ne_10m_land`: 11 features, the world's land masses at 10m scale. Version 5.1.1 per `ne_10m_land.VERSION.txt` (not committed; see below). Geographic CRS, WGS84 (EPSG:4326), confirmed from the `.prj`.
 - `ne_10m_lakes`: 1,355 features, named lake and reservoir polygons worldwide, with an English `name` field among many localized name fields. Version 5.0.0 per `ne_10m_lakes.VERSION.txt`. Same CRS.
