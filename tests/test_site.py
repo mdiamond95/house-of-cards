@@ -2,6 +2,8 @@
 
 import importlib.util
 import re
+from collections import Counter
+from html.parser import HTMLParser
 from pathlib import Path
 
 import pytest
@@ -151,3 +153,118 @@ def test_output_is_deterministic(built, tmp_path):
     for path in html_files(built):
         twin = rebuilt / path.relative_to(built)
         assert twin.read_text(encoding="utf-8") == path.read_text(encoding="utf-8"), path.name
+
+
+class _IdCollector(HTMLParser):
+    """Every id attribute on a page, in document order.
+
+    A real parser rather than a regular expression: an id is an id however the
+    attribute is quoted or ordered, and the bug this guards against was invisible
+    to reading the template — the section and the button inside it both answered
+    to `connect`, so `getElementById` returned the section and the connect
+    handler fired on every click within it, clearing the token field.
+    """
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.ids = []
+
+    def handle_starttag(self, tag, attrs):
+        for name, value in attrs:
+            if name == "id" and value:
+                self.ids.append(value)
+
+
+def element_ids(path):
+    collector = _IdCollector()
+    collector.feed(path.read_text(encoding="utf-8"))
+    return collector.ids
+
+
+def duplicate_ids(path):
+    return {name: count for name, count in Counter(element_ids(path)).items() if count > 1}
+
+
+def test_every_page_has_unique_element_ids(built):
+    """An id shared by two elements makes getElementById a coin toss, and every
+    script on the site reaches for elements by id."""
+    pages = html_files(built)
+    assert pages, "the site should have rendered some pages"
+
+    offenders = {
+        str(path.relative_to(built)): duplicate_ids(path)
+        for path in pages
+        if duplicate_ids(path)
+    }
+    assert not offenders, f"duplicate element ids: {offenders}"
+
+
+def test_every_page_of_a_played_world_has_unique_element_ids(tmp_path):
+    """The legacy site has no scrubber, no season chronicle and no engine
+    sections on its house pages, so the pages that only an engine-played game
+    produces need auditing too."""
+    from hoc import sim
+
+    conn = _load_seed_module().build(tmp_path / "played.db", seed=scenario.seed_dir("new"))
+    world = sim.World(conn, world_seed=1867)
+    world.initialise(1867)
+    for _ in range(9):
+        world.run_season()
+    site.write_site(conn, out_dir=tmp_path)
+    conn.close()
+
+    site_dir = tmp_path / site.SITE_DIRNAME
+    pages = html_files(site_dir)
+    assert any(path.name == "console.html" for path in pages)
+    assert 'id="season"' in (site_dir / "index.html").read_text(encoding="utf-8")
+
+    offenders = {
+        str(path.relative_to(site_dir)): duplicate_ids(path)
+        for path in pages
+        if duplicate_ids(path)
+    }
+    assert not offenders, f"duplicate element ids: {offenders}"
+
+
+def test_the_archive_pages_have_unique_element_ids(tmp_path):
+    import sys
+
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import build_archive
+
+    build_archive.build_archive(out_dir=tmp_path)
+    archive = tmp_path / site.SITE_DIRNAME / site.ARCHIVE_DIRNAME
+
+    pages = html_files(archive)
+    assert pages
+    offenders = {
+        str(path.relative_to(archive)): duplicate_ids(path)
+        for path in pages
+        if duplicate_ids(path)
+    }
+    assert not offenders, f"duplicate element ids: {offenders}"
+
+
+def test_the_console_connect_button_owns_its_id(built):
+    """Regression: the section wrapping the Connect button carried the same id.
+
+    getElementById returns the first match in document order — the section — so
+    the handler was bound to the whole block and fired when the director clicked
+    into the token field, calling setToken('') and wiping what they had pasted.
+    """
+    console = built / "console.html"
+    ids = element_ids(console)
+    assert ids.count("connect") == 1
+    assert "connect-block" in ids
+
+    html = console.read_text(encoding="utf-8")
+    assert '<button type="button" id="connect">Connect</button>' in html
+    assert 'id="connect-block"' in html
+
+
+def test_the_console_refuses_to_connect_an_empty_field(built):
+    """An empty field is not an instruction to forget the token; Disconnect is."""
+    js = (built.parent / site.SITE_DIRNAME / "console.js").read_text(encoding="utf-8")
+    assert "Paste a token first" in js
+    index = js.index("Paste a token first")
+    assert "setToken(value)" in js[index:], "the guard must precede the write"

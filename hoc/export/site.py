@@ -1322,7 +1322,7 @@ the game, runs the tests, exports the site and commits the result. The console n
 the repository itself, so there is one path by which the game changes and it is the one that
 checks its work.</p>
 
-<section class="console-block" id="connect">
+<section class="console-block" id="connect-block">
   <h2>Connect</h2>
   <p id="token-state" class="meta">Not connected.</p>
   <div class="field">
@@ -1880,7 +1880,19 @@ CONSOLE_JS = """(function () {
 
   if (el('connect')) {
     el('connect').addEventListener('click', function () {
-      setToken(el('token').value.trim());
+      var value = (el('token').value || '').trim();
+      if (!value) {
+        // Never read an empty field as an instruction to forget the token:
+        // that is what Disconnect is for, and it is one click away.
+        var state = el('token-state');
+        if (state) {
+          state.textContent = 'Paste a token first.';
+          state.className = 'meta bad';
+        }
+        el('token').focus();
+        return;
+      }
+      setToken(value);
       el('token').value = '';
       refreshConnected();
       listRuns();

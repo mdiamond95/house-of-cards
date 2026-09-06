@@ -405,7 +405,19 @@
 
   if (el('connect')) {
     el('connect').addEventListener('click', function () {
-      setToken(el('token').value.trim());
+      var value = (el('token').value || '').trim();
+      if (!value) {
+        // Never read an empty field as an instruction to forget the token:
+        // that is what Disconnect is for, and it is one click away.
+        var state = el('token-state');
+        if (state) {
+          state.textContent = 'Paste a token first.';
+          state.className = 'meta bad';
+        }
+        el('token').focus();
+        return;
+      }
+      setToken(value);
       el('token').value = '';
       refreshConnected();
       listRuns();
