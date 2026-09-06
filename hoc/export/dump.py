@@ -8,6 +8,8 @@ import csv
 import json
 from pathlib import Path
 
+from hoc import db
+
 DEFAULT_OUT_DIR = Path(__file__).resolve().parent.parent.parent / "outputs"
 
 __all__ = ["write_dump", "DEFAULT_OUT_DIR"]
@@ -48,9 +50,23 @@ def _write_tables(conn, dump_dir):
     return written
 
 
+def _block_sort_key(field):
+    """Known headings in reading order, anything newly recovered after them."""
+    order = db.HOUSE_BLOCK_FIELDS
+    return (order.index(field), "") if field in order else (len(order), field)
+
+
 def _state(conn):
     colours = {row["house"]: row for row in conn.execute("SELECT * FROM v_house_colours")}
     clocks = {row["house"]: row for row in conn.execute("SELECT * FROM clocks")}
+
+    blocks_by_house = {}
+    for row in conn.execute("SELECT * FROM house_blocks"):
+        blocks_by_house.setdefault(row["house"], []).append(
+            {"field": row["field"], "text": row["text"], "source": row["source"]}
+        )
+    for entries in blocks_by_house.values():
+        entries.sort(key=lambda entry: _block_sort_key(entry["field"]))
 
     holdings_by_house = {}
     for row in conn.execute(
@@ -97,6 +113,7 @@ def _state(conn):
                 "secondary_hex": colours[house]["secondary_hex"] if house in colours else None,
                 "notes": row["notes"],
                 "holder": holders_by_house.get(house),
+                "blocks": blocks_by_house.get(house, []),
                 "holdings": holdings_by_house.get(house, []),
                 "riding_count": len(holdings_by_house.get(house, [])),
                 "clock": None if clock is None else {

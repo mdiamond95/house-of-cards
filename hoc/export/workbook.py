@@ -11,12 +11,21 @@ from pathlib import Path
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 
+from hoc.db import HOUSE_BLOCK_FIELDS
+
 DEFAULT_OUT_DIR = Path(__file__).resolve().parent.parent.parent / "outputs"
 WORKBOOK_NAME = "Riding_Tracker.xlsx"
 
 __all__ = ["write_workbook", "DEFAULT_OUT_DIR", "WORKBOOK_NAME"]
 
 HEADER_FONT = Font(bold=True)
+
+
+def _block_sort_key(field):
+    """House-block headings in reading order; newly recovered ones after them."""
+    if field in HOUSE_BLOCK_FIELDS:
+        return (HOUSE_BLOCK_FIELDS.index(field), "")
+    return (len(HOUSE_BLOCK_FIELDS), field)
 
 
 def _sheet(wb, title, headers, rows, hex_columns=()):
@@ -129,6 +138,19 @@ def write_workbook(conn, out_dir=DEFAULT_OUT_DIR):
          "Heir apparent", "Personal year", "Clock basis", "Ridings"],
         [tuple(row) for row in _house_rows(conn)],
         hex_columns=(5, 6),
+    )
+
+    _sheet(
+        wb,
+        "House Blocks",
+        ["House", "Field", "Text", "Source"],
+        [
+            (r["house"], r["field"], r["text"], r["source"])
+            for r in sorted(
+                conn.execute("SELECT * FROM house_blocks"),
+                key=lambda r: (r["house"], _block_sort_key(r["field"])),
+            )
+        ],
     )
 
     _sheet(

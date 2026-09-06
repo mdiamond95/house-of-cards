@@ -7,7 +7,25 @@ PACKAGE_ROOT = Path(__file__).resolve().parent
 SCHEMA_PATH = PACKAGE_ROOT / "schema.sql"
 DEFAULT_DB_PATH = PACKAGE_ROOT.parent / "hoc.db"
 
-__all__ = ["connect", "init_schema", "query", "one", "SCHEMA_PATH", "DEFAULT_DB_PATH"]
+__all__ = [
+    "connect", "init_schema", "query", "one", "SCHEMA_PATH", "DEFAULT_DB_PATH",
+    "HOUSE_BLOCK_FIELDS",
+]
+
+# The Section 5 house-block headings, in reading order. `house_blocks.field` is
+# free-form — more headings are expected as Tier B recovery continues — so this
+# only fixes the display order of the ones already known; anything else sorts
+# after them alphabetically.
+HOUSE_BLOCK_FIELDS = (
+    "Founder",
+    "Current holder",
+    "Heir apparent",
+    "Holdings",
+    "Economic position",
+    "Political position",
+    "Cultural position",
+    "Personal clock",
+)
 
 
 def connect(path=DEFAULT_DB_PATH):

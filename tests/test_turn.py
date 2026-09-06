@@ -278,8 +278,8 @@ def test_exporters_run_on_the_loaded_database(conn, tmp_path):
 
     sheets = load_workbook(book).sheetnames
     assert sheets == [
-        "Riding Tracker", "Houses", "Successions", "Climate", "Relations", "Matrix",
-        "Events", "Watch", "Handoff",
+        "Riding Tracker", "Houses", "House Blocks", "Successions", "Climate", "Relations",
+        "Matrix", "Events", "Watch", "Handoff",
     ]
 
     maps = map_export.write_maps(conn, out_dir=out_dir)

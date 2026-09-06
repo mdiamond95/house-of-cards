@@ -18,6 +18,7 @@
         "source": null,
         "confidence": "none"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -36,8 +37,8 @@
       ],
       "riding_count": 2,
       "clock": {
-        "personal_year": null,
-        "basis": "personal clock begins 1867 at founding; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -58,6 +59,7 @@
         "source": "founding block 2026-05-04",
         "confidence": "high"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -76,8 +78,8 @@
       ],
       "riding_count": 2,
       "clock": {
-        "personal_year": null,
-        "basis": "reset to personal 1867 at accession founding (bio ~70 at grant, b. 1898 Lahore); personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -98,6 +100,7 @@
         "source": "metrics 2026-04-27",
         "confidence": "low"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -123,8 +126,8 @@
       ],
       "riding_count": 3,
       "clock": {
-        "personal_year": null,
-        "basis": "personal clock begins 1867 at founding; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -145,6 +148,7 @@
         "source": "cascade 2026-04-27",
         "confidence": "high"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -156,8 +160,8 @@
       ],
       "riding_count": 1,
       "clock": {
-        "personal_year": null,
-        "basis": "reset to personal 1867 at accession Blaikie personal 1916; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -178,6 +182,7 @@
         "source": "founding block 2026-05-04",
         "confidence": "medium"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -189,8 +194,8 @@
       ],
       "riding_count": 1,
       "clock": {
-        "personal_year": null,
-        "basis": "personal clock begins 1867 at founding; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -211,6 +216,7 @@
         "source": "founding block 2026-05-04",
         "confidence": "high"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -222,8 +228,8 @@
       ],
       "riding_count": 1,
       "clock": {
-        "personal_year": null,
-        "basis": "reset to personal 1867 at accession founding (bio ~70 at grant, b. 1898 Reggio Calabria); personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -244,6 +250,7 @@
         "source": "event text 2026-05-04",
         "confidence": "low"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -262,8 +269,8 @@
       ],
       "riding_count": 2,
       "clock": {
-        "personal_year": null,
-        "basis": "personal clock begins 1867 at founding; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -284,6 +291,7 @@
         "source": "cascade 2026-04-27",
         "confidence": "high"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -316,8 +324,8 @@
       ],
       "riding_count": 4,
       "clock": {
-        "personal_year": null,
-        "basis": "reset to personal 1867 at accession summer Delany personal 1910; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -338,6 +346,7 @@
         "source": null,
         "confidence": "none"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -349,8 +358,8 @@
       ],
       "riding_count": 1,
       "clock": {
-        "personal_year": null,
-        "basis": "personal clock begins 1867 at founding; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -371,6 +380,7 @@
         "source": "metrics 2026-04-27",
         "confidence": "medium"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -522,8 +532,8 @@
       ],
       "riding_count": 21,
       "clock": {
-        "personal_year": null,
-        "basis": "reset to personal 1867 at accession 1918 (as recorded); personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -544,6 +554,7 @@
         "source": "cascade 2026-04-27",
         "confidence": "high"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -555,8 +566,8 @@
       ],
       "riding_count": 1,
       "clock": {
-        "personal_year": null,
-        "basis": "reset to personal 1867 at accession spring Galbraith personal 1908; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -577,6 +588,7 @@
         "source": "cascade 2026-04-27",
         "confidence": "high"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -623,8 +635,8 @@
       ],
       "riding_count": 6,
       "clock": {
-        "personal_year": null,
-        "basis": "reset to personal 1867 at accession autumn Garland personal 1909; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -645,6 +657,7 @@
         "source": "cascade 2026-04-27",
         "confidence": "high"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -684,8 +697,8 @@
       ],
       "riding_count": 5,
       "clock": {
-        "personal_year": null,
-        "basis": "reset to personal 1867 at accession spring Hall personal 1920; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -706,6 +719,7 @@
         "source": null,
         "confidence": "none"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -724,8 +738,8 @@
       ],
       "riding_count": 2,
       "clock": {
-        "personal_year": null,
-        "basis": "personal clock begins 1867 at founding; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -746,11 +760,12 @@
         "source": "cascade 2026-04-27",
         "confidence": "high"
       },
+      "blocks": [],
       "holdings": [],
       "riding_count": 0,
       "clock": {
-        "personal_year": null,
-        "basis": "reset to personal 1867 at accession autumn Kilmartin personal 1923; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -771,6 +786,7 @@
         "source": null,
         "confidence": "none"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -789,8 +805,8 @@
       ],
       "riding_count": 2,
       "clock": {
-        "personal_year": null,
-        "basis": "personal clock begins 1867 at founding; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -811,6 +827,7 @@
         "source": "cascade 2026-04-27",
         "confidence": "high"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -822,8 +839,8 @@
       ],
       "riding_count": 1,
       "clock": {
-        "personal_year": null,
-        "basis": "reset to personal 1867 at accession spring Letendre personal 1909; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -844,6 +861,7 @@
         "source": "handoff 2026-04-25",
         "confidence": "medium"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -869,8 +887,8 @@
       ],
       "riding_count": 3,
       "clock": {
-        "personal_year": null,
-        "basis": "personal clock begins 1867 at founding; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -891,6 +909,7 @@
         "source": "handoff 2026-04-25",
         "confidence": "medium"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -902,8 +921,8 @@
       ],
       "riding_count": 1,
       "clock": {
-        "personal_year": null,
-        "basis": "accession not recovered; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -924,6 +943,7 @@
         "source": "cascade 2026-04-27",
         "confidence": "high"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -977,8 +997,8 @@
       ],
       "riding_count": 7,
       "clock": {
-        "personal_year": null,
-        "basis": "reset to personal 1867 at accession winter MacDonald personal 1901; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -999,6 +1019,7 @@
         "source": "metrics 2026-04-27",
         "confidence": "medium"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -1045,8 +1066,8 @@
       ],
       "riding_count": 6,
       "clock": {
-        "personal_year": null,
-        "basis": "accession not recovered; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -1067,6 +1088,48 @@
         "source": "founding block 2026-04-25",
         "confidence": "high"
       },
+      "blocks": [
+        {
+          "field": "Founder",
+          "text": "Sir Alexander Donald Macleod (G1), b. 1862 / biological 67 at founding grant Macleod personal 1867. Glengarry-Ontario-born; emigrated west 1882 with CPR construction wave; Cochrane Ranche Company apprenticeship late 1880s; founded Macleod Ranching Co. Bow Valley 1893; Turner Valley petroleum early investor 1914+; Knox Presbyterian Calgary senior elder; Calgary Stampede founding director 1912. Married Lady Margaret Macleod (née MacKenzie, b. 1868); five children.",
+          "source": "founding block 2026-04-25"
+        },
+        {
+          "field": "Current holder",
+          "text": "Sir Alexander Donald Macleod, Baron Macleod of Bow Valley (G1, founding grant Macleod personal 1867). [Rank since raised to Viscount; elevation event not recovered.]",
+          "source": "founding block 2026-04-25"
+        },
+        {
+          "field": "Heir apparent",
+          "text": "None formally named at grant. Eldest son Donald Alexander Macleod (b. 1893, biological ~36 at grant) natural operational heir but unconfirmed.",
+          "source": "founding block 2026-04-25"
+        },
+        {
+          "field": "Holdings",
+          "text": "Bow River (Macleod Ranch — Bow Valley House at Cochrane + Macleod Ranching Co. + Turner Valley Petroleum Holdings + Bureau Calgary + Fondation Macleod — Knox Presbyterian Calgary + UFA Cooperative Education Endowment, founding grant Macleod personal 1867). Later: Calgary East, Calgary Shepard, Yellowhead (expansion records not recovered); Calgary Centre (turn 0001).",
+          "source": "founding block 2026-04-25"
+        },
+        {
+          "field": "Economic position",
+          "text": "Founding grant capital $80,000. Macleod Ranching Co. as primary commercial entity (cattle + horse + Hereford-stock improvement; Calgary stockyards + CPR shipping partnerships); Turner Valley Royalties ~12% — first tracker engagement with Alberta petroleum sector; Fondation Macleod UFA Cooperative Education Endowment as first tracker UFA-cooperative endowment partnership. Liberal-Presbyterian-UFA cooperative cross-axis institutional reach distinguishes Macleod from Lockhart's Conservative-Loyalist Foothills positioning despite shared Alberta peer-house status.",
+          "source": "founding block 2026-04-25"
+        },
+        {
+          "field": "Political position",
+          "text": "Liberal-aligned commercial; UFA-adjacent cooperative-agricultural sympathies; Knox Presbyterian senior-elder establishment positioning. Cross-axis Liberal-commercial + UFA-cooperative + Presbyterian-establishment signature. TAG: Mixed (Section 10).",
+          "source": "founding block 2026-04-25"
+        },
+        {
+          "field": "Cultural position",
+          "text": "Glengarry-rooted Scots-Albertan; bridges Eastern Ontario Scots-Presbyterian roots with western prairie commercial-establishment positioning; Calgary Stampede founding director gives Macleod distinct populist-civic positioning beyond pure commercial elite. Lady Margaret cultural-family representative.",
+          "source": "founding block 2026-04-25"
+        },
+        {
+          "field": "Personal clock",
+          "text": "Macleod personal 1867 (founding grant; clock starts here per Section 1 rule). Sir Alexander Donald biological 67; Lady Margaret biological 61; eldest son Donald Alexander biological ~36 (natural operational heir).",
+          "source": "founding block 2026-04-25"
+        }
+      ],
       "holdings": [
         {
           "seat_order": 1,
@@ -1106,8 +1169,8 @@
       ],
       "riding_count": 5,
       "clock": {
-        "personal_year": null,
-        "basis": "reset to personal 1867 at accession founding (bio 67 at grant, b. 1862); personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -1128,6 +1191,7 @@
         "source": "handoff 2026-04-25",
         "confidence": "medium"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -1174,8 +1238,8 @@
       ],
       "riding_count": 6,
       "clock": {
-        "personal_year": null,
-        "basis": "accession not recovered; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -1196,6 +1260,7 @@
         "source": "metrics 2026-04-27",
         "confidence": "low"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -1221,8 +1286,8 @@
       ],
       "riding_count": 3,
       "clock": {
-        "personal_year": null,
-        "basis": "personal clock begins 1867 at founding; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -1243,6 +1308,7 @@
         "source": "metrics 2026-04-27",
         "confidence": "medium"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -1366,8 +1432,8 @@
       ],
       "riding_count": 17,
       "clock": {
-        "personal_year": null,
-        "basis": "accession not recovered; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -1388,6 +1454,7 @@
         "source": "cascade 2026-04-27",
         "confidence": "high"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -1420,8 +1487,8 @@
       ],
       "riding_count": 4,
       "clock": {
-        "personal_year": null,
-        "basis": "reset to personal 1867 at accession Ross personal 1922; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -1442,6 +1509,7 @@
         "source": "cascade 2026-04-27",
         "confidence": "high"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -1481,8 +1549,8 @@
       ],
       "riding_count": 5,
       "clock": {
-        "personal_year": null,
-        "basis": "reset to personal 1867 at accession spring SinM personal 1920; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -1503,6 +1571,7 @@
         "source": "cascade 2026-04-27",
         "confidence": "high"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -1556,8 +1625,8 @@
       ],
       "riding_count": 7,
       "clock": {
-        "personal_year": null,
-        "basis": "reset to personal 1867 at accession autumn SG personal 1910; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -1578,6 +1647,7 @@
         "source": "handoff 2026-04-25",
         "confidence": "medium"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -1610,8 +1680,8 @@
       ],
       "riding_count": 4,
       "clock": {
-        "personal_year": null,
-        "basis": "accession not recovered; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -1632,6 +1702,7 @@
         "source": "founding block 2026-05-04",
         "confidence": "high"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -1643,8 +1714,8 @@
       ],
       "riding_count": 1,
       "clock": {
-        "personal_year": null,
-        "basis": "reset to personal 1867 at accession founding (bio ~70 at grant, b. ~1875 Tr'ochëk); personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -1665,11 +1736,12 @@
         "source": "handoff 2026-04-25",
         "confidence": "medium"
       },
+      "blocks": [],
       "holdings": [],
       "riding_count": 0,
       "clock": {
-        "personal_year": null,
-        "basis": "accession not recovered; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -1690,6 +1762,7 @@
         "source": "cascade 2026-04-27",
         "confidence": "high"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -1743,8 +1816,8 @@
       ],
       "riding_count": 7,
       "clock": {
-        "personal_year": null,
-        "basis": "reset to personal 1867 at accession autumn Wallace personal 1909; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -1765,6 +1838,7 @@
         "source": "metrics 2026-04-27",
         "confidence": "medium"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -1839,8 +1913,8 @@
       ],
       "riding_count": 10,
       "clock": {
-        "personal_year": null,
-        "basis": "accession not recovered; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -1861,6 +1935,7 @@
         "source": "cascade 2026-04-27",
         "confidence": "high"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -1879,8 +1954,8 @@
       ],
       "riding_count": 2,
       "clock": {
-        "personal_year": null,
-        "basis": "reset to personal 1867 at accession Wilmot-Hazen personal 1925; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     },
     {
@@ -1901,6 +1976,7 @@
         "source": "event text 2026-05-04",
         "confidence": "low"
       },
+      "blocks": [],
       "holdings": [
         {
           "seat_order": 1,
@@ -1912,8 +1988,8 @@
       ],
       "riding_count": 1,
       "clock": {
-        "personal_year": null,
-        "basis": "personal clock begins 1867 at founding; personal year not recovered"
+        "personal_year": 1867,
+        "basis": "resumed from last recorded anchor (personal 1867 at founding or at accession reset); intervening personal years not recovered — see docs/RECONSTRUCTION.md"
       }
     }
   ],
@@ -2059,6 +2135,18 @@
   },
   "events": [
     {
+      "id": 42,
+      "turn_id": 2,
+      "kind": "other",
+      "era_cohort": null,
+      "title": "Clocks resumed from last recorded anchor",
+      "narrative": "Every house resumes at personal 1867, its last recorded anchor — a founding grant for the founding generation, an accession reset for the rest. The personal years elapsed between that anchor and the rebuild were not recovered and are not estimated. From here, clocks move only when a turn moves them: explicitly, house by house, or by a sync on a direct shared event.",
+      "mechanical_delta": null,
+      "source": "turn",
+      "created_at": "2026-09-06 03:38:14",
+      "houses": []
+    },
+    {
       "id": 41,
       "turn_id": 1,
       "kind": "expansion",
@@ -2067,7 +2155,7 @@
       "narrative": "Calgary Centre came to the house the way most things came to Sir Alexander Donald Macleod: by ledger first, and ceremony long afterwards.\n\nThe Bureau on Stephen Avenue had been a convenience when the house took its rooms there — somewhere for the Macleod Ranching Co. to keep its accounts nearer the railhead than Bow River allowed. It did not stay a convenience. Turner Valley Petroleum Holdings lodged its subscription books in the same building; the ranching company's freight contracts followed; and by the close of the season's reconciliation the greater part of the house's commercial life was being conducted from a street the house did not hold.\n\nSir Alexander, who had taken his barony at sixty-seven and his viscountcy since, was not sentimental about the discovery. He had built outward from Bow River in the order a cattleman builds a fence: the home quarter first, then east, then south to Shepard, then the long line north to Yellowhead. Calgary Centre was the gap he had been riding around for years. He put the case in one sitting and, characteristically, on one page: the house already held the ground on three sides of its counting-house, and it was an absurdity to remain a tenant in the room where its money was counted.\n\nLady Margaret's objection was not to the taking but to the manner of it. She had watched the Bow Valley house become, by degrees, a Calgary house that kept cattle, and thought the change deserved saying out loud rather than accomplishing by lease renewals. So it was said out loud. The instrument was read at Knox Presbyterian on a Sunday of hard light, before a congregation that contained both halves of the house's awkward politics: the Liberal commercial men who banked with the Bureau, and the cooperative farmers who sold through it and mistrusted it. The Viscount, a founding director of the summer exhibition and used to standing between those two rooms, read the ochre and dun of his colours into the record and made no speech.\n\nThe letters that followed were brief and, in their way, telling. Lockhart of Waterton wrote from the south with the dryness of a neighbour who had first met the house at its investiture and had been watching its accounts ever since. From Kinookimaw, the Countess Sinclair-McKay sent a single line of congratulation that managed to be both warm and a reminder that prairie houses are counted by what they hold at the end, not by what they take in the middle. Both were filed. Neither was answered at length.\n\nWhat the acquisition did not settle was the succession of the work. Donald Alexander, thirty-one years his father's junior and still unconfirmed as operational heir, spent the week after the reading in the Stephen Avenue rooms, learning which of the two ledgers — cattle or petroleum — the house would be judged by. The Viscount, asked, declined to answer. The fence was finished. Who would ride it was another season's business.",
       "mechanical_delta": null,
       "source": "turn",
-      "created_at": "2026-09-06 03:26:49",
+      "created_at": "2026-09-06 03:38:14",
       "houses": [
         {
           "house": "Macleod",
@@ -2085,7 +2173,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Akatsiak",
@@ -2108,7 +2196,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Boyer-Lavallée",
@@ -2131,7 +2219,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Boyer-Lavallée",
@@ -2154,7 +2242,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Boyer-Lavallée",
@@ -2177,7 +2265,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Boyer-Lavallée",
@@ -2200,7 +2288,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Boyer-Lavallée",
@@ -2223,7 +2311,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Boyer-Lavallée",
@@ -2246,7 +2334,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Boyer-Lavallée",
@@ -2269,7 +2357,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "FitzWilliam-Macklem",
@@ -2292,7 +2380,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "FitzWilliam-Macklem",
@@ -2315,7 +2403,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "FitzWilliam-Macklem",
@@ -2338,7 +2426,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Ashworth",
@@ -2361,7 +2449,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "FitzWilliam-Macklem",
@@ -2384,7 +2472,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "FitzWilliam-Macklem",
@@ -2407,7 +2495,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "FitzWilliam-Macklem",
@@ -2430,7 +2518,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "FitzWilliam-Macklem",
@@ -2453,7 +2541,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "FitzWilliam-Macklem",
@@ -2476,7 +2564,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Fitzroy-Crane",
@@ -2499,7 +2587,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Fitzroy-Crane",
@@ -2522,7 +2610,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "MacNeil",
@@ -2545,7 +2633,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Hall",
@@ -2568,7 +2656,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Létourneau",
@@ -2591,7 +2679,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Létourneau",
@@ -2614,7 +2702,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Stanton-Greville",
@@ -2637,7 +2725,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Richard-Arseneau",
@@ -2660,7 +2748,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Richard-Arseneau",
@@ -2683,7 +2771,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Blaikie",
@@ -2706,7 +2794,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Blaikie",
@@ -2729,7 +2817,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Blaikie",
@@ -2752,7 +2840,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Wallace",
@@ -2775,7 +2863,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Pereira",
@@ -2798,7 +2886,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "MacDonald",
@@ -2821,7 +2909,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Delany",
@@ -2844,7 +2932,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Hall",
@@ -2867,7 +2955,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Delany",
@@ -2890,7 +2978,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Ross",
@@ -2913,7 +3001,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Ross",
@@ -2936,7 +3024,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Ashworth",
@@ -2959,7 +3047,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Macleod",
@@ -2982,7 +3070,7 @@
       "narrative": null,
       "mechanical_delta": null,
       "source": "reconstructed",
-      "created_at": "2026-09-06T00:57:48+00:00",
+      "created_at": "2026-09-06T03:38:14+00:00",
       "houses": [
         {
           "house": "Lockhart",
