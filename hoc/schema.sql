@@ -68,6 +68,20 @@ CREATE INDEX idx_holders_house ON holders(house);
 CREATE UNIQUE INDEX idx_holders_one_current_per_house
     ON holders(house) WHERE is_current = 1;
 
+-- Section 5 house blocks: the long-form prose record of a house — founder,
+-- holder, heir, holdings, economic/political/cultural position, personal clock.
+-- `field` is a free-form label rather than a column per heading, because the
+-- workbook's headings varied by house and more are expected as Tier B recovery
+-- continues. Narrative may only draw on house detail that is recorded here or
+-- in holders/holdings/relations/events (CLAUDE.md hard rule 9).
+CREATE TABLE house_blocks (
+    house  TEXT NOT NULL REFERENCES houses(house),
+    field  TEXT NOT NULL,
+    text   TEXT,
+    source TEXT,
+    PRIMARY KEY (house, field)
+);
+
 -- ------------------------------------------------------------------- turns --
 
 CREATE TABLE turns (

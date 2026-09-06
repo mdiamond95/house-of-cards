@@ -27,6 +27,7 @@ TABLES_IN_REPORT_ORDER = [
     "houses",
     "holders",
     "clocks",
+    "house_blocks",
     "holdings",
     "successions",
     "events",
@@ -53,19 +54,15 @@ def blank_to_none(value):
     return value or None
 
 
-def clock_basis(acceded):
-    """Describe where a house's clock stands, using only what was recorded.
-
-    Personal years themselves were never recovered, so personal_year stays NULL;
-    this text records the accession the clock would have been reset at, per
-    CLAUDE.md rule 5 (a new holder's clock resets to personal 1867).
-    """
-    acceded = blank_to_none(acceded)
-    if acceded is None:
-        return "accession not recovered; personal year not recovered"
-    if acceded == "founding":
-        return "personal clock begins 1867 at founding; personal year not recovered"
-    return f"reset to personal 1867 at accession {acceded}; personal year not recovered"
+# Every house resumes at personal 1867 — its last recorded anchor, whether that
+# was a founding grant or an accession reset. The personal years elapsed between
+# that anchor and the rebuild were not recovered and are not estimated; turns
+# advance clocks explicitly from here. See docs/RECONSTRUCTION.md, Decisions.
+CLOCK_RESUME_YEAR = 1867
+CLOCK_RESUME_BASIS = (
+    "resumed from last recorded anchor (personal 1867 at founding or at accession reset);"
+    " intervening personal years not recovered — see docs/RECONSTRUCTION.md"
+)
 
 
 def load_ridings(conn):
@@ -151,8 +148,22 @@ def load_holders_and_clocks(conn):
             ),
         )
         conn.execute(
-            "INSERT INTO clocks (house, personal_year, basis) VALUES (?, NULL, ?)",
-            (row["house"], clock_basis(row["acceded"])),
+            "INSERT INTO clocks (house, personal_year, basis) VALUES (?, ?, ?)",
+            (row["house"], CLOCK_RESUME_YEAR, CLOCK_RESUME_BASIS),
+        )
+
+
+def load_house_blocks(conn):
+    """Section 5 house blocks, as far as they have been recovered."""
+    for row in read_csv(SEED / "house_blocks.csv"):
+        conn.execute(
+            "INSERT INTO house_blocks (house, field, text, source) VALUES (?, ?, ?, ?)",
+            (
+                row["house"],
+                row["field"],
+                blank_to_none(row["text"]),
+                blank_to_none(row["source"]),
+            ),
         )
 
 
@@ -239,6 +250,7 @@ def build(db_path):
         load_houses(conn)
         load_holdings(conn)
         load_holders_and_clocks(conn)
+        load_house_blocks(conn)
         load_successions(conn)
         load_climate(conn)
         load_relations(conn, created_at)
