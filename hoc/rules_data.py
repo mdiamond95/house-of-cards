@@ -16,12 +16,24 @@ __all__ = [
     "Objective",
     "MortalityBand",
     "EraBand",
+    "EventEffect",
+    "Event",
+    "Community",
+    "Place",
+    "GivenName",
+    "Surname",
     "RulesBundle",
     "load_rules",
     "probability_for_age",
 ]
 
 VALID_TARGET_RANGE = range(2, 13)  # 2..12 inclusive
+
+# The scope vocabulary for events.direct_effect (§8), recorded in rules/README.md.
+REGIONS = {"maritime", "quebec", "ontario", "prairie", "bc", "north", "newfoundland"}
+TAGS = {"Conservative", "Progressive", "Mixed", "Outside"}
+COMMUNITY_GROUPS = {"asian", "francophone", "metis", "female_line"}
+VALID_SCOPES = {"all"} | REGIONS | TAGS | COMMUNITY_GROUPS
 
 
 class RulesDataError(Exception):
@@ -64,6 +76,52 @@ class EraBand:
 
 
 @dataclass
+class EventEffect:
+    stat: str
+    delta: "int | str"  # an int for capital/influence/cohesion, or "extra" for mortality
+    scope: str
+
+
+@dataclass
+class Event:
+    personal_year: int
+    band: str
+    name: str
+    magnitude: str
+    tag: str
+    direct_effect: list
+    note: str
+
+
+@dataclass
+class Community:
+    region: str
+    community: str
+    weight: float
+    naming_tradition: str
+    note: str
+
+
+@dataclass
+class Place:
+    province: str
+    place: str
+
+
+@dataclass
+class GivenName:
+    tradition: str
+    gender: str
+    name: str
+
+
+@dataclass
+class Surname:
+    community: str
+    surname: str
+
+
+@dataclass
 class RulesBundle:
     actions: list
     objectives: list
@@ -72,6 +130,11 @@ class RulesBundle:
     founding: dict
     succession: dict
     responses: dict
+    events: list
+    communities: list
+    places: list
+    given_names: list
+    surnames: list
 
 
 def _read_csv(path):
@@ -222,6 +285,92 @@ def _load_responses(rules_dir):
     return _read_json(rules_dir / "responses.json")
 
 
+def _parse_direct_effect(raw, event_name):
+    raw = (raw or "").strip()
+    if not raw:
+        return []
+    effects = []
+    for triple in raw.split(";"):
+        parts = triple.split(":")
+        if len(parts) != 3:
+            raise RulesDataError(
+                f"event {event_name!r}: direct_effect segment {triple!r} is not"
+                " a stat:delta:scope triple"
+            )
+        stat, delta, scope = parts
+        if scope not in VALID_SCOPES:
+            raise RulesDataError(
+                f"event {event_name!r}: direct_effect scope {scope!r} is not in"
+                " the valid vocabulary (all, a region, a tag, or a community group)"
+            )
+        if stat == "mortality":
+            if delta != "extra":
+                raise RulesDataError(
+                    f"event {event_name!r}: mortality effect delta must be"
+                    f" 'extra', got {delta!r}"
+                )
+        else:
+            try:
+                delta = int(delta)
+            except ValueError:
+                raise RulesDataError(
+                    f"event {event_name!r}: direct_effect delta {delta!r} for"
+                    f" stat {stat!r} is not an integer"
+                )
+        effects.append(EventEffect(stat=stat, delta=delta, scope=scope))
+    return effects
+
+
+def _load_events(rules_dir):
+    rows = _read_csv(rules_dir / "events.csv")
+    events = []
+    for row in rows:
+        events.append(
+            Event(
+                personal_year=int(row["personal_year"]),
+                band=row["band"],
+                name=row["name"],
+                magnitude=row["magnitude"],
+                tag=row["tag"],
+                direct_effect=_parse_direct_effect(row["direct_effect"], row["name"]),
+                note=row["note"],
+            )
+        )
+    return events
+
+
+def _load_communities(rules_dir):
+    rows = _read_csv(rules_dir / "communities.csv")
+    return [
+        Community(
+            region=row["region"],
+            community=row["community"],
+            weight=float(row["weight"]),
+            naming_tradition=row["naming_tradition"],
+            note=row["note"],
+        )
+        for row in rows
+    ]
+
+
+def _load_places(rules_dir):
+    rows = _read_csv(rules_dir / "places.csv")
+    return [Place(province=row["province"], place=row["place"]) for row in rows]
+
+
+def _load_given_names(rules_dir):
+    rows = _read_csv(rules_dir / "given_names.csv")
+    return [
+        GivenName(tradition=row["tradition"], gender=row["gender"], name=row["name"])
+        for row in rows
+    ]
+
+
+def _load_surnames(rules_dir):
+    rows = _read_csv(rules_dir / "surnames.csv")
+    return [Surname(community=row["community"], surname=row["surname"]) for row in rows]
+
+
 def probability_for_age(mortality, age):
     """The annual death probability for a holder of the given age, from a
     loaded mortality table (RulesBundle.mortality)."""
@@ -244,6 +393,11 @@ def load_rules(path="rules"):
     founding = _load_founding(rules_dir)
     succession = _load_succession(rules_dir)
     responses = _load_responses(rules_dir)
+    events = _load_events(rules_dir)
+    communities = _load_communities(rules_dir)
+    places = _load_places(rules_dir)
+    given_names = _load_given_names(rules_dir)
+    surnames = _load_surnames(rules_dir)
 
     return RulesBundle(
         actions=actions,
@@ -253,4 +407,9 @@ def load_rules(path="rules"):
         founding=founding,
         succession=succession,
         responses=responses,
+        events=events,
+        communities=communities,
+        places=places,
+        given_names=given_names,
+        surnames=surnames,
     )
