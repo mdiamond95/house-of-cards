@@ -250,7 +250,11 @@ CREATE TABLE house_stats (
     province        TEXT,
     seat_place      TEXT,
     founded_season  INTEGER,
-    removed_season  INTEGER
+    removed_season  INTEGER,
+    -- A director's forced action (§12), waiting for this house's next turn. The
+    -- engine consumes it once and clears it, so an intervention lasts exactly
+    -- one season and never becomes a standing instruction nobody remembers.
+    forced_action   TEXT
 );
 
 CREATE INDEX idx_house_stats_removed ON house_stats(removed_season);

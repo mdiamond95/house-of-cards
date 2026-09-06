@@ -1,0 +1,143 @@
+name: Engine
+
+# Runs the game on demand from the site's console.
+#
+# Everything that changes game state on main happens here or in a Claude Code
+# session — never by hand, never by editing hoc.db. The console dispatches this
+# workflow through the GitHub API with the director's own token; the workflow
+# does the work, runs the tests, exports the site and commits the result.
+#
+# No model is called anywhere in this workflow. The console's Narrate control
+# produces a block of text for a human to paste into a Claude Code session, and
+# that is the whole of Claude's involvement in the running game.
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "What to do"
+        required: true
+        type: choice
+        default: run
+        options: [run, intervene, rules, rebuild]
+      seasons:
+        description: "How many seasons to play (run only)"
+        required: false
+        type: string
+        default: "10"
+      stop_on:
+        description: "Comma list: removal, challenge, major, marquis, partition, extinction"
+        required: false
+        type: string
+        default: ""
+      payload:
+        description: "JSON — the turn file for intervene, the patch for rules"
+        required: false
+        type: string
+        default: ""
+      note:
+        description: "Why. Recorded in the commit message."
+        required: false
+        type: string
+        default: ""
+
+# One run at a time, and never cancel one in flight: a cancelled run could leave
+# the season logs written and the database uncommitted.
+concurrency:
+  group: engine
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  engine:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Only the director may run the engine
+        if: github.actor != 'mdiamond95'
+        run: |
+          echo "::error::${{ github.actor }} is not the director; this workflow only runs for mdiamond95."
+          {
+            echo "## Engine — refused"
+            echo
+            echo "\`${{ github.actor }}\` is not the director. This workflow changes the"
+            echo "game state on \`main\`, so it runs only for the repository's owner."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install the runtime dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-engine.txt
+
+      - name: run — play seasons
+        if: inputs.command == 'run'
+        run: |
+          python scripts/engine_command.py run \
+            --seasons "${{ inputs.seasons }}" \
+            --stop-on "${{ inputs.stop_on }}" \
+            --note "${{ inputs.note }}" | tee engine-output.txt
+
+      - name: intervene — apply a director's turn
+        if: inputs.command == 'intervene'
+        env:
+          PAYLOAD: ${{ inputs.payload }}
+        run: |
+          python scripts/engine_command.py intervene \
+            --payload "$PAYLOAD" \
+            --note "${{ inputs.note }}" | tee engine-output.txt
+
+      - name: rules — tune a table
+        if: inputs.command == 'rules'
+        env:
+          PAYLOAD: ${{ inputs.payload }}
+        run: |
+          python scripts/engine_command.py rules \
+            --payload "$PAYLOAD" \
+            --note "${{ inputs.note }}" | tee engine-output.txt
+
+      - name: rebuild — verify the database reproduces from the record
+        if: inputs.command == 'rebuild'
+        run: |
+          python scripts/engine_command.py rebuild \
+            --note "${{ inputs.note }}" | tee engine-output.txt
+
+      # The 300-season smoke run belongs in a Code session, not here: it takes
+      # longer than everything else in this workflow put together, and it tests
+      # the rules rather than this run.
+      - name: Test
+        run: python -m pytest -q -m "not smoke"
+
+      - name: Export
+        run: python -m hoc export
+
+      - name: Commit and push
+        run: |
+          message="$(sed -n 's/^COMMIT_MESSAGE //p' engine-output.txt | tail -1)"
+          if [ -z "$message" ]; then
+            echo "::error::the command produced no commit message"
+            exit 1
+          fi
+
+          git config user.name "House of Cards Engine"
+          git config user.email "actions@github.com"
+          git add hoc.db scenarios rules outputs narratives
+
+          if git diff --cached --quiet; then
+            echo "nothing changed; not committing"
+            echo "_Nothing changed, so nothing was committed._" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          git commit -m "$message"
+          git push origin HEAD:main
+          echo "Committed \`$message\`" >> "$GITHUB_STEP_SUMMARY"

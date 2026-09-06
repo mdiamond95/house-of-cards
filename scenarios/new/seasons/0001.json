@@ -2,6 +2,7 @@
  "season": 1,
  "seed": 1867,
  "rules_version": "0.6",
+ "interventions": [],
  "draws": [
   {
    "purpose": "founding.community",

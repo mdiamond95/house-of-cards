@@ -9,10 +9,15 @@
     python -m hoc sim new --seed N             start the autoplay game at season 1
     python -m hoc sim run N                    play N seasons
     python -m hoc sim status                   where the autoplay game stands
+    python -m hoc narrate A B [--houses ...]   print the Claude Code block for seasons A-B
 """
 
 import argparse
+import json
 import sys
+
+# The engine workflow reads the run summary off stdout rather than parsing prose.
+SUMMARY_PREFIX = "ENGINE_SUMMARY "
 
 from hoc import db, rules, scenario as scenario_mod
 from hoc.export import dump, map as map_export, site, workbook
@@ -168,19 +173,33 @@ def cmd_sim(args):
             print(f"error: {exc}", file=sys.stderr)
             return 1
         stop_on = tuple(s.strip() for s in (args.stop_on or "").split(",") if s.strip())
-        with conn:
-            records = world.run(args.count, stop_on=stop_on)
+        before = world.counts()
+        try:
+            with conn:
+                records = world.run(args.count, stop_on=stop_on)
+        except sim.SimError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+
         for record in records:
             for line in record["chronicle"]:
                 print(line)
-        last = records[-1] if records else None
-        if last:
+
+        summary = world.run_summary(records, before)
+        if summary["seasons_run"]:
             print(
-                f"\nplayed {len(records)} season(s) to season {last['season']}:"
-                f" {last['houses_after']} houses, {last['ridings_after']} ridings held"
+                f"\nplayed {summary['seasons_run']} season(s) to season"
+                f" {summary['season_to']}: {summary['houses_after']} houses,"
+                f" {summary['ridings_after']} ridings held"
             )
-            if last.get("stopped_on"):
-                print(f"stopped on: {', '.join(last['stopped_on'])}")
+            if summary["stopped_on"]:
+                print(
+                    f"stopped on {', '.join(summary['stopped_on'])}"
+                    f" at season {summary['stopped_at_season']}"
+                )
+        # One line, machine-readable, for .github/workflows/engine.yml to parse.
+        # Printed last so a caller can take the final line of stdout.
+        print(SUMMARY_PREFIX + json.dumps(summary, ensure_ascii=False))
         _export_all(conn)
         conn.close()
         return 0
@@ -202,6 +221,18 @@ def cmd_sim(args):
     for climate in conn.execute("SELECT * FROM v_current_climate ORDER BY era_cohort"):
         print(f"  {climate['era_cohort']}: {climate['cumulative_after']}")
     conn.close()
+    return 0
+
+
+def cmd_narrate(args):
+    from hoc.export.turn_block import narrate_block
+
+    houses = [h.strip() for h in (args.houses or "").split(",") if h.strip()]
+    try:
+        print(narrate_block(args.season_from, args.season_to, houses, args.tone))
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
     return 0
 
 
@@ -268,6 +299,18 @@ def build_parser():
     )
     sim_sub.add_parser("status", help="where the autoplay game stands")
     sim_parser.set_defaults(func=cmd_sim)
+
+    narrate_parser = sub.add_parser(
+        "narrate", help="print the Claude Code block for narrating a season range"
+    )
+    narrate_parser.add_argument("season_from", type=int)
+    narrate_parser.add_argument("season_to", type=int)
+    narrate_parser.add_argument("--houses", help="comma-separated houses to focus on")
+    narrate_parser.add_argument(
+        "--tone", default="chronicle", choices=sorted(__import__(
+            "hoc.export.turn_block", fromlist=["TONES"]).TONES)
+    )
+    narrate_parser.set_defaults(func=cmd_narrate)
     return parser
 
 

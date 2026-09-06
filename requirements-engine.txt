@@ -1,0 +1,6 @@
+# What the engine and the exporters need at runtime. The build scripts under
+# scripts/ that regenerate reference geometry need shapely, topojson and
+# pyshp as well, but those run in a Code session, not in the engine workflow.
+openpyxl
+pyproj
+pytest

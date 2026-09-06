@@ -204,9 +204,14 @@ class NameGenerator:
             )
         return self.rng.choice(available)
 
-    def draw_house(self, community, province, rank, taken_places=(), gender=None):
-        """Everything a founding needs: (surname, given, gender, place, peerage)."""
-        given, surname, gender = self.draw_person(community, gender=gender)
+    def draw_house(self, community, province, rank, taken_places=(), gender=None, surname=None):
+        """Everything a founding needs: (surname, given, gender, place, peerage).
+
+        `surname` is the director's, when a grant names the house; the given name
+        is still drawn from the community's tradition and still checked against
+        the denylist, so a chosen surname cannot smuggle a real person's name in.
+        """
+        given, surname, gender = self.draw_person(community, gender=gender, surname=surname)
         place = self.draw_place(province, taken_places)
         tradition = self.tradition_for(community)
         return {

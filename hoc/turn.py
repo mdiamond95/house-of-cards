@@ -170,6 +170,197 @@ def _op_found_house(conn, op, event_id, turn):
         )
 
 
+# ------------------------------------------------- director interventions --
+#
+# Phase 9e. These four are the console's hands on the game: they change the
+# engine's own state rather than the map, so each records what it did and why in
+# the event's mechanical delta, and each stamps the season it applies after so
+# the next season's log can carry it (hoc/sim.py, _interventions_since).
+
+
+def _current_season(conn):
+    row = conn.execute("SELECT MAX(season_no) AS n FROM seasons").fetchone()
+    return 0 if row is None or row["n"] is None else row["n"]
+
+
+def _require_engine_house(conn, house):
+    row = conn.execute("SELECT * FROM house_stats WHERE house = ?", (house,)).fetchone()
+    if row is None:
+        raise rules.RuleError(
+            f"{house} has no engine state; director interventions apply to the"
+            " autoplay game, not to the reconstructed one"
+        )
+    return row
+
+
+def _op_set_objective(conn, op, event_id, data):
+    """Give a house an objective it did not draw (§12)."""
+    _require_engine_house(conn, op["house"])
+    season = _current_season(conn)
+
+    existing = conn.execute(
+        "SELECT 1 FROM objectives WHERE house = ? AND objective = ? AND satisfied_season IS NULL",
+        (op["house"], op["objective"]),
+    ).fetchone()
+    if existing:
+        raise rules.RuleError(f"{op['house']} already holds the objective {op['objective']!r}")
+
+    conn.execute(
+        "INSERT INTO objectives (house, objective, acquired_season) VALUES (?, ?, ?)",
+        (op["house"], op["objective"], season),
+    )
+    conn.execute(
+        "INSERT OR IGNORE INTO event_houses (event_id, house, role)"
+        " VALUES (?, ?, 'subject')",
+        (event_id, op["house"]),
+    )
+    _merge_mechanical_delta(
+        conn, event_id, "set_objective",
+        {"house": op["house"], "objective": op["objective"], "reason": op.get("reason"),
+         "after_season": season},
+    )
+
+
+def _op_veto_objective(conn, op, event_id, data):
+    """Take an objective away. It is marked satisfied at the current season
+    rather than deleted: the house did hold it, and the record should say so."""
+    _require_engine_house(conn, op["house"])
+    season = _current_season(conn)
+
+    changed = conn.execute(
+        "UPDATE objectives SET satisfied_season = ? WHERE house = ? AND objective = ?"
+        " AND satisfied_season IS NULL",
+        (season, op["house"], op["objective"]),
+    ).rowcount
+    if not changed:
+        raise rules.RuleError(
+            f"{op['house']} does not currently hold the objective {op['objective']!r}"
+        )
+    conn.execute(
+        "INSERT OR IGNORE INTO event_houses (event_id, house, role)"
+        " VALUES (?, ?, 'subject')",
+        (event_id, op["house"]),
+    )
+    _merge_mechanical_delta(
+        conn, event_id, "veto_objective",
+        {"house": op["house"], "objective": op["objective"], "reason": op.get("reason"),
+         "after_season": season},
+    )
+
+
+def _op_force_action(conn, op, event_id, data):
+    """Name the action a house takes next season. Consumed once by the engine."""
+    _require_engine_house(conn, op["house"])
+    season = _current_season(conn)
+
+    from hoc.rules_data import load_rules
+
+    known = {action.action for action in load_rules().actions}
+    if op["action"] not in known:
+        raise rules.RuleError(
+            f"unknown action {op['action']!r}; valid actions are {', '.join(sorted(known))}"
+        )
+
+    conn.execute(
+        "UPDATE house_stats SET forced_action = ? WHERE house = ?", (op["action"], op["house"])
+    )
+    conn.execute(
+        "INSERT OR IGNORE INTO event_houses (event_id, house, role)"
+        " VALUES (?, ?, 'subject')",
+        (event_id, op["house"]),
+    )
+    _merge_mechanical_delta(
+        conn, event_id, "force_action",
+        {"house": op["house"], "action": op["action"], "reason": op.get("reason"),
+         "after_season": season},
+    )
+
+
+def _op_adjust_stat(conn, op, event_id, data):
+    """Move a stat by hand. The reason is required by the turn file schema, not
+    merely encouraged: an unexplained adjustment is indistinguishable from a bug
+    when someone reads the log a hundred seasons later."""
+    row = _require_engine_house(conn, op["house"])
+    season = _current_season(conn)
+
+    stat = op["stat"]
+    if stat not in STAT_BOUNDS:
+        raise rules.RuleError(
+            f"unknown stat {stat!r}; adjustable stats are {', '.join(sorted(STAT_BOUNDS))}"
+        )
+
+    low, high = STAT_BOUNDS[stat]
+    before = row[stat]
+    after = max(low, min(high, before + int(op["delta"])))
+    conn.execute(f"UPDATE house_stats SET {stat} = ? WHERE house = ?", (after, op["house"]))
+    conn.execute(
+        "INSERT OR IGNORE INTO event_houses (event_id, house, role)"
+        " VALUES (?, ?, 'subject')",
+        (event_id, op["house"]),
+    )
+    _merge_mechanical_delta(
+        conn, event_id, "adjust_stat",
+        {"house": op["house"], "stat": stat, "delta": int(op["delta"]),
+         "before": before, "after": after, "reason": op["reason"], "after_season": season},
+    )
+
+
+def _op_grant_house(conn, op, event_id, data):
+    """Grant a house through the engine's founding path (§10, §12).
+
+    The engine's own RNG for the current season does the drawing, so a replay of
+    this turn at the same point produces the same house — a granted house is as
+    reproducible as a rolled one.
+    """
+    from hoc import sim
+
+    season = _current_season(conn)
+    world = sim.World(conn, world_seed=_world_seed(conn))
+    house = world.found_house(
+        season,
+        seat=op["riding"],
+        rng=world.rng_for(season),
+        community=op.get("community"),
+        tag=op.get("tag"),
+        rank=op.get("rank"),
+        surname=(op.get("surname") or "").strip() or None,
+    )
+    if house is None:
+        raise rules.RuleError(
+            f"could not grant a house at {op['riding']!r};"
+            " the riding may be held, or its province's place bank exhausted"
+        )
+
+    conn.execute(
+        "INSERT OR IGNORE INTO event_houses (event_id, house, role) VALUES (?, ?, 'subject')",
+        (event_id, house),
+    )
+    _merge_mechanical_delta(
+        conn, event_id, "grant_house",
+        {"house": house, "riding": op["riding"], "community": op.get("community"),
+         "rank": op.get("rank"), "tag": op.get("tag"), "reason": op.get("reason"),
+         "after_season": season},
+    )
+
+
+def _world_seed(conn):
+    row = conn.execute("SELECT seed FROM seasons ORDER BY season_no DESC LIMIT 1").fetchone()
+    if row is None:
+        raise rules.RuleError(
+            "this scenario has no world seed; a grant through the engine needs one"
+        )
+    return row["seed"]
+
+
+# The stats a director may move, with the bounds §4 puts them in.
+STAT_BOUNDS = {
+    "capital": (0, 100),
+    "influence": (0, 100),
+    "cohesion": (0, 100),
+    "ambition": (0, 10),
+}
+
+
 OPERATIONS = {
     "expand": _op_expand,
     "transfer": _op_transfer,
@@ -182,6 +373,11 @@ OPERATIONS = {
     "climate_shift": _op_climate_shift,
     "relation": _op_relation,
     "found_house": _op_found_house,
+    "set_objective": _op_set_objective,
+    "veto_objective": _op_veto_objective,
+    "force_action": _op_force_action,
+    "adjust_stat": _op_adjust_stat,
+    "grant_house": _op_grant_house,
 }
 
 
