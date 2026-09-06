@@ -302,6 +302,41 @@ CREATE TABLE friction (
     CHECK (house_a < house_b)
 );
 
+-- The site's season scrubber and stat sparklines need history, and the tables
+-- above only ever hold the present: house_stats is overwritten every season and
+-- holdings record which event closed them, not which season. These two are the
+-- history, written by the engine as it plays and read by hoc/export/timeline.py.
+--
+-- Snapshots are periodic rather than per-season on purpose: at one row per house
+-- per season a 300-season game would carry twenty thousand rows to draw a
+-- sparkline sixty points long.
+CREATE TABLE stat_snapshots (
+    season_no  INTEGER NOT NULL,
+    house      TEXT NOT NULL REFERENCES houses(house),
+    capital    INTEGER NOT NULL,
+    influence  INTEGER NOT NULL,
+    cohesion   INTEGER NOT NULL,
+    ambition   INTEGER NOT NULL,
+    holdings   INTEGER NOT NULL,
+    PRIMARY KEY (season_no, house)
+);
+
+CREATE INDEX idx_stat_snapshots_house ON stat_snapshots(house);
+
+-- Every action drawn, whether or not it changed anything worth an event. Invest,
+-- Cultivate influence and Consolidate move only stats and so record no event;
+-- without this row a house page could not say what its holder spent a season on.
+CREATE TABLE house_actions (
+    id         INTEGER PRIMARY KEY,
+    season_no  INTEGER NOT NULL,
+    house      TEXT NOT NULL REFERENCES houses(house),
+    action     TEXT NOT NULL,
+    success    INTEGER,
+    detail     TEXT
+);
+
+CREATE INDEX idx_house_actions_house ON house_actions(house, season_no);
+
 -- One row per played season: the seed it was played under, where its log lives,
 -- and the two counts the smoke test watches. rules_version records which
 -- rules/CHANGELOG.md version the season was played under, so a later rules

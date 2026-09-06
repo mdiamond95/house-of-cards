@@ -124,6 +124,11 @@ OBJECTIVES_AT_FOUNDING = 2
 DEFEND_THE_SEAT_SEASONS = 3
 SIEGE_SEASONS = 10
 
+# How often the engine writes a stat snapshot for every living house. Five keeps
+# a 300-season sparkline sixty points long and timeline.json well inside its
+# size budget; hoc/export/timeline.py reads whatever spacing it finds.
+SNAPSHOT_EVERY = 5
+
 
 class SimError(Exception):
     """The engine cannot proceed: a malformed world, not a rules outcome."""
@@ -2603,6 +2608,17 @@ class World:
             outcome = self.take_action(house, season, rng)
             if outcome:
                 outcomes.append(outcome)
+                self.conn.execute(
+                    "INSERT INTO house_actions (season_no, house, action, success, detail)"
+                    " VALUES (?, ?, ?, ?, ?)",
+                    (
+                        season,
+                        house,
+                        outcome.get("action", "—"),
+                        1 if outcome.get("success") else 0,
+                        outcome.get("riding") or outcome.get("with") or outcome.get("note"),
+                    ),
+                )
 
             # 6. Objectives, then the §7c debt check.
             self._check_objectives(house, season, rng)
@@ -2634,7 +2650,24 @@ class World:
             return None
         return self.found_house(season, rng=rng)
 
+    def _snapshot(self, season):
+        """Every living house's stats, kept so the site can draw a history the
+        live tables cannot: house_stats holds only the present."""
+        if season != 1 and season % SNAPSHOT_EVERY != 0:
+            return
+        self.conn.execute(
+            "INSERT OR REPLACE INTO stat_snapshots"
+            " (season_no, house, capital, influence, cohesion, ambition, holdings)"
+            " SELECT ?, s.house, s.capital, s.influence, s.cohesion, s.ambition,"
+            "        (SELECT COUNT(*) FROM holdings h WHERE h.house = s.house"
+            "         AND h.released_event_id IS NULL)"
+            " FROM house_stats s JOIN houses ho ON ho.house = s.house"
+            " WHERE ho.status = 'active'",
+            (season,),
+        )
+
     def _write_season(self, season, outcomes, founded):
+        self._snapshot(season)
         houses_after = self.conn.execute(
             "SELECT COUNT(*) AS n FROM houses WHERE status = 'active'"
         ).fetchone()["n"]

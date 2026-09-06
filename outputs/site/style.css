@@ -115,6 +115,24 @@ code { font-size: 0.78rem; color: var(--muted); }
 .unclaimed { color: var(--muted); font-style: italic; }
 .seat { color: var(--muted); font-size: 0.75rem; }
 
+.spark, .chart { display: block; width: 100%; max-width: 15rem; height: auto; }
+.sparks td { vertical-align: middle; }
+.chart-key { font-size: 0.75rem; color: var(--muted); margin: 0.1rem 0 0.8rem; }
+.kin { font-size: 0.85rem; color: var(--muted); }
+
+.scrubber { display: flex; align-items: center; gap: 0.6rem; margin: 0.6rem 0 0.2rem; }
+.scrubber input[type=range] { flex: 1; min-width: 0; }
+.scrubber button { font: inherit; font-size: 0.82rem; padding: 0.3rem 0.7rem; border: 1px solid var(--rule);
+                   background: #fff; color: var(--ink); border-radius: 3px; cursor: pointer; min-width: 4rem; }
+.scrubber output { font-size: 0.78rem; color: var(--muted); min-width: 6.5rem; text-align: right; }
+
+.jump { margin: 0.6rem 0 1rem; font-size: 0.85rem; color: var(--muted); }
+.jump select { font: inherit; margin-left: 0.4rem; padding: 0.2rem; }
+.season { margin-bottom: 1.6rem; }
+.chronicle { list-style: none; padding: 0; margin: 0.3rem 0 0; }
+.chronicle li { padding: 0.35rem 0; border-bottom: 1px solid var(--rule); font-size: 0.9rem; }
+.chronicle li.challenge, .chronicle li.succession { font-family: var(--serif); }
+
 .turn { margin-bottom: 2rem; }
 .directive { font-family: var(--serif); font-style: italic; color: var(--ink);
              border-left: 2px solid var(--accent); padding-left: 0.7rem; margin: 0.4rem 0 0.8rem; }
