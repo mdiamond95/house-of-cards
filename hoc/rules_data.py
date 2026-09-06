@@ -70,6 +70,7 @@ class MortalityBand:
 
 @dataclass
 class EraBand:
+    id: str
     name: str
     start_year: int
     end_year: "int | None"
@@ -239,7 +240,12 @@ def _load_mortality(rules_dir):
 def _load_eras(rules_dir):
     data = _read_json(rules_dir / "eras.json")
     bands = [
-        EraBand(name=b["name"], start_year=b["start_year"], end_year=b.get("end_year"))
+        EraBand(
+            id=b["id"],
+            name=b["name"],
+            start_year=b["start_year"],
+            end_year=b.get("end_year"),
+        )
         for b in data["bands"]
     ]
     bands.sort(key=lambda b: b.start_year)
@@ -266,7 +272,8 @@ def _check_probability(value, label):
 
 def _load_founding(rules_dir):
     data = _read_json(rules_dir / "founding.json")
-    _check_probability(data["p_found"]["season_loop_default"]["value"], "founding.p_found.season_loop_default.value")
+    if "formula" not in data["p_found"]:
+        raise RulesDataError("founding.p_found has no formula")
     for rank, probability in data["rank_probabilities"].items():
         _check_probability(probability, f"founding.rank_probabilities.{rank}")
     return data

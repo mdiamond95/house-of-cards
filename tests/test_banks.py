@@ -13,6 +13,11 @@ from hoc.rules_data import load_rules
 VALID_TAGS = {"Progressive", "Conservative", "Mixed", "Global"}
 VALID_MAGNITUDES = {"Minor", "Significant", "Major"}
 
+# Raised from three to five in rules version 0.3: the authored bank shares a few
+# genuinely common surnames (Ross, Grant) across five communities, which is true
+# of the real naming record and not a transcription error.
+MAX_COMMUNITIES_PER_SURNAME = 5
+
 
 def _province_codes_in_ridings():
     path = Path("data/reference/ridings.csv")
@@ -47,7 +52,7 @@ def test_every_community_has_at_least_15_surnames():
         )
 
 
-def test_no_surname_in_more_than_three_communities():
+def test_no_surname_in_more_than_five_communities():
     bundle = load_rules()
     communities_by_surname = defaultdict(set)
     for s in bundle.surnames:
@@ -56,11 +61,11 @@ def test_no_surname_in_more_than_three_communities():
     offenders = {
         surname: sorted(communities)
         for surname, communities in communities_by_surname.items()
-        if len(communities) > 3
+        if len(communities) > MAX_COMMUNITIES_PER_SURNAME
     }
     assert not offenders, (
-        "surnames shared by more than three communities:"
-        f" {offenders} (see rules/CHANGELOG.md 0.2)"
+        f"surnames shared by more than {MAX_COMMUNITIES_PER_SURNAME} communities:"
+        f" {offenders} (see rules/CHANGELOG.md 0.3)"
     )
 
 

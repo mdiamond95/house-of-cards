@@ -8,11 +8,11 @@ Name heir,holder_age >= 45; no heir,4,+3 Secure succession; +1 per 5 years over 
 Endow,capital >= 60,2,+2 Endow objective,auto,"influence +10, cohesion +5, capital -25",,
 Petition elevation,influence >= 60; rank < Marquis; holdings >= 3,1,+3 Seek elevation; +2 climate fit,9,rank +1; influence -10,influence -5,
 Dispute,Sig- relation; adjacent holdings,2,+ambition/2; -3 if cohesion < 50,8,"opponent cohesion -10, Sig- -> resolved or ⊖",own cohesion -10,
-Challenge (11b),Dispute won previously OR ⊖; target riding land-adjacent,1,"v1 table: Progressive +3, Conservative -3, Outside +6 vs climate; +1 per rank above defender",10,riding transfers; ⚔ marker,"ambition -2, influence -5",
+Challenge (11b),Dispute won previously OR ⊖; target riding land-adjacent,1,"v1 table: Progressive +3, Conservative -3, Outside +6 vs climate; +1 per rank above defender",10,riding transfers; ⚔ marker,"ambition -2, influence -5",+2
 Reconcile,Sig- relation,2,+2 if either cohesion < 40,7,Sig- -> ~ (resolved),none,
 Consolidate (rest),,3,+3 if cohesion < 40,auto,cohesion +8,,
 Purchase riding,capital >= 70; neighbour has capital < 30 or cohesion < 35 and an adjacent holding,2,+2 if enclosed,8,"riding transfers; buyer capital -40, seller capital +30",capital -5,+2
-Marriage alliance,another house with + or ◉+ relation; both have unmarried heir/child (tracked as flag),2,+2 Form a compact,7,"◉+ and ""kin"" marker; both cohesion +5; future disputes between them blocked for 20 seasons",none,
+Marriage alliance,another house with + or ◉+ relation; both have unmarried heir/child (tracked as flag),2,+2 Form a compact,7,"◉+ and ""kin"" marker; both cohesion +5; future disputes between them blocked for 20 seasons",none,+2
 Absorb,neighbour house with cohesion < 15 or disorderly succession in progress; ◉+ or kin relation,1,+3 if enclosed,8,neighbour's holdings transfer as a cadet block; absorbing house cohesion -10,Sig- with neighbour,+3
-Cede / swap,Sig- or dispute pending; both hold ridings adjacent to each other,1,+2 Answer a grievance,7,one riding each swaps (or one cedes); Sig- -> resolved,none,
+Cede / swap,Sig- or dispute pending; both hold ridings adjacent to each other,1,+2 Answer a grievance,7,one riding each swaps (or one cedes); Sig- -> resolved,none,+2
 Partition,holder death with two or more named heirs (see §9),forced,,auto,second heir founds a cadet house in the outer holdings,,
