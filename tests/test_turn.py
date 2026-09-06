@@ -288,7 +288,10 @@ def test_exporters_run_on_the_loaded_database(conn, tmp_path):
         assert path.stat().st_size < map_export.MAX_BYTES
         text = path.read_text(encoding="utf-8")
         assert text.startswith("<svg") and text.rstrip().endswith("</svg>")
-        assert text.count("<path") == 343
+        # 343 riding fills (stroke="none") plus one shared-border mesh path —
+        # the coastline itself never gets a stroke.
+        assert text.count("<path") == 344
+        assert 'stroke="none"' in text
 
 
 def test_secondary_map_distinguishes_the_principal_seat(conn, tmp_path):
