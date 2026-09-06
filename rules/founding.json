@@ -1,0 +1,41 @@
+{
+  "season_1": "Exactly one house is founded, by the director's choice of seat riding or by the engine's draw if none is given.",
+  "p_found": {
+    "season_loop_default": {
+      "value": 0.15,
+      "note": "§6: \"with probability p_found (default 0.15, halved when 40+ houses exist)\". This appears to conflict with the explicit formula recorded under founding_roll_formula below (§10), which has no 40+ houses halving rule. Both are transcribed verbatim; reconciling them is a 9c decision — see rules/CHANGELOG.md."
+    },
+    "founding_roll_formula": {
+      "formula": "0.25 * (unclaimed_land_adjacent_ridings / 343) ** 0.5",
+      "note": "§10: probability is high on an empty map and falls smoothly as land runs out, reaching zero when the map is full. No cap on the number of houses."
+    }
+  },
+  "region_weights": {
+    "initial": {
+      "Maritime": 3,
+      "Quebec": 3,
+      "Ontario": 4,
+      "Prairie": 2,
+      "BC": 1,
+      "North": 0.5
+    },
+    "drift": "Shifts each season toward regions with more unclaimed land-adjacent capacity, so settlement moves west as the east fills, without any date driving it."
+  },
+  "tag_climate_fit": "The current Confederation-band ledger sign doubles the weight of the matching tag when a new house's tag is drawn.",
+  "rank_probabilities": {
+    "Baron": 0.70,
+    "Viscount": 0.25,
+    "Earl": 0.05
+  },
+  "seat_riding_rule": "Unclaimed, weighted toward provincial population centres early in a region's settlement and toward hinterland later.",
+  "cultural_community": "Drawn from a per-region table; Phase 9b authors these with care. Names come from community-specific surname banks and never from real living people.",
+  "cadet_foundings": "Foundings through partition (§9) do not use the founding roll and can occur on a full map.",
+  "initial_stats": {
+    "capital": "30 + 5*rank_index + d20",
+    "influence": "20 + 5*rank_index + d20",
+    "cohesion": "60 + d20",
+    "ambition": "d10",
+    "holder_age": "40 + d30",
+    "note": "rank_index presumably 0=Baron, 1=Viscount, 2=Earl, matching rank_probabilities order; not stated explicitly in docs/ENGINE_DESIGN.md — flagged for 9c confirmation. All draws come from the season's seeded RNG and are logged."
+  }
+}
