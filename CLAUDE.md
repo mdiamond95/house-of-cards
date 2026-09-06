@@ -9,8 +9,9 @@ Read this fully before doing anything. Sessions in this repo do not share memory
 
 ## Source of truth
 - The original workbook no longer exists. See `docs/RECONSTRUCTION.md`.
-- Until Phase 3 is complete: `data/seed/*.csv`. These are canonical for houses, holdings, ranks and colours. Do not edit values; add reconstructed data only in the manner described in docs/RECONSTRUCTION.md.
-- After Phase 3: `hoc.db`. Everything in `outputs/` is regenerated from it.
+- `hoc.db` is canonical (Phase 3 complete). Everything in `outputs/` is regenerated from it.
+- `hoc.db` is a derived artefact: it is rebuilt from scratch from `data/seed/*.csv` plus `data/reference/*.csv` by `python scripts/load_seed.py`. The seed CSVs remain the audited input and the record of provenance — do not edit their values; add reconstructed data only in the manner described in docs/RECONSTRUCTION.md, then rebuild.
+- Game state produced by turns lives in `hoc.db` alone (events, turns, narrative). Once a turn has been written to the database, the database is ahead of the seed and the seed is not regenerated from it.
 
 ## Hard rules (these have all been broken before and corrected by hand)
 1. Never fabricate. No house attributes, riding names, relationships, dates or colours that are not in the data. If something is missing, record it as missing (e.g. TBD) and flag it in your final status.
