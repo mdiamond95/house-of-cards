@@ -142,3 +142,4 @@ id,house,fed_id,seat_order,hex,acquired_event_id,released_event_id
 141,Trondek,60001,1,#7A6332,,
 142,Boyer-Lavallée,47002,1,#A04A2D,,
 143,FitzWilliam-Macklem,35072,1,#5D2A1F,,
+144,Macleod,48004,5,#A89169,41,
