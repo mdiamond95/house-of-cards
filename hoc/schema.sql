@@ -3,7 +3,7 @@
 -- Rebuilt from data/seed + data/reference by scripts/load_seed.py. Everything in
 -- outputs/ is regenerated from this database.
 --
--- Design notes that are binding (see docs/RECONSTRUCTION.md):
+-- Design notes that are binding (see scenarios/legacy/RECONSTRUCTION.md):
 --   * The game runs more than one era-cohort of Section 10 events in parallel, so
 --     `events.era_cohort` and `climate.era_cohort` exist and climate is never a
 --     single scalar (CLAUDE.md hard rule 8).
@@ -161,6 +161,10 @@ CREATE INDEX idx_successions_house ON successions(house);
 
 -- --------------------------------------------------------------- relations --
 
+-- marker is the v1 relation glyph vocabulary (◎, +, ◉+, Sig-, ⊖, ⚔, ~) plus
+-- 'kin', added in Phase 9c for houses joined by marriage or by partition. It is
+-- free text rather than a CHECK because the v1 glyph set was recovered, not
+-- specified, and an unrecognised marker must be storable rather than rejected.
 CREATE TABLE relations (
     id         INTEGER PRIMARY KEY,
     house_a    TEXT NOT NULL REFERENCES houses(house),
@@ -180,6 +184,9 @@ CREATE INDEX idx_relations_house_b ON relations(house_b);
 -- cumulative_after is TEXT and stored exactly as the source stated it ("+1",
 -- "-2", "0"). The per-event delta rule was never recovered and must not be
 -- inferred from these numbers.
+-- era_cohort holds an era band id from rules/eras.json ('confederation',
+-- 'dominion', 'late') for engine-played games, and the v1 cohort labels for the
+-- reconstructed one. Never collapse the ledgers into one number (hard rule 8).
 CREATE TABLE climate (
     id               INTEGER PRIMARY KEY,
     era_cohort       TEXT NOT NULL,
@@ -219,6 +226,81 @@ CREATE TABLE threads (
 CREATE TABLE handoff (
     key  TEXT PRIMARY KEY,
     text TEXT
+);
+
+-- ------------------------------------------------- autoplay engine (Phase 9c) --
+
+-- The variable half of a house, as §4 defines it. One row per house, created at
+-- founding. capital/influence/cohesion are clamped 0-100 and ambition 0-10 by
+-- the engine, not by CHECKs: a rule that would push a stat out of range is a bug
+-- worth catching in the engine's own clamp, not a constraint that aborts a
+-- season mid-write. removed_season is NULL while the house is active.
+CREATE TABLE house_stats (
+    house           TEXT PRIMARY KEY REFERENCES houses(house),
+    capital         INTEGER NOT NULL,
+    influence       INTEGER NOT NULL,
+    cohesion        INTEGER NOT NULL,
+    ambition        INTEGER NOT NULL,
+    enclosed        INTEGER NOT NULL DEFAULT 0 CHECK (enclosed IN (0, 1)),
+    enclosed_since  INTEGER,
+    community       TEXT,
+    region          TEXT,
+    tradition       TEXT,
+    tag             TEXT,
+    province        TEXT,
+    seat_place      TEXT,
+    founded_season  INTEGER,
+    removed_season  INTEGER
+);
+
+CREATE INDEX idx_house_stats_removed ON house_stats(removed_season);
+
+-- Named people: the holder, up to two named heirs, and anyone else the engine
+-- needs to remember. age is biological and is never reset by a clock reset
+-- (hard rule 5). A dead person keeps their row: the record is the history.
+CREATE TABLE persons (
+    id      INTEGER PRIMARY KEY,
+    house   TEXT NOT NULL REFERENCES houses(house),
+    name    TEXT NOT NULL,
+    gender  TEXT,
+    age     INTEGER,
+    role    TEXT NOT NULL CHECK (role IN ('holder', 'heir', 'heir2', 'other')),
+    alive   INTEGER NOT NULL DEFAULT 1 CHECK (alive IN (0, 1)),
+    -- §7's Marriage alliance needs both houses to have an unmarried heir, and
+    -- says so: "tracked as flag". Without it one heir marries every neighbour.
+    married INTEGER NOT NULL DEFAULT 0 CHECK (married IN (0, 1)),
+    born_season   INTEGER,
+    died_season   INTEGER
+);
+
+CREATE INDEX idx_persons_house ON persons(house);
+CREATE UNIQUE INDEX idx_persons_one_living_holder
+    ON persons(house) WHERE role = 'holder' AND alive = 1;
+
+-- A house holds up to three objectives (§5). satisfied_season NULL means still
+-- held; a satisfied objective keeps its row so the history stays readable.
+CREATE TABLE objectives (
+    id                INTEGER PRIMARY KEY,
+    house             TEXT NOT NULL REFERENCES houses(house),
+    objective         TEXT NOT NULL,
+    acquired_season   INTEGER NOT NULL,
+    satisfied_season  INTEGER
+);
+
+CREATE INDEX idx_objectives_house ON objectives(house);
+
+-- One row per played season: the seed it was played under, where its log lives,
+-- and the two counts the smoke test watches. rules_version records which
+-- rules/CHANGELOG.md version the season was played under, so a later rules
+-- change never silently reinterprets an old season (§11).
+CREATE TABLE seasons (
+    season_no      INTEGER PRIMARY KEY,
+    seed           INTEGER NOT NULL,
+    json_path      TEXT,
+    houses_after   INTEGER NOT NULL,
+    ridings_after  INTEGER NOT NULL,
+    rules_version  TEXT,
+    created_at     TEXT
 );
 
 -- ------------------------------------------------------------------- views --

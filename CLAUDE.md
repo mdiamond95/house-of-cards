@@ -8,9 +8,10 @@ Read this fully before doing anything. Sessions in this repo do not share memory
 - At migration baseline: 33 active houses, 2 historically removed houses, roughly 145 ridings claimed. Societal climate most recently at −1 Significant Conservative (following the Regulation 17 / Ontario Bilingual Schools Crisis event). Narrative era roughly 1867–1918 on house personal clocks.
 
 ## Source of truth
-- The original workbook no longer exists. See `docs/RECONSTRUCTION.md`.
+- The original workbook no longer exists. See `scenarios/legacy/RECONSTRUCTION.md`.
 - `hoc.db` is canonical (Phase 3 complete). Everything in `outputs/` is regenerated from it.
-- `hoc.db` is a derived artefact: `python scripts/rebuild.py` reconstructs it from scratch out of `data/seed/*.csv` plus `data/reference/*.csv` and then replays every file in `turns/`. The seed CSVs and the turn files are the reproducible record; the database is what they produce. The seed CSVs remain the audited input and the record of provenance — do not edit their values; add reconstructed data only in the manner described in docs/RECONSTRUCTION.md, then rebuild.
+- `hoc.db` is a derived artefact: `python scripts/rebuild.py` reconstructs it from scratch out of the active scenario's `seed/*.csv` plus `data/reference/*.csv` and then replays that scenario's record (`turns/` for the reconstructed game, `seasons/` for an engine-played one). The seed CSVs and the turn/season files are the reproducible record; the database is what they produce. The seed CSVs remain the audited input and the record of provenance — do not edit their values; add reconstructed data only in the manner described in scenarios/legacy/RECONSTRUCTION.md, then rebuild.
+- Which game the database holds is `scenarios/current.txt`: `legacy` is the reconstructed playthrough (frozen), `new` is the live autoplay game. Switch with `python -m hoc scenario use <name>`, then rebuild. Everything below about turns applies to the legacy scenario.
 - Game state produced by turns lives in the turn files and, once applied, in `hoc.db` (events, turns, narrative). The seed is never regenerated from the database.
 
 ## Hard rules (these have all been broken before and corrected by hand)
@@ -21,8 +22,8 @@ Read this fully before doing anything. Sessions in this repo do not share memory
 5. No universal calendar. Each house has its own personal clock starting at 1867. Clocks sync only on direct shared events between named houses. Global events never sync clocks. On succession the new holder's clock resets to personal 1867; biological ages are not reset.
 6. Founding grants must be evaluated for cohort fit against the current climate state before execution. This is mandatory, not advisory.
 7. Rank ladder and remaining mechanics are defined in Mechanics Sections 1–3 of the baseline workbook. Extract them in Phase 1; do not guess them.
-8. The game runs more than one era-cohort of Section 10 events in parallel (see docs/RECONSTRUCTION.md). Never collapse the climate ledgers into one number; always state which era-cohort a climate value belongs to.
-9. A turn narrative may use house detail only if it is in hoc.db (house_blocks, holders, holdings, relations, events). Detail supplied in a directive that is not yet in the database must be added to data/seed/house_blocks.csv in a reconstruction commit in the same PR before the turn is applied.
+8. The game runs more than one era-cohort of Section 10 events in parallel (see scenarios/legacy/RECONSTRUCTION.md). Never collapse the climate ledgers into one number; always state which era-cohort a climate value belongs to.
+9. A turn narrative may use house detail only if it is in hoc.db (house_blocks, holders, holdings, relations, events). Detail supplied in a directive that is not yet in the database must be added to scenarios/legacy/seed/house_blocks.csv in a reconstruction commit in the same PR before the turn is applied.
 
 ## Conventions
 - Canadian English spelling throughout (colour, honour, centre, defence).
@@ -41,9 +42,9 @@ Read this fully before doing anything. Sessions in this repo do not share memory
 ## Repository layout
 - `hoc/` — package: schema.sql, db.py, names.py, rules.py, turnfile.py, turn.py, `__main__.py` (CLI), export/
 - `scripts/` — build scripts: build_ridings.py, build_adjacency.py, build_geometry.py, load_seed.py, rebuild.py
-- `turns/` — one JSON file per turn, `NNNN_<slug>.json` (see docs/TURN_FILE.md)
+- `scenarios/` — one directory per game: `legacy/` (the reconstructed playthrough: `seed/`, `turns/NNNN_<slug>.json`, `RECONSTRUCTION.md`) and `new/` (the autoplay game: `seed/` headers only, `seasons/NNNN.json`); `current.txt` names the active one
 - `tests/` — pytest; fixtures drawn from real logged cases
-- `data/seed/` — reconstructed canonical data (see docs/RECONSTRUCTION.md); values change only via reconstruction commits
+- `scenarios/legacy/seed/` — reconstructed canonical data (see scenarios/legacy/RECONSTRUCTION.md); values change only via reconstruction commits
 - `data/reference/` — ridings, adjacency, simplified geometry; `raw/` holds Elections Canada source files
 - `data/extract/` — JSON produced by extract.py
 - `outputs/` — generated workbook, map.svg, and `dump/` CSV+JSON; regenerated every turn
@@ -52,7 +53,7 @@ Read this fully before doing anything. Sessions in this repo do not share memory
 ## Working pattern
 - One build step or one game turn per session. Work on a branch, commit with a clear message, push, open a PR.
 - Make one commit per logical change; keep the diff reviewable on a phone.
-- Never modify values in `data/seed/` except through a reconstruction commit as defined in docs/RECONSTRUCTION.md.
+- Never modify values in `scenarios/legacy/seed/` except through a reconstruction commit as defined in scenarios/legacy/RECONSTRUCTION.md.
 - Do not add dependencies beyond openpyxl, shapely and pytest without noting it in the status block.
 
 ## Turn procedure
@@ -60,8 +61,8 @@ Run a game turn in exactly these steps. The format of a turn file is in docs/TUR
 
 1. **Read the state first.** Run `python -m hoc status`, then read `outputs/dump/state.json` for the houses the directive touches — holder, generation, clock, holdings, colours. Write nothing until you have.
 2. **Check any expansion before writing it.** Run `python -m hoc check <house> <riding>`. If it fails, pick another riding that the data supports, or stop and report the problem to the director. Never write narrative for a move that has not passed the check. Water-only adjacency passes with a warning — surface that warning in your status block, never bury it.
-3. **Write `turns/NNNN_<slug>.json`.** Operations first, then the narrative. The narrative is Canadian spelling, about 500 words, rich prose rather than bullet lists, anchored only in what the data records — no invented settlers, dates, relations or colours. Dates are personal years on the house's own clock; there is no universal calendar, so never write a shared year for houses that did not meet.
-4. **Apply it.** `python -m hoc apply turns/NNNN_<slug>.json`. This validates, applies and re-exports in one transaction. If it fails, fix the turn file and run it again. Never edit `hoc.db` by hand, and never hand-edit anything in `outputs/`.
+3. **Write `scenarios/legacy/turns/NNNN_<slug>.json`.** Operations first, then the narrative. The narrative is Canadian spelling, about 500 words, rich prose rather than bullet lists, anchored only in what the data records — no invented settlers, dates, relations or colours. Dates are personal years on the house's own clock; there is no universal calendar, so never write a shared year for houses that did not meet.
+4. **Apply it.** `python -m hoc apply scenarios/legacy/turns/NNNN_<slug>.json`. This validates, applies and re-exports in one transaction. If it fails, fix the turn file and run it again. Never edit `hoc.db` by hand, and never hand-edit anything in `outputs/`.
 5. **Commit `hoc.db`, the turn file and `outputs/` together**, so the database and its generated views never disagree. Push, open a PR.
 6. **Give the director the narrative in full in the message, then close with the STATUS block.** The narrative goes in the body so it can be read in chat without opening the repo; the STATUS block stays last, as the section below requires.
 

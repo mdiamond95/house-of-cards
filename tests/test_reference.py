@@ -7,7 +7,7 @@ from hoc.names import name_key
 
 ROOT = Path(__file__).resolve().parent.parent
 REFERENCE = ROOT / "data" / "reference"
-SEED = ROOT / "data" / "seed"
+SEED = ROOT / "scenarios" / "legacy" / "seed"
 
 
 def load(path):

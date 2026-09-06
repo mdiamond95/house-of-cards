@@ -1,11 +1,11 @@
 # Turn file format
 
-A turn is one JSON file at `turns/NNNN_<slug>.json`. It holds everything a turn
+A turn is one JSON file at `scenarios/legacy/turns/NNNN_<slug>.json`. It holds everything a turn
 needs: the director's directive, the event it produces, the narrative, and the
 mechanical operations. Applying it is atomic — either the whole turn lands or
 none of it does.
 
-    python -m hoc apply turns/0001_whitcombe-nipigon.json
+    python -m hoc apply scenarios/legacy/turns/0001_whitcombe-nipigon.json
 
 The four-digit prefix is the turn id, so it must be unique and ordered. The slug
 is lowercase letters, digits and hyphens.

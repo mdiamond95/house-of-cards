@@ -27,7 +27,7 @@ def built(tmp_path_factory):
     from hoc.turn import apply_turn
 
     conn = _load_seed_module().build(tmp_path_factory.mktemp("db") / "hoc.db")
-    for path in sorted((ROOT / "turns").glob("[0-9][0-9][0-9][0-9]_*.json")):
+    for path in sorted((ROOT / "scenarios" / "legacy" / "turns").glob("[0-9][0-9][0-9][0-9]_*.json")):
         apply_turn(conn, path)
 
     out_dir = tmp_path_factory.mktemp("out")
@@ -138,7 +138,7 @@ def test_output_is_deterministic(built, tmp_path):
     from hoc.turn import apply_turn
 
     conn = _load_seed_module().build(tmp_path / "hoc.db")
-    for path in sorted((ROOT / "turns").glob("[0-9][0-9][0-9][0-9]_*.json")):
+    for path in sorted((ROOT / "scenarios" / "legacy" / "turns").glob("[0-9][0-9][0-9][0-9]_*.json")):
         apply_turn(conn, path)
     site.write_site(conn, out_dir=tmp_path / "out")
     conn.close()

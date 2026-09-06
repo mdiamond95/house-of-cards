@@ -1,8 +1,11 @@
-"""Rebuild hoc.db from scratch out of data/reference + data/seed.
+"""Rebuild hoc.db from scratch out of data/reference + the active scenario's seed.
 
 The database is a derived artefact: this script deletes and rebuilds it on every
 run, so the audited inputs stay the CSVs. Nothing is invented here — an empty
 CSV cell becomes NULL, never a placeholder.
+
+The scenario is the one named in scenarios/current.txt (hoc/scenario.py), so
+the same script builds the reconstructed legacy game or an empty autoplay one.
 
 Usage: python scripts/load_seed.py [db_path]
 """
@@ -15,11 +18,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from hoc import db  # noqa: E402  (after sys.path setup)
+from hoc import db, scenario  # noqa: E402  (after sys.path setup)
 from hoc.names import name_key  # noqa: E402
 
 REFERENCE = ROOT / "data" / "reference"
-SEED = ROOT / "data" / "seed"
 
 TABLES_IN_REPORT_ORDER = [
     "ridings",
@@ -35,6 +37,10 @@ TABLES_IN_REPORT_ORDER = [
     "relations",
     "climate",
     "turns",
+    "seasons",
+    "house_stats",
+    "persons",
+    "objectives",
     "watch",
     "threads",
     "handoff",
@@ -57,11 +63,11 @@ def blank_to_none(value):
 # Every house resumes at personal 1867 — its last recorded anchor, whether that
 # was a founding grant or an accession reset. The personal years elapsed between
 # that anchor and the rebuild were not recovered and are not estimated; turns
-# advance clocks explicitly from here. See docs/RECONSTRUCTION.md, Decisions.
+# advance clocks explicitly from here. See scenarios/legacy/RECONSTRUCTION.md, Decisions.
 CLOCK_RESUME_YEAR = 1867
 CLOCK_RESUME_BASIS = (
     "resumed from last recorded anchor (personal 1867 at founding or at accession reset);"
-    " intervening personal years not recovered — see docs/RECONSTRUCTION.md"
+    " intervening personal years not recovered — see scenarios/legacy/RECONSTRUCTION.md"
 )
 
 
@@ -83,8 +89,8 @@ def load_adjacency(conn):
     )
 
 
-def load_houses(conn):
-    for row in read_csv(SEED / "houses.csv"):
+def load_houses(conn, seed):
+    for row in read_csv(seed / "houses.csv"):
         conn.execute(
             "INSERT INTO houses (house, peerage, rank, status, primary_hex, secondary_hex, notes)"
             " VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -100,7 +106,7 @@ def load_houses(conn):
         )
 
 
-def load_holdings(conn):
+def load_holdings(conn, seed):
     """Resolve each seed riding name to a fed_id via name_key. Hard-fail on any
     name that does not resolve — a silently dropped holding would be worse than
     a failed load."""
@@ -110,7 +116,7 @@ def load_holdings(conn):
     }
 
     unresolved = []
-    rows = read_csv(SEED / "holdings.csv")
+    rows = read_csv(seed / "holdings.csv")
     for row in rows:
         fed_id = fed_by_key.get(name_key(row["riding"]))
         if fed_id is None:
@@ -123,13 +129,13 @@ def load_holdings(conn):
 
     if unresolved:
         raise SystemExit(
-            "Riding names in data/seed/holdings.csv did not resolve against "
+            f"Riding names in {seed}/holdings.csv did not resolve against "
             f"data/reference/ridings.csv: {unresolved}"
         )
 
 
-def load_holders_and_clocks(conn):
-    for row in read_csv(SEED / "houses_state.csv"):
+def load_holders_and_clocks(conn, seed):
+    for row in read_csv(seed / "houses_state.csv"):
         conn.execute(
             "INSERT INTO holders (house, name, generation, acceded, bio_age_at_accession,"
             " predecessor, heir_apparent, is_current, source, confidence, notes)"
@@ -153,9 +159,9 @@ def load_holders_and_clocks(conn):
         )
 
 
-def load_house_blocks(conn):
+def load_house_blocks(conn, seed):
     """Section 5 house blocks, as far as they have been recovered."""
-    for row in read_csv(SEED / "house_blocks.csv"):
+    for row in read_csv(seed / "house_blocks.csv"):
         conn.execute(
             "INSERT INTO house_blocks (house, field, text, source) VALUES (?, ?, ?, ?)",
             (
@@ -167,8 +173,8 @@ def load_house_blocks(conn):
         )
 
 
-def load_successions(conn):
-    for row in read_csv(SEED / "successions.csv"):
+def load_successions(conn, seed):
+    for row in read_csv(seed / "successions.csv"):
         conn.execute(
             "INSERT INTO successions (seq, house, predecessor, successor, transition,"
             " personal_date, nature, batch, source) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -186,8 +192,8 @@ def load_successions(conn):
         )
 
 
-def load_climate(conn):
-    for row in read_csv(SEED / "climate_ledger.csv"):
+def load_climate(conn, seed):
+    for row in read_csv(seed / "climate_ledger.csv"):
         conn.execute(
             "INSERT INTO climate (era_cohort, seq, event, magnitude, tag, cumulative_after, source)"
             " VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -203,12 +209,12 @@ def load_climate(conn):
         )
 
 
-def load_relations(conn, created_at):
+def load_relations(conn, seed, created_at):
     """Every relation gets a synthetic 'relational' event so that relations
     always hang off an event, as the event log will expect. These events are
     marked source='reconstructed' to keep them distinguishable from events
     recovered verbatim."""
-    for row in read_csv(SEED / "relations_seed.csv"):
+    for row in read_csv(seed / "relations_seed.csv"):
         cursor = conn.execute(
             "INSERT INTO events (kind, title, source, created_at)"
             " VALUES ('relational', ?, 'reconstructed', ?)",
@@ -235,7 +241,10 @@ def load_relations(conn, created_at):
         )
 
 
-def build(db_path):
+def build(db_path, seed=None):
+    """Build the database from the given seed directory (default: the active
+    scenario's). Returns the open connection."""
+    seed = Path(seed) if seed is not None else scenario.seed_dir()
     db_path = Path(db_path)
     if db_path.exists():
         db_path.unlink()
@@ -247,13 +256,13 @@ def build(db_path):
     with conn:
         load_ridings(conn)
         load_adjacency(conn)
-        load_houses(conn)
-        load_holdings(conn)
-        load_holders_and_clocks(conn)
-        load_house_blocks(conn)
-        load_successions(conn)
-        load_climate(conn)
-        load_relations(conn, created_at)
+        load_houses(conn, seed)
+        load_holdings(conn, seed)
+        load_holders_and_clocks(conn, seed)
+        load_house_blocks(conn, seed)
+        load_successions(conn, seed)
+        load_climate(conn, seed)
+        load_relations(conn, seed, created_at)
     return conn
 
 
@@ -261,7 +270,7 @@ def main():
     db_path = Path(sys.argv[1]) if len(sys.argv) > 1 else db.DEFAULT_DB_PATH
     conn = build(db_path)
 
-    print(f"built {db_path}")
+    print(f"built {db_path} from scenario {scenario.current_name()!r}")
     width = max(len(name) for name in TABLES_IN_REPORT_ORDER)
     for table in TABLES_IN_REPORT_ORDER:
         count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]

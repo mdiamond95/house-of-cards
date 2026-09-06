@@ -8,7 +8,7 @@ import pytest
 from hoc import db
 
 ROOT = Path(__file__).resolve().parent.parent
-SEED = ROOT / "data" / "seed"
+SEED = ROOT / "scenarios" / "legacy" / "seed"
 
 
 def _load_seed_module():
