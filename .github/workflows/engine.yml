@@ -76,6 +76,14 @@ jobs:
         with:
           python-version: "3.12"
 
+      # ubuntu-latest ships node already, but the suite's JS-syntax tests
+      # (tests/test_js_syntax.py) depend on `node --check` existing, so it is
+      # pinned explicitly rather than left to whatever the runner image
+      # happens to preinstall.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
       - name: Install the runtime dependencies
         run: python -m pip install --disable-pip-version-check -r requirements-engine.txt
 

@@ -73,6 +73,21 @@ def test_every_command_has_a_step(workflow):
         )
 
 
+def test_node_is_set_up_for_the_js_syntax_tests(workflow):
+    """The suite the workflow runs includes tests/test_js_syntax.py, which
+    shells out to `node --check`. ubuntu-latest ships node already, but that is
+    the runner image's business, not this workflow's; pin it explicitly so a
+    future image change can't silently turn those tests into a skip."""
+    steps = workflow["jobs"]["engine"]["steps"]
+    setup_node = next(
+        (step for step in steps if str(step.get("uses", "")).startswith("actions/setup-node")),
+        None,
+    )
+    assert setup_node is not None, "no actions/setup-node step found"
+    names = [step.get("name") for step in steps]
+    assert steps.index(setup_node) < names.index("Test")
+
+
 def test_the_smoke_run_is_kept_out_of_the_workflow(workflow):
     steps = workflow["jobs"]["engine"]["steps"]
     test_step = next(step for step in steps if step.get("name") == "Test")

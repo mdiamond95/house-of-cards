@@ -281,8 +281,7 @@
       var files = ['friction.json', 'founding.json', 'succession.json', 'responses.json'];
       Promise.all(files.map(function (name) {
         return api('/contents/rules/' + name).then(function (data) {
-          return { name: name, body: JSON.parse(atob(data.content.replace(/
-/g, ''))) };
+          return { name: name, body: JSON.parse(atob(data.content.replace(/\n/g, ''))) };
         });
       })).then(function (loaded) {
         box.innerHTML = loaded.map(function (entry) {
@@ -319,8 +318,7 @@
         return;
       }
       el('rules-diff').hidden = false;
-      el('rules-diff').textContent = diff.join('
-');
+      el('rules-diff').textContent = diff.join('\n');
       dispatch({ command: 'rules', payload: JSON.stringify(patch), note: note },
                el('rules-status'));
     });
