@@ -44,7 +44,16 @@ Recovery queue (holder names still missing): Polkinghorne, Ashworth, Akatsiak, H
 - Tupper-Blair founder is Gordon Tupper-Blair; "Sir Charles" and heir "Hartley" from the 2026-05-04 session are recorded as variants and not used.
 - Generation state follows the 2026-04-27 cascade. The 2026-05-04 tally (21 G1, 6 G2, 1 G3) is treated as a founding-era-perspective statement, not current state.
 - Île-des-Soeurs: seed corrected to the official two-letter spelling; name_key normalisation folds œ/oe so either form resolves.
+- Clocks: all houses resume at personal 1867, their last recorded anchor. Elapsed personal years between that anchor and the rebuild were not recovered and are not estimated. Turns advance clocks explicitly from here.
 Rationale: the 25–27 April sources were written as deliberate handoff and reconciliation text; the 4 May session's prose had degraded and is the weaker witness where they disagree.
+
+## Addendum — 6 September 2026, Tier B (house blocks), first instance
+
+`data/seed/house_blocks.csv` holds the Section 5 long-form house record — Founder, Current holder, Heir apparent, Holdings, Economic position, Political position, Cultural position, Personal clock — one row per house and field, loaded into the `house_blocks` table. `field` is a free-form label rather than a fixed column set, because the workbook's headings varied by house and further headings are expected as recovery continues.
+
+The first block recovered is **Macleod**, source "founding block 2026-04-25", director-supplied. It is the material that turn 0001's narrative drew on before the database held it — Lady Margaret, Macleod Ranching Co., Turner Valley Petroleum Holdings, the Bureau Calgary, Knox Presbyterian, the Calgary Stampede founding directorship, the Liberal-commercial / UFA-cooperative cross-axis and the Mixed tag. Recording it closes that gap and is the reason for hard rule 9: a narrative may only use house detail the database already holds, and detail arriving in a directive is committed to the seed before the turn that uses it.
+
+The other thirty-four houses have no block recovered yet.
 
 ## Rules not recovered (Phase 4)
 
