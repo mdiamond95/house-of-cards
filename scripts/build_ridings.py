@@ -7,12 +7,16 @@ without a full GDAL stack.
 """
 
 import csv
-import re
+import sys
 from pathlib import Path
 
 import shapefile
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from hoc.names import name_key  # noqa: E402  (after sys.path setup)
+
 RAW_SHP = ROOT / "data" / "reference" / "raw" / "FED_CA_2023_EN.shp"
 OUT_CSV = ROOT / "data" / "reference" / "ridings.csv"
 
@@ -31,13 +35,6 @@ PROVINCE_BY_CODE = {
     "61": "NT",
     "62": "NU",
 }
-
-
-def name_key(name):
-    key = name.replace("—", "-").replace("–", "-")
-    key = key.replace("’", "'").replace("‘", "'")
-    key = re.sub(r"\s+", " ", key).strip()
-    return key.casefold()
 
 
 def main():
