@@ -1,0 +1,36 @@
+id,house,name,generation,acceded,bio_age_at_accession,predecessor,heir_apparent,is_current,source,confidence,notes
+1,Richard-Arseneau,Olivier Richard-Arseneau,G3,,,Alexandre Richard-Arseneau,,1,metrics 2026-04-27,medium,Octavien→Alexandre→Olivier; elevated to Marquis (L'Affaire de la Marquisate)
+2,Fitzroy-Crane,Charlotte Fitzroy-Crane,G2,1918 (as recorded),,Eliza Fitzroy-Crane,,1,metrics 2026-04-27,medium,retroactive special remainder added 1898; Countess then Marchioness by 2026-05-04
+3,Whitcombe,Edwin Whitcombe,G2,,,Cedric Whitcombe,,1,metrics 2026-04-27,medium,"variant founder name Edward Joshua recorded 2026-05-04, not used"
+4,MacNeil,Ruairidh MacNeil,G2,,,Hector MacNeil,,1,metrics 2026-04-27,medium,
+5,Pereira,David Pereira,G2,,,Abraham Pereira,,1,handoff 2026-04-25,medium,"WWI cascade, clean"
+6,Tessier,Paul-Léonard Tessier,G2,,,Hyacinthe-Olivier Tessier,,1,handoff 2026-04-25,medium,"WWI cascade, clean; authored-Resist signature"
+7,Létourneau,Édouard-Hyacinthe Létourneau,G2,,,Jean-Baptiste Létourneau,,1,handoff 2026-04-25,medium,"WWI cascade, clean"
+8,Wallace,Alexander James Wallace,G2,autumn Wallace personal 1909,~48,James Strachan Wallace,not formally named,1,cascade 2026-04-27,high,
+9,Sinclair-McKay,Isabelle Ruth McKay,G2,spring SinM personal 1920,~72,Mary Isabelle Sinclair-McKay,not formally named,1,cascade 2026-04-27,high,female-line under founding-grant special remainder; Countess by 2026-05-04
+10,Stanton-Greville,Edmund Stanton-Greville,G2,autumn SG personal 1910,~50,Col. Sir Randolph Horatio Stanton-Greville,not formally named,1,cascade 2026-04-27,high,Viscount by 2026-05-04
+11,Galbraith,Hugh Galbraith,G2,spring Galbraith personal 1908,~60,Andrew MacIntyre Galbraith,not formally named,1,cascade 2026-04-27,high,
+12,Garland,James Edward Garland,G2,autumn Garland personal 1909,~64,Sir Cornelius Whitbourne Garland (uncle),not formally named,1,cascade 2026-04-27,high,nephew succession; Viscount by 2026-05-04
+13,MacDonald,Donald Angus MacDonald,G2,winter MacDonald personal 1901,~58,Ronald 'Raghnall' Angus MacDonald,not formally named,1,cascade 2026-04-27,high,Viscount by 2026-05-04
+14,Blaikie,Robert Lauder Blaikie,G2,Blaikie personal 1916,~68,Sir Malcolm Lauder Blaikie,not formally named,1,cascade 2026-04-27,high,
+15,Delany,Cornelius Delany,G2,summer Delany personal 1910,~65,Josiah Cornelius Delany,not formally named,1,cascade 2026-04-27,high,three-sibling portfolio division: Cornelius commercial / Mahala Ruth educational / Nathaniel legal
+16,Letendre dit Batoche,Alexandre Letendre dit Batoche,G2,spring Letendre personal 1909,~58,Jean-Baptiste Letendre dit Batoche,not formally named,1,cascade 2026-04-27,high,
+17,Hall,Edward Jacob Hall,G2,spring Hall personal 1920,~41,Sir William Hall VC,not formally named,1,cascade 2026-04-27,high,Earl
+18,Wilmot-Hazen,Sir Edward John Wilmot-Hazen Jr.,G2,Wilmot-Hazen personal 1925,~68,Sir Edward John Wilmot-Hazen Sr.,not formally named,1,cascade 2026-04-27,high,
+19,Ross,Alexander James Ross,G2,Ross personal 1922,~50,Sir Alexander Morrison Ross,not formally named,1,cascade 2026-04-27,high,
+20,Lockhart,Sir Walter Lockhart,G1,founding,,,"operational heir, unnamed",1,handoff 2026-04-25,medium,
+21,Polkinghorne,,G1,founding,,,,1,metrics 2026-04-27,low,holder name not yet recovered
+22,Macleod,Sir Alexander Donald Macleod,G1,"founding (bio 67 at grant, b. 1862)",67,,"Donald Alexander Macleod (b. 1893), unconfirmed",1,founding block 2026-04-25,high,Baron at founding; Viscount by 2026-05-04 (elevation not yet recovered)
+23,Ashworth,,G1,founding,,,Thomas Ashworth,1,metrics 2026-04-27,low,G1→G2 was 'approaching' on 2026-04-27; later status unknown
+24,Wilson,Cairine Wilson,G1,founding,,,,1,event text 2026-05-04,low,name inferred from 'Cairine Wilson against-own-party Lead positioning' text; confirm
+25,Cardinal,,G1,founding,,,"Suzanne Cardinal (heir-apparent, operational principal)",1,event text 2026-05-04,low,holder name not yet recovered; Treaties 5+6+8+10 operational
+26,Akatsiak,,G1,founding,,,,1,,none,not yet recovered
+27,Hryhoryshyn,,G1,founding,,,,1,,none,not yet recovered
+28,Klassen-Reimer,,G1,founding,,,,1,,none,not yet recovered
+29,Anand,Dr. Vikram Pratap Anand,G1,"founding (bio ~70 at grant, b. 1898 Lahore)",~70,,"Rajesh Anand (eldest son, ~25 at founding)",1,founding block 2026-05-04,high,31st house; wife Sushila Kaur-Bhatia Anand
+30,Calabrese,Vincenzo Eduardo Calabrese,G1,"founding (bio ~70 at grant, b. 1898 Reggio Calabria)",~70,,"Giuseppe Calabrese (eldest son, ~30 at founding)",1,founding block 2026-05-04,high,32nd house; wife Maria Lombardi-Calabrese
+31,Trondek,Charlie Sékt'ìnka' Trondek,G1,"founding (bio ~70 at grant, b. ~1875 Tr'ochëk)",~70,,"Joseph Sékt'ìnka' Trondek (eldest son, ~30 at founding)",1,founding block 2026-05-04,high,33rd house; wife Mary Henderson-Trondek
+32,Boyer-Lavallée,François-Xavier Boyer-Lavallée,G1,founding,,,Marie-Louise Boyer-Lavallée (heir-apparent-operational),1,founding block 2026-05-04,medium,34th house
+33,FitzWilliam-Macklem,,G1,founding,,,,1,,none,35th house; holder name not yet recovered (Servos-FitzWilliam-Macklem household)
+34,Tupper-Blair,Charles Gordon Tupper-Blair,G2,,~33,Gordon Tupper-Blair,,1,handoff 2026-04-25,medium,"disorderly succession, no named heir; isolation TERMINAL³; variant founder name Sir Charles / heir Hartley recorded 2026-05-04, not used"
+35,Kilmartin,Donald Kilmartin,G2,autumn Kilmartin personal 1923,~56,Sir Alasdair Kilmartin,not formally named,1,cascade 2026-04-27,high,retired; Sudbury to Whitcombe

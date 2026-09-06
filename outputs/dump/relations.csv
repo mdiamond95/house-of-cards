@@ -1,0 +1,41 @@
+id,house_a,house_b,marker,event_id,event_text,source
+1,Macleod,Lockhart,◎,1,first contact at Macleod investiture,founding block 2026-04-25
+2,Macleod,Sinclair-McKay,◎,2,first contact at Macleod investiture,founding block 2026-04-25
+3,Ross,Ashworth,Sig−,3,L'Affaire de Rosser,handoff 2026-04-25
+4,Ross,Sinclair-McKay,◎,4,Provencher contact + Isabelle Ruth solidarity letter,cascade 2026-04-27
+5,Ross,Tessier,◎,5,single-transaction historical,cascade 2026-04-27
+6,Hall,Delany,◉+,6,Atlantic-Great Lakes Compact,cascade 2026-04-27
+7,Hall,Tupper-Blair,⚔ + Sig−,7,Dartmouth—Cole Harbour challenge 1918 (repulsed); second challenge also repulsed,cascade 2026-04-27; metrics 2026-05-04
+8,Delany,Galbraith,◉+,8,SW Cooperative Mutual Insurance Arrangement,cascade 2026-04-27
+9,MacDonald,MacNeil,◉+,9,Pugwash-Summerside Gaelic Compact,cascade 2026-04-27
+10,Wallace,Pereira,◉,10,debenture/securities legacy,cascade 2026-04-27
+11,Wallace,Whitcombe,◉,11,Nipigon machinery castings; Toronto Printing Press incursion later defended,cascade 2026-04-27; metrics 2026-05-04
+12,Wallace,Blaikie,◎,12,DMUA founding subscription,cascade 2026-04-27
+13,Blaikie,Pereira,~−◉,13,"DMUA partnership, formally resolved",cascade 2026-04-27
+14,Blaikie,Tupper-Blair,Sig−,14,Mail Split,cascade 2026-04-27
+15,Wilmot-Hazen,Richard-Arseneau,Sig−,15,Hannay episode 1903,cascade 2026-04-27
+16,Wilmot-Hazen,Richard-Arseneau,Sig−,16,L'Affaire du Pilotage Fluvial (Major ⊖),summary 2026-04-27
+17,Stanton-Greville,Whitcombe,◎,17,Bob's Lake licence fee,cascade 2026-04-27
+18,Létourneau,Richard-Arseneau,Sig+ ◉,18,L'Entente des Vallées Franco-Catholiques,summary 2026-04-25
+19,Tessier,Létourneau,incursion,19,territorial incursion Tessier → Létourneau,summary 2026-04-25
+20,Tupper-Blair,Hall,Sig−,20,Hollis Street Ruling,summary 2026-04-25
+21,Pereira,MacNeil,◉+,21,Sydney Jewish Community Accord,summary 2026-04-24
+22,Fitzroy-Crane,Hall,+,22,Internment event,metrics 2026-05-04
+23,Fitzroy-Crane,Hryhoryshyn,+,23,Internment event,metrics 2026-05-04
+24,FitzWilliam-Macklem,Wallace,◎,24,founding grant,founding block 2026-05-04
+25,FitzWilliam-Macklem,Stanton-Greville,◎,25,founding grant,founding block 2026-05-04
+26,FitzWilliam-Macklem,Wilmot-Hazen,◎,26,founding grant,founding block 2026-05-04
+27,FitzWilliam-Macklem,Tupper-Blair,◎,27,founding grant,founding block 2026-05-04
+28,FitzWilliam-Macklem,Whitcombe,◎,28,founding grant,founding block 2026-05-04
+29,FitzWilliam-Macklem,Ashworth,◎,29,founding grant,founding block 2026-05-04
+30,FitzWilliam-Macklem,Ross,◎,30,founding grant,founding block 2026-05-04
+31,FitzWilliam-Macklem,Lockhart,◎,31,founding grant,founding block 2026-05-04
+32,FitzWilliam-Macklem,Polkinghorne,◎,32,founding grant,founding block 2026-05-04
+33,Boyer-Lavallée,Sinclair-McKay,+,33,founding grant,founding block 2026-05-04
+34,Boyer-Lavallée,Galbraith,+,34,founding grant,founding block 2026-05-04
+35,Boyer-Lavallée,Letendre dit Batoche,+,35,founding grant,founding block 2026-05-04
+36,Boyer-Lavallée,Richard-Arseneau,+,36,founding grant,founding block 2026-05-04
+37,Boyer-Lavallée,Cardinal,◎,37,founding grant,founding block 2026-05-04
+38,Boyer-Lavallée,Hryhoryshyn,◎,38,founding grant,founding block 2026-05-04
+39,Boyer-Lavallée,Klassen-Reimer,◎,39,founding grant,founding block 2026-05-04
+40,Boyer-Lavallée,Akatsiak,◎,40,founding grant,founding block 2026-05-04
