@@ -22,6 +22,7 @@ Read this fully before doing anything. Sessions in this repo do not share memory
 6. Founding grants must be evaluated for cohort fit against the current climate state before execution. This is mandatory, not advisory.
 7. Rank ladder and remaining mechanics are defined in Mechanics Sections 1–3 of the baseline workbook. Extract them in Phase 1; do not guess them.
 8. The game runs more than one era-cohort of Section 10 events in parallel (see docs/RECONSTRUCTION.md). Never collapse the climate ledgers into one number; always state which era-cohort a climate value belongs to.
+9. A turn narrative may use house detail only if it is in hoc.db (house_blocks, holders, holdings, relations, events). Detail supplied in a directive that is not yet in the database must be added to data/seed/house_blocks.csv in a reconstruction commit in the same PR before the turn is applied.
 
 ## Conventions
 - Canadian English spelling throughout (colour, honour, centre, defence).

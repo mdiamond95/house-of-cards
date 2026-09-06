@@ -213,6 +213,10 @@ def test_succession_advances_generation_and_resets_the_clock(conn):
 
 
 def test_advance_clock_requires_a_known_year_first(conn):
+    # The loader resumes every clock at personal 1867, so an unknown clock has to
+    # be made explicitly unknown here. The guard still matters: a house whose
+    # clock is cleared must not be advanced from an assumed start year.
+    conn.execute("UPDATE clocks SET personal_year = NULL WHERE house = 'Hall'")
     with pytest.raises(RuleError):
         rules.advance_clock(conn, "Hall", 5)
 
