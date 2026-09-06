@@ -1,0 +1,6 @@
+age_min,age_max,annual_probability,note
+0,59,0.01,Flu and war seasons add a second (independent) mortality roll at the same probability.
+60,69,0.02,Flu and war seasons add a second (independent) mortality roll at the same probability.
+70,79,0.05,Flu and war seasons add a second (independent) mortality roll at the same probability.
+80,89,0.1,Flu and war seasons add a second (independent) mortality roll at the same probability.
+90,150,0.2,Flu and war seasons add a second (independent) mortality roll at the same probability.
