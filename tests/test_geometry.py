@@ -8,8 +8,26 @@ import hashlib
 import json
 from pathlib import Path
 
-from shapely.geometry import shape
-from shapely.validation import explain_validity
+import pytest
+
+# shapely is a build-time dependency (scripts/build_geometry.py), not a
+# runtime one, so it is deliberately absent from requirements-engine.txt and
+# the engine workflow's runner. A plain `from shapely... import` here would
+# fail at collection time with a ModuleNotFoundError, which pytest reports as
+# a collection *error* and which aborts the whole run before any other test
+# gets to execute — marker-based deselection (`-m "not build"`) never gets a
+# chance to apply, because it runs after collection, not before it.
+# `importorskip` turns a missing dependency into a clean, whole-module skip
+# instead, which is what makes `-m "not build"` merely documentation-accurate
+# rather than the thing standing between a missing package and a dead run.
+shapely_geometry = pytest.importorskip("shapely.geometry")
+shapely_validation = pytest.importorskip("shapely.validation")
+shape = shapely_geometry.shape
+explain_validity = shapely_validation.explain_validity
+
+# Needs shapely (see above), which only scripts/build_geometry.py installs;
+# excluded from the engine workflow with `-m "not smoke and not build"`.
+pytestmark = pytest.mark.build
 
 ROOT = Path(__file__).resolve().parent.parent
 REFERENCE = ROOT / "data" / "reference"

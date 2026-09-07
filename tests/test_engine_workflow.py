@@ -88,10 +88,13 @@ def test_node_is_set_up_for_the_js_syntax_tests(workflow):
     assert steps.index(setup_node) < names.index("Test")
 
 
-def test_the_smoke_run_is_kept_out_of_the_workflow(workflow):
+def test_the_smoke_and_build_marks_are_kept_out_of_the_workflow(workflow):
+    """smoke (the 300-season sanity run) and build (needs shapely, which this
+    runner deliberately does not install) both belong to a Code session, not
+    here — see pytest.ini for what each marker means."""
     steps = workflow["jobs"]["engine"]["steps"]
     test_step = next(step for step in steps if step.get("name") == "Test")
-    assert '-m "not smoke"' in test_step["run"]
+    assert '-m "not smoke and not build"' in test_step["run"]
 
 
 def test_the_workflow_commits_as_the_engine(workflow):

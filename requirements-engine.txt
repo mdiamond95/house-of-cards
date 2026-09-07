@@ -4,3 +4,8 @@
 openpyxl
 pyproj
 pytest
+# tests/test_engine_workflow.py parses .github/workflows/engine.yml itself, as
+# the check that the workflow which runs it still has its actor guard,
+# concurrency group and all four commands. Without this it silently skips —
+# in the one place a broken guard would matter most.
+pyyaml
