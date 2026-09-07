@@ -1,3 +1,72 @@
 id,house,objective,acquired_season,satisfied_season
 1,Elliott,Seek elevation,1,
-2,Elliott,Consolidate region,1,
+2,Elliott,Consolidate region,1,36
+3,Wallace,Siege,4,15
+4,Wallace,Endow an institution,4,20
+5,Stefaniuk,Form a compact,5,11
+6,Stefaniuk,Secure succession,5,6
+7,Stefaniuk,Defend the seat,6,9
+8,Benjamin,Consolidate region,8,35
+9,Benjamin,Seek elevation,8,
+10,Stefaniuk,Consolidate region,9,26
+11,Mercier,Consolidate region,9,26
+12,Mercier,Answer a grievance,9,40
+13,Bouchard,Siege,10,21
+14,Bouchard,Defend the seat,10,14
+15,Stefaniuk,Answer a grievance,11,
+16,Hays,Consolidate region,11,
+17,Hays,Secure succession,11,14
+18,McLellan,Form a compact,13,33
+19,McLellan,Secure succession,13,17
+20,Bouchard,Form a compact,14,33
+21,Hays,Form a compact,14,31
+22,Cornwall,Defend the seat,14,18
+23,Cornwall,Form a compact,14,
+24,Wallace,Answer a grievance,15,
+25,McLellan,Secure succession,17,18
+26,Langelier,Endow an institution,17,27
+27,Langelier,Secure succession,17,18
+28,McLellan,Defend the seat,18,19
+29,Cornwall,Endow an institution,18,34
+30,Langelier,Consolidate region,18,
+31,Meagher,Form a compact,18,33
+32,Meagher,Seek elevation,18,
+33,McLellan,Consolidate region,19,37
+34,Wallace,Siege,20,21
+35,Hoover,Answer a grievance,20,
+36,Hoover,Form a compact,20,
+37,Wallace,Secure succession,21,22
+38,Bouchard,Secure succession,21,
+39,Wallace,Secure succession,22,23
+40,Wallace,Seek elevation,23,
+41,Stefaniuk,Seek elevation,26,
+42,Mercier,Form a compact,26,35
+43,Langelier,Form a compact,27,41
+44,Hays,Seek elevation,31,
+45,Bouchard,Form a compact,33,40
+46,McLellan,Form a compact,33,35
+47,Meagher,Answer a grievance,33,
+48,Cornwall,Secure succession,34,35
+49,Forbes,Siege,34,41
+50,Forbes,Seek elevation,34,
+51,Benjamin,Answer a grievance,35,
+52,Mercier,Seek elevation,35,
+53,McLellan,Secure succession,35,36
+54,Cornwall,Siege,35,36
+55,Elliott,Secure succession,36,37
+56,McLellan,Endow an institution,36,
+57,Cornwall,Siege,36,37
+58,Rochon,Secure succession,36,
+59,Rochon,Defend the seat,36,40
+60,Elliott,Secure succession,37,38
+61,McLellan,Seek elevation,37,
+62,Cornwall,Answer a grievance,37,
+63,Elliott,Form a compact,38,
+64,Mercier,Endow an institution,40,
+65,Bouchard,Form a compact,40,
+66,Rochon,Answer a grievance,40,
+67,Patterson,Secure succession,40,
+68,Patterson,Consolidate region,40,
+69,Forbes,Consolidate region,41,
+70,Cameron,Answer a grievance,41,
+71,Cameron,Endow an institution,41,

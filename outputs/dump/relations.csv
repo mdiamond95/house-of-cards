@@ -1,1 +1,24 @@
 id,house_a,house_b,marker,event_id,event_text,source
+1,Stefaniuk,Wallace,kin,37,correspondence,engine
+2,Benjamin,Elliott,kin,100,marriage alliance,engine
+3,Bouchard,McLellan,kin,299,correspondence,engine
+4,Hays,Mercier,+,165,correspondence,engine
+5,Elliott,Hays,◉+,220,correspondence,engine
+6,Langelier,Mercier,+,119,correspondence,engine
+7,McLellan,Mercier,◉+,237,compact,engine
+8,Benjamin,McLellan,~,270,correspondence,engine
+9,Langelier,Meagher,+,231,correspondence,engine
+10,Benjamin,Wallace,+,174,correspondence,engine
+11,Hays,Meagher,◉+,263,correspondence,engine
+12,Hoover,Stefaniuk,+,199,correspondence,engine
+13,Bouchard,Wallace,+,224,correspondence,engine
+14,Hays,Hoover,+,211,correspondence,engine
+15,Elliott,Stefaniuk,+,257,correspondence,engine
+16,Hays,McLellan,+,240,correspondence,engine
+17,Hoover,Langelier,◎,232,correspondence,engine
+18,Elliott,Wallace,+,268,correspondence,engine
+19,Forbes,Langelier,kin,304,marriage alliance,engine
+20,Elliott,Mercier,◎,271,correspondence,engine
+21,Bouchard,Hays,+,282,correspondence,engine
+22,Benjamin,Mercier,~,289,cession,engine
+23,Meagher,Wallace,◎,294,correspondence,engine

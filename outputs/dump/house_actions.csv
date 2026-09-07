@@ -1,3 +1,376 @@
 id,season_no,house,action,success,detail
 1,2,Elliott,Consolidate (rest),1,
 2,3,Elliott,Cultivate influence,1,
+3,4,Elliott,Expand,0,
+4,5,Elliott,Expand,0,
+5,5,Wallace,Expand,0,
+6,6,Elliott,Name heir,1,
+7,6,Wallace,Expand,1,Haldimand—Norfolk
+8,6,Stefaniuk,Name heir,1,
+9,7,Elliott,Expand,0,
+10,7,Wallace,Correspond,1,Stefaniuk
+11,7,Stefaniuk,Consolidate (rest),1,
+12,8,Elliott,Expand,0,
+13,8,Wallace,Name heir,1,
+14,8,Stefaniuk,Expand,0,
+15,9,Elliott,Consolidate (rest),1,
+16,9,Wallace,Invest,1,
+17,9,Stefaniuk,Expand,1,Selkirk—Interlake—Eastman
+18,9,Benjamin,Invest,1,
+19,10,Elliott,Cultivate influence,0,
+20,10,Wallace,Invest,1,
+21,10,Stefaniuk,Correspond,1,Wallace
+22,10,Benjamin,Invest,1,
+23,10,Mercier,Invest,1,
+24,11,Elliott,Invest,1,
+25,11,Wallace,Invest,1,
+26,11,Stefaniuk,Marriage alliance,1,Wallace
+27,11,Benjamin,Cultivate influence,1,
+28,11,Mercier,Expand,1,Repentigny
+29,11,Bouchard,Invest,1,
+30,12,Elliott,Invest,1,
+31,12,Wallace,Correspond,1,Stefaniuk
+32,12,Stefaniuk,Correspond,0,
+33,12,Benjamin,Consolidate (rest),1,
+34,12,Mercier,Invest,1,
+35,12,Bouchard,Cultivate influence,1,
+36,12,Hays,Expand,0,
+37,13,Elliott,Correspond,0,
+38,13,Wallace,Expand,1,St. Catharines
+39,13,Stefaniuk,Cultivate influence,1,
+40,13,Benjamin,Invest,1,
+41,13,Mercier,Name heir,1,
+42,13,Bouchard,Invest,1,
+43,13,Hays,Cultivate influence,1,
+44,14,Elliott,Expand,1,Lanark—Frontenac
+45,14,Wallace,Cultivate influence,1,
+46,14,Stefaniuk,Invest,1,
+47,14,Benjamin,Correspond,1,Elliott
+48,14,Mercier,Consolidate (rest),1,
+49,14,Bouchard,Expand,0,
+50,14,Hays,Name heir,1,
+51,14,McLellan,Cultivate influence,1,
+52,15,Elliott,Expand,1,Carleton
+53,15,Wallace,Expand,0,
+54,15,Stefaniuk,Invest,1,
+55,15,Benjamin,Endow,1,
+56,15,Mercier,Expand,0,
+57,15,Bouchard,Invest,1,
+58,15,Hays,Expand,0,
+59,15,McLellan,Correspond,1,Bouchard
+60,15,Cornwall,Cultivate influence,1,
+61,16,Elliott,Invest,1,
+62,16,Wallace,Expand,0,
+63,16,Stefaniuk,Correspond,0,
+64,16,Benjamin,Name heir,1,
+65,16,Mercier,Cultivate influence,1,
+66,16,Bouchard,Expand,1,Louis-Hébert
+67,16,Hays,Correspond,0,
+68,16,McLellan,Name heir,1,
+69,16,Cornwall,Invest,1,
+70,17,Elliott,Name heir,1,
+71,17,Wallace,Expand,1,Hamilton East—Stoney Creek
+72,17,Stefaniuk,Cultivate influence,1,
+73,17,Benjamin,Expand,0,
+74,17,Mercier,Invest,1,
+75,17,Bouchard,Name heir,1,
+76,17,Hays,Correspond,1,Mercier
+77,17,McLellan,Cultivate influence,1,
+78,17,Cornwall,Expand,0,
+79,18,Elliott,Cultivate influence,1,
+80,18,Wallace,Invest,1,
+81,18,Stefaniuk,Invest,1,
+82,18,Benjamin,Correspond,1,Elliott
+83,18,Mercier,Expand,1,Pierre-Boucher—Les Patriotes—Verchères
+84,18,Bouchard,Invest,1,
+85,18,Hays,Expand,1,Outremont
+86,18,McLellan,Consolidate (rest),1,
+87,18,Cornwall,Expand,0,
+88,18,Langelier,Name heir,1,
+89,19,Elliott,Correspond,1,Hays
+90,19,Wallace,Consolidate (rest),1,
+91,19,Stefaniuk,Expand,1,Riding Mountain
+92,19,Benjamin,Cultivate influence,0,
+93,19,Mercier,Expand,0,
+94,19,Bouchard,Expand,0,
+95,19,Hays,Cultivate influence,1,
+96,19,McLellan,Cultivate influence,1,
+97,19,Cornwall,Cultivate influence,0,
+98,19,Langelier,Correspond,1,Mercier
+99,19,Meagher,Name heir,1,
+100,20,Elliott,Marriage alliance,1,Benjamin
+101,20,Wallace,Endow,1,
+102,20,Stefaniuk,Consolidate (rest),1,
+103,20,Benjamin,Consolidate (rest),1,
+104,20,Mercier,Invest,1,
+105,20,Bouchard,Invest,1,
+106,20,Hays,Cultivate influence,0,
+107,20,McLellan,Invest,1,
+108,20,Cornwall,Name heir,1,
+109,20,Langelier,Consolidate (rest),1,
+110,20,Meagher,Cultivate influence,1,
+111,21,Elliott,Correspond,1,Hays
+112,21,Wallace,Expand,1,Niagara Falls—Niagara-on-the-Lake
+113,21,Stefaniuk,Consolidate (rest),1,
+114,21,Benjamin,Expand,0,
+115,21,Mercier,Expand,0,
+116,21,Bouchard,Correspond,1,McLellan
+117,21,Hays,Propose compact,0,
+118,21,McLellan,Invest,1,
+119,21,Cornwall,Invest,1,
+120,21,Langelier,Correspond,1,Mercier
+121,21,Meagher,Cultivate influence,0,
+122,21,Hoover,Cultivate influence,1,
+123,22,Elliott,Cultivate influence,1,
+124,22,Wallace,Invest,1,
+125,22,Stefaniuk,Expand,0,
+126,22,Benjamin,Correspond,0,
+127,22,Mercier,Cultivate influence,1,
+128,22,Bouchard,Expand,0,
+129,22,Hays,Invest,1,
+130,22,McLellan,Correspond,1,Mercier
+131,22,Cornwall,Cultivate influence,1,
+132,22,Langelier,Invest,1,
+133,22,Meagher,Consolidate (rest),1,
+134,22,Hoover,Invest,1,
+135,23,Elliott,Consolidate (rest),1,
+136,23,Wallace,Expand,1,Flamborough—Glanbrook—Brant North
+137,23,Stefaniuk,Invest,1,
+138,23,Benjamin,Expand,0,
+139,23,Mercier,Correspond,0,
+140,23,Bouchard,Invest,1,
+141,23,Hays,Cultivate influence,1,
+142,23,McLellan,Correspond,1,Mercier
+143,23,Cornwall,Cultivate influence,1,
+144,23,Langelier,Invest,1,
+145,23,Meagher,Cultivate influence,1,
+146,23,Hoover,Correspond,0,
+147,24,Elliott,Consolidate (rest),1,
+148,24,Wallace,Cultivate influence,0,
+149,24,Stefaniuk,Consolidate (rest),1,
+150,24,Benjamin,Expand,1,Saint-Maurice—Champlain
+151,24,Mercier,Expand,0,
+152,24,Bouchard,Correspond,0,
+153,24,Hays,Consolidate (rest),1,
+154,24,McLellan,Correspond,1,Mercier
+155,24,Cornwall,Invest,1,
+156,24,Langelier,Expand,0,
+157,24,Meagher,Correspond,0,
+158,24,Hoover,Endow,1,
+159,25,Elliott,Consolidate (rest),1,
+160,25,Wallace,Invest,1,
+161,25,Stefaniuk,Cultivate influence,1,
+162,25,Benjamin,Invest,1,
+163,25,Mercier,Cultivate influence,1,
+164,25,Bouchard,Expand,1,Québec Centre
+165,25,Hays,Cultivate influence,1,
+166,25,McLellan,Correspond,1,Benjamin
+167,25,Cornwall,Invest,1,
+168,25,Langelier,Correspond,0,
+169,25,Meagher,Correspond,1,Langelier
+170,25,Hoover,Invest,1,
+171,26,Elliott,Invest,1,
+172,26,Wallace,Correspond,1,Benjamin
+173,26,Stefaniuk,Expand,1,Yorkton—Melville
+174,26,Benjamin,Cultivate influence,1,
+175,26,Mercier,Expand,1,Montcalm
+176,26,Bouchard,Invest,1,
+177,26,Hays,Expand,1,Laurier—Sainte-Marie
+178,26,McLellan,Invest,1,
+179,26,Cornwall,Cultivate influence,0,
+180,26,Langelier,Cultivate influence,0,
+181,26,Meagher,Invest,1,
+182,26,Hoover,Expand,0,
+183,27,Elliott,Cultivate influence,1,
+184,27,Wallace,Consolidate (rest),1,
+185,27,Stefaniuk,Invest,1,
+186,27,Benjamin,Consolidate (rest),1,
+187,27,Mercier,Correspond,1,Hays
+188,27,Bouchard,Expand,0,
+189,27,Hays,Cultivate influence,0,
+190,27,McLellan,Expand,0,
+191,27,Cornwall,Invest,1,
+192,27,Langelier,Endow,1,
+193,27,Meagher,Invest,1,
+194,27,Hoover,Name heir,1,
+195,28,Elliott,Consolidate (rest),1,
+196,28,Wallace,Cultivate influence,1,
+197,28,Stefaniuk,Consolidate (rest),1,
+198,28,Benjamin,Correspond,1,Wallace
+199,28,Mercier,Invest,1,
+200,28,Bouchard,Consolidate (rest),1,
+201,28,Hays,Correspond,1,Meagher
+202,28,McLellan,Invest,1,
+203,28,Cornwall,Invest,1,
+204,28,Langelier,Consolidate (rest),1,
+205,28,Meagher,Cultivate influence,1,
+206,28,Hoover,Cultivate influence,1,
+207,29,Elliott,Cultivate influence,0,
+208,29,Wallace,Cultivate influence,1,
+209,29,Stefaniuk,Correspond,1,Hoover
+210,29,Benjamin,Cultivate influence,1,
+211,29,Mercier,Cultivate influence,0,
+212,29,Bouchard,Correspond,1,Wallace
+213,29,Hays,Correspond,0,
+214,29,McLellan,Expand,1,Malpeque
+215,29,Cornwall,Expand,1,Esquimalt—Saanich—Sooke
+216,29,Langelier,Invest,1,
+217,29,Meagher,Correspond,1,Hays
+218,29,Hoover,Consolidate (rest),1,
+219,30,Elliott,Invest,1,
+220,30,Wallace,Cultivate influence,0,
+221,30,Stefaniuk,Consolidate (rest),1,
+222,30,Benjamin,Correspond,0,McLellan
+223,30,Mercier,Expand,1,Longueuil—Saint-Hubert
+224,30,Bouchard,Correspond,1,Wallace
+225,30,Hays,Correspond,1,Elliott
+226,30,McLellan,Invest,1,
+227,30,Cornwall,Expand,1,Saanich—Gulf Islands
+228,30,Langelier,Invest,1,
+229,30,Meagher,Propose compact,0,
+230,30,Hoover,Consolidate (rest),1,
+231,31,Elliott,Propose compact,1,Hays
+232,31,Wallace,Invest,1,
+233,31,Stefaniuk,Correspond,1,Hoover
+234,31,Benjamin,Invest,1,
+235,31,Mercier,Cultivate influence,1,
+236,31,Bouchard,Invest,1,
+237,31,Hays,Propose compact,0,
+238,31,McLellan,Expand,1,Central Nova
+239,31,Cornwall,Expand,1,West Vancouver—Sunshine Coast—Sea to Sky Country
+240,31,Langelier,Cultivate influence,1,
+241,31,Meagher,Cultivate influence,1,
+242,31,Hoover,Correspond,1,Hays
+243,32,Elliott,Cultivate influence,1,
+244,32,Wallace,Consolidate (rest),1,
+245,32,Stefaniuk,Correspond,1,Elliott
+246,32,Benjamin,Invest,1,
+247,32,Mercier,Consolidate (rest),1,
+248,32,Bouchard,Expand,1,Beauport—Limoilou
+249,32,Hays,Correspond,1,Hoover
+250,32,McLellan,Cultivate influence,1,
+251,32,Cornwall,Invest,1,
+252,32,Langelier,Expand,1,Jonquière
+253,32,Meagher,Consolidate (rest),1,
+254,32,Hoover,Consolidate (rest),1,
+255,33,Elliott,Invest,1,
+256,33,Wallace,Cultivate influence,1,
+257,33,Stefaniuk,Name heir,1,
+258,33,Benjamin,Reconcile,1,McLellan
+259,33,Mercier,Correspond,1,McLellan
+260,33,Bouchard,Propose compact,1,McLellan
+261,33,Hays,Correspond,1,Elliott
+262,33,McLellan,Invest,1,
+263,33,Cornwall,Invest,1,
+264,33,Langelier,Cultivate influence,1,
+265,33,Meagher,Propose compact,1,Hays
+266,33,Hoover,Cultivate influence,1,
+267,34,Elliott,Consolidate (rest),1,
+268,34,Wallace,Correspond,1,Bouchard
+269,34,Stefaniuk,Invest,1,
+270,34,Benjamin,Expand,1,Montmorency—Charlevoix
+271,34,Mercier,Invest,1,
+272,34,Bouchard,Cultivate influence,1,
+273,34,Hays,Consolidate (rest),1,
+274,34,McLellan,Correspond,1,Hays
+275,34,Cornwall,Endow,1,
+276,34,Langelier,Invest,1,
+277,34,Meagher,Correspond,1,Langelier
+278,34,Hoover,Correspond,1,Langelier
+279,35,Elliott,Invest,1,
+280,35,Wallace,Correspond,1,Elliott
+281,35,Stefaniuk,Expand,0,
+282,35,Benjamin,Expand,1,Bécancour—Nicolet—Saurel—Alnôbak
+283,35,Mercier,Propose compact,1,McLellan
+284,35,Bouchard,Propose compact,0,
+285,35,Hays,Consolidate (rest),1,
+286,35,McLellan,Correspond,1,Hays
+287,35,Cornwall,Invest,1,
+288,35,Langelier,Expand,0,
+289,35,Meagher,Cultivate influence,0,
+290,35,Hoover,Cultivate influence,0,
+291,35,Forbes,Correspond,1,Langelier
+292,36,Elliott,Expand,1,Kanata
+293,36,Wallace,Invest,1,
+294,36,Stefaniuk,Invest,1,
+295,36,Benjamin,Invest,1,
+296,36,Mercier,Name heir,1,
+297,36,Bouchard,Name heir,1,
+298,36,Hays,Expand,0,
+299,36,McLellan,Invest,1,
+300,36,Cornwall,Invest,1,
+301,36,Langelier,Propose compact,0,
+302,36,Meagher,Invest,1,
+303,36,Hoover,Consolidate (rest),1,
+304,36,Forbes,Correspond,1,Langelier
+305,37,Elliott,Cultivate influence,0,
+306,37,Wallace,Invest,1,
+307,37,Stefaniuk,Correspond,1,Elliott
+308,37,Benjamin,Consolidate (rest),1,
+309,37,Mercier,Cultivate influence,1,
+310,37,Bouchard,Invest,1,
+311,37,Hays,Cultivate influence,0,
+312,37,McLellan,Expand,1,Cape Breton—Canso—Antigonish
+313,37,Cornwall,Invest,1,
+314,37,Langelier,Propose compact,0,
+315,37,Meagher,Correspond,1,Hays
+316,37,Hoover,Invest,1,
+317,37,Forbes,Correspond,1,Langelier
+318,37,Rochon,Name heir,1,
+319,38,Elliott,Correspond,1,Wallace
+320,38,Wallace,Expand,1,Oxford
+321,38,Stefaniuk,Invest,1,
+322,38,Benjamin,Correspond,1,McLellan
+323,38,Mercier,Correspond,1,Elliott
+324,38,Bouchard,Correspond,1,Hays
+325,38,Hays,Invest,1,
+326,38,McLellan,Invest,1,
+327,38,Cornwall,Expand,1,Kamloops—Thompson—Nicola
+328,38,Langelier,Expand,0,
+329,38,Meagher,Cultivate influence,0,
+330,38,Hoover,Consolidate (rest),1,
+331,38,Forbes,Expand,0,
+332,38,Rochon,Expand,1,Beaches—East York
+333,39,Elliott,Cultivate influence,0,
+334,39,Wallace,Cultivate influence,1,
+335,39,Stefaniuk,Expand,1,Souris—Moose Mountain
+336,39,Benjamin,Cultivate influence,1,
+337,39,Mercier,Invest,1,
+338,39,Bouchard,Expand,0,
+339,39,Hays,Correspond,1,Bouchard
+340,39,McLellan,Expand,0,
+341,39,Cornwall,Invest,1,
+342,39,Langelier,Invest,1,
+343,39,Meagher,Name heir,1,
+344,39,Hoover,Cultivate influence,0,
+345,39,Forbes,Consolidate (rest),1,
+346,39,Rochon,Cultivate influence,1,
+347,40,Elliott,Propose compact,0,
+348,40,Wallace,Expand,1,Perth—Wellington
+349,40,Stefaniuk,Propose compact,0,
+350,40,Benjamin,Petition elevation,0,
+351,40,Mercier,Cede / swap,1,Benjamin
+352,40,Bouchard,Marriage alliance,1,McLellan
+353,40,Hays,Name heir,1,
+354,40,McLellan,Expand,1,Cumberland—Colchester
+355,40,Cornwall,Expand,0,
+356,40,Langelier,Consolidate (rest),1,
+357,40,Meagher,Correspond,1,Wallace
+358,40,Hoover,Correspond,0,
+359,40,Forbes,Name heir,1,
+360,40,Rochon,Cultivate influence,1,
+361,41,Elliott,Consolidate (rest),1,
+362,41,Wallace,Cultivate influence,1,
+363,41,Stefaniuk,Invest,1,
+364,41,Benjamin,Cultivate influence,1,
+365,41,Mercier,Cultivate influence,1,
+366,41,Bouchard,Expand,0,
+367,41,Hays,Correspond,0,
+368,41,McLellan,Correspond,1,Bouchard
+369,41,Cornwall,Consolidate (rest),1,
+370,41,Langelier,Expand,0,
+371,41,Meagher,Consolidate (rest),1,
+372,41,Hoover,Invest,1,
+373,41,Forbes,Marriage alliance,1,Langelier
+374,41,Rochon,Invest,1,
+375,41,Patterson,Name heir,1,

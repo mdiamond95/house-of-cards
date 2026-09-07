@@ -2,3 +2,42 @@ id,era_cohort,seq,event,magnitude,tag,cumulative_after,event_id,source
 1,confederation,1,Season 0,,,0,,engine
 2,dominion,1,Season 0,,,0,,engine
 3,late,1,Season 0,,,0,,engine
+4,confederation,2,Long Depression Reaches Canada,Major,Conservative,+1,,turn
+5,confederation,3,Pacific Scandal,Significant,Progressive,0,,turn
+6,confederation,4,National Policy,Significant,Conservative,+1,,turn
+7,confederation,5,Indian Act,Major,Conservative,+2,,turn
+8,confederation,6,Pacific Scandal,Significant,Progressive,+1,,turn
+9,confederation,7,National Policy,Significant,Conservative,+2,,turn
+10,confederation,8,Indian Act,Major,Conservative,+1,,turn
+11,confederation,9,Long Depression Reaches Canada,Major,Conservative,+2,,turn
+12,confederation,10,National Policy,Significant,Conservative,+1,,turn
+13,confederation,11,Indian Act,Major,Conservative,+2,,turn
+14,confederation,12,Pacific Scandal,Significant,Progressive,+1,,turn
+15,confederation,13,Long Depression Reaches Canada,Major,Conservative,+2,,turn
+16,confederation,14,Long Depression Reaches Canada,Major,Conservative,+3,,turn
+17,confederation,15,Indian Act,Major,Conservative,+4,,turn
+18,confederation,16,Indian Act,Major,Conservative,+3,,turn
+19,confederation,17,National Policy,Significant,Conservative,+4,,turn
+20,confederation,18,Pacific Scandal,Significant,Progressive,+3,,turn
+21,confederation,19,Jesuits' Estates Act Controversy,Significant,Conservative,+4,,turn
+22,confederation,20,National Policy,Significant,Conservative,+3,,turn
+23,confederation,21,Indian Act,Major,Conservative,+4,,turn
+24,confederation,22,Manitoba Schools Question,Major,Conservative,+5,,turn
+25,confederation,23,Manitoba Schools Question,Major,Conservative,+6,,turn
+26,confederation,24,Indian Act,Major,Conservative,+7,,turn
+27,confederation,25,Long Depression Reaches Canada,Major,Conservative,+8,,turn
+28,confederation,26,Jesuits' Estates Act Controversy,Significant,Conservative,+9,,turn
+29,confederation,27,Jesuits' Estates Act Controversy,Significant,Conservative,+10,,turn
+30,confederation,28,Montréal Smallpox Epidemic,Significant,Progressive,+11,,turn
+31,confederation,29,National Policy,Significant,Conservative,+12,,turn
+32,confederation,30,Indian Act,Major,Conservative,+13,,turn
+33,confederation,31,Manitoba Schools Question,Major,Conservative,+14,,turn
+34,confederation,32,Laurier Elected,Significant,Progressive,+13,,turn
+35,confederation,33,Jesuits' Estates Act Controversy,Significant,Conservative,+14,,turn
+36,confederation,34,South African War,Major,Conservative,+15,,turn
+37,confederation,35,Long Depression Reaches Canada,Major,Conservative,+14,,turn
+38,confederation,36,Manitoba Schools Question,Major,Conservative,+15,,turn
+39,confederation,37,Jesuits' Estates Act Controversy,Significant,Conservative,+16,,turn
+40,confederation,38,Montréal Smallpox Epidemic,Significant,Progressive,+15,,turn
+41,confederation,39,Pacific Scandal,Significant,Progressive,+14,,turn
+42,confederation,40,Long Depression Reaches Canada,Major,Conservative,+15,,turn
