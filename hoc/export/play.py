@@ -32,7 +32,7 @@ __all__ = [
 # that Pages serves them from the site root and the page needs no build step.
 ENGINE_MODULES = (
     "prng.js", "csv.js", "palette.js", "names.js", "rules.js",
-    "adjacency.js", "state.js", "sim.js", "index.js",
+    "adjacency.js", "state.js", "sim.js", "index.js", "record.js",
 )
 
 # Not imported by the page: `playtest.js` is the headless run of the page's own

@@ -29,7 +29,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from hoc import db, scenario, sim  # noqa: E402
-from hoc.turn import TurnError, apply_turn  # noqa: E402
+from hoc.turn import TurnError, apply_turn, intervention_turn_id  # noqa: E402
 from hoc.turnfile import TurnFileError, load as load_turnfile, validate as validate_turnfile  # noqa: E402
 
 COMMIT_PREFIX = "COMMIT_MESSAGE "
@@ -188,21 +188,29 @@ def cmd_intervene(args, summary):
             " or a housekeeping turn with no operations at all."
         )
 
-    turns_dir = scenario.turns_dir()
-    turns_dir.mkdir(parents=True, exist_ok=True)
-
     conn = db.connect()
     season = conn.execute("SELECT MAX(season_no) AS n FROM seasons").fetchone()["n"] or 0
-    turn_id = _next_turn_id(turns_dir)
-    # The season is in the filename so scripts/rebuild.py can put the
-    # intervention back exactly where it happened when it replays the game.
-    path = turns_dir / f"{turn_id:04d}_s{season:04d}-intervention.json"
+
+    # One place for an intervention into an engine-played game, whichever engine
+    # played it (Phase 10-3, C1): the console writes here and so does the
+    # browser when it saves, keyed by the season the intervention follows, so
+    # scripts/rebuild.py puts it back exactly where it happened.
+    interventions_dir = scenario.interventions_dir()
+    interventions_dir.mkdir(parents=True, exist_ok=True)
+    path = interventions_dir / f"{season:04d}.json"
+    if path.exists():
+        conn.close()
+        raise CommandError(
+            f"an intervention after season {season} is already recorded"
+            f" ({path.relative_to(ROOT)}); run a season before applying another"
+        )
+    turn_id = intervention_turn_id(season)
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     try:
-        _, loaded = load_turnfile(path)  # load returns (turn_id, data)
+        _, loaded = load_turnfile(path, turn_id=turn_id)
         warnings = validate_turnfile(conn, loaded)
-        result = apply_turn(conn, path)
+        result = apply_turn(conn, path, turn_id=turn_id)
     except Exception as exc:
         # Any failure at all, not only a validation one: a turn file left behind
         # by a crash would be replayed by the next rebuild as though it had been

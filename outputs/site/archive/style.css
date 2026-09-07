@@ -141,6 +141,19 @@ code { font-size: 0.78rem; color: var(--muted); }
 .check { display: inline-flex; align-items: center; gap: 0.25rem; }
 .intervention { border-left: 2px solid var(--rule); padding-left: 0.8rem; margin: 1rem 0; }
 .intervention h3 { margin-top: 0; }
+.save-block .meta { margin: 0 0 0.6rem; }
+.save-row { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+.save-row input { font: inherit; font-size: 0.9rem; flex: 1 1 14rem; min-width: 0;
+                  padding: 0.4rem 0.45rem; border: 1px solid var(--rule); border-radius: 3px;
+                  background: #fff; color: var(--ink); }
+.save-row button { font: inherit; font-size: 0.9rem; padding: 0.4rem 0.9rem; border-radius: 3px;
+                   border: 1px solid var(--rule); background: #fff; color: var(--ink);
+                   cursor: pointer; }
+.save-row button.primary { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.save-row button:disabled { opacity: 0.45; cursor: not-allowed; border-color: var(--rule);
+                            color: var(--muted); font-weight: 400; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);
+           white-space: nowrap; }
 .status-box { border: 1px solid var(--rule); background: #fff; padding: 0.6rem 0.7rem;
               margin: 0.5rem 0; font-size: 0.88rem; }
 .status-box.good { border-left: 3px solid #4a7a4a; }

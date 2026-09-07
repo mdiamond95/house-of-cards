@@ -413,14 +413,26 @@ def _summary(conn, event_id, ops_applied):
     }
 
 
-def apply_turn(conn, path):
+# An intervention recorded as `interventions/NNNN.json` is keyed by the season
+# it follows, not by a turn number, so its turn id is allocated here — above
+# every turn a director could plausibly hand-write, so the two numbering schemes
+# can never collide however long either game runs.
+INTERVENTION_TURN_BASE = 900_000
+
+
+def intervention_turn_id(after_season):
+    """The turns-table id for the intervention applied after `after_season`."""
+    return INTERVENTION_TURN_BASE + int(after_season)
+
+
+def apply_turn(conn, path, turn_id=None):
     """Validate and apply a turn file. Returns a summary dict.
 
     Raises TurnError on any failure, having rolled the whole turn back — the
     turns table is left exactly as it was.
     """
     try:
-        turn_id, data = turnfile.load(path)
+        turn_id, data = turnfile.load(path, turn_id=turn_id)
         warnings = turnfile.validate(conn, data)
     except turnfile.TurnFileError as exc:
         raise TurnError(str(exc)) from exc

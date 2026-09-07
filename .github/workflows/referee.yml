@@ -1,0 +1,152 @@
+name: Referee
+
+# Verifies seasons committed from the browser, and only then publishes them.
+#
+# Phase 10-3. The play page commits the seasons it played straight to main
+# through the Git Data API. Nothing believes them until this workflow replays
+# each one with the Python engine and finds it identical to what was committed.
+# Only then does hoc.db move and the site rebuild — so the public state is
+# always the Python engine's own work, and a browser, a hand-edited file or a
+# bug can never make it say something the engine would not.
+#
+# On a mismatch this fails and commits nothing: hoc.db, outputs/ and the site
+# keep the last verified state, and the step summary names the season and the
+# first draw that differed.
+#
+# No model is called anywhere in this workflow, as in engine.yml.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scenarios/new/seasons/**"
+      - "scenarios/new/interventions/**"
+
+# The same group as engine.yml: the referee rebuilds hoc.db and the engine
+# writes it, so the two must never run at once. Never cancel one in flight —
+# a cancelled referee could leave a half-exported site.
+concurrency:
+  group: engine
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  referee:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Only the director or the engine may move the game on
+        # A push of season files is a claim about the state of the game. The
+        # browser saves as the director (the Git Data API authors the commit as
+        # the token's user), and the engine workflow commits as itself. Anything
+        # else is refused before a checkout with a write token.
+        #
+        # In practice a push made with GITHUB_TOKEN does not start a workflow at
+        # all, so the engine's own commits never reach here; the engine author is
+        # accepted anyway, so that this guard states the whole rule rather than
+        # relying on that behaviour never changing.
+        env:
+          ACTOR: ${{ github.actor }}
+          AUTHOR_NAME: ${{ github.event.head_commit.author.name }}
+          AUTHOR_EMAIL: ${{ github.event.head_commit.author.email }}
+        run: |
+          if [ "$ACTOR" = "mdiamond95" ] \
+             || [ "$AUTHOR_NAME" = "House of Cards Engine" ] \
+             || [ "$AUTHOR_EMAIL" = "actions@github.com" ]; then
+            echo "push by ${ACTOR} (${AUTHOR_NAME} <${AUTHOR_EMAIL}>) accepted"
+            exit 0
+          fi
+          echo "::error::${ACTOR} may not move the game on; seasons are published only for the director or the engine."
+          {
+            echo "## Referee — refused"
+            echo
+            echo "\`${ACTOR}\` pushed season files. Only the director's own saves"
+            echo "and the engine workflow may move the published game on."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # The suite this runs includes tests/test_js_syntax.py and the JS engine
+      # parity tests, which shell out to node.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install the runtime dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-engine.txt
+
+      - name: Verify the committed seasons against the Python engine
+        id: verify
+        run: |
+          set +e
+          python scripts/referee.py --summary "$GITHUB_STEP_SUMMARY" | tee referee-output.txt
+          status=${PIPESTATUS[0]}
+          set -e
+          exit "$status"
+
+      - name: Test
+        run: |
+          set +e
+          python -m pytest -q -m "not smoke and not build" --tb=short -rf 2>&1 | tee pytest-output.txt
+          status=${PIPESTATUS[0]}
+          set -e
+
+          passed="$(grep -oP '\d+(?= passed)' pytest-output.txt | tail -1)"
+          failed="$(grep -oP '\d+(?= failed)' pytest-output.txt | tail -1)"
+          passed="${passed:-0}"
+          failed="${failed:-0}"
+
+          if [ "$status" -ne 0 ]; then
+            {
+              echo "Tests: ${passed} passed, ${failed} failed"
+              echo
+              echo "<details><summary>Last 60 lines of pytest output</summary>"
+              echo
+              echo '```'
+              tail -n 60 pytest-output.txt
+              echo '```'
+              echo "</details>"
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Tests: ${passed} passed, ${failed} failed" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          exit "$status"
+
+      - name: Export
+        run: python -m hoc export
+
+      - name: Commit and push
+        run: |
+          range="$(sed -n 's/^REFEREE_RANGE //p' referee-output.txt | tail -1)"
+          if [ -z "$range" ]; then
+            echo "nothing was verified; not committing"
+            echo "_Nothing needed verifying, so nothing was committed._" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          first="${range% *}"
+          last="${range#* }"
+
+          git config user.name "House of Cards Engine"
+          git config user.email "actions@github.com"
+          git add hoc.db outputs scenarios
+
+          if git diff --cached --quiet; then
+            echo "nothing changed; not committing"
+            echo "_Nothing changed, so nothing was committed._" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          git commit -m "Referee: verified seasons ${first}–${last}; exported"
+          git push origin HEAD:main
+          echo "Committed \`Referee: verified seasons ${first}–${last}; exported\`" >> "$GITHUB_STEP_SUMMARY"
