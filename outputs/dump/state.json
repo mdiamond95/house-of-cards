@@ -21,7 +21,7 @@
       ],
       "riding_count": 1,
       "clock": {
-        "personal_year": 1867,
+        "personal_year": 1869,
         "basis": "founded season 1"
       }
     }
@@ -67,6 +67,24 @@
   },
   "events": [
     {
+      "id": 2,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "confederation",
+      "title": "Red River Resistance",
+      "narrative": "Season 3 · Baron Elliott of Glengarry meets Red River Resistance and exploits.",
+      "mechanical_delta": "{\"season\": 3, \"response\": \"Exploit\", \"roll\": 4, \"personal_year\": 1869, \"magnitude\": \"Major\", \"tag\": \"Mixed\"}",
+      "source": "engine",
+      "created_at": "2026-09-07 15:58:14",
+      "houses": [
+        {
+          "house": "Elliott",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
       "id": 1,
       "turn_id": null,
       "kind": "founding",
@@ -75,7 +93,7 @@
       "narrative": "Season 1 · Baron Elliott of Glengarry is created, seated at Kingston and the Islands.",
       "mechanical_delta": "{\"season\": 1, \"stats\": {\"capital\": 40, \"influence\": 35, \"cohesion\": 76, \"ambition\": 1}, \"community\": \"Irish Protestant (Orange)\", \"tag\": \"Mixed\"}",
       "source": "engine",
-      "created_at": "2026-09-07 12:54:42",
+      "created_at": "2026-09-07 15:58:14",
       "houses": [
         {
           "house": "Elliott",

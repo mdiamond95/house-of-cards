@@ -1,2 +1,4 @@
 season_no,seed,json_path,houses_after,ridings_after,rules_version,created_at
-1,1867,scenarios/new/seasons/0001.json,1,1,0.7,2026-09-07T12:54:42+00:00
+1,1867,/tmp/hoc-referee-i3y1syce/0001.json,1,1,0.7,2026-09-07T15:58:14+00:00
+2,1867,/tmp/hoc-referee-i3y1syce/0002.json,1,1,0.7,2026-09-07T15:58:14+00:00
+3,1867,/tmp/hoc-referee-i3y1syce/0003.json,1,1,0.7,2026-09-07T15:58:14+00:00
