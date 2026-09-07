@@ -40,6 +40,16 @@ The live game is the **new** scenario, played by the engine. `scenarios/current.
 - Never edit `hoc.db` by hand. It is derived: the seed CSVs plus the season logs (and any turn files) are the record, and the database is what they produce.
 - The reconstructed 2026 playthrough is frozen in the **legacy** scenario and published at `outputs/site/archive/`, rebuilt on every export. `python -m hoc scenario use legacy` switches back to it; the turn procedure below is about that game.
 
+## Two engines (Phase 10)
+
+There are two implementations of the engine and they must play the same game.
+
+- **Any change to `hoc/sim.py` must be mirrored in `web/engine/sim.js` in the same PR, and the cross-check must pass.** The same goes for `hoc/prng.py`, `hoc/palette.py`, `hoc/names.py` and `hoc/rules_data.py` against their `web/engine/` counterparts.
+- `python scripts/crosscheck.py --seed 1867 --seasons 120` runs both engines and diffs their season files byte for byte. `tests/test_crosscheck.py` runs it for three seeds; `tests/test_js_engine_parity.py` checks the primitives underneath at a much finer grain — when both fail, fix the parity test first, because it names the primitive rather than the season.
+- **Never fix a divergence by loosening the comparison.** The cross-check ignores exactly one field (`engine.impl`), and a test asserts that the ignore list has not grown. If the two engines disagree, one of them disagrees with `docs/DETERMINISM.md`; fix that one.
+- Nothing in either engine may use a float, a language's sort order, a hash table's iteration order, or a locale. `docs/DETERMINISM.md` is the contract; read it before changing anything that draws.
+- `web/engine/` is plain ES modules with no build step and no dependencies. An import of anything but a relative path or a `node:` builtin breaks the browser, and a test guards it.
+
 ## Conventions
 - Canadian English spelling throughout (colour, honour, centre, defence).
 - Narrative for a turn is about 500 words, rich prose, not bullet lists; the runner warns above 550 words and refuses above 600.
