@@ -17,7 +17,6 @@ import { World, RULES_VERSION } from './engine/sim.js';
 const RULES_FILES = ["actions.csv", "communities.csv", "denylist.csv", "events.csv", "given_names.csv", "mortality.csv", "objectives.csv", "places.csv", "surnames.csv", "eras.json", "founding.json", "friction.json", "responses.json", "succession.json"];
 const REFERENCE_FILES = ["ridings.csv", "adjacency.csv"];
 const UNCLAIMED_FILL = '#E5E5E5';
-const STOP_CONDITIONS = ["challenge", "extinction", "major", "marquis", "partition", "removal"];
 const DB_NAME = 'house-of-cards-play';
 const DB_STORE = 'worlds';
 
@@ -109,10 +108,11 @@ const app = {
   map: null,
   committedSeason: 0,
   committedSha: null,
-  // Every season this browser has played, so the scrubber can walk back through
-  // them and Undo can throw the later ones away. One entry per season: the
-  // record the engine returned, plus the fills the map showed.
-  history: [],
+  // The season being looked at. The scrubber ranges over the seasons this
+  // browser has played (committedSeason to the head), and Undo rewinds by
+  // replaying — so no per-season record is kept. Keeping one would grow
+  // without bound over a long game, and every record carries a few hundred
+  // logged draws.
   viewing: null,
   timer: null,
   speed: 1,
@@ -370,7 +370,6 @@ function stopsHit(record) {
 function playOne() {
   const record = app.world.runSeason();
   const stopped = stopsHit(record);
-  app.history.push({ season: record.season, record });
   app.viewing = record.season;
   appendFeed(record.season, record.chronicle, { stopped });
   renderAll({ flash: true });
@@ -610,7 +609,6 @@ async function rewindTo(target) {
   while (world.seasonNo < target) records.push(world.runSeason());
 
   app.world = world;
-  app.history = records.map((record) => ({ season: record.season, record }));
   app.viewing = world.seasonNo;
   el('feed').innerHTML = '';
   for (const record of records.slice(-60)) {

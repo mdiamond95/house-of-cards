@@ -1,7 +1,10 @@
 """Static site exporter tests."""
 
 import importlib.util
+import json
 import re
+import shutil
+import subprocess
 from collections import Counter
 from html.parser import HTMLParser
 from pathlib import Path
@@ -268,3 +271,188 @@ def test_the_console_refuses_to_connect_an_empty_field(built):
     assert "Paste a token first" in js
     index = js.index("Paste a token first")
     assert "setToken(value)" in js[index:], "the guard must precede the write"
+
+
+# ------------------------------------------------------------- the play page --
+#
+# Phase 10-2. play.html runs the JavaScript engine in the browser against the
+# committed world. Three things have to hold, and the page is useless if any of
+# them slips: the engine and its tables have to be *copied into the site* (the
+# browser cannot reach web/ or rules/), the page has to stay small enough to
+# open on mobile data, and the whole path through the engine has to still
+# produce the seasons the Python engine produces.
+
+
+@pytest.fixture(scope="module")
+def played_site(tmp_path_factory):
+    """A site built from a played world, which is the only kind that has a
+    play page: the archive is frozen and the legacy game is not the live one."""
+    from hoc import sim
+
+    tmp = tmp_path_factory.mktemp("playsite")
+    conn = _load_seed_module().build(tmp / "played.db", seed=scenario.seed_dir("new"))
+    world = sim.World(conn, world_seed=1867)
+    world.initialise(1867)
+    for _ in range(9):
+        world.run_season()
+    site.write_site(conn, out_dir=tmp)
+    conn.close()
+    return tmp / site.SITE_DIRNAME
+
+
+def test_the_play_page_exists_and_is_in_the_nav(played_site):
+    play = played_site / "play.html"
+    assert play.exists()
+    for page_name in ("index.html", "chronicle.html", "play.html"):
+        text = (played_site / page_name).read_text(encoding="utf-8")
+        assert 'href="play.html"' in text, f"{page_name} does not link to the play page"
+
+
+def test_the_archive_has_no_play_page(tmp_path):
+    """The archive is a frozen game; a play page over it would offer controls
+    that cannot do anything, exactly as the console would."""
+    import sys
+
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import build_archive
+
+    build_archive.build_archive(out_dir=tmp_path)
+    archive = tmp_path / site.SITE_DIRNAME / site.ARCHIVE_DIRNAME
+    assert not (archive / "play.html").exists()
+    for path in archive.rglob("*.html"):
+        assert 'href="play.html"' not in path.read_text(encoding="utf-8"), path.name
+
+
+def test_the_engine_and_its_tables_are_copied_into_the_site(played_site):
+    """The browser cannot reach web/engine/ or rules/. If an export forgets to
+    copy one, the page fails to load with a 404 that no test would otherwise
+    see."""
+    from hoc.export import play as play_export
+
+    for name in play_export.ENGINE_MODULES:
+        assert (played_site / "engine" / name).exists(), f"engine/{name} was not exported"
+    for name in play_export.RULES_FILES:
+        assert (played_site / "data" / "rules" / name).exists(), f"rules/{name} was not exported"
+    for name in play_export.REFERENCE_FILES:
+        assert (played_site / "data" / "reference" / name).exists(), name
+    assert (played_site / "data" / "world.json").exists()
+
+
+def test_the_exported_engine_is_identical_to_the_repository_engine(played_site):
+    """A copy that drifted from web/engine/ would be a third implementation of
+    the game, cross-checked by nothing."""
+    from hoc.export import play as play_export
+
+    for name in play_export.ENGINE_MODULES:
+        assert (played_site / "engine" / name).read_bytes() == (
+            ROOT / "web" / "engine" / name
+        ).read_bytes(), f"engine/{name} differs from the repository's"
+
+
+def test_the_world_snapshot_matches_the_world_the_site_was_built_from(played_site):
+    world_json = json.loads((played_site / "data" / "world.json").read_text(encoding="utf-8"))
+    assert world_json["season"] == 10
+    assert world_json["world_seed"] == 1867
+    assert world_json["rules_version"] == sim_rules_version()
+    assert world_json["houses"], "a ten-season world has houses"
+
+
+def sim_rules_version():
+    from hoc import sim
+
+    return sim.RULES_VERSION
+
+
+def test_every_element_the_play_script_reaches_for_exists(played_site):
+    """The page and its script are generated separately, so a renamed id is a
+    silent no-op in the browser rather than an error anywhere."""
+    html = (played_site / "play.html").read_text(encoding="utf-8")
+    js = (played_site / "play.js").read_text(encoding="utf-8")
+
+    wanted = set(re.findall(r"el\('([^']+)'\)", js))
+    present = set(re.findall(r'id="([^"]+)"', html))
+    missing = sorted(wanted - present)
+    assert not missing, f"play.js reaches for elements the page does not have: {missing}"
+
+    for selector, needle in (
+        ('input[name="play-stop"]', 'name="play-stop"'),
+        ("#map-fills path", 'id="map-fills"'),
+        (".speed", 'class="speed'),
+        (".run-n", 'class="run-n"'),
+        (".iv-for", 'class="field iv-for"'),
+    ):
+        assert selector in js, f"{selector} is not used by play.js any more"
+        assert needle in html, f"play.js selects {selector} but the page has no {needle}"
+
+
+def test_the_play_page_and_its_assets_stay_under_the_download_budget(played_site):
+    """A phone on mobile data pays for every byte of this. The budget is on the
+    raw bytes because that is what the browser parses; Pages serves it gzipped,
+    and the gzipped figure is reported for the record."""
+    import gzip
+
+    from hoc.export import play as play_export
+
+    files = [played_site / "play.html", played_site / "play.js"]
+    files += [played_site / "engine" / name for name in play_export.ENGINE_MODULES]
+    files += [played_site / "data" / "rules" / name for name in play_export.RULES_FILES]
+    files += [played_site / "data" / "reference" / name for name in play_export.REFERENCE_FILES]
+    files += [played_site / "data" / "world.json"]
+
+    raw = sum(path.stat().st_size for path in files)
+    compressed = sum(len(gzip.compress(path.read_bytes())) for path in files)
+    assert raw < site.PLAY_SIZE_BUDGET, (
+        f"the play page and its assets are {raw:,} bytes raw"
+        f" ({compressed:,} gzipped), over the {site.PLAY_SIZE_BUDGET:,} budget"
+    )
+
+
+def test_the_map_is_not_shipped_twice(played_site):
+    """The play page and the index draw the same coastline. Building it twice
+    would be the single most expensive thing this page could do, so they share
+    _map_geometry — and the two SVGs should be the same size to within the
+    house data the index bakes in and the play page does not."""
+    index_html = (played_site / "index.html").read_text(encoding="utf-8")
+    play_html = (played_site / "play.html").read_text(encoding="utf-8")
+    index_paths = re.findall(r'<path fill="[^"]*" data-fed="([^"]+)"', index_html)
+    play_paths = re.findall(r'<path fill="[^"]*" data-fed="([^"]+)"', play_html)
+    assert play_paths == index_paths, "the two maps do not carry the same ridings in the same order"
+    assert 'data-view-south' in play_html and 'data-view-full' in play_html
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not on PATH")
+def test_the_play_pages_own_path_through_the_engine_matches_python(played_site, tmp_path):
+    """The headless smoke: import the *exported* modules, load the *exported*
+    world.json, play three hundred seasons, and compare every one against the
+    Python engine playing the same seasons. This is the page's whole claim —
+    that a season computed in a browser is the season the repository would have
+    computed — with the browser taken out of it."""
+    from hoc import sim
+
+    out = tmp_path / "js"
+    result = subprocess.run(
+        ["node", str(played_site / "engine" / "playtest.js"),
+         "--site", str(played_site), "--seasons", "300", "--out", str(out)],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    report = json.loads(result.stdout)
+    assert report["seasons"] == 300
+    assert report["snapshot_round_trips"] is True
+
+    # The same seasons in Python, from the same starting point.
+    conn = _load_seed_module().build(tmp_path / "py.db", seed=scenario.seed_dir("new"))
+    python_dir = tmp_path / "python"
+    python_dir.mkdir()
+    world = sim.World(conn, world_seed=1867, seasons_dir=python_dir)
+    world.initialise(1867)
+    world.run(309)
+    conn.close()
+
+    for season in range(11, 311):
+        name = f"{season:04d}.json"
+        python_record = json.loads((python_dir / name).read_text(encoding="utf-8"))
+        js_record = json.loads((out / name).read_text(encoding="utf-8"))
+        python_record.pop("engine")
+        js_record.pop("engine")
+        assert python_record == js_record, f"season {season} differs from the Python engine"

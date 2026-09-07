@@ -2523,7 +2523,6 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
             .replace("__RULES_FILES__", json.dumps(list(play_export.RULES_FILES)))
             .replace("__REFERENCE_FILES__", json.dumps(list(play_export.REFERENCE_FILES)))
             .replace("__UNCLAIMED_FILL__", map_export.UNCLAIMED_FILL)
-            .replace("__STOP_CONDITIONS__", json.dumps(sorted(STOP_CONDITIONS)))
             .replace("__DEFAULT_SPEED__", str(PLAY_SPEEDS[0])),
         )
         assets, asset_bytes = play_export.write_play_assets(

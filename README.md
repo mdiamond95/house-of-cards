@@ -50,6 +50,16 @@ runs both engines and diffs their season files byte for byte, ignoring only the 
 
 Both engines are complete as of Phase 10-1b. `tests/test_crosscheck.py` runs seeds 1867, 2 and 3 for 120 seasons each and asserts zero differences; the same three seeds have been checked to 300 seasons. `tests/test_js_engine_parity.py` holds the primitives underneath to their Python counterparts value for value, so a divergence is named by the primitive that caused it rather than by the season it surfaced in. A 300-season game takes about 6 seconds under node.
 
+## Playing in the browser
+
+**https://mdiamond95.github.io/house-of-cards/play.html**
+
+The primary way to play. The page loads the JavaScript engine, the rules tables and the world as it stands in the repository, and then plays seasons **on the device** — no network round-trip per season, and no server. Play, Pause, 1/4/12 seasons a second, Step, Run 5/25/50/100 with the six stop conditions, a scrubber back through the seasons this browser has played, and Undo to any of them. The map recolours only the ridings that changed hands and flashes them; tapping one opens the house with its live stats and objectives; the chronicle appends as it goes and filters to a single house. The director's §12 interventions are there too, applied to the local game at once.
+
+**Play in the page is local to that browser and is not saved to the repository.** A banner counts the unsaved seasons and says so. The page autosaves to IndexedDB so that closing a tab does not lose an afternoon, and offers to resume or discard that local game next time; committing a browser-played game back to `main` is Phase 10-3.
+
+The page and everything it fetches weigh about 630 KB (184 KB over the wire, gzipped), of which two thirds is the map's coastline — the same inline SVG the index page draws, built once and shared.
+
 ## Playing the game
 
 The game plays itself, and the director watches it from the site and pushes it along from the site's **Console**.
