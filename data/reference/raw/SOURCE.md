@@ -52,3 +52,31 @@ The land mask is the union of `ne_10m_land`, with lakes removed whose true geode
 ## Reproducibility
 
 All ten files are committed here (largest is `ne_10m_lakes.dbf` at ≈9.5 MB, well under the 20 MB per-file threshold). To re-fetch: `git clone --depth 1 --filter=blob:none --sparse https://github.com/nvkelso/natural-earth-vector`, then `git sparse-checkout set --no-cone 10m_physical` and take the two file sets above.
+
+---
+
+# Source: populated places (Natural Earth 10m cultural)
+
+## What this is
+
+`ne_10m_populated_places_simple.{shp,shx,dbf,prj,cpg}` — Natural Earth's 1:10,000,000-scale populated-places point layer, used by `scripts/build_places.py` to build `data/reference/places_by_riding.csv` for the rules 0.8 territorial-designation draw. Public domain (Natural Earth places no restrictions on use).
+
+7,342 point features worldwide, of which **255 are Canadian** (`adm0_a3 = CAN`). Version 5.1.2 per `ne_10m_populated_places.VERSION.txt` (not committed). Geographic CRS, WGS84 (EPSG:4326), confirmed from the `.prj`.
+
+The `_simple` variant is committed rather than the full `ne_10m_populated_places`: the two carry the **same 7,342 features with the same geometry and the same `name`, `pop_max`, `adm0_a3` and `adm1name` values** (verified by comparing record counts and the Canadian subset). The difference is the full layer's ~30 localized name columns (`name_ar`, `name_bn`, …), which this build does not read and which take its `.dbf` from 11 MB to 48 MB — past the 20 MB per-file threshold this directory keeps to.
+
+## Chain of custody
+
+1. **Original authority**: Natural Earth (naturalearthdata.com), public domain, coordinated by the North American Cartographic Information Society.
+2. **Publication used**: GitHub repository `nvkelso/natural-earth-vector`, path `10m_cultural/ne_10m_populated_places_simple.*`.
+3. **Retrieved**: 2026-09-07, via `git clone` (commit `ca96624a56bd078437bca8184e78163e5039ad19` — the same commit the physical layers above came from).
+
+## Assignment to ridings (see `scripts/build_places.py`)
+
+Each Canadian point is assigned to the riding whose polygon covers it, tested against the **clipped but unsimplified** geometry — `geometry_simplified.geojson` has had its boundaries moved by up to a kilometre for drawing, which is enough to put a town on the wrong side of a line in dense urban ridings, so the polygons are rebuilt here from the shapefile through `build_geometry.clip_ridings`.
+
+**245 of the 255 fall inside a clipped polygon.** The remaining ten — Belleville, Berens River, Brochet, Doline, Island Lake, Kingston, Lutselke, Mistassini, Thessalon, Trepassey — sit just outside Natural Earth's 10m coastline or inside a lake the clip removes. Each falls inside exactly one *unclipped* riding polygon, so each is assigned from that: they are real towns in real ridings, and the clip is a cartographic convenience rather than a statement about where a town is. All 255 are assigned; none is dropped. They cover **111 of the 343 ridings**, which is why the designation draw has four tiers rather than one.
+
+## Reproducibility
+
+All five files are committed here (largest is the `.dbf` at ≈11 MB). To re-fetch: `git clone --depth 1 --filter=blob:none --sparse https://github.com/nvkelso/natural-earth-vector`, then `git sparse-checkout set --no-cone 10m_cultural` and take the file set above.

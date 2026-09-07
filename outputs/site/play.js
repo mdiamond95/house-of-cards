@@ -9,10 +9,10 @@
 // IndexedDB so a closed tab does not lose it, and the banner says how many
 // seasons are unsaved. Persistence is Phase 10-3.
 
-import { loadRules } from './engine/rules.js';
+import { loadRules, rulesPath } from './engine/rules.js';
 import { loadReferenceMap } from './engine/adjacency.js';
 import { WorldState } from './engine/state.js';
-import { World, RULES_VERSION } from './engine/sim.js';
+import { World } from './engine/sim.js';
 import {
   recordFiles, commitRecord, boundRecords, missingSeasons, replayRecordsStepwise,
   rebuiltMatches, reviveRecords,
@@ -26,8 +26,8 @@ const SEASONS_PATH = 'scenarios/new/seasons';
 const INTERVENTIONS_PATH = 'scenarios/new/interventions';
 // The same key the console keeps its token under: one token, pasted once.
 const TOKEN_KEY = 'hoc-token';
-const RULES_FILES = ["actions.csv", "communities.csv", "denylist.csv", "events.csv", "given_names.csv", "mortality.csv", "objectives.csv", "places.csv", "surnames.csv", "eras.json", "founding.json", "friction.json", "responses.json", "succession.json"];
-const REFERENCE_FILES = ["ridings.csv", "adjacency.csv"];
+const RULES_FILES = ["actions.csv", "communities.csv", "denylist.csv", "events.csv", "given_names.csv", "mortality.csv", "objectives.csv", "places.csv", "surnames.csv", "eras.json", "founding.json", "friction.json", "responses.json", "succession.json", "features.json"];
+const REFERENCE_FILES = ["ridings.csv", "adjacency.csv", "places_by_riding.csv", "riding_tokens.csv"];
 const UNCLAIMED_FILL = '#E5E5E5';
 const DB_NAME = 'house-of-cards-play';
 const DB_STORE = 'worlds';
@@ -147,6 +147,11 @@ const app = {
   // rewriting a published season would need a force-push, which this phase
   // deliberately does not implement.
   savedThrough: 0,
+  // The rules version new seasons here are played under, and the one the
+  // committed world's last season was played under. They differ across a
+  // version change, which is normal.
+  rulesVersion: null,
+  worldRulesVersion: null,
   // The login the console's token belongs to, for the status line under the
   // Save button. Null until it is read, and null again if it cannot be.
   tokenLogin: null,
@@ -806,12 +811,24 @@ async function boot() {
   const progress = el('load-progress');
   const say = (text) => { progress.textContent = text; };
 
+  // Rules are versioned, so which tables to fetch is itself a fetch. The page
+  // plays new seasons, and a new season is played under whatever
+  // rules/current.txt names — never under the version the committed world was
+  // last played at, which may be older.
   say('Loading the rules and the map…');
-  const logical = RULES_FILES.map((n) => `rules/${n}`)
+  const versionResponse = await fetch(assetUrl('rules/current.txt'));
+  if (!versionResponse.ok) {
+    throw new Error(`could not read the rules version (${versionResponse.status})`);
+  }
+  const rulesVersion = (await versionResponse.text()).trim();
+  if (!rulesVersion) throw new Error('rules/current.txt is empty');
+
+  const logical = RULES_FILES.map((n) => rulesPath(rulesVersion, n))
     .concat(REFERENCE_FILES.map((n) => `data/reference/${n}`));
   const contents = await fetchAll(logical, (done, total) => {
     say(`Loading the rules and the map… ${done} of ${total}`);
   });
+  contents.set('rules/current.txt', rulesVersion);
   const read = (path) => {
     const text = contents.get(path);
     if (text === undefined) throw new Error(`${path} was not fetched`);
@@ -823,17 +840,18 @@ async function boot() {
   if (!worldResponse.ok) throw new Error(`could not load the world (${worldResponse.status})`);
   const committed = await worldResponse.json();
 
-  app.rules = loadRules(read);
+  app.rules = loadRules(read, rulesVersion);
   app.map = loadReferenceMap(read);
   app.committedSeason = committed.season || 0;
   app.committedSha = committed.last_season_sha256;
 
-  if (committed.rules_version !== RULES_VERSION) {
-    throw new Error(
-      `this world was played under rules ${committed.rules_version} and the engine here is`
-      + ` ${RULES_VERSION}`,
-    );
-  }
+  // The committed world records the version its last season was played under.
+  // That need not be the current one — a world at season 41 under rules 0.7
+  // goes on to season 42 under 0.8, which is what shipping a version means.
+  // What would be wrong is *replaying* season 41 under 0.8, and this page never
+  // replays a committed season: it plays forward from the snapshot.
+  app.rulesVersion = rulesVersion;
+  app.worldRulesVersion = committed.rules_version || rulesVersion;
 
   // A local game left in this browser, if it is ahead of the committed world
   // and was resumed from the same commit.

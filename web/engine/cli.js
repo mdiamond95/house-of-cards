@@ -27,6 +27,7 @@ function parseArgs(argv) {
   const args = {
     seed: 1867, seasons: 1, seat: null, out: null,
     root: DEFAULT_ROOT, phases: null, resume: null, interventions: null,
+    rulesVersion: null,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const flag = argv[i];
@@ -39,6 +40,10 @@ function parseArgs(argv) {
       case '--root': args.root = path.resolve(value); i += 1; break;
       case '--resume': args.resume = value; i += 1; break;
       case '--interventions': args.interventions = value; i += 1; break;
+      // Which rules version to play under. Defaults to rules/current.txt,
+      // which is right for a new season; a replay of a recorded season
+      // passes the version that season recorded.
+      case '--rules-version': args.rulesVersion = value; i += 1; break;
       case '--phases':
         args.phases = value.split(',').map((p) => p.trim()).filter(Boolean);
         i += 1;
@@ -88,10 +93,11 @@ function main() {
     // Resuming: the snapshot says which season the world stands at, and the
     // count is how many *more* to play.
     const snapshot = JSON.parse(readFileSync(args.resume, 'utf8'));
-    world = resumeWorld(read, snapshot, { phases: args.phases });
+    world = resumeWorld(read, snapshot, { phases: args.phases, version: args.rulesVersion });
     first = (snapshot.season || 0) + 1;
   } else {
-    const started = newWorld(read, args.seed, args.seat, { phases: args.phases });
+    const started = newWorld(read, args.seed, args.seat,
+      { phases: args.phases, version: args.rulesVersion });
     world = started.world;
     write(1, started.record);
     first = 2;

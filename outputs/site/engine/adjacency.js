@@ -29,7 +29,7 @@ export function compareStrings(a, b) {
 }
 
 export class ReferenceMap {
-  constructor(ridingRows, adjacencyRows) {
+  constructor(ridingRows, adjacencyRows, placeRows = [], tokenRows = []) {
     // Ridings in fed_id order, which is what every "ORDER BY r.fed_id" in the
     // Python engine produces. fed_ids are fixed-width digit strings, so this
     // ordering is both lexicographic and numeric.
@@ -60,6 +60,20 @@ export class ReferenceMap {
     for (const list of this.landNeighbours.values()) list.sort(compareStrings);
     for (const list of this.waterNeighbours.values()) list.sort(compareStrings);
 
+    // Rules 0.8's designation tiers, in the CSVs' own row order — the order
+    // the draws depend on, and the reason both engines read the same two files
+    // rather than each deriving them (hoc/places.py says why).
+    this.placesByRiding = new Map();
+    for (const row of placeRows) {
+      if (!this.placesByRiding.has(row.fed_id)) this.placesByRiding.set(row.fed_id, []);
+      this.placesByRiding.get(row.fed_id).push(row.place);
+    }
+    this.tokensByRiding = new Map();
+    for (const row of tokenRows) {
+      if (!this.tokensByRiding.has(row.fed_id)) this.tokensByRiding.set(row.fed_id, []);
+      this.tokensByRiding.get(row.fed_id).push(row.token);
+    }
+
     // Every riding that has at least one land neighbour — the denominator of
     // the enclosure test, and of §10's founding roll.
     this.hasLandNeighbour = new Set(
@@ -69,6 +83,14 @@ export class ReferenceMap {
 
   land(fedId) {
     return this.landNeighbours.get(fedId) ?? [];
+  }
+
+  places(fedId) {
+    return this.placesByRiding.get(fedId) ?? [];
+  }
+
+  tokens(fedId) {
+    return this.tokensByRiding.get(fedId) ?? [];
   }
 
   riding(fedId) {
@@ -98,5 +120,7 @@ export function loadReferenceMap(read) {
   return new ReferenceMap(
     parseCsvDicts(read('data/reference/ridings.csv')),
     parseCsvDicts(read('data/reference/adjacency.csv')),
+    parseCsvDicts(read('data/reference/places_by_riding.csv')),
+    parseCsvDicts(read('data/reference/riding_tokens.csv')),
   );
 }

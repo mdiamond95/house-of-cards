@@ -1,8 +1,19 @@
-"""Loader and validator for the Phase 9 rules tables under rules/.
+"""Loader and validator for the rules tables under rules/versions/<version>/.
 
-This module only parses and validates; it does not run anything. The season
-engine that reads a RulesBundle to actually play seasons is Phase 9c. Nothing
-here is imported by the current (v1) turn runner or rules engine.
+This module only parses and validates; it does not run anything.
+
+**Rules are versioned, and a season is always replayed under the rules it was
+played with.** `rules/current.txt` names the version a *new* season is played
+under; every season file records the version it was played under, and a replay
+reads that. Without this, tuning a table would silently rewrite history — the
+committed record would stop reproducing the committed database, and the
+referee would start refusing seasons that were correct when they were played.
+
+The consequence for anyone changing the rules is in rules/README.md and is
+short: never edit a published version's tables. Copy the directory, change the
+copy, point current.txt at it. A change in *algorithm* rather than in a number
+goes behind a named boolean in that version's features.json, false in every
+version that came before it, so the old code path stays reachable for replay.
 """
 
 import csv
@@ -12,6 +23,14 @@ from pathlib import Path
 
 __all__ = [
     "RulesDataError",
+    "RULES_ROOT",
+    "VERSIONS_DIR",
+    "CURRENT_FILE",
+    "current_version",
+    "available_versions",
+    "version_dir",
+    "load_features",
+    "FEATURE_DEFAULTS",
     "Action",
     "Objective",
     "MortalityBand",
@@ -38,6 +57,91 @@ VALID_SCOPES = {"all"} | REGIONS | TAGS | COMMUNITY_GROUPS
 
 class RulesDataError(Exception):
     """A rules table failed to load or validate."""
+
+
+RULES_ROOT = Path(__file__).resolve().parent.parent / "rules"
+VERSIONS_DIR = RULES_ROOT / "versions"
+CURRENT_FILE = RULES_ROOT / "current.txt"
+
+# Every behaviour flag the engines know about, and what a version that does not
+# mention it means. Every default is False: a version's features.json is read as
+# "what this version turns on", so a rules directory written before a flag
+# existed keeps the behaviour it was played with. A flag added here with a True
+# default would change the past, which is the one thing this whole arrangement
+# exists to prevent.
+FEATURE_DEFAULTS = {
+    # rules 0.8. Territorial designations are drawn from places inside the seat
+    # riding, then its own name, then its neighbours, before falling back to the
+    # province bank. False in 0.7, which drew from the province bank alone.
+    "local_designations": False,
+    # rules 0.8. A season with no chronicle at all says so, and a house idle for
+    # ten seasons is noticed once. False in 0.7, which left both silent.
+    "quiet_season_line": False,
+}
+
+
+def current_version(root=None):
+    """The version a new season is played under."""
+    path = (Path(root) / "current.txt") if root else CURRENT_FILE
+    if not path.exists():
+        raise RulesDataError(
+            f"{path} is missing: it names the rules version new seasons are played"
+            " under, and without it the engine does not know which rules are current"
+        )
+    version = path.read_text(encoding="utf-8").strip()
+    if not version:
+        raise RulesDataError(f"{path} is empty; it must name a rules version")
+    return version
+
+
+def available_versions(root=None):
+    base = (Path(root) / "versions") if root else VERSIONS_DIR
+    if not base.is_dir():
+        return []
+    return sorted(p.name for p in base.iterdir() if p.is_dir())
+
+
+def version_dir(version, root=None):
+    """The directory holding one version's tables, checked to exist.
+
+    A season file naming a version this checkout does not have is not something
+    to guess about: replaying it under some other version would produce a
+    different game and call it the same one.
+    """
+    base = (Path(root) / "versions") if root else VERSIONS_DIR
+    path = base / str(version)
+    if not path.is_dir():
+        raise RulesDataError(
+            f"unknown rules version {version!r}: {path} does not exist."
+            f" Available: {', '.join(available_versions(root)) or 'none'}."
+            " A season recorded under a version this checkout does not have cannot"
+            " be replayed; it must not be replayed under a different one."
+        )
+    return path
+
+
+def load_features(version=None, root=None):
+    """One version's behaviour flags, defaulted for anything it does not name."""
+    directory = version_dir(version or current_version(root), root)
+    path = directory / "features.json"
+    features = dict(FEATURE_DEFAULTS)
+    if not path.exists():
+        return features
+    with open(path, encoding="utf-8") as f:
+        declared = json.load(f)
+    if not isinstance(declared, dict):
+        raise RulesDataError(f"{path} must hold an object of named booleans")
+    unknown = set(declared) - set(FEATURE_DEFAULTS)
+    if unknown:
+        raise RulesDataError(
+            f"{path} names feature(s) the engine does not know: {', '.join(sorted(unknown))}."
+            " Add them to rules_data.FEATURE_DEFAULTS (defaulting to False) first."
+        )
+    for name, value in declared.items():
+        if not isinstance(value, bool):
+            raise RulesDataError(f"{path}: feature {name!r} must be true or false")
+        features[name] = value
+    return features
 
 
 @dataclass
@@ -141,6 +245,17 @@ class RulesBundle:
     places: list
     given_names: list
     surnames: list
+    # Which version's tables these are, and which behaviour that version turns
+    # on. Carried on the bundle so nothing downstream has to ask a second time
+    # and risk asking about a different version than the one it is holding.
+    version: str = ""
+    features: dict = field(default_factory=dict)
+
+    def feature(self, name):
+        """Whether this version turns on a named behaviour."""
+        if name not in FEATURE_DEFAULTS:
+            raise RulesDataError(f"no such rules feature {name!r}")
+        return bool(self.features.get(name, FEATURE_DEFAULTS[name]))
 
 
 def _read_csv(path):
@@ -421,10 +536,28 @@ def probability_for_age(mortality, age):
     raise RulesDataError(f"no mortality band covers age {age}")
 
 
-def load_rules(path="rules"):
-    """Load and validate every rules table. Raises RulesDataError on any
-    violation, naming the table and the specific problem."""
-    rules_dir = Path(path)
+def load_rules(path=None, version=None, root=None):
+    """Load and validate one version's rules tables.
+
+    `version` names the version to load, defaulting to `rules/current.txt`.
+    `path` loads a directory of tables directly and is for tests and tools that
+    build a rules directory of their own; it bypasses the version machinery, so
+    the engine never uses it.
+
+    Raises RulesDataError on any violation, naming the table and the problem.
+    """
+    if path is not None:
+        rules_dir = Path(path)
+        features = dict(FEATURE_DEFAULTS)
+        features_path = rules_dir / "features.json"
+        if features_path.exists():
+            with open(features_path, encoding="utf-8") as f:
+                features.update(json.load(f))
+        version = version or ""
+    else:
+        version = version or current_version(root)
+        rules_dir = version_dir(version, root)
+        features = load_features(version, root)
 
     actions = _load_actions(rules_dir)
     action_names = {a.action for a in actions}
@@ -455,4 +588,6 @@ def load_rules(path="rules"):
         places=places,
         given_names=given_names,
         surnames=surnames,
+        version=version,
+        features=features,
     )

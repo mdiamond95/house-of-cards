@@ -25,7 +25,7 @@ import {
   farthestHue,
   assignColours,
 } from './palette.js';
-import { loadRules, probabilityForAge } from './rules.js';
+import { loadRules, probabilityForAge, rulesPath } from './rules.js';
 import { NameGenerator, nameKey, fold, casefold, peerageTitle, frenchParticle } from './names.js';
 import { loadReferenceMap } from './adjacency.js';
 import { WorldState } from './state.js';
@@ -128,18 +128,17 @@ function rulesSection(rules) {
   return {
     csv_row_counts: Object.fromEntries(
       [
-        'rules/actions.csv',
-        'rules/communities.csv',
-        'rules/denylist.csv',
-        'rules/events.csv',
-        'rules/given_names.csv',
-        'rules/mortality.csv',
-        'rules/objectives.csv',
-        'rules/places.csv',
-        'rules/surnames.csv',
-        'data/reference/ridings.csv',
-        'data/reference/adjacency.csv',
-      ].map((name) => [name, parseCsv(read(name)).length]),
+        // Named by their logical name, not their path: the path carries the
+        // rules version and the Python side counts the same tables under
+        // whichever version it loaded.
+        ...[
+          'actions.csv', 'communities.csv', 'denylist.csv', 'events.csv',
+          'given_names.csv', 'mortality.csv', 'objectives.csv', 'places.csv',
+          'surnames.csv',
+        ].map((name) => [`rules/${name}`, rulesPath(rules.version, name)]),
+        ['data/reference/ridings.csv', 'data/reference/ridings.csv'],
+        ['data/reference/adjacency.csv', 'data/reference/adjacency.csv'],
+      ].map(([label, path]) => [label, parseCsv(read(path)).length]),
     ),
     // Every cell of the two smallest tables, so a parsing difference shows up
     // as data rather than as a count.

@@ -27,9 +27,21 @@ import { WorldState, clamp } from './state.js';
 import { compareStrings } from './adjacency.js';
 import { NameGenerator, peerageTitle, nameKey } from './names.js';
 import { assignColours } from './palette.js';
-import { probabilityForAge } from './rules.js';
+import { probabilityForAge, feature as featureOf } from './rules.js';
 
+// The version a world plays under comes from its rules bundle
+// (`rules.version`), which came from rules/current.txt for a new season and
+// from the season file for a replay. This constant is only the fallback for a
+// bundle built without one, and must stay the version that predates versioning
+// — see hoc/rules_data.py and rules/README.md.
 export const RULES_VERSION = '0.7';
+
+// A house that has done nothing worth recording for this many consecutive
+// seasons is noticed once (rules 0.8). Ten is long enough that it is a fact
+// about the house rather than about the dice: a house acts every season, so
+// ten seasons of silence means ten actions that all failed or all rested.
+// hoc/sim.py's World.QUIET_HOUSE_SEASONS.
+const QUIET_HOUSE_SEASONS = 10;
 export const WEIGHT_SCALE = 100;
 export const TOTAL_RIDINGS = 343;
 export const STAT_RANGE = [0, 100];
@@ -280,15 +292,25 @@ export class World {
     this.state = state;
     this.rules = rules;
     this.worldSeed = worldSeed;
-    this.rulesVersion = RULES_VERSION;
+    this.rulesVersion = (rules && rules.version) || RULES_VERSION;
     this.phases = phases === null ? new Set(PHASES) : new Set(phases);
 
     this.log = [];
     this.chronicle = [];
+    this.noticed = new Set();
     this._turnCache = new Map();
     this._expansionClaims = new Map();
     this._provinceDistance = new Map();
 
+    this.reindexRules();
+  }
+
+  // The lookups derived from the rules bundle. Rebuilt whenever the bundle
+  // changes, because a replay that crossed a version boundary while still
+  // holding the previous version's action table would play a game neither
+  // version describes. Mirrors hoc/sim.py's _index_rules.
+  reindexRules() {
+    const rules = this.rules;
     this.eras = rules.eras;
     this.actions = new Map(rules.actions.map((a) => [a.action, a]));
     this.objectives = new Map(rules.objectives.map((o) => [o.objective, o]));
@@ -305,6 +327,40 @@ export class World {
     this.rankIndex = new Map(
       Object.entries(rules.founding.rank_index).filter(([, v]) => Number.isInteger(v)),
     );
+  }
+
+  // Whether the version this world is playing under turns on a behaviour.
+  feature(name) {
+    return featureOf(this.rules, name);
+  }
+
+  // Rules 0.8: where a house's territorial designation may come from, most
+  // local first. Under 0.7 there was one source — the seat's province — so a
+  // house seated in Halifax could be styled "of Kamloops"; these tiers are what
+  // fixed that, and they are behind `local_designations` so a 0.7 season still
+  // draws the way it did when it was played.
+  //
+  // Four tiers rather than one because the data is thin: Natural Earth resolves
+  // 255 Canadian places, covering 111 of 343 ridings, so most seats have no town
+  // of their own to be named for. The seat's *name* always yields something,
+  // which is what makes the draw able to answer at all.
+  //
+  // The mirror of hoc/sim.py's _designation_tiers, tier for tier and order for
+  // order — the land neighbours come back in fed_id order from both.
+  designationTiers(fedId, province) {
+    const near = [];
+    for (const neighbour of this.state.map.land(fedId)) {
+      near.push(...this.state.map.places(neighbour));
+    }
+    const bank = this.rules.places
+      .filter((row) => row.province === province)
+      .map((row) => row.place);
+    return [
+      [...this.state.map.places(fedId)],
+      [...this.state.map.tokens(fedId)],
+      near,
+      bank,
+    ];
   }
 
   get seasonNo() {
@@ -362,7 +418,14 @@ export class World {
       mechanicalDelta: payload,
       source: 'engine',
     });
-    if (line) this.chronicle.push(line);
+    if (line) {
+      this.chronicle.push(line);
+      // Who the chronicle mentioned this season, for rules 0.8's idle-house
+      // line. Taken from the event's own house list rather than by looking for a
+      // name in the prose: a title can appear inside another house's line, and
+      // matching on text would notice the wrong house.
+      for (const house of houses || []) this.noticed.add(house);
+    }
     return eventId;
   }
 
@@ -528,15 +591,26 @@ export class World {
     const rankIndex = this.rankIndex.get(chosenRank) ?? 0;
 
     const generator = new NameGenerator(this.rules, draws);
+    const tiers = this.feature('local_designations')
+      ? this.designationTiers(fedId, province)
+      : null;
     let drawn;
     try {
       drawn = generator.drawHouse(
         communityObj.community, province, chosenRank,
-        this.state.takenPlaces(), null, surname || null,
+        this.state.takenPlaces(), null, surname || null, tiers,
       );
     } catch (exc) {
       this.log.push({ purpose: 'founding.abandoned', result: String(exc.message) });
       return null;
+    }
+    if (drawn.tier !== null) {
+      // Which tier answered. Recorded because it is the only way to tell, from
+      // the log alone, whether the local tiers are doing any work.
+      this.log.push({
+        purpose: 'founding.designation',
+        result: { tier: drawn.tier, place: drawn.place },
+      });
     }
 
     const house = this.uniqueHouseName(drawn.surname);
@@ -576,6 +650,7 @@ export class World {
       foundedSeason: season,
       removedSeason: null,
       forcedAction: null,
+      quietSeasons: 0,
     });
 
     const holderAge = 40 + draws.randint(1, 30, 'founding.holder_age');
@@ -756,9 +831,19 @@ export class World {
 
     const province = this.state.map.province(outer[0].fedId);
     const generator = new NameGenerator(this.rules, rng);
+    // A cadet line is seated on the outermost riding the parent gives up, so its
+    // designation is drawn from *that* riding's ground, not the parent's.
     let place;
     try {
-      place = generator.drawPlace(province, this.state.takenPlaces());
+      if (this.feature('local_designations')) {
+        const [tier, drawnPlace] = generator.drawDesignation(
+          this.designationTiers(outer[0].fedId, province), this.state.takenPlaces(),
+        );
+        place = drawnPlace;
+        this.log.push({ purpose: 'partition.designation', result: { tier, place } });
+      } else {
+        place = generator.drawPlace(province, this.state.takenPlaces());
+      }
     } catch (exc) {
       return null;
     }
@@ -786,6 +871,7 @@ export class World {
       foundedSeason: season,
       removedSeason: null,
       forcedAction: null,
+      quietSeasons: 0,
     });
     junior.house = cadet;
     junior.role = 'holder';
@@ -2354,6 +2440,7 @@ export class World {
     this.worldSeed = worldSeed;
     this.log = [];
     this.chronicle = [];
+    this.noticed = new Set();
     const rng = this.rngFor(1);
 
     const house = this.foundHouse(1, { seat, rng });
@@ -2371,6 +2458,7 @@ export class World {
     const season = seasonNo !== null ? seasonNo : this.seasonNo + 1;
     this.log = [];
     this.chronicle = [];
+    this.noticed = new Set();
     const rng = this.rngFor(season);
 
     if (this.phases.has('clocks')) this.ageEveryone();
@@ -2416,7 +2504,40 @@ export class World {
     if (this.phases.has('founding')) founded = this.foundingRoll(season, rng);
     if (this.phases.has('enclosure')) this.recomputeEnclosure(season);
 
+    // Rules 0.8: say something when nothing happened.
+    if (this.feature('quiet_season_line')) this.quietSeasonLines(season);
+
     return this.writeSeason(season, outcomes, founded);
+  }
+
+  // §0.8: the two lines that fire when nothing else did. The mirror of
+  // hoc/sim.py's _quiet_season_lines, template for template and order for
+  // order: the season's own line first, decided against the chronicle as the
+  // season's phases left it, then the idle-house lines in active-house order.
+  quietSeasonLines(season) {
+    if (this.chronicle.length === 0) {
+      this.chronicle.push(`Season ${season} \u00b7 A quiet year across the peerage.`);
+    }
+    for (const row of this.activeHouses()) {
+      const stats = this.state.stats(row.house);
+      if (this.noticed.has(row.house)) {
+        stats.quietSeasons = 0;
+        continue;
+      }
+      const quiet = (stats.quietSeasons || 0) + 1;
+      stats.quietSeasons = quiet;
+      // Exactly at the threshold, so a house that stays quiet for fifty seasons
+      // is mentioned once rather than forty-one times.
+      if (quiet === QUIET_HOUSE_SEASONS) {
+        const held = this.holdings(row.house);
+        if (held.length > 0) {
+          this.chronicle.push(
+            `Season ${season} \u00b7 ${row.peerage} keeps to`
+            + ` ${this.state.map.nameEn(held[0].fedId)}.`,
+          );
+        }
+      }
+    }
   }
 
   foundingRoll(season, rng) {
@@ -2457,8 +2578,8 @@ export class World {
     const record = {
       season,
       seed: this.worldSeed,
-      rules_version: RULES_VERSION,
-      engine: { impl: 'javascript', rules_version: RULES_VERSION },
+      rules_version: this.rulesVersion,
+      engine: { impl: 'javascript', rules_version: this.rulesVersion },
       interventions: this.interventionsSince(season),
       draws: this.log,
       actions: outcomes,
@@ -2473,7 +2594,7 @@ export class World {
       seed: this.worldSeed,
       housesAfter,
       ridingsAfter,
-      rulesVersion: RULES_VERSION,
+      rulesVersion: this.rulesVersion,
     });
     return record;
   }

@@ -32,11 +32,69 @@ function splitList(raw) {
     .filter((part) => part.length > 0);
 }
 
+// Every behaviour flag the engines know about, and what a version that does not
+// name it means. A mirror of hoc/rules_data.py's FEATURE_DEFAULTS, and it must
+// stay one: a flag that defaulted differently in the two engines would be a
+// divergence the cross-check finds only when that code path is reached.
+//
+// Every default is false. A version's features.json says what that version
+// turns *on*, so a rules directory written before a flag existed keeps the
+// behaviour it was played with.
+export const FEATURE_DEFAULTS = {
+  local_designations: false,
+  quiet_season_line: false,
+};
+
+// Where a version's tables live. Rules are versioned so that a season always
+// replays under the rules it was played with — see hoc/rules_data.py and
+// rules/README.md for why that is not optional.
+export function rulesPath(version, name) {
+  return `rules/versions/${version}/${name}`;
+}
+
+/** One version's behaviour flags, defaulted for anything it does not name. */
+export function loadFeatures(read, version) {
+  const features = { ...FEATURE_DEFAULTS };
+  let text;
+  try {
+    text = read(rulesPath(version, 'features.json'));
+  } catch (error) {
+    return features;  // a version predating features.json turns nothing on
+  }
+  const declared = JSON.parse(text);
+  for (const [name, value] of Object.entries(declared)) {
+    if (!(name in FEATURE_DEFAULTS)) {
+      throw new Error(
+        `rules ${version} features.json names a feature the engine does not know:`
+        + ` ${name}. Add it to FEATURE_DEFAULTS (defaulting to false) first.`,
+      );
+    }
+    if (typeof value !== 'boolean') {
+      throw new Error(`rules ${version} features.json: ${name} must be true or false`);
+    }
+    features[name] = value;
+  }
+  return features;
+}
+
+/** The version a new season is played under, from rules/current.txt. */
+export function currentVersion(read) {
+  const version = read('rules/current.txt').trim();
+  if (!version) throw new Error('rules/current.txt is empty; it must name a rules version');
+  return version;
+}
+
 // `read(relativePath)` returns the file's text. The caller supplies it, so this
 // module works unchanged under node (readFileSync) and in a browser (fetch),
 // which is what web/engine has to do without a build step.
-export function loadRules(read) {
-  const actions = parseCsvDicts(read('rules/actions.csv')).map((row) => ({
+//
+// `version` names which version's tables to load; it defaults to whatever
+// rules/current.txt says, which is right for a new season and wrong for a
+// replay — a replay passes the version its season file recorded.
+export function loadRules(read, version = null) {
+  const rulesVersion = version || currentVersion(read);
+  const table = (name) => read(rulesPath(rulesVersion, name));
+  const actions = parseCsvDicts(table('actions.csv')).map((row) => ({
     action: row.action,
     preconditions: row.preconditions,
     // Left a string on purpose: 'forced' is a legal value, and the engine tries
@@ -49,14 +107,14 @@ export function loadRules(read) {
     enclosureBonus: row.enclosure_bonus,
   }));
 
-  const objectives = parseCsvDicts(read('rules/objectives.csv')).map((row) => ({
+  const objectives = parseCsvDicts(table('objectives.csv')).map((row) => ({
     objective: row.objective,
     favouredBy: row.favoured_by,
     satisfiedWhen: row.satisfied_when,
     actionWeightBonus: splitList(row.action_weight_bonus),
   }));
 
-  const mortality = parseCsvDicts(read('rules/mortality.csv'))
+  const mortality = parseCsvDicts(table('mortality.csv'))
     .map((row) => ({
       ageMin: toInt(row.age_min, 'mortality.age_min'),
       ageMax: toInt(row.age_max, 'mortality.age_max'),
@@ -65,7 +123,7 @@ export function loadRules(read) {
     }))
     .sort((a, b) => a.ageMin - b.ageMin);
 
-  const communities = parseCsvDicts(read('rules/communities.csv')).map((row) => ({
+  const communities = parseCsvDicts(table('communities.csv')).map((row) => ({
     region: row.region,
     community: row.community,
     weight: toInt(row.weight, `communities.${row.community}.weight`),
@@ -73,18 +131,18 @@ export function loadRules(read) {
     note: row.note,
   }));
 
-  const surnames = parseCsvDicts(read('rules/surnames.csv')).map((row) => ({
+  const surnames = parseCsvDicts(table('surnames.csv')).map((row) => ({
     community: row.community,
     surname: row.surname,
   }));
 
-  const givenNames = parseCsvDicts(read('rules/given_names.csv')).map((row) => ({
+  const givenNames = parseCsvDicts(table('given_names.csv')).map((row) => ({
     tradition: row.tradition,
     gender: row.gender,
     name: row.name,
   }));
 
-  const places = parseCsvDicts(read('rules/places.csv')).map((row) => ({
+  const places = parseCsvDicts(table('places.csv')).map((row) => ({
     province: row.province,
     place: row.place,
   }));
@@ -94,7 +152,7 @@ export function loadRules(read) {
   // every other delta is an integer. Parsed the same way hoc/rules_data.py
   // parses it, and left unvalidated for the same reason as everything else
   // here — that file is the gatekeeper.
-  const events = parseCsvDicts(read('rules/events.csv')).map((row) => ({
+  const events = parseCsvDicts(table('events.csv')).map((row) => ({
     personalYear: toInt(row.personal_year, `events.${row.name}.personal_year`),
     band: row.band,
     name: row.name,
@@ -125,17 +183,29 @@ export function loadRules(read) {
     givenNames,
     places,
     events,
-    denylist: loadDenylist(read('rules/denylist.csv')),
+    denylist: loadDenylist(table('denylist.csv')),
     // Era bands, sorted by start year — hoc/sim.py sorts them the same way in
     // its constructor, and band_for walks them in that order.
-    eras: JSON.parse(read('rules/eras.json')).bands
+    eras: JSON.parse(table('eras.json')).bands
       .slice()
       .sort((a, b) => a.start_year - b.start_year),
-    founding: JSON.parse(read('rules/founding.json')),
-    succession: JSON.parse(read('rules/succession.json')),
-    responses: JSON.parse(read('rules/responses.json')),
-    friction: JSON.parse(read('rules/friction.json')),
+    founding: JSON.parse(table('founding.json')),
+    succession: JSON.parse(table('succession.json')),
+    responses: JSON.parse(table('responses.json')),
+    friction: JSON.parse(table('friction.json')),
+    // Which version's tables these are, and what that version turns on. Carried
+    // on the bundle so nothing downstream has to ask a second time and risk
+    // asking about a different version than the one it is holding.
+    version: rulesVersion,
+    features: loadFeatures(read, rulesVersion),
   };
+}
+
+/** Whether a loaded bundle's version turns on a named behaviour. */
+export function feature(rules, name) {
+  if (!(name in FEATURE_DEFAULTS)) throw new Error(`no such rules feature ${name}`);
+  const features = rules.features || {};
+  return Boolean(name in features ? features[name] : FEATURE_DEFAULTS[name]);
 }
 
 // The annual death chance for a holder of the given age, as an integer per cent.

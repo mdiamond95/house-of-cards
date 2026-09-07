@@ -20,10 +20,15 @@ carrying the director's note and every value that moved.
 import csv
 import json
 import re
+import shutil
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from hoc import rules_data  # noqa: E402  (after sys.path setup)
+
 RULES_DIR = ROOT / "rules"
 CHANGELOG = RULES_DIR / "CHANGELOG.md"
 
@@ -62,12 +67,12 @@ def _is_number(value):
     return isinstance(value, (int, float)) and not isinstance(value, bool)
 
 
-def _resolve_file(filename):
-    path = (RULES_DIR / filename).resolve()
-    if path.parent != RULES_DIR.resolve():
-        raise PatchError(f"{filename!r} is outside rules/")
+def _resolve_file(filename, version_dir):
+    path = (version_dir / filename).resolve()
+    if path.parent != version_dir.resolve():
+        raise PatchError(f"{filename!r} is outside the rules version directory")
     if not path.exists():
-        raise PatchError(f"rules/{filename} does not exist")
+        raise PatchError(f"{filename} does not exist in this rules version")
     return path
 
 
@@ -148,20 +153,37 @@ def _patch_csv(path, changes):
 
 
 def apply_patch(patch, note, dry_run=False):
-    """Apply a whole patch. Returns (version, [(path, before, after)])."""
+    """Apply a whole patch as a new rules version. Returns (version, changes).
+
+    Tuning never edits a published version's tables. Seasons already in the
+    record were played under the version they name and are replayed under it, so
+    an in-place edit would make the committed record stop reproducing the
+    committed database and the referee start refusing seasons that were correct
+    when they were played. Instead this copies the current version's directory to
+    the next one, patches the copy, and points rules/current.txt at it — so the
+    change applies to seasons played from now on and to no others.
+    """
     if not isinstance(patch, dict) or not patch:
         raise PatchError("patch must be a non-empty object of file -> changes")
     if not (note or "").strip():
         raise PatchError("a rules change needs a note saying why")
 
-    originals = {}
+    version = next_version()
+    source = rules_data.version_dir(rules_data.current_version())
+    target = rules_data.VERSIONS_DIR / version
+    if target.exists():
+        raise PatchError(
+            f"rules/versions/{version} already exists; the changelog and the version"
+            " directories disagree about what the next version is"
+        )
+
+    shutil.copytree(source, target)
     applied = []
     try:
         for filename, changes in sorted(patch.items()):
-            path = _resolve_file(filename)
+            path = _resolve_file(filename, target)
             if not isinstance(changes, dict) or not changes:
                 raise PatchError(f"{filename}: changes must be a non-empty object")
-            originals[path] = path.read_text(encoding="utf-8")
             if path.suffix == ".json":
                 applied.extend(_patch_json(path, changes))
             elif path.suffix == ".csv":
@@ -169,16 +191,15 @@ def apply_patch(patch, note, dry_run=False):
             else:
                 raise PatchError(f"{filename}: only .json and .csv rules files can be patched")
     except Exception:
-        for path, text in originals.items():  # all or nothing, like a turn
-            path.write_text(text, encoding="utf-8")
+        shutil.rmtree(target, ignore_errors=True)  # all or nothing, like a turn
         raise
 
-    version = next_version()
     if dry_run:
-        for path, text in originals.items():
-            path.write_text(text, encoding="utf-8")
+        shutil.rmtree(target, ignore_errors=True)
         return version, applied
 
+    # Only now is the new version the one new seasons are played under.
+    (RULES_DIR / "current.txt").write_text(f"{version}\n", encoding="utf-8")
     _append_changelog(version, note, applied)
     return version, applied
 

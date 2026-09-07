@@ -115,6 +115,7 @@ def world_snapshot(conn):
             "foundedSeason": row["founded_season"],
             "removedSeason": row["removed_season"],
             "forcedAction": row["forced_action"],
+            "quietSeasons": row["quiet_seasons"],
         }
         for row in conn.execute("SELECT * FROM house_stats ORDER BY house")
     ]
@@ -260,9 +261,21 @@ def world_snapshot(conn):
         row = conn.execute(f"SELECT COALESCE(MAX(id), 0) + 1 AS n FROM {table}").fetchone()
         return row["n"]
 
+    # The version the *last committed season* was played under, not the current
+    # one. A browser resuming this world plays its next season under
+    # rules/current.txt, which may be newer — that is what shipping a version
+    # means — but the snapshot has to say truthfully what produced the state it
+    # holds, or nothing downstream can tell a stale world from a fresh one.
+    last_played = conn.execute(
+        "SELECT rules_version FROM seasons ORDER BY season_no DESC LIMIT 1"
+    ).fetchone()
     return {
         "snapshot_version": SNAPSHOT_VERSION,
-        "rules_version": RULES_VERSION,
+        "rules_version": (
+            last_played["rules_version"] if last_played and last_played["rules_version"]
+            else RULES_VERSION
+        ),
+        "current_rules_version": RULES_VERSION,
         "scenario": scenario.current_name(),
         "world_seed": None if seed_row is None else seed_row["seed"],
         "season": season,
@@ -334,12 +347,13 @@ def load_snapshot(conn, snapshot):
         conn.execute(
             "INSERT INTO house_stats (house, capital, influence, cohesion, ambition, enclosed,"
             " enclosed_since, community, region, tradition, tag, province, seat_place,"
-            " founded_season, removed_season, forced_action)"
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            " founded_season, removed_season, forced_action, quiet_seasons)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (row["house"], row["capital"], row["influence"], row["cohesion"], row["ambition"],
              row["enclosed"], row["enclosedSince"], row["community"], row["region"],
              row["tradition"], row["tag"], row["province"], row["seatPlace"],
-             row["foundedSeason"], row["removedSeason"], row["forcedAction"]),
+             row["foundedSeason"], row["removedSeason"], row["forcedAction"],
+             row.get("quietSeasons", 0)),
         )
 
     # Events first: holdings and relations reference them.
