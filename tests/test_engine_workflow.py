@@ -7,6 +7,8 @@ as generated HTML and JavaScript.
 
 import json
 import re
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -644,3 +646,138 @@ def test_pages_can_be_dispatched():
         (ROOT / ".github" / "workflows" / "pages.yml").read_text(encoding="utf-8")
     )
     assert "workflow_dispatch" in pages[True]  # PyYAML reads `on:` as True.
+
+
+# ------------------------------------------- what a reloaded browser holds --
+#
+# The bug these are about: a game restored from the autosave was at season 41
+# with the repository at 3, so the page offered to "Save 38 seasons" — and held
+# no record of any of them. The chronicle rendered empty and the save returned
+# silently. Persistence is half the fix; the other half is that a save which
+# finds a record missing rebuilds it rather than giving up.
+
+
+def _node(script, *args):
+    if shutil.which("node") is None:
+        pytest.skip("node is not on PATH")
+    path = ROOT / "web" / "engine" / script
+    if not path.exists():
+        pytest.skip(f"{script} is not in this checkout")
+    return subprocess.run(
+        ["node", str(path), *args], capture_output=True, text=True,
+    )
+
+
+def test_a_reloaded_browser_keeps_its_records_and_its_chronicle():
+    """web/engine/restorecheck.js plays forty seasons, autosaves, reloads from
+    the payload alone, and asserts the records come back — byte for byte, and
+    with a chronicle to render. Then it throws the records away and asserts the
+    save path rebuilds exactly those records from the committed base, and that a
+    rebuild which lands on a different game is refused."""
+    result = _node("restorecheck.js", "--seasons", "40")
+    assert result.returncode == 0, result.stderr or result.stdout
+    assert "autosave, restore and rebuild identically" in result.stdout
+
+
+def test_the_save_payload_is_still_the_seasons_as_played():
+    result = _node("savecheck.js", "--seasons", "5")
+    assert result.returncode == 0, result.stderr or result.stdout
+
+
+# ------------------------------------------------ the save always answers ---
+
+
+@pytest.fixture(scope="module")
+def play_js(console):
+    return (console / "play.js").read_text(encoding="utf-8")
+
+
+def _function_body(js, name):
+    """The text of one function, from its opening line to the matching brace."""
+    start = js.index(f"async function {name}(") if f"async function {name}(" in js \
+        else js.index(f"function {name}(")
+    depth = 0
+    for index in range(start, len(js)):
+        if js[index] == "{":
+            depth += 1
+        elif js[index] == "}":
+            depth -= 1
+            if depth == 0:
+                return js[start:index + 1]
+    raise AssertionError(f"{name} has no matching brace")
+
+
+def test_the_save_never_exits_without_saying_why(play_js):
+    """Every early exit from the save path writes to #save-status. A bare
+    `return` is what made pressing Save do nothing at all."""
+    for name in ("saveToGitHub", "ensureRecords"):
+        body = _function_body(play_js, name)
+        for line in body.splitlines():
+            stripped = line.strip()
+            assert stripped != "return;", f"{name} has a silent early exit"
+        # Every `return null` is either the sentinel a caller checks or a
+        # stopSave, which has already written the reason.
+        for line in body.splitlines():
+            stripped = line.strip()
+            if stripped.startswith("return null") and "stopSave" not in stripped:
+                assert "//" in stripped, f"{name} returns null with no explanation: {stripped}"
+
+
+@pytest.mark.parametrize(
+    "needle",
+    [
+        # No token.
+        "No GitHub token in this browser",
+        # Nothing to save.
+        "Nothing to save: this browser is at season",
+        # The base could not be fetched, so nothing can be rebuilt.
+        "could not be read",
+        # The rebuild landed on a different game (the one refusal that is final).
+        "cannot be reconstructed from the repository",
+        "Discard local play to resume from the repository",
+        # Nothing assembled even after a rebuild.
+        "could not be assembled",
+        # main has moved past this browser's base.
+        "The repository has moved on; reload to resume from it.",
+    ],
+)
+def test_each_early_exit_has_a_message(play_js, needle):
+    assert needle in play_js
+
+
+def test_the_save_button_is_never_disabled(play_js, site_pages):
+    """A disabled button explains nothing, and its title is unreachable on a
+    phone. It stays pressable and answers instead."""
+    html = (site_pages / "play.html").read_text(encoding="utf-8")
+    save = html[html.index('id="save"') - 60:html.index('id="save"') + 60]
+    assert "disabled" not in save
+    body = _function_body(play_js, "refreshSaveButton")
+    assert "disabled" not in body
+
+
+def test_the_status_line_says_where_everything_stands(play_js, site_pages):
+    """A permanent line under the button: the token, this browser's season, the
+    repository's, and how many are unsaved — visible without pressing Save."""
+    html = (site_pages / "play.html").read_text(encoding="utf-8")
+    assert 'id="save-line"' in html
+    body = _function_body(play_js, "renderSaveLine")
+    for needle in ("token connected", "not connected", "browser season", "repository season",
+                   "unsaved season"):
+        assert needle in body
+
+
+def test_a_restored_record_is_revived_before_it_is_committed(play_js):
+    """IndexedDB stores a structured clone, which loses the FloatValue boxes the
+    engine puts round §10's two genuine floats. Committing an unrevived record
+    throws rather than saving, so the restore revives."""
+    assert "reviveRecords(" in play_js
+    assert "records: boundRecords(" in play_js
+
+
+def test_the_feed_is_drawn_from_the_records(play_js):
+    """The chronicle must never be empty while the season count is above the
+    repository's — that was the visible half of the bug."""
+    assert "function renderFeedFromRecords()" in play_js
+    body = _function_body(play_js, "renderFeedFromRecords")
+    assert "unsavedRecords()" in body
+    assert "no longer holds the chronicle" in body
