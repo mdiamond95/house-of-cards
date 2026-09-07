@@ -64,7 +64,10 @@ class Objective:
 class MortalityBand:
     age_min: int
     age_max: int
-    annual_probability: float
+    # An integer per cent (rules 0.7). Every probability the engine rolls
+    # against is an integer, so both engines roll it the same way: see
+    # docs/DETERMINISM.md.
+    annual_probability_pct: int
     note: str
 
 
@@ -98,7 +101,8 @@ class Event:
 class Community:
     region: str
     community: str
-    weight: float
+    # An integer draw weight (rules 0.7), never a float.
+    weight: int
     naming_tradition: str
     note: str
 
@@ -214,7 +218,7 @@ def _load_mortality(rules_dir):
         MortalityBand(
             age_min=int(row["age_min"]),
             age_max=int(row["age_max"]),
-            annual_probability=float(row["annual_probability"]),
+            annual_probability_pct=int(row["annual_probability_pct"]),
             note=row["note"],
         )
         for row in rows
@@ -230,10 +234,10 @@ def _load_mortality(rules_dir):
                 f" then {current.age_min}-{current.age_max}"
             )
     for band in bands:
-        if not 0 <= band.annual_probability <= 1:
+        if not 0 <= band.annual_probability_pct <= 100:
             raise RulesDataError(
-                f"mortality band {band.age_min}-{band.age_max}: annual_probability"
-                f" {band.annual_probability} is not within [0, 1]"
+                f"mortality band {band.age_min}-{band.age_max}: annual_probability_pct"
+                f" {band.annual_probability_pct} is not a per cent within [0, 100]"
             )
     return bands
 
@@ -266,25 +270,39 @@ def _load_eras(rules_dir):
     return bands
 
 
-def _check_probability(value, label):
-    if not 0 <= value <= 1:
-        raise RulesDataError(f"{label}: {value} is not a probability within [0, 1]")
+def _check_percent(value, label):
+    """Every probability in rules/ is an integer per cent (rules 0.7)."""
+    if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value <= 100:
+        raise RulesDataError(f"{label}: {value!r} is not an integer per cent within [0, 100]")
+
+
+def _check_weight(value, label):
+    """Draw weights are non-negative integers, so the cumulative scan in
+    hoc.prng.Prng.weighted_choice never touches a float."""
+    if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+        raise RulesDataError(f"{label}: {value!r} is not a non-negative integer weight")
 
 
 def _load_founding(rules_dir):
     data = _read_json(rules_dir / "founding.json")
     if "formula" not in data["p_found"]:
         raise RulesDataError("founding.p_found has no formula")
-    for rank, probability in data["rank_probabilities"].items():
-        _check_probability(probability, f"founding.rank_probabilities.{rank}")
+    for rank, weight in data["rank_probabilities"].items():
+        _check_weight(weight, f"founding.rank_probabilities.{rank}")
+    for region, weight in data["region_weights"]["initial"].items():
+        _check_weight(weight, f"founding.region_weights.initial.{region}")
     return data
 
 
 def _load_succession(rules_dir):
     data = _read_json(rules_dir / "succession.json")
-    _check_probability(
-        data["losing_ridings"]["disorderly_succession"]["probability"],
-        "succession.losing_ridings.disorderly_succession.probability",
+    _check_percent(
+        data["losing_ridings"]["disorderly_succession"]["probability_pct"],
+        "succession.losing_ridings.disorderly_succession.probability_pct",
+    )
+    _check_percent(
+        data["disorderly_succession"]["sig_minus_probability_pct"],
+        "succession.disorderly_succession.sig_minus_probability_pct",
     )
     return data
 
@@ -368,7 +386,7 @@ def _load_communities(rules_dir):
         Community(
             region=row["region"],
             community=row["community"],
-            weight=float(row["weight"]),
+            weight=int(row["weight"]),
             naming_tradition=row["naming_tradition"],
             note=row["note"],
         )
@@ -395,11 +413,11 @@ def _load_surnames(rules_dir):
 
 
 def probability_for_age(mortality, age):
-    """The annual death probability for a holder of the given age, from a
-    loaded mortality table (RulesBundle.mortality)."""
+    """The annual death chance for a holder of the given age, as an integer per
+    cent, from a loaded mortality table (RulesBundle.mortality)."""
     for band in mortality:
         if band.age_min <= age <= band.age_max:
-            return band.annual_probability
+            return band.annual_probability_pct
     raise RulesDataError(f"no mortality band covers age {age}")
 
 

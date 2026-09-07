@@ -27,29 +27,42 @@ influence, Name heir, Endow, Petition elevation, Consolidate (rest) — with the
 are recognised and weighted zero until PART B.
 """
 
-import hashlib
 import json
-import math
-import random
 from collections import defaultdict
 from functools import lru_cache
 from datetime import datetime, timezone
 from pathlib import Path
 
-from hoc import palette, rules as mechanics, scenario
+from hoc import palette, prng, rules as mechanics, scenario
 from hoc.names import NameGenerator, peerage_title
 from hoc.rules_data import load_rules, probability_for_age
 
-__all__ = ["SimError", "LoggingRandom", "World", "RULES_VERSION"]
+__all__ = [
+    "SimError",
+    "LoggingRandom",
+    "World",
+    "RULES_VERSION",
+    "WEIGHT_SCALE",
+    "canonical_json",
+]
 
 # The rules/CHANGELOG.md version these seasons are played under (§11): a season
 # keeps the version it was played under so a later rules change never silently
 # reinterprets it.
-RULES_VERSION = "0.6"
+RULES_VERSION = "0.7"
 
 STAT_RANGE = (0, 100)
 AMBITION_RANGE = (0, 10)
 TOTAL_RIDINGS = 343
+
+# Action weights are carried as integers at this fixed-point scale: a base
+# weight of 6 in rules/actions.csv is 600 here, and a "+2" modifier is 200
+# (Phase 10-1). Nothing in the weighting is allowed to be a float, because a
+# float total and a float target are three roundings deep and cannot be relied
+# on to land the same way in Python and in JavaScript — see docs/DETERMINISM.md.
+# The scale is 100 so that the one half-point modifier the design states
+# (Dispute's +ambition/2) is exact: half of 100 is 50, not 50.000000000000004.
+WEIGHT_SCALE = 100
 
 # Actions PART A resolves. Anything else in rules/actions.csv is recognised —
 # it stays in the table and in the loaded bundle — but is weighted zero until
@@ -119,6 +132,11 @@ RESPONSE_VERB = {
     "Neutral": "stands aside",
 }
 
+# §9's "roll: 20% chance of no successor", as an integer per cent (rules 0.7).
+# Stated in rules/succession.json under extinction.triggers; named here because
+# it is the one probability the design gives inline rather than in a field.
+NO_SUCCESSOR_PCT = 20
+
 MAX_OBJECTIVES = 3
 OBJECTIVES_AT_FOUNDING = 2
 DEFEND_THE_SEAT_SEASONS = 3
@@ -147,14 +165,14 @@ class SimError(Exception):
 
 
 def season_seed(world_seed, season_no):
-    """A stable seed for one season.
+    """A stable 32-bit seed for one season: fnv1a32("<world_seed>:<season_no>").
 
-    Python's built-in hash is salted per process for strings, so a world that
-    hashed its own name would replay differently in a new process. Digesting the
-    pair instead keeps replay honest across machines and Python versions.
+    Kept here as the engine's name for it; the algorithm lives in hoc.prng so
+    that `web/engine/prng.js` has exactly one thing to mirror. Until Phase 10-1
+    this digested the pair with blake2b, which was portable in principle and
+    unavailable in JavaScript in practice.
     """
-    digest = hashlib.blake2b(f"{world_seed}:{season_no}".encode("utf-8"), digest_size=8)
-    return int.from_bytes(digest.digest(), "big")
+    return prng.season_seed(world_seed, season_no)
 
 
 class LoggingRandom:
@@ -163,6 +181,19 @@ class LoggingRandom:
     Each call appends `{purpose, result}` to the season log, which is what makes
     a season auditable: the log says not only what happened but which roll made
     it happen.
+
+    Every method delegates to `hoc.prng.Prng`, whose draws are defined in terms
+    of one 32-bit generator step and nothing else. Two rules hold here, and the
+    cross-check enforces both (docs/DETERMINISM.md):
+
+    * `weighted` takes an **ordered list of (key, integer weight) pairs**, never
+      a mapping. The cumulative scan depends on the order it walks the options
+      in, and a caller that passes a dict is trusting two languages' hash tables
+      to agree about iteration order — which is exactly the kind of thing that
+      holds for a hundred seasons and then does not.
+    * `chance` takes an **integer per cent**, not a float. The one genuinely
+      continuous probability in the game (§10's founding roll) goes through
+      `chance_float` instead, and is the only float comparison the engine makes.
     """
 
     def __init__(self, rng, log):
@@ -190,44 +221,70 @@ class LoggingRandom:
         return self._record(purpose, self.rng.choice(list(sequence)))
 
     def randint(self, low, high, purpose=None):
-        return self._record(purpose, self.rng.randint(low, high))
+        return self._record(purpose, self.rng.rand_int(low, high))
 
-    def random(self, purpose=None):
-        return self._record(purpose, self.rng.random())
+    def chance(self, percent, purpose=None):
+        """True with probability `percent`/100, from one integer draw.
 
-    def chance(self, probability, purpose=None):
-        """True with the given probability. Logged as the roll and the verdict,
-        because 'why did that house die' is the commonest question of a log."""
-        roll = self.rng.random()
-        return self._record(purpose, {"roll": round(roll, 6), "p": probability, "hit": roll < probability})["hit"]
+        Logged as the roll and the verdict, because 'why did that house die' is
+        the commonest question of a log. The roll is 1-100 and hits when it is
+        less than or equal to the per cent, so 0 never fires and 100 always
+        does.
+        """
+        percent = int(percent)
+        roll = self.rng.rand_int(1, 100)
+        return self._record(
+            purpose, {"roll": roll, "pct": percent, "hit": roll <= percent}
+        )["hit"]
+
+    def chance_float(self, probability, purpose=None):
+        """True with a continuous probability, compared against rand_float().
+
+        Reserved for §10's founding roll. The logged roll is the raw float, so
+        the season record shows the comparison that was actually made.
+        """
+        roll = self.rng.rand_float()
+        return self._record(
+            purpose, {"roll": roll, "p": probability, "hit": roll < probability}
+        )["hit"]
 
     def die(self, sides=6, purpose=None):
-        return self._record(purpose, self.rng.randint(1, sides))
+        return self._record(purpose, self.rng.rand_int(1, sides))
 
     def two_d6(self, purpose=None):
-        a = self.rng.randint(1, 6)
-        b = self.rng.randint(1, 6)
+        a, b = self.rng.rand_2d6()
         return self._record(purpose, {"dice": [a, b], "total": a + b})["total"]
 
     def weighted(self, options, purpose=None):
-        """Draw from {key: weight}. Zero and negative weights never come up."""
-        items = [(key, weight) for key, weight in options.items() if weight > 0]
-        if not items:
-            return self._record(purpose, None)
-        total = sum(weight for _, weight in items)
-        target = self.rng.random() * total
-        running = 0.0
-        chosen = items[-1][0]
-        for key, weight in items:
-            running += weight
-            if target < running:
-                chosen = key
-                break
-        return self._record(purpose, chosen)
+        """Draw from an ordered sequence of (key, integer weight) pairs.
+
+        Zero and negative weights never come up. Returns None — and logs it —
+        when nothing has a positive weight, which is a real outcome: a house
+        with no legal action takes none.
+        """
+        pairs = list(options)
+        keys = [key for key, _ in pairs]
+        weights = [int(weight) for _, weight in pairs]
+        return self._record(purpose, self.rng.weighted_choice(keys, weights))
 
 
 def clamp(value, low, high):
     return max(low, min(high, value))
+
+
+def canonical_json(obj):
+    """The one way this repo serialises a season log.
+
+    Sorted keys, no spaces after the separators, UTF-8 as written rather than
+    escaped, and a single trailing newline. Two engines can only be compared
+    byte for byte if they agree on the bytes, and "whatever json.dumps does by
+    default" is not an agreement — it is two defaults that happen to match.
+
+    `ensure_ascii=False` means the é in a Québécois place name is written as
+    itself; `web/engine/cli.js` writes the same character, since JSON.stringify
+    does not escape non-ASCII either.
+    """
+    return json.dumps(obj, sort_keys=True, ensure_ascii=False, separators=(",", ":")) + "\n"
 
 
 # -------------------------------------------------------------------- world --
@@ -300,7 +357,11 @@ class World:
             "   AND seat.released_event_id IS NULL"
             " LEFT JOIN ridings r ON r.fed_id = seat.fed_id"
             " WHERE h.status = 'active'"
-            " ORDER BY s.founded_season, r.name_en, h.house"
+            # By seat fed_id, not by seat name: fed_id is an ASCII code with one
+            # obvious ordering, while riding names carry accents and em-dashes
+            # whose collation is SQLite's business and would have to be matched
+            # exactly by the JavaScript engine (docs/DETERMINISM.md).
+            " ORDER BY s.founded_season, seat.fed_id, h.house"
         ).fetchall()
 
     def house_row(self, house):
@@ -525,12 +586,16 @@ class World:
         ):
             capacity[PROVINCE_REGION.get(row["province"], "north")] += row["n"]
 
-        weights = {}
-        for region, base in self.region_weights.items():
+        # Integer drift (rules 0.7): base * (20 + room) // 20 is the old float
+        # form base * (1 + room/20) with the rounding made explicit. Regions are
+        # walked in sorted name order so the cumulative scan never depends on
+        # the order founding.json happens to list them in.
+        weights = []
+        for region in sorted(self.region_weights):
             room = capacity.get(region, 0)
             if room == 0:
                 continue
-            weights[region] = base * (1 + room / 20)
+            weights.append((region, self.region_weights[region] * (20 + room) // 20))
         if not weights:
             return None
         return rng.weighted(weights, purpose="founding.region")
@@ -559,7 +624,7 @@ class World:
     def _draw_tag(self, rng):
         """Tag with climate fit: the Confederation ledger's sign doubles the
         weight of the matching tag (§10)."""
-        weights = {"Progressive": 2.0, "Conservative": 2.0, "Mixed": 2.0, "Outside": 1.0}
+        weights = {"Progressive": 200, "Conservative": 200, "Mixed": 200, "Outside": 100}
         try:
             climate = mechanics.current_climate(self.conn, "confederation")
         except mechanics.RuleError:
@@ -568,7 +633,11 @@ class World:
             weights["Progressive"] *= 2
         elif climate < 0:
             weights["Conservative"] *= 2
-        return rng.weighted(weights, purpose="founding.tag")
+        # A fixed, written-out order: these four tags are the whole domain.
+        return rng.weighted(
+            [(tag, weights[tag]) for tag in ("Progressive", "Conservative", "Mixed", "Outside")],
+            purpose="founding.tag",
+        )
 
     def found_house(self, season, seat=None, rng=None, community=None, tag=None,
                     rank=None, surname=None):
@@ -607,8 +676,9 @@ class World:
 
         pool = self.communities_by_region.get(region) or self.communities_by_region["ontario"]
         if community is None:
+            # rules/communities.csv row order, which is the file's own order.
             community_row = rng.weighted(
-                {c.community: c.weight for c in pool}, purpose="founding.community"
+                [(c.community, c.weight) for c in pool], purpose="founding.community"
             )
         else:
             community_row = community
@@ -619,7 +689,13 @@ class World:
 
         tag = tag or self._draw_tag(rng)
         rank = rank or rng.weighted(
-            self.rules.founding["rank_probabilities"], purpose="founding.rank"
+            # Ordered up the rank ladder (Baron, Viscount, Earl, ...) rather
+            # than by whatever order founding.json lists them in.
+            sorted(
+                self.rules.founding["rank_probabilities"].items(),
+                key=lambda pair: (self.rank_index.get(pair[0], 0), pair[0]),
+            ),
+            purpose="founding.rank",
         )
         rank_index = self.rank_index.get(rank, 0)
 
@@ -707,12 +783,19 @@ class World:
 
     def _draw_founding_objectives(self, house, season, rng):
         row = self.house_row(house)
-        weights = {}
-        for objective in self.rules.objectives:
-            weights[objective.objective] = 1.0 + 2.0 * self._objective_favoured(objective.objective, row, house)
+        # Integer weights at WEIGHT_SCALE: an unfavoured objective is 1, a
+        # favoured one 3, exactly as the old 1.0 + 2.0*favoured said.
+        weights = [
+            (
+                objective.objective,
+                WEIGHT_SCALE
+                + 2 * WEIGHT_SCALE * self._objective_favoured(objective.objective, row, house),
+            )
+            for objective in self.rules.objectives
+        ]
         for _ in range(OBJECTIVES_AT_FOUNDING):
             held = set(self.held_objectives(house))
-            available = {k: v for k, v in weights.items() if k not in held}
+            available = [(name, weight) for name, weight in weights if name not in held]
             if not available:
                 break
             chosen = rng.weighted(available, purpose="founding.objective")
@@ -782,10 +865,13 @@ class World:
         if holder is None:
             return self._succeed(house, season, rng, cause="no holder")
 
-        probability = probability_for_age(self.rules.mortality, holder["age"])
+        percent = probability_for_age(self.rules.mortality, holder["age"])
         rolls = 2 if extra_roll else 1
+        # `any` short-circuits, so a house that dies on the first roll never
+        # draws the second. That is deliberate and both engines must do it: the
+        # alternative would consume a draw the log has no outcome for.
         died = any(
-            rng.chance(probability, purpose=f"mortality.{house}") for _ in range(rolls)
+            rng.chance(percent, purpose=f"mortality.{house}") for _ in range(rolls)
         )
         if not died:
             return False
@@ -843,7 +929,7 @@ class World:
             cohesion=succession["cohesion_delta"],
             capital=succession["capital_delta"],
         )
-        if rng.chance(0.20, purpose=f"succession.no_successor.{house}"):
+        if rng.chance(NO_SUCCESSOR_PCT, purpose=f"succession.no_successor.{house}"):
             self._remove_house(house, season, reason="no successor", rng=rng)
             return True
 
@@ -872,8 +958,8 @@ class World:
 
         # §9: a disorderly succession sours a neighbour.
         neighbours = self.neighbouring_houses(house)
-        probability = self.rules.succession["disorderly_succession"]["sig_minus_probability"]
-        if neighbours and rng.chance(probability, purpose=f"succession.grievance.{house}"):
+        percent = self.rules.succession["disorderly_succession"]["sig_minus_probability_pct"]
+        if neighbours and rng.chance(percent, purpose=f"succession.grievance.{house}"):
             other = rng.choice(neighbours, purpose=f"succession.grievance_with.{house}")
             if self.relation_marker(house, other) not in (KIN, COMPACT):
                 grievance_id = self.record(
@@ -889,7 +975,7 @@ class World:
         # §7c: contested wills and Crown review can cost a riding.
         loss = self.rules.succession["losing_ridings"]["disorderly_succession"]
         if self.holding_count(house) >= 4 and rng.chance(
-            loss["probability"], purpose=f"succession.riding_loss.{house}"
+            loss["probability_pct"], purpose=f"succession.riding_loss.{house}"
         ):
             self._lose_riding(house, season, reason="disorderly succession")
 
@@ -1738,52 +1824,57 @@ class World:
         holder = self.holder(house)
         held = self.held_objectives(house)
 
-        bonus_for = defaultdict(float)
+        bonus_for = defaultdict(int)
         for objective in held:
             spec = self.objectives.get(objective)
             if spec is None:
                 continue
             for action in spec.action_weight_bonus:
-                bonus_for[action] += 2.0
+                bonus_for[action] += 2 * WEIGHT_SCALE
 
-        weights = {}
+        # Every weight below is an integer at WEIGHT_SCALE: the design's "+2" is
+        # 2*WEIGHT_SCALE, and Dispute's "+ambition/2" is ambition*(WEIGHT_SCALE//2),
+        # which is exact rather than a float that happens to look like one.
+        # The list is built in sorted action order, and the draw walks it in that
+        # order, so the cumulative scan is fully determined by this file.
+        weights = []
         for name in sorted(legal):
             action = self.actions[name]
             try:
-                weight = float(action.base_weight)
+                weight = int(action.base_weight) * WEIGHT_SCALE
             except ValueError:
                 continue  # 'forced' actions are never drawn from the pool
 
             if name == "Expand":
-                weight += row["ambition"]
+                weight += row["ambition"] * WEIGHT_SCALE
                 if row["cohesion"] < 40:
-                    weight -= 2
+                    weight -= 2 * WEIGHT_SCALE
             elif name == "Invest" and row["capital"] < 40:
-                weight += 2
+                weight += 2 * WEIGHT_SCALE
             elif name == "Consolidate (rest)" and row["cohesion"] < 40:
-                weight += 3
+                weight += 3 * WEIGHT_SCALE
             elif name == "Name heir" and holder is not None and holder["age"] > 60:
-                weight += (holder["age"] - 60) // 5
+                weight += ((holder["age"] - 60) // 5) * WEIGHT_SCALE
             elif name == "Dispute":
-                weight += row["ambition"] / 2
+                weight += row["ambition"] * (WEIGHT_SCALE // 2)
                 if row["cohesion"] < 50:
-                    weight -= 3
+                    weight -= 3 * WEIGHT_SCALE
             elif name == "Reconcile" and row["cohesion"] < 40:
-                weight += 2
+                weight += 2 * WEIGHT_SCALE
             elif name == "Correspond":
                 same_tag = [
                     other for other in self.houses_within_reach(house)
                     if self.house_row(other)["tag"] == row["tag"]
                 ]
                 if same_tag:
-                    weight += 2
+                    weight += 2 * WEIGHT_SCALE
                 if self.houses_related_by(house, {GRIEVANCE}):
-                    weight -= 2
+                    weight -= 2 * WEIGHT_SCALE
 
-            weight += bonus_for.get(name, 0.0)
+            weight += bonus_for.get(name, 0)
             if row["enclosed"] and name in ENCLOSURE_DOUBLED:
                 weight *= 2
-            weights[name] = max(0.0, weight)
+            weights.append((name, max(0, weight)))
         return weights
 
     def take_action(self, house, season, rng):
@@ -2139,7 +2230,7 @@ class World:
         self.set_stats(other, cohesion=-10)
         # §7: the grievance either resolves or hardens into open hostility, which
         # is what makes a Challenge legal later.
-        hardens = self.rules.friction["dispute_outcome"]["hardens_probability"]
+        hardens = self.rules.friction["dispute_outcome"]["hardens_probability_pct"]
         marker = HOSTILE if rng.chance(hardens, purpose=f"dispute.hardens.{house}") else RESOLVED
         event_id = self.record(
             "relational",
@@ -2475,11 +2566,15 @@ class World:
 
         held = self.held_objectives(house)
         if len(held) < OBJECTIVES_AT_FOUNDING:
-            weights = {
-                o.objective: 1.0 + 2.0 * self._objective_favoured(o.objective, row, house)
+            weights = [
+                (
+                    o.objective,
+                    WEIGHT_SCALE
+                    + 2 * WEIGHT_SCALE * self._objective_favoured(o.objective, row, house),
+                )
                 for o in self.rules.objectives
                 if o.objective not in held
-            }
+            ]
             chosen = rng.weighted(weights, purpose=f"objective.replace.{house}")
             if chosen is not None and len(held) < MAX_OBJECTIVES:
                 self.conn.execute(
@@ -2569,7 +2664,7 @@ class World:
     # ------------------------------------------------------------ the season --
 
     def rng_for(self, season_no):
-        return LoggingRandom(random.Random(season_seed(self.world_seed, season_no)), self.log)
+        return LoggingRandom(prng.Prng(season_seed(self.world_seed, season_no)), self.log)
 
     def initialise(self, world_seed, seat=None):
         """Season 1: exactly one house is founded (§10, and the director's first
@@ -2592,14 +2687,19 @@ class World:
     def _write_season_file(self, season, record):
         """Write one season log, and return the repo-relative path recorded in
         the seasons row. A world with no seasons_dir writes nothing and records
-        NULL — the database still holds the season, only the log is skipped."""
+        NULL — the database still holds the season, only the log is skipped.
+
+        The bytes are canonical (Phase 10-1): `canonical_json` is what the
+        JavaScript engine writes too, so `scripts/crosscheck.py` can compare the
+        two engines' seasons with a plain byte comparison instead of a
+        structural diff that would have to decide for itself which differences
+        matter.
+        """
         if self.seasons_dir is None:
             return None
         self.seasons_dir.mkdir(parents=True, exist_ok=True)
         path = self.seasons_dir / f"{season:04d}.json"
-        path.write_text(
-            json.dumps(record, indent=1, ensure_ascii=False) + "\n", encoding="utf-8"
-        )
+        path.write_text(canonical_json(record), encoding="utf-8")
         try:
             return str(path.relative_to(scenario.REPO_ROOT))
         except ValueError:
@@ -2678,11 +2778,16 @@ class World:
         """
         spec = self.rules.founding["p_found"]
         room = self.unclaimed_land_adjacent_count()
-        p_found = spec["coefficient"] * (room / TOTAL_RIDINGS) ** spec["exponent"]
-        rng.draw("founding.p_found", {"room": room, "p": round(p_found, 6)})
+        # The only floating-point computation in the engine, and the only float
+        # comparison: sqrt(room / 343) * coefficient, against rand_float().
+        # IEEE-754 makes division, multiplication and sqrt exact-or-correctly-
+        # rounded, so Python and JavaScript compute the same double here; a
+        # general pow would not be safe (docs/DETERMINISM.md, hoc/prng.py).
+        p_found = prng.p_found(room, TOTAL_RIDINGS, spec["coefficient"])
+        rng.draw("founding.p_found", {"room": room, "p": p_found})
         if p_found <= 0:
             return None
-        if not rng.chance(p_found, purpose="founding.roll"):
+        if not rng.chance_float(p_found, purpose="founding.roll"):
             return None
         return self.found_house(season, rng=rng)
 
@@ -2754,6 +2859,10 @@ class World:
             "season": season,
             "seed": self.world_seed,
             "rules_version": RULES_VERSION,
+            # Which engine wrote this file. Excluded from the cross-check
+            # comparison by scripts/crosscheck.py — it is the one field the two
+            # engines are expected to disagree about, and the only one.
+            "engine": {"impl": "python", "rules_version": RULES_VERSION},
             "interventions": self._interventions_since(season),
             "draws": self.log,
             "actions": outcomes,

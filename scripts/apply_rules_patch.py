@@ -32,7 +32,7 @@ CHANGELOG = RULES_DIR / "CHANGELOG.md"
 CSV_NUMERIC_COLUMNS = {
     "actions.csv": ("base_weight", "target", "enclosure_bonus"),
     "objectives.csv": (),
-    "mortality.csv": ("age_min", "age_max", "annual_probability"),
+    "mortality.csv": ("age_min", "age_max", "annual_probability_pct"),
 }
 
 VERSION_PATTERN = re.compile(r"^## (\d+)\.(\d+)", re.MULTILINE)

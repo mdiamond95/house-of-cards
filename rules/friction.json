@@ -77,7 +77,7 @@
   },
   "dispute_outcome": {
     "note": "§7 says a won dispute leaves the grievance 'resolved or ⊖' without saying how often it hardens. PART B assumed half, in code; rules 0.6 moves the number here and tunes it, because it is the tap that feeds Challenge: only a ⊖ makes a challenge legal, so every point of this probability is worth several challenges a run.",
-    "hardens_probability": 0.06
+    "hardens_probability_pct": 6
   },
   "grievance_lapse": {
     "note": "Friction decays when nothing feeds it; a grievance had no such rule, so the map's stock of open Sig− relations only ever grew and every house always had someone to quarrel with. A grievance neither side has acted on for this many seasons lapses to resolved — the quarrel is not settled, it is merely no longer worth pressing. This is the counterpart of per_season.decay and is what holds disputes per house-generation inside the smoke bounds.",
