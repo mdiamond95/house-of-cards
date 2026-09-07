@@ -38,6 +38,7 @@ from hoc.names import NameGenerator, peerage_title
 from hoc.rules_data import load_rules, probability_for_age
 
 __all__ = [
+    "PHASES",
     "SimError",
     "LoggingRandom",
     "World",
@@ -146,6 +147,18 @@ SIEGE_SEASONS = 10
 # a 300-season sparkline sixty points long and timeline.json well inside its
 # size budget; hoc/export/timeline.py reads whatever spacing it finds.
 SNAPSHOT_EVERY = 5
+
+# The §6 season loop, phase by phase, in the order run_season runs them.
+#
+# A run always executes all of them; `PHASES` exists so that the two engines can
+# be compared one phase at a time while `web/engine/sim.js` is being built or
+# changed (`python -m hoc sim run --phases`, `node web/engine/cli.js --phases`).
+# That flag is developer-only and is documented as such in both CLIs: a world
+# played with a subset of phases is not a game, it is a diagnostic.
+PHASES = (
+    "clocks", "friction", "events", "mortality", "actions", "objectives",
+    "debt", "founding", "enclosure",
+)
 
 # The pause conditions the director can arm a run with (§12, extended in 9e).
 STOP_CONDITIONS = frozenset(
@@ -298,9 +311,19 @@ class World:
     was.
     """
 
-    def __init__(self, conn, rules=None, world_seed=None, seasons_dir=None):
+    def __init__(self, conn, rules=None, world_seed=None, seasons_dir=None, phases=None):
         self.conn = conn
         self.rules = rules or load_rules()
+        # Which phases of the §6 loop to run. None means all of them, which is
+        # the only configuration a real game is ever played in; a subset is a
+        # developer's cross-check diagnostic (see PHASES).
+        self.phases = frozenset(PHASES if phases is None else phases)
+        unknown = self.phases - set(PHASES)
+        if unknown:
+            raise SimError(
+                f"unknown phase(s) {', '.join(sorted(unknown))};"
+                f" valid phases are {', '.join(PHASES)}"
+            )
         self.world_seed = world_seed if world_seed is not None else self._stored_seed()
         # Where season logs are written. None means "write nothing", which is what
         # a test world wants: a World must never infer its scenario from
@@ -2717,12 +2740,14 @@ class World:
         rng = self.rng_for(season)
 
         # 1. Clocks and ages.
-        self._age_everyone(season)
+        if "clocks" in self.phases:
+            self._age_everyone(season)
 
         # Borders warm or cool before anyone acts, so a grievance struck this
         # season is available to the houses that act after it (rules 0.6).
         self._turn_cache = {}
-        self._run_friction(season, rng)
+        if "friction" in self.phases:
+            self._run_friction(season, rng)
 
         outcomes = []
         self._expansion_claims = {}
@@ -2733,38 +2758,43 @@ class World:
                 continue
 
             # 2. Era events, which may demand an extra mortality roll.
-            fired = self._era_event(house, season, rng)
+            fired = self._era_event(house, season, rng) if "events" in self.phases else None
             extra_mortality = bool(fired and fired["extra_mortality"])
 
             # 3. Mortality and succession.
-            if self._mortality(house, season, rng, extra_roll=extra_mortality):
-                continue
+            if "mortality" in self.phases:
+                if self._mortality(house, season, rng, extra_roll=extra_mortality):
+                    continue
 
             # 4-5. Action selection and resolution.
-            outcome = self.take_action(house, season, rng)
-            if outcome:
-                outcomes.append(outcome)
-                self.conn.execute(
-                    "INSERT INTO house_actions (season_no, house, action, success, detail)"
-                    " VALUES (?, ?, ?, ?, ?)",
-                    (
-                        season,
-                        house,
-                        outcome.get("action", "—"),
-                        1 if outcome.get("success") else 0,
-                        outcome.get("riding") or outcome.get("with") or outcome.get("note"),
-                    ),
-                )
+            if "actions" in self.phases:
+                outcome = self.take_action(house, season, rng)
+                if outcome:
+                    outcomes.append(outcome)
+                    self.conn.execute(
+                        "INSERT INTO house_actions (season_no, house, action, success, detail)"
+                        " VALUES (?, ?, ?, ?, ?)",
+                        (
+                            season,
+                            house,
+                            outcome.get("action", "—"),
+                            1 if outcome.get("success") else 0,
+                            outcome.get("riding") or outcome.get("with") or outcome.get("note"),
+                        ),
+                    )
 
             # 6. Objectives, then the §7c debt check.
-            self._check_objectives(house, season, rng)
-            self._debt_check(house, season, rng)
+            if "objectives" in self.phases:
+                self._check_objectives(house, season, rng)
+            if "debt" in self.phases:
+                self._debt_check(house, season, rng)
 
         # 7. Founding roll.
-        founded = self._founding_roll(season, rng)
+        founded = self._founding_roll(season, rng) if "founding" in self.phases else None
 
         # 8. Enclosure recompute.
-        self._recompute_enclosure(season)
+        if "enclosure" in self.phases:
+            self._recompute_enclosure(season)
 
         # 9-10. The season record.
         return self._write_season(season, outcomes, founded)

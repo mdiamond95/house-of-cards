@@ -14,9 +14,11 @@
 import { parseCsvDicts } from './csv.js';
 import { loadDenylist } from './names.js';
 
+// Python's int() accepts a leading '+' and surrounding whitespace; the event
+// deck uses '+5' for a positive direct effect, so this has to as well.
 function toInt(value, label) {
   const text = String(value).trim();
-  if (!/^-?\d+$/.test(text)) {
+  if (!/^[+-]?\d+$/.test(text)) {
     throw new Error(`${label}: '${value}' is not an integer (rules 0.7 requires integers)`);
   }
   return parseInt(text, 10);
@@ -87,7 +89,32 @@ export function loadRules(read) {
     place: row.place,
   }));
 
-  const events = parseCsvDicts(read('rules/events.csv'));
+  // The event deck. `direct_effect` is a semicolon-separated list of
+  // stat:delta:scope triples; mortality's delta is the literal "extra" and
+  // every other delta is an integer. Parsed the same way hoc/rules_data.py
+  // parses it, and left unvalidated for the same reason as everything else
+  // here — that file is the gatekeeper.
+  const events = parseCsvDicts(read('rules/events.csv')).map((row) => ({
+    personalYear: toInt(row.personal_year, `events.${row.name}.personal_year`),
+    band: row.band,
+    name: row.name,
+    magnitude: row.magnitude,
+    tag: row.tag,
+    directEffect: (row.direct_effect || '')
+      .trim()
+      .split(';')
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0)
+      .map((triple) => {
+        const [stat, delta, scope] = triple.split(':');
+        return {
+          stat,
+          delta: stat === 'mortality' ? delta : toInt(delta, `events.${row.name}.direct_effect`),
+          scope,
+        };
+      }),
+    note: row.note,
+  }));
 
   return {
     actions,
@@ -99,7 +126,11 @@ export function loadRules(read) {
     places,
     events,
     denylist: loadDenylist(read('rules/denylist.csv')),
-    eras: JSON.parse(read('rules/eras.json')),
+    // Era bands, sorted by start year — hoc/sim.py sorts them the same way in
+    // its constructor, and band_for walks them in that order.
+    eras: JSON.parse(read('rules/eras.json')).bands
+      .slice()
+      .sort((a, b) => a.start_year - b.start_year),
     founding: JSON.parse(read('rules/founding.json')),
     succession: JSON.parse(read('rules/succession.json')),
     responses: JSON.parse(read('rules/responses.json')),

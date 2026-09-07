@@ -51,7 +51,7 @@ def node_available():
     return shutil.which("node") is not None
 
 
-def run_python(seed, seasons, out_dir, seat=None):
+def run_python(seed, seasons, out_dir, seat=None, phases=None):
     """Play `seasons` seasons with the Python engine, writing season files."""
     import load_seed  # noqa: E402  (scripts/ is on the path above)
 
@@ -59,7 +59,7 @@ def run_python(seed, seasons, out_dir, seat=None):
 
     out_dir.mkdir(parents=True, exist_ok=True)
     conn = load_seed.build(out_dir.parent / "python.db", seed=scenario.seed_dir("new"))
-    world = sim.World(conn, world_seed=seed, seasons_dir=out_dir)
+    world = sim.World(conn, world_seed=seed, seasons_dir=out_dir, phases=phases)
     with conn:
         world.initialise(seed, seat=seat)
         if seasons > 1:
@@ -67,7 +67,7 @@ def run_python(seed, seasons, out_dir, seat=None):
     conn.close()
 
 
-def run_js(seed, seasons, out_dir, seat=None):
+def run_js(seed, seasons, out_dir, seat=None, phases=None):
     """Play the same seasons with the JavaScript engine."""
     if not JS_CLI.exists():
         raise CrosscheckUnavailable(
@@ -85,6 +85,8 @@ def run_js(seed, seasons, out_dir, seat=None):
     ]
     if seat:
         command += ["--seat", seat]
+    if phases:
+        command += ["--phases", ",".join(phases)]
     result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
     if result.returncode != 0:
         raise CrosscheckUnavailable(
@@ -139,7 +141,7 @@ def compare(python_dir, js_dir, seasons):
     return differences
 
 
-def crosscheck(seed, seasons, seat=None, keep=None):
+def crosscheck(seed, seasons, seat=None, keep=None, phases=None):
     """Run both engines and compare. Returns the list of differences.
 
     Raises CrosscheckUnavailable when the comparison cannot be made at all.
@@ -149,8 +151,8 @@ def crosscheck(seed, seasons, seat=None, keep=None):
     python_dir = workspace / "python"
     js_dir = workspace / "javascript"
     try:
-        run_python(seed, seasons, python_dir, seat=seat)
-        run_js(seed, seasons, js_dir, seat=seat)
+        run_python(seed, seasons, python_dir, seat=seat, phases=phases)
+        run_js(seed, seasons, js_dir, seat=seat, phases=phases)
         return compare(python_dir, js_dir, seasons)
     finally:
         if keep is None:
@@ -167,13 +169,24 @@ def main(argv=None):
         help="keep both engines' output in this directory instead of a temp dir",
     )
     parser.add_argument(
+        "--phases",
+        default=None,
+        help=(
+            "DEVELOPER ONLY: run only these phases of the season loop in both"
+            " engines, so the port can be compared a phase at a time"
+        ),
+    )
+    parser.add_argument(
         "--max-diffs", type=int, default=1,
         help="how many differing seasons to print in full (default: the first)",
     )
     args = parser.parse_args(argv)
 
     try:
-        differences = crosscheck(args.seed, args.seasons, seat=args.seat, keep=args.keep)
+        phases = [p.strip() for p in args.phases.split(",")] if args.phases else None
+        differences = crosscheck(
+            args.seed, args.seasons, seat=args.seat, keep=args.keep, phases=phases
+        )
     except CrosscheckUnavailable as exc:
         print(f"cross-check unavailable: {exc}", file=sys.stderr)
         return 2
