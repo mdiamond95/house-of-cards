@@ -18,63 +18,52 @@ Read `docs/DETERMINISM.md` before changing anything here. It is the contract.
 - Anything mirrored from Python must be mirrored in the same pull request, and
   the cross-check must pass (`CLAUDE.md`, "Two engines").
 
-## State as of Phase 10-1
+## State as of Phase 10-1b
+
+The port is complete. Both engines play the same game.
 
 | module | mirrors | state |
 | --- | --- | --- |
-| `prng.js` | `hoc/prng.py` | **done**, verified value-for-value |
-| `csv.js` | Python's `csv` module | **done**, verified on all 11 CSVs in the repo |
-| `palette.js` | `hoc/palette.py` | **done**, verified over 81,120 conversions |
-| `names.js` | `hoc/names.py` | **done**, verified over 2,673 bank strings |
-| `rules.js` | `hoc/rules_data.py` (loading half) | **done**, verified table by table |
-| `adjacency.js` | the `ridings`/`adjacency` tables | **done**, verified against SQLite |
-| `state.js` | the mutable tables + sim.py's queries | **done**, verified against SQLite |
-| `selftest.js` | — | **done**, drives `tests/test_js_engine_parity.py` |
-| `sim.js` | `hoc/sim.py` | **not written** |
-| `index.js` | — | **not written** |
-| `cli.js` | — | **not written** |
+| `prng.js` | `hoc/prng.py` | done, verified value-for-value |
+| `csv.js` | Python's `csv` module | done, verified on all 11 CSVs in the repo |
+| `palette.js` | `hoc/palette.py` | done, verified over 81,120 conversions |
+| `names.js` | `hoc/names.py` | done, verified over 2,673 bank strings |
+| `rules.js` | `hoc/rules_data.py` (loading half) | done, verified table by table |
+| `adjacency.js` | the `ridings`/`adjacency` tables | done, verified against SQLite |
+| `state.js` | the mutable tables + sim.py's queries | done, verified against SQLite |
+| `sim.js` | `hoc/sim.py` | done, cross-checked to 300 seasons |
+| `index.js` | — | done |
+| `cli.js` | — | done |
+| `selftest.js` | — | done, drives `tests/test_js_engine_parity.py` |
 
-`tests/test_crosscheck.py` skips, saying so, until `cli.js` exists. A skip there
-is not a pass.
+`tests/test_crosscheck.py` runs seeds 1867, 2 and 3 for 120 seasons each and
+asserts zero differences. Seeds 1867, 2 and 3 have also been checked at 300
+seasons, and seeds 7, 11 and 42 at 120.
 
-## What `sim.js` still has to port
+## What is left
 
-Roughly 1,700 lines of `hoc/sim.py`, in this order of dependency. The order
-matters: every one of these draws from the shared generator, so a handler ported
-out of order — or one that draws a different number of times than its Python
-counterpart — desynchronises the stream and every later season with it.
+Only Phase 10-2 (the live UI in the browser) and Phase 10-3 (committing a game
+played in the page back to the repository). Nothing in this directory is
+unfinished.
 
-1. **`World` construction and the season spine** — `run_season`'s §6 order,
-   which is: age everyone, run friction, then for each active house in
-   `activeHouses()` order (era event → mortality/succession → action →
-   objectives → debt check), then the founding roll, then the enclosure
-   recompute, then the season record. `hoc/sim.py` `run_season`.
-2. **`LoggingRandom`** — the same façade over `Prng`, appending
-   `{purpose, result}` to the season log in the same order with the same purpose
-   strings. The purpose strings are compared by the cross-check, so they are
-   part of the contract, not decoration.
-3. **Founding** — `found_house`, `_draw_region` (integer drift), `_draw_seat`,
-   `_draw_tag`, `_draw_founding_objectives`, `_unique_house_name`.
-4. **Mortality and succession** — `_mortality`, `_succeed`, `_partition`,
-   `_outer_holdings` (a BFS over land adjacency restricted to the house's own
-   holdings), `_check_extinction`, `_remove_house`, `_lose_riding`.
-5. **The event deck** — `_era_event`, `_fired_events`, `_response_for`,
-   `_shift_climate`, `_in_scope`, `_apply_direct_effects`, `_sell_riding`.
-6. **Relations and friction** — the relation helpers, `province_distance`,
-   `housesWithinReach`, `_run_friction`, `_lapse_grievances`,
-   `_grievance_template`.
-7. **Actions** — `legal_actions`, `action_weights` (integer fixed point at
-   `WEIGHT_SCALE = 100`), `take_action`, `resolve_action`, and the seventeen
-   `_do_*` handlers. **Their chronicle strings must match character for
-   character**, including the `·` separator and the non-breaking spacing of the
-   peerage titles.
-8. **Objectives, enclosure, debt** — `_check_objectives`, `_satisfy_objective`,
-   `_contiguous_holdings`, `_recompute_enclosure`, `_debt_check`,
-   `_seasons_since_loss`.
-9. **The season record** — `_write_season`, `_snapshot`, `_interventions_since`,
-   and `canonical_json` (sorted keys, `separators=(",", ":")`, UTF-8 as-is, one
-   trailing newline). The record carries `engine: {impl: "javascript", ...}` —
-   the one field the cross-check ignores.
+## Two things the port had to get right that are easy to miss
+
+**Floats.** JavaScript has one number type. Python distinguishes `0` from `0.0`
+and `json.dumps` writes them differently, so a season record's genuine floats —
+§10's founding probability and the `rand_float()` it is compared against — are
+boxed in `FloatValue` and rendered by `encodeFloat`, which reproduces Python's
+`repr`: always a decimal point, exponential below 1e-4 and at 1e16 (JavaScript
+switches at 1e-6 and 1e21), and a two-digit exponent. `encodeNumber` refuses any
+other non-integer rather than guessing. This was the port's one real divergence
+and it surfaced only at season 220, when the map filled and `p_found` reached
+zero.
+
+**Draw for draw.** Every call into the RNG must happen in the same order, the
+same number of times, with the same `purpose` string. Python's
+`any(... for _ in range(rolls))` in `_mortality` short-circuits, so a house that
+dies on its first roll never draws the second; `rand_int(lo, hi)` with `lo == hi`
+consumes no word at all. Either one, ported carelessly, desynchronises the stream
+and every later season with it.
 
 ## How to work on it
 
