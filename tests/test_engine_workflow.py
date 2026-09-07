@@ -608,3 +608,39 @@ def test_undo_cannot_rewind_past_a_saved_season(site_pages):
     js = (site_pages / "play.js").read_text(encoding="utf-8")
     assert "the referee will refuse it" in js
     assert "app.savedThrough" in js
+
+
+# --------------------------------------------------- publishing afterwards --
+
+
+@pytest.mark.parametrize("name", ["engine", "referee"])
+def test_a_committing_workflow_dispatches_pages(name):
+    """A push made with GITHUB_TOKEN does not start another workflow, so the
+    commit these two make would never trigger pages.yml and the site would sit
+    at whatever a human last pushed. Each dispatches it, and only after a push
+    it actually made."""
+    yaml = pytest.importorskip("yaml", reason="pyyaml is needed to parse the workflow")
+    path = ROOT / ".github" / "workflows" / f"{name}.yml"
+    workflow = yaml.safe_load(path.read_text(encoding="utf-8"))
+    assert workflow["permissions"]["actions"] == "write"
+
+    steps = workflow["jobs"][name]["steps"]
+    commit = next(step for step in steps if "git commit" in str(step.get("run", "")))
+    assert commit["id"] == "commit"
+    assert 'echo "pushed=true" >> "$GITHUB_OUTPUT"' in commit["run"]
+
+    publish = next(step for step in steps if step.get("name") == "Publish the site")
+    assert steps.index(publish) > steps.index(commit)
+    assert publish["if"] == "steps.commit.outputs.pushed == 'true'"
+    assert "actions/workflows/pages.yml/dispatches" in publish["run"]
+    # The one place a token is used, and it is the runner's own.
+    assert publish["env"]["GH_TOKEN"] == "${{ secrets.GITHUB_TOKEN }}"
+
+
+def test_pages_can_be_dispatched():
+    """The dispatch above only works because pages.yml accepts one."""
+    yaml = pytest.importorskip("yaml", reason="pyyaml is needed to parse the workflow")
+    pages = yaml.safe_load(
+        (ROOT / ".github" / "workflows" / "pages.yml").read_text(encoding="utf-8")
+    )
+    assert "workflow_dispatch" in pages[True]  # PyYAML reads `on:` as True.
