@@ -13,10 +13,14 @@ import { loadRules } from './engine/rules.js';
 import { loadReferenceMap } from './engine/adjacency.js';
 import { WorldState } from './engine/state.js';
 import { World, RULES_VERSION } from './engine/sim.js';
-import { recordFiles, commitRecord } from './engine/record.js';
+import {
+  recordFiles, commitRecord, boundRecords, missingSeasons, replayRecordsStepwise,
+  rebuiltMatches, reviveRecords,
+} from './engine/record.js';
 
 const REPO = 'mdiamond95/house-of-cards';
-const API = `https://api.github.com/repos/${REPO}`;
+const GITHUB_API = 'https://api.github.com';
+const API = `${GITHUB_API}/repos/${REPO}`;
 const BRANCH = 'main';
 const SEASONS_PATH = 'scenarios/new/seasons';
 const INTERVENTIONS_PATH = 'scenarios/new/interventions';
@@ -143,6 +147,12 @@ const app = {
   // rewriting a published season would need a force-push, which this phase
   // deliberately does not implement.
   savedThrough: 0,
+  // The login the console's token belongs to, for the status line under the
+  // Save button. Null until it is read, and null again if it cannot be.
+  tokenLogin: null,
+  // True while a save is in flight, so a second press is ignored without
+  // disabling the button.
+  saving: false,
 };
 
 function token() {
@@ -457,6 +467,13 @@ function snapshotKey() {
   return `world:${app.committedSha || 'unknown'}`;
 }
 
+// The autosave carries the state *and* the records, because a save commits the
+// records and the state alone cannot produce them. Storing only the state is
+// what left a restored game reporting 38 unsaved seasons it could not name.
+//
+// What it stores is bounded by bytes (web/engine/record.js), which is safe
+// only because a save that finds a record missing rebuilds it from the
+// committed base and checks the rebuild against the live state.
 async function autosave() {
   const payload = {
     savedAt: new Date().toISOString(),
@@ -464,6 +481,9 @@ async function autosave() {
     committedSha: app.committedSha,
     season: currentSeason(),
     snapshot: app.world.state.toSnapshot(app.world),
+    records: boundRecords(unsavedRecords()),
+    interventions: app.pendingInterventions,
+    savedThrough: app.savedThrough,
   };
   await idbPut(snapshotKey(), payload);
 }
@@ -481,8 +501,8 @@ async function autosave() {
 // replayed these seasons in Python and found them identical. A browser that
 // wrote the database would be asking to be believed; this way it is checked.
 
-async function api(path, options = {}) {
-  const response = await fetch(`${API}${path}`, {
+async function api(path, options = {}, base = API) {
+  const response = await fetch(`${base}${path}`, {
     ...options,
     headers: {
       Accept: 'application/vnd.github+json',
@@ -513,36 +533,164 @@ function saveStatus(text, kind) {
   box.innerHTML = text;
 }
 
+// Every exit from the save path goes through here, so pressing Save always
+// says something. A disabled button that explains nothing, and a function that
+// returns silently, both read to the director as the page being broken.
+function stopSave(text, kind = 'bad') {
+  saveStatus(text, kind);
+  return null;
+}
+
+// The button is never disabled. A director who presses Save wants to be told
+// why it will not happen, and a title attribute on a disabled control is not
+// reachable on a phone at all.
 function refreshSaveButton() {
   const button = el('save');
   if (!button) return;
   const unsaved = unsavedCount();
-  const haveToken = Boolean(token());
-  button.disabled = !haveToken || unsaved === 0;
-  if (!haveToken) {
-    button.title = 'Connect a GitHub token on the Console page first';
-  } else if (unsaved === 0) {
-    button.title = 'Nothing to save';
-  } else {
-    button.title = '';
-  }
-  button.textContent = unsaved > 0 ? `Save ${unsaved} season${unsaved === 1 ? '' : 's'}` : 'Save';
+  button.textContent = unsaved > 0
+    ? `Save ${unsaved} season${unsaved === 1 ? '' : 's'}`
+    : 'Save';
+  renderSaveLine();
 }
 
-// The seasons this browser has played but not saved, replayed out of the
-// engine so the bytes are exactly what it produced.
+// The permanent line under the button: what the page knows about the token,
+// this browser's game and the repository's, whether or not anything is
+// happening. It is the answer to "why is Save doing nothing", visible without
+// pressing anything.
+function renderSaveLine() {
+  const line = el('save-line');
+  if (!line) return;
+  const parts = [];
+  if (app.tokenLogin) parts.push(`token connected as <b>${escapeHtml(app.tokenLogin)}</b>`);
+  else parts.push(token() ? 'token connected' : 'not connected');
+  parts.push(`browser season ${currentSeason()}`);
+  parts.push(`repository season ${app.committedSeason}`);
+  const unsaved = unsavedCount();
+  parts.push(unsaved === 0
+    ? 'nothing unsaved'
+    : `<b>${unsaved}</b> unsaved season${unsaved === 1 ? '' : 's'}`);
+  line.innerHTML = parts.join(' &middot; ');
+}
+
+// Who the token belongs to, for the status line. Read once when a token is
+// present; a failure is not worth reporting here, because the save reports its
+// own and this line is only ever context.
+async function readTokenLogin() {
+  if (!token()) {
+    app.tokenLogin = null;
+    renderSaveLine();
+    return;
+  }
+  try {
+    const body = await api('/user', {}, GITHUB_API);
+    app.tokenLogin = body && body.login ? body.login : null;
+  } catch (error) {
+    app.tokenLogin = null;
+  }
+  renderSaveLine();
+}
+
+// The seasons this browser has played and not saved, in season order.
 function unsavedRecords() {
-  return app.playedRecords.filter((record) => record.season > savedFloor());
+  return app.playedRecords
+    .filter((record) => record.season > savedFloor())
+    .sort((a, b) => a.season - b.season);
+}
+
+// The records for every unsaved season, rebuilding any this browser no longer
+// holds. The autosave bounds what it stores, and a browser can be reloaded into
+// a game whose history it has lost; neither is a reason to refuse to save a
+// game that is still reconstructible.
+//
+// A rebuild is believed only if it lands on the game the browser is actually
+// holding, so it is checked against the live state first. If it does not match,
+// this browser's game did not come from the repository's base and cannot be
+// published from it — which is a thing to say plainly, not to paper over with a
+// commit of seasons nobody can reproduce.
+async function ensureRecords() {
+  const head = currentSeason();
+  const gaps = missingSeasons(unsavedRecords(), savedFloor(), head);
+  if (gaps.length === 0) return unsavedRecords();
+
+  saveStatus(
+    `Rebuilding season${gaps.length === 1 ? '' : 's'} ${gaps[0]}–${gaps[gaps.length - 1]}`
+    + ' from the repository’s base…',
+  );
+
+  let base;
+  try {
+    const response = await fetch('data/world.json');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    base = await response.json();
+  } catch (error) {
+    return stopSave(
+      `The repository’s base could not be read (${escapeHtml(error.message)}), so the`
+      + ' missing seasons cannot be rebuilt. Try again when you are online.',
+    );
+  }
+
+  const rebuilt = new World({
+    state: WorldState.load(base, app.map),
+    rules: app.rules,
+    worldSeed: base.world_seed,
+  });
+  const records = await replayRecordsStepwise(
+    rebuilt, head, app.pendingInterventions,
+    (done, total) => saveStatus(`Rebuilding season ${done} of ${total}…`),
+  );
+
+  if (!rebuiltMatches(rebuilt, app.world)) {
+    saveStatus(
+      'This browser’s game cannot be reconstructed from the repository’s base;'
+      + ' save is not possible. Discard local play to resume from the repository.'
+      + ' <button type="button" id="save-discard">Discard local play</button>',
+      'bad',
+    );
+    el('save-status').querySelector('#save-discard').addEventListener('click', async () => {
+      await idbDelete(snapshotKey());
+      window.location.reload();
+    });
+    return null;  // the box above says why, and offers Discard.
+  }
+
+  app.playedRecords = records.filter((record) => record.season > app.committedSeason);
+  renderFeedFromRecords();
+  renderAll({ flash: false });
+  await autosave();
+  return unsavedRecords();
 }
 
 async function saveToGitHub() {
-  const records = unsavedRecords();
-  if (records.length === 0) return;
+  if (!token()) {
+    return stopSave(
+      'No GitHub token in this browser. Paste one on the'
+      + ' <a href="console.html">Console</a> — it needs <b>Contents: read and write</b>'
+      + ' and <b>Actions: read</b> — and it will be picked up here.',
+    );
+  }
+  if (unsavedCount() === 0) {
+    return stopSave(
+      `Nothing to save: this browser is at season ${currentSeason()} and so is the`
+      + ' repository. Play some seasons first.',
+      'good',
+    );
+  }
+
+  pause();
+  const records = await ensureRecords();
+  if (records === null) return null;  // ensureRecords has already said why.
+  if (records.length === 0) {
+    return stopSave(
+      `Season ${savedFloor() + 1} onwards could not be assembled, so there is nothing`
+      + ' to commit. Reload the page to resume from the repository.',
+    );
+  }
+
   const note = (el('save-note').value || '').trim();
   const first = records[0].season;
   const last = records[records.length - 1].season;
 
-  pause();
   saveStatus('Checking the repository…');
 
   // 1. Has main moved past the base this game was played on?
@@ -563,7 +711,7 @@ async function saveToGitHub() {
       await idbDelete(snapshotKey());
       window.location.reload();
     });
-    return;
+    return null;  // the box above says why, and offers Reload or Discard.
   }
 
   // 2. The files, and only the record's files: the seasons this browser played
@@ -698,8 +846,23 @@ async function boot() {
       + ` ahead of the published one (season ${stored.season}).`
       + '\n\nOK to resume it, or Cancel to discard it and start from the published world.',
     );
-    if (resume) snapshot = stored.snapshot;
-    else await idbDelete(snapshotKey());
+    if (resume) {
+      snapshot = stored.snapshot;
+      // The records and the interventions come back with the state. Without
+      // them the restored game knows it is ahead of the repository but cannot
+      // say what it played, and the save has nothing to commit.
+      // Revived, not just parsed: IndexedDB stores a structured clone, which
+      // loses the FloatValue boxes the engine put round §10's two genuine
+      // floats. Committing an unrevived record would throw rather than save.
+      app.playedRecords = reviveRecords(
+        Array.isArray(stored.records) ? stored.records : [],
+      );
+      app.pendingInterventions = Array.isArray(stored.interventions)
+        ? stored.interventions : [];
+      app.savedThrough = Number(stored.savedThrough) || 0;
+    } else {
+      await idbDelete(snapshotKey());
+    }
   }
 
   app.world = new World({
@@ -708,7 +871,7 @@ async function boot() {
     worldSeed: snapshot.world_seed,
   });
   app.viewing = currentSeason();
-  app.savedThrough = app.committedSeason;
+  app.savedThrough = Math.max(app.savedThrough, app.committedSeason);
 
   // The commit this game is played on top of. Read without a token — the
   // repository is public — so the base is known even before one is pasted. If
@@ -723,9 +886,36 @@ async function boot() {
 
   indexPaths();
   wire();
+  // A restored game has a history; show it. Anything the autosave could not
+  // keep is rebuilt on demand by the save path, and the feed says so rather
+  // than sitting empty above a season count in the forties.
+  renderFeedFromRecords();
   renderAll({ flash: false });
   progress.hidden = true;
   el('play-app').hidden = false;
+  readTokenLogin();
+}
+
+// The chronicle, drawn from the records this browser holds. Called after a
+// restore and after a rebuild, so the feed is never empty while the season
+// count is above the repository's.
+function renderFeedFromRecords() {
+  const feed = el('feed');
+  feed.innerHTML = '';
+  const records = unsavedRecords();
+  for (const record of records.slice(-60)) {
+    appendFeed(record.season, record.chronicle, {});
+  }
+  if (records.length === 0 && unsavedCount() > 0) {
+    const item = document.createElement('li');
+    item.className = 'feed-season';
+    item.innerHTML =
+      `<h3>Seasons ${savedFloor() + 1}–${currentSeason()}</h3>`
+      + '<p class="meta">This browser no longer holds the chronicle for these seasons.'
+      + ' Saving will rebuild them from the repository first.</p>';
+    feed.appendChild(item);
+  }
+  applyFilter();
 }
 
 function wire() {
@@ -839,12 +1029,16 @@ function wire() {
   const saveButton = el('save');
   if (saveButton) {
     saveButton.addEventListener('click', async () => {
-      saveButton.disabled = true;
+      // Guarded rather than disabled: the button stays pressable so it can
+      // always answer, and a second press while one is in flight is ignored.
+      if (app.saving) return;
+      app.saving = true;
       try {
         await saveToGitHub();
       } catch (error) {
         saveStatus(`Could not save: ${escapeHtml(error.message)}`, 'bad');
       } finally {
+        app.saving = false;
         refreshSaveButton();
       }
     });
@@ -852,7 +1046,9 @@ function wire() {
   // The token lives in the console's localStorage; it may be pasted there in
   // another tab while this one is open.
   window.addEventListener('storage', (event) => {
-    if (event.key === TOKEN_KEY) refreshSaveButton();
+    if (event.key !== TOKEN_KEY) return;
+    refreshSaveButton();
+    readTokenLogin();
   });
 }
 
@@ -874,16 +1070,20 @@ async function rewindTo(target) {
     rules: app.rules,
     worldSeed: committed.world_seed,
   });
-  const records = [];
-  while (world.seasonNo < target) records.push(world.runSeason());
+  // The same interleaving the save's rebuild uses, and the same one
+  // scripts/rebuild.py does: an intervention changes the state the next season
+  // starts from, so a rewind that ignored them would land on a different game.
+  const kept = app.pendingInterventions.filter((entry) => entry.after_season <= target);
+  const records = await replayRecordsStepwise(
+    world, target, kept,
+    (done, total) => { progress.textContent = `Rewinding: season ${done} of ${total}…`; },
+  );
 
   app.world = world;
+  app.pendingInterventions = kept;
   app.playedRecords = records.filter((record) => record.season > app.committedSeason);
   app.viewing = world.seasonNo;
-  el('feed').innerHTML = '';
-  for (const record of records.slice(-60)) {
-    appendFeed(record.season, record.chronicle, {});
-  }
+  renderFeedFromRecords();
   indexPaths();
   renderAll({ flash: false });
   await autosave();

@@ -805,8 +805,11 @@ def _save_block():
         '<label class="sr-only" for="save-note">Note</label>'
         '<input id="save-note" type="text" maxlength="72"'
         ' placeholder="an optional note for the commit message">'
-        '<button type="button" id="save" class="primary" disabled>Save</button>'
+        '<button type="button" id="save" class="primary">Save</button>'
         "</div>"
+        # Always visible, whether or not anything is happening: the answer to
+        # "why is Save doing nothing" without having to press it.
+        '<p id="save-line" class="save-line meta" role="status"></p>'
         '<div id="save-status" class="status-box" hidden></div>'
         "</div>"
     )
@@ -2394,6 +2397,7 @@ code { font-size: 0.78rem; color: var(--muted); }
 .save-row button.primary { border-color: var(--accent); color: var(--accent); font-weight: 600; }
 .save-row button:disabled { opacity: 0.45; cursor: not-allowed; border-color: var(--rule);
                             color: var(--muted); font-weight: 400; }
+.save-line { margin: 0.5rem 0 0; font-size: 0.8rem; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);
            white-space: nowrap; }
 .status-box { border: 1px solid var(--rule); background: #fff; padding: 0.6rem 0.7rem;

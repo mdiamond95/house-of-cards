@@ -56,7 +56,7 @@ Both engines are complete as of Phase 10-1b. `tests/test_crosscheck.py` runs see
 
 The primary way to play. The page loads the JavaScript engine, the rules tables and the world as it stands in the repository, and then plays seasons **on the device** — no network round-trip per season, and no server. Play, Pause, 1/4/12 seasons a second, Step, Run 5/25/50/100 with the six stop conditions, a scrubber back through the seasons this browser has played, and Undo to any of them. The map recolours only the ridings that changed hands and flashes them; tapping one opens the house with its live stats and objectives; the chronicle appends as it goes and filters to a single house. The director's §12 interventions are there too, applied to the local game at once.
 
-Play in the page stays in that browser until you save it. A banner counts the seasons played and not yet in the repository, and the page autosaves to IndexedDB so that closing a tab does not lose an afternoon, offering to resume or discard that local game next time.
+Play in the page stays in that browser until you save it. A banner counts the seasons played and not yet in the repository, and the page autosaves to IndexedDB — the world's state, the season records and any interventions together — so that closing a tab does not lose an afternoon; next time it offers to resume or discard that local game, and a resumed game comes back with its chronicle intact.
 
 The page and everything it fetches weigh about 630 KB (184 KB over the wire, gzipped), of which two thirds is the map's coastline — the same inline SVG the index page draws, built once and shared.
 
@@ -77,11 +77,14 @@ So a browser can propose a game but cannot publish one. The public state is alwa
 
 The referee shares its concurrency group with the engine workflow, so the two never run at once, and only pushes by the director or the engine reach it at all.
 
+If the browser no longer holds the record for a season it has played — the autosave keeps the most recent 2 MB of history, and site data can be cleared under a page — Save rebuilds the missing seasons by replaying the repository's base forward with this browser's interventions, then checks the rebuilt world against the live one before believing it. If they differ, this game did not come from that base and cannot be published from it; the page says so and offers to discard the local play. Save is never disabled and never silent: a line under the button always shows the token, this browser's season, the repository's and the unsaved count, and every refusal explains itself.
+
 Undo will not rewind past a season that has been saved. Rewriting saved history would need a force-push, and the referee would refuse the result; the page says so rather than trying.
 
     node web/engine/savecheck.js --seasons 5
+    node web/engine/restorecheck.js --seasons 40
 
-builds the payload a save would send, headlessly and with the network mocked, and checks that every blob is the file the engine wrote. `tests/test_referee.py` runs the other half: seasons the JavaScript engine played are verified end to end, a season altered by one draw is rejected with that season named, and seasons the Python engine played are recognised as already applied.
+The first builds the payload a save would send, headlessly and with the network mocked, and checks that every blob is the file the engine wrote. The second plays forty seasons, autosaves, reloads from the stored payload alone and asserts the records come back byte for byte with a chronicle to render — then throws them away and asserts the save path rebuilds exactly those records, that its stepwise (browser) replay agrees with the plain one, and that a rebuild landing on a different game is refused. `tests/test_referee.py` runs the other half: seasons the JavaScript engine played are verified end to end, a season altered by one draw is rejected with that season named, and seasons the Python engine played are recognised as already applied.
 
 ## Playing the game
 
