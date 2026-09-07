@@ -47,7 +47,17 @@ class NameError_(Exception):
     """The banks cannot satisfy a name request."""
 
 
-DENYLIST_PATH = Path(__file__).resolve().parent.parent / "rules" / "denylist.csv"
+# The denylist is a rules table like any other, so it lives in the version's own
+# directory: a name blocked in 0.8 was not necessarily blocked in 0.7, and a
+# replay must see the list the season was played under.
+def denylist_path(version=None):
+    from hoc.rules_data import version_dir  # here, to keep the import cycle open
+    return version_dir(version or _current_version()) / "denylist.csv"
+
+
+def _current_version():
+    from hoc.rules_data import current_version
+    return current_version()
 
 # How many redraws before we conclude the bank is too small to avoid a collision.
 # Well above the worst case: the smallest community bank holds 15 surnames and
@@ -65,8 +75,9 @@ def _fold(name):
     return re.sub(r"\s+", " ", text).strip().casefold()
 
 
-def load_denylist(path=DENYLIST_PATH):
+def load_denylist(path=None, version=None):
     """The set of folded full names the generator must never produce."""
+    path = path or denylist_path(version)
     with open(path, newline="", encoding="utf-8") as f:
         return {_fold(row["full_name"]) for row in csv.DictReader(f)}
 
@@ -129,7 +140,12 @@ class NameGenerator:
 
     def __init__(self, rules, rng, denylist=None):
         self.rng = rng
-        self.denylist = load_denylist() if denylist is None else set(denylist)
+        # The denylist that belongs to the rules this bundle came from, so a
+        # replay is checked against the list its season was played under.
+        self.denylist = (
+            load_denylist(version=getattr(rules, 'version', None) or None)
+            if denylist is None else set(denylist)
+        )
 
         self.surnames_by_community = defaultdict(list)
         for row in rules.surnames:
@@ -188,6 +204,11 @@ class NameGenerator:
     def draw_place(self, province, taken=()):
         """A territorial designation from the seat's province, not already in use.
 
+        The rules 0.7 draw: the province is all it knows, so a house seated in
+        Halifax could as readily be styled "of Kamloops" as "of Dartmouth".
+        Rules 0.8 replaces it with `draw_designation`; this stays because a
+        season played under 0.7 is replayed under 0.7.
+
         Raises when the province's bank is exhausted: the engine must decide what
         to do about a province with more houses than place names, and silently
         reusing a designation would make two houses indistinguishable.
@@ -204,17 +225,51 @@ class NameGenerator:
             )
         return self.rng.choice(available)
 
-    def draw_house(self, community, province, rank, taken_places=(), gender=None, surname=None):
+    def draw_designation(self, tiers, taken=()):
+        """A designation from the highest tier that still has one free.
+
+        `tiers` is the caller's list of candidate lists, most local first — the
+        engine builds it (hoc/sim.py `_designation_tiers`), because what is near
+        a riding is the map's business and not this generator's.
+
+        A tier is skipped when everything in it is already held rather than when
+        it is empty: a seat whose one town is taken should fall through to its
+        own name, not fail. Returns (tier index, place); the tier is returned so
+        the season log can record where the name came from, which is the only
+        way to tell afterwards whether the local tiers are doing any work.
+        """
+        held = {p for p in taken}
+        for index, tier in enumerate(tiers):
+            available = [p for p in tier if p not in held]
+            if available:
+                return index, self.rng.choice(available)
+        raise NameError_(
+            "every candidate designation is already held"
+            f" ({sum(len(t) for t in tiers)} names over {len(tiers)} tier(s),"
+            f" {len(held)} in use)"
+        )
+
+    def draw_house(self, community, province, rank, taken_places=(), gender=None, surname=None,
+                   tiers=None):
         """Everything a founding needs: (surname, given, gender, place, peerage).
 
         `surname` is the director's, when a grant names the house; the given name
         is still drawn from the community's tradition and still checked against
         the denylist, so a chosen surname cannot smuggle a real person's name in.
+
+        `tiers`, when given, is the rules 0.8 local designation draw; without it
+        the 0.7 province bank is used. The draws happen in the same order either
+        way — person, then place — so the only thing the flag changes is where
+        the place comes from.
         """
         given, surname, gender = self.draw_person(community, gender=gender, surname=surname)
-        place = self.draw_place(province, taken_places)
+        if tiers is None:
+            tier, place = None, self.draw_place(province, taken_places)
+        else:
+            tier, place = self.draw_designation(tiers, taken_places)
         tradition = self.tradition_for(community)
         return {
+            "tier": tier,
             "surname": surname,
             "given": given,
             "gender": gender,

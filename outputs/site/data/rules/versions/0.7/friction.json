@@ -1,0 +1,90 @@
+{
+  "note": "Friction is per-pair state between two houses that share a land border: the slow accumulation of grievance that the action table alone never produced. Without it the game drifted cooperative — compacts and marriages ran two orders of magnitude ahead of disputes and challenges, because nothing manufactured the Sig− relation that Dispute and then Challenge need. Added as rules version 0.6.",
+  "range": [
+    0,
+    100
+  ],
+  "requires": "a shared land border between the two houses",
+  "per_season": {
+    "opposed_tags": {
+      "value": 3,
+      "when": "one house is Progressive and the other Conservative"
+    },
+    "either_enclosed": {
+      "value": 1,
+      "when": "either house is enclosed (§7b): a house with nowhere to grow presses on its neighbours"
+    },
+    "high_ambition": {
+      "value": 2,
+      "when": "either house has ambition >= 7"
+    },
+    "bound": {
+      "value": -2,
+      "when": "a +, ◉+ or kin relation already exists between them; friendship cools a border"
+    },
+    "decay": {
+      "value": -1,
+      "when": "none of the above applies; grievance fades when nothing feeds it"
+    },
+    "open_quarrel": {
+      "value": 0,
+      "when": "a Sig− or ⊖ already stands between the pair: friction is unexpressed pressure, and theirs is already expressed, so it neither builds nor decays until the quarrel is settled"
+    }
+  },
+  "flashpoint": {
+    "threshold": 60,
+    "roll": "d6",
+    "succeeds_on": 4,
+    "creates": "Sig−",
+    "resets_to": 30,
+    "note": "At the threshold the border is ready to break, but does not have to: a d6 of 4 or more turns friction into a named grievance, and the pair falls back to 30 either way it lands, so a quarrel that does not catch still leaves the border warmer than it started."
+  },
+  "grievances": {
+    "note": "The template a flashpoint is named for, chosen by the two houses' tags. Every one of these is a quarrel the 1867-1918 record actually turns on; the engine names the grievance so the chronicle can say what the two houses fell out over.",
+    "Progressive|Conservative": [
+      "the patronage of a shared riding's offices",
+      "a church and school dispute in the border townships"
+    ],
+    "Conservative|Conservative": [
+      "a boundary the two houses read differently",
+      "a slighted marriage between the two houses"
+    ],
+    "Progressive|Progressive": [
+      "the water rights of a shared river",
+      "the patronage of a shared riding's offices"
+    ],
+    "Mixed|Mixed": [
+      "a boundary the two houses read differently",
+      "the water rights of a shared river"
+    ],
+    "default": [
+      "a boundary the two houses read differently",
+      "the water rights of a shared river",
+      "the patronage of a shared riding's offices",
+      "a slighted marriage between the two houses",
+      "a church and school dispute in the border townships"
+    ]
+  },
+  "contested_expansion": {
+    "note": "§7 never said what happens when two houses reach for the same unclaimed riding in one season. They roll 2d6 against each other; the higher takes it and the loser carries a grievance away. Ties go to the house that drew its action first, which is founding order — the older house has the standing.",
+    "roll": "2d6",
+    "loser_gains": "Sig−"
+  },
+  "correspond_fumble": {
+    "note": "§7 gives Correspond no failure effect at all, which makes it a free action with only upside. A natural 2 — the letter that gives offence — now produces a grievance instead of nothing.",
+    "natural": 2,
+    "creates": "Sig−"
+  },
+  "dispute_outcome": {
+    "note": "§7 says a won dispute leaves the grievance 'resolved or ⊖' without saying how often it hardens. PART B assumed half, in code; rules 0.6 moves the number here and tunes it, because it is the tap that feeds Challenge: only a ⊖ makes a challenge legal, so every point of this probability is worth several challenges a run.",
+    "hardens_probability_pct": 6
+  },
+  "grievance_lapse": {
+    "note": "Friction decays when nothing feeds it; a grievance had no such rule, so the map's stock of open Sig− relations only ever grew and every house always had someone to quarrel with. A grievance neither side has acted on for this many seasons lapses to resolved — the quarrel is not settled, it is merely no longer worth pressing. This is the counterpart of per_season.decay and is what holds disputes per house-generation inside the smoke bounds.",
+    "seasons": 12
+  },
+  "challenge_outcome": {
+    "note": "§7 costs a failed challenge ambition and influence but says nothing about the ⊖ that made it legal. Leaving the hostility standing let one pair challenge season after season, which is where the challenge count's seed-to-seed variance came from. A failed challenge now spends the hostility back down to a grievance: the quarrel remains, the moment for arms has passed.",
+    "failure_marker": "Sig−"
+  }
+}

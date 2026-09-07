@@ -116,7 +116,15 @@ The same things, without the browser:
     python -m hoc narrate 40 60 --tone intimate   # the block, printed
     python scripts/rebuild.py                     # replay from the record
 
-Every draw comes from a seed derived from the world seed and the season number alone, and each season writes `scenarios/new/seasons/NNNN.json` recording every roll with the purpose it was drawn for — so a world replays identically from its seed, and any outcome can be traced to the roll that caused it. Tuning the game means editing a table in `rules/` and recording it in `rules/CHANGELOG.md`; it never means editing `hoc/sim.py`.
+Every draw comes from a seed derived from the world seed and the season number alone, and each season writes `scenarios/new/seasons/NNNN.json` recording every roll with the purpose it was drawn for — so a world replays identically from its seed, and any outcome can be traced to the roll that caused it.
+
+## Versioned rules
+
+The rules are versioned, and **a season is always replayed under the rules it was played with**. `rules/current.txt` names the version new seasons are played under; `rules/versions/<version>/` holds that version's tables; each season file records the version it was played under, and every replay path — `scripts/rebuild.py`, `scripts/referee.py`, both engines — loads that one.
+
+Without it, tuning a number would silently rewrite history: the committed record would stop reproducing the committed database, and the referee would start refusing seasons that were correct when they were played.
+
+So tuning means **forking the version**: copy the current directory to the next, change the copy, point `current.txt` at it, and record it in `rules/CHANGELOG.md` with the metric that motivated it. `scripts/apply_rules_patch.py` — the console's Rules control — does exactly that and refuses to edit a published version. A change in *algorithm* rather than in a number goes behind a named boolean in that version's `features.json`, false in every version before it, so the old code path stays reachable in both engines for replay. `rules/README.md` is the full rule; the site's About page shows which version is current and which each season was played under.
 
 `python -m hoc scenario use legacy` switches back to the reconstructed 2026 playthrough, which the turn runner still drives and which is published, frozen, at the site's Archive.
 

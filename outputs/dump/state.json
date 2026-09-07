@@ -1014,7 +1014,7 @@
       "narrative": "Season 41 · Viscount Cameron of Cornwall is created, seated at Richmond Hill South.",
       "mechanical_delta": "{\"season\": 41, \"stats\": {\"capital\": 44, \"influence\": 26, \"cohesion\": 63, \"ambition\": 6}, \"community\": \"Scots Presbyterian\", \"tag\": \"Mixed\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Cameron",
@@ -1032,7 +1032,7 @@
       "narrative": "Season 41 · Baron Patterson of Kennebecasis names Farquhar Patterson heir.",
       "mechanical_delta": "{\"season\": 41, \"heir_age\": 22, \"role\": \"heir\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Patterson",
@@ -1050,7 +1050,7 @@
       "narrative": "Season 41 · Donald Forbes marries Clémence Langelier, binding Earl Forbes of Preston to Baron Langelier de Charlevoix.",
       "mechanical_delta": "{\"season\": 41, \"marker\": \"kin\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Forbes",
@@ -1073,7 +1073,7 @@
       "narrative": "Season 41 · Earl Forbes of Preston meets Long Depression Reaches Canada and resists.",
       "mechanical_delta": "{\"season\": 41, \"response\": \"Resist\", \"roll\": 2, \"personal_year\": 1874, \"magnitude\": \"Major\", \"tag\": \"Conservative\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Forbes",
@@ -1091,7 +1091,7 @@
       "narrative": "Season 41 · Baron Hoover of Simcoe meets National Policy and exploits.",
       "mechanical_delta": "{\"season\": 41, \"response\": \"Exploit\", \"roll\": 4, \"personal_year\": 1878, \"magnitude\": \"Significant\", \"tag\": \"Conservative\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Hoover",
@@ -1109,7 +1109,7 @@
       "narrative": "Season 41 · Baron Langelier de Charlevoix meets Death of Sir John A. Macdonald and stands aside.",
       "mechanical_delta": "{\"season\": 41, \"response\": \"Neutral\", \"roll\": 1, \"personal_year\": 1891, \"magnitude\": \"Minor\", \"tag\": \"Mixed\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Langelier",
@@ -1127,7 +1127,7 @@
       "narrative": "Season 41 · Frances Cornwall succeeds to Baron Cornwall of Steveston.",
       "mechanical_delta": "{\"season\": 41, \"nature\": \"clean\", \"cause\": \"death\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Cornwall",
@@ -1145,7 +1145,7 @@
       "narrative": "Season 41 · Baron McLellan of Belfast opens a correspondence with Viscount Bouchard de Terrebonne.",
       "mechanical_delta": "{\"season\": 41, \"marker\": \"kin\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Bouchard",
@@ -1168,7 +1168,7 @@
       "narrative": "Season 40 · Baron Patterson of Kennebecasis is created, seated at Acadie—Bathurst.",
       "mechanical_delta": "{\"season\": 40, \"stats\": {\"capital\": 46, \"influence\": 24, \"cohesion\": 64, \"ambition\": 4}, \"community\": \"Scottish Presbyterian\", \"tag\": \"Mixed\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Patterson",
@@ -1186,7 +1186,7 @@
       "narrative": "Season 40 · Baron Rochon de Rosedale meets British Columbia Joins; Treaty 1 Signed and stands aside.",
       "mechanical_delta": "{\"season\": 40, \"response\": \"Neutral\", \"roll\": 1, \"personal_year\": 1871, \"magnitude\": \"Significant\", \"tag\": \"Mixed\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Rochon",
@@ -1204,7 +1204,7 @@
       "narrative": "Season 40 · Earl Forbes of Preston names Donald Forbes heir.",
       "mechanical_delta": "{\"season\": 40, \"heir_age\": 29, \"role\": \"heir\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Forbes",
@@ -1222,7 +1222,7 @@
       "narrative": "Season 40 · Earl Forbes of Preston meets Pacific Scandal and resists.",
       "mechanical_delta": "{\"season\": 40, \"response\": \"Resist\", \"roll\": 2, \"personal_year\": 1873, \"magnitude\": \"Significant\", \"tag\": \"Progressive\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Forbes",
@@ -1240,7 +1240,7 @@
       "narrative": "Season 40 · Viscount Meagher of Chatham opens a correspondence with Viscount Wallace of Perth.",
       "mechanical_delta": "{\"season\": 40, \"marker\": \"\\u25ce\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Meagher",
@@ -1263,7 +1263,7 @@
       "narrative": "Season 40 · Baron Langelier de Charlevoix meets Manitoba Schools Question and stands aside.",
       "mechanical_delta": "{\"season\": 40, \"response\": \"Neutral\", \"roll\": 1, \"personal_year\": 1890, \"magnitude\": \"Major\", \"tag\": \"Conservative\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Langelier",
@@ -1281,7 +1281,7 @@
       "narrative": "Season 40 · Baron McLellan of Belfast takes Cumberland—Colchester.",
       "mechanical_delta": "{\"season\": 40, \"riding\": \"Cumberland\\u2014Colchester\", \"roll\": 7}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "McLellan",
@@ -1299,7 +1299,7 @@
       "narrative": "Season 40 · Viscount Hays of Beloeil names Harris Hays heir.",
       "mechanical_delta": "{\"season\": 40, \"heir_age\": 13, \"role\": \"heir\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Hays",
@@ -1317,7 +1317,7 @@
       "narrative": "Season 40 · Blanche Bouchard marries Elspeth McLellan, binding Viscount Bouchard de Terrebonne to Baron McLellan of Belfast.",
       "mechanical_delta": "{\"season\": 40, \"marker\": \"kin\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Bouchard",
@@ -1340,7 +1340,7 @@
       "narrative": "Season 40 · Viscount Mercier de Rimouski settles its grievance with Viscount Benjamin of Bellechasse by cession.",
       "mechanical_delta": "{\"season\": 40, \"marker\": \"~\", \"ceded\": \"24042\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Benjamin",
@@ -1363,7 +1363,7 @@
       "narrative": "Season 40 · Viscount Mercier de Rimouski gives up Longueuil—Saint-Hubert (cession).",
       "mechanical_delta": "{\"season\": 40, \"reason\": \"cession\", \"riding\": \"Longueuil\\u2014Saint-Hubert\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Benjamin",
@@ -1386,7 +1386,7 @@
       "narrative": "Season 40 · Viscount Wallace of Perth takes Perth—Wellington.",
       "mechanical_delta": "{\"season\": 40, \"riding\": \"Perth\\u2014Wellington\", \"roll\": 7}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Wallace",
@@ -1404,7 +1404,7 @@
       "narrative": "Season 40 · Viscount Wallace of Perth meets Alaska Boundary Award and exploits.",
       "mechanical_delta": "{\"season\": 40, \"response\": \"Exploit\", \"roll\": 5, \"personal_year\": 1903, \"magnitude\": \"Minor\", \"tag\": \"Mixed\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Wallace",
@@ -1422,7 +1422,7 @@
       "narrative": "Season 40 · Baron Elliott of Glengarry meets South African War and stands aside.",
       "mechanical_delta": "{\"season\": 40, \"response\": \"Neutral\", \"roll\": 1, \"personal_year\": 1899, \"magnitude\": \"Major\", \"tag\": \"Conservative\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Elliott",
@@ -1440,7 +1440,7 @@
       "narrative": "Season 39 · Baron Rochon de Rosedale meets Confederation Extension (Manitoba Act) and leads.",
       "mechanical_delta": "{\"season\": 39, \"response\": \"Lead\", \"roll\": 6, \"personal_year\": 1870, \"magnitude\": \"Major\", \"tag\": \"Mixed\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Rochon",
@@ -1458,7 +1458,7 @@
       "narrative": "Season 39 · Viscount Meagher of Chatham names Eileen Meagher heir.",
       "mechanical_delta": "{\"season\": 39, \"heir_age\": 24, \"role\": \"heir\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Meagher",
@@ -1476,7 +1476,7 @@
       "narrative": "Season 39 · Viscount Hays of Beloeil opens a correspondence with Viscount Bouchard de Terrebonne.",
       "mechanical_delta": "{\"season\": 39, \"marker\": \"+\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Bouchard",
@@ -1499,7 +1499,7 @@
       "narrative": "Season 39 · Viscount Bouchard de Terrebonne meets Montréal Smallpox Epidemic and resists.",
       "mechanical_delta": "{\"season\": 39, \"response\": \"Resist\", \"roll\": 3, \"personal_year\": 1885, \"magnitude\": \"Significant\", \"tag\": \"Progressive\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Bouchard",
@@ -1517,7 +1517,7 @@
       "narrative": "Season 39 · Baron Stefaniuk of Emerson takes Souris—Moose Mountain.",
       "mechanical_delta": "{\"season\": 39, \"riding\": \"Souris\\u2014Moose Mountain\", \"roll\": 8}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Stefaniuk",
@@ -1535,7 +1535,7 @@
       "narrative": "Season 39 · Viscount Benjamin of Bellechasse and Viscount Mercier de Rimouski fall out over a boundary the two houses read differently.",
       "mechanical_delta": "{\"season\": 39, \"marker\": \"Sig\\u2212\", \"cause\": \"friction\", \"grievance\": \"a boundary the two houses read differently\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Benjamin",
@@ -1558,7 +1558,7 @@
       "narrative": "Season 38 · Baron Rochon de Rosedale takes Beaches—East York.",
       "mechanical_delta": "{\"season\": 38, \"riding\": \"Beaches\\u2014East York\", \"roll\": 8}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Rochon",
@@ -1576,7 +1576,7 @@
       "narrative": "Season 38 · Baron Rochon de Rosedale meets Red River Resistance and exploits.",
       "mechanical_delta": "{\"season\": 38, \"response\": \"Exploit\", \"roll\": 4, \"personal_year\": 1869, \"magnitude\": \"Major\", \"tag\": \"Mixed\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Rochon",
@@ -1594,7 +1594,7 @@
       "narrative": "Season 38 · Earl Forbes of Preston meets British Columbia Joins; Treaty 1 Signed and exploits.",
       "mechanical_delta": "{\"season\": 38, \"response\": \"Exploit\", \"roll\": 4, \"personal_year\": 1871, \"magnitude\": \"Significant\", \"tag\": \"Mixed\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Forbes",
@@ -1612,7 +1612,7 @@
       "narrative": "Season 38 · Baron Langelier de Charlevoix meets Jesuits' Estates Act Controversy and resists.",
       "mechanical_delta": "{\"season\": 38, \"response\": \"Resist\", \"roll\": 2, \"personal_year\": 1888, \"magnitude\": \"Significant\", \"tag\": \"Conservative\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Langelier",
@@ -1630,7 +1630,7 @@
       "narrative": "Season 38 · Baron Cornwall of Steveston takes Kamloops—Thompson—Nicola.",
       "mechanical_delta": "{\"season\": 38, \"riding\": \"Kamloops\\u2014Thompson\\u2014Nicola\", \"roll\": 7}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Cornwall",
@@ -1648,7 +1648,7 @@
       "narrative": "Season 38 · Baron Cornwall of Steveston meets Death of Sir John A. Macdonald and leads.",
       "mechanical_delta": "{\"season\": 38, \"response\": \"Lead\", \"roll\": 7, \"personal_year\": 1891, \"magnitude\": \"Minor\", \"tag\": \"Mixed\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:51",
       "houses": [
         {
           "house": "Cornwall",
@@ -1666,7 +1666,7 @@
       "narrative": "Season 38 · Viscount Bouchard de Terrebonne opens a correspondence with Viscount Hays of Beloeil.",
       "mechanical_delta": "{\"season\": 38, \"marker\": \"\\u25ce\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:50",
       "houses": [
         {
           "house": "Bouchard",
@@ -1689,7 +1689,7 @@
       "narrative": "Season 38 · Viscount Mercier de Rimouski opens a correspondence with Baron Elliott of Glengarry.",
       "mechanical_delta": "{\"season\": 38, \"marker\": \"\\u25ce\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:50",
       "houses": [
         {
           "house": "Elliott",
@@ -1712,7 +1712,7 @@
       "narrative": "Season 38 · Viscount Benjamin of Bellechasse opens a correspondence with Baron McLellan of Belfast.",
       "mechanical_delta": "{\"season\": 38, \"marker\": \"~\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:50",
       "houses": [
         {
           "house": "Benjamin",
@@ -1735,7 +1735,7 @@
       "narrative": "Season 38 · Viscount Wallace of Perth takes Oxford.",
       "mechanical_delta": "{\"season\": 38, \"riding\": \"Oxford\", \"roll\": 10}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:50",
       "houses": [
         {
           "house": "Wallace",
@@ -1753,7 +1753,7 @@
       "narrative": "Season 38 · Baron Elliott of Glengarry opens a correspondence with Viscount Wallace of Perth.",
       "mechanical_delta": "{\"season\": 38, \"marker\": \"+\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:50",
       "houses": [
         {
           "house": "Elliott",
@@ -1776,7 +1776,7 @@
       "narrative": "Season 38 · Baron Elliott of Glengarry meets Klondike Gold Rush and resists.",
       "mechanical_delta": "{\"season\": 38, \"response\": \"Resist\", \"roll\": 3, \"personal_year\": 1897, \"magnitude\": \"Significant\", \"tag\": \"Mixed\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:50",
       "houses": [
         {
           "house": "Elliott",
@@ -1794,7 +1794,7 @@
       "narrative": "Season 37 · Baron Rochon de Rosedale names Olivier Rochon heir.",
       "mechanical_delta": "{\"season\": 37, \"heir_age\": 18, \"role\": \"heir\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:50",
       "houses": [
         {
           "house": "Rochon",
@@ -1812,7 +1812,7 @@
       "narrative": "Season 37 · Earl Forbes of Preston opens a correspondence with Baron Langelier de Charlevoix.",
       "mechanical_delta": "{\"season\": 37, \"marker\": \"+\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:50",
       "houses": [
         {
           "house": "Forbes",
@@ -1835,7 +1835,7 @@
       "narrative": "Season 37 · Earl Forbes of Preston meets Confederation Extension (Manitoba Act) and exploits.",
       "mechanical_delta": "{\"season\": 37, \"response\": \"Exploit\", \"roll\": 4, \"personal_year\": 1870, \"magnitude\": \"Major\", \"tag\": \"Mixed\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:50",
       "houses": [
         {
           "house": "Forbes",
@@ -1853,7 +1853,7 @@
       "narrative": "Season 37 · Viscount Meagher of Chatham opens a correspondence with Viscount Hays of Beloeil.",
       "mechanical_delta": "{\"season\": 37, \"marker\": \"\\u25c9+\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:50",
       "houses": [
         {
           "house": "Hays",
@@ -1876,7 +1876,7 @@
       "narrative": "Season 37 · Baron Cornwall of Steveston meets Manitoba Schools Question and resists.",
       "mechanical_delta": "{\"season\": 37, \"response\": \"Resist\", \"roll\": 2, \"personal_year\": 1890, \"magnitude\": \"Major\", \"tag\": \"Conservative\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:50",
       "houses": [
         {
           "house": "Cornwall",
@@ -1894,7 +1894,7 @@
       "narrative": "Season 37 · Baron McLellan of Belfast takes Cape Breton—Canso—Antigonish.",
       "mechanical_delta": "{\"season\": 37, \"riding\": \"Cape Breton\\u2014Canso\\u2014Antigonish\", \"roll\": 10}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:50",
       "houses": [
         {
           "house": "McLellan",
@@ -1912,7 +1912,7 @@
       "narrative": "Season 37 · Baron McLellan of Belfast meets Death of Sir John A. Macdonald and leads.",
       "mechanical_delta": "{\"season\": 37, \"response\": \"Lead\", \"roll\": 6, \"personal_year\": 1891, \"magnitude\": \"Minor\", \"tag\": \"Mixed\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:50",
       "houses": [
         {
           "house": "McLellan",
@@ -1930,7 +1930,7 @@
       "narrative": "Season 37 · Viscount Hays of Beloeil passes in disorder to Sarah Hays.",
       "mechanical_delta": "{\"season\": 37, \"nature\": \"disorderly\", \"cause\": \"death\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:50",
       "houses": [
         {
           "house": "Hays",
@@ -1948,7 +1948,7 @@
       "narrative": "Season 37 · Viscount Bouchard de Terrebonne meets CPR Strike and exploits.",
       "mechanical_delta": "{\"season\": 37, \"response\": \"Exploit\", \"roll\": 5, \"personal_year\": 1883, \"magnitude\": \"Significant\", \"tag\": \"Mixed\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:50",
       "houses": [
         {
           "house": "Bouchard",
@@ -1966,7 +1966,7 @@
       "narrative": "Season 37 · Baron Stefaniuk of Emerson opens a correspondence with Baron Elliott of Glengarry.",
       "mechanical_delta": "{\"season\": 37, \"marker\": \"+\"}",
       "source": "engine",
-      "created_at": "2026-09-07 20:32:09",
+      "created_at": "2026-09-07 21:00:50",
       "houses": [
         {
           "house": "Elliott",

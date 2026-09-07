@@ -43,7 +43,7 @@ async function main() {
   const { loadRules } = await import(path.join(engine, 'rules.js'));
   const { loadReferenceMap } = await import(path.join(engine, 'adjacency.js'));
   const { WorldState } = await import(path.join(engine, 'state.js'));
-  const { World, canonicalJson, RULES_VERSION } = await import(path.join(engine, 'sim.js'));
+  const { World, canonicalJson } = await import(path.join(engine, 'sim.js'));
 
   // The same path mapping play.js uses: the engine asks for repository paths,
   // the site serves the rules one directory down.
@@ -53,15 +53,15 @@ async function main() {
   };
 
   const committed = JSON.parse(readFileSync(path.join(args.site, 'data', 'world.json'), 'utf8'));
-  if (committed.rules_version !== RULES_VERSION) {
-    throw new Error(
-      `world.json is rules ${committed.rules_version} and the exported engine is ${RULES_VERSION}`,
-    );
-  }
 
+  // The page plays *new* seasons, and a new season is played under whatever
+  // rules/current.txt names — not under the version the committed world's last
+  // season was played at, which is older across every version change. So this
+  // reads the version the same way the page does, and plays forward with it.
+  const rulesVersion = read('rules/current.txt').trim();
   const world = new World({
     state: WorldState.load(committed, loadReferenceMap(read)),
-    rules: loadRules(read),
+    rules: loadRules(read, rulesVersion),
     worldSeed: committed.world_seed,
   });
 

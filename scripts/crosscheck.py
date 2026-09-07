@@ -92,7 +92,8 @@ def _apply_script(conn, world, script, after_season):
         shutil.rmtree(directory, ignore_errors=True)
 
 
-def run_python(seed, seasons, out_dir, seat=None, phases=None, script=(), resume_from=None):
+def run_python(seed, seasons, out_dir, seat=None, phases=None, script=(), resume_from=None,
+               rules_version=None):
     """Play `seasons` seasons with the Python engine, writing season files.
 
     `resume_from` is a season count to play *first* without writing anything —
@@ -105,7 +106,10 @@ def run_python(seed, seasons, out_dir, seat=None, phases=None, script=(), resume
 
     out_dir.mkdir(parents=True, exist_ok=True)
     conn = load_seed.build(out_dir.parent / "python.db", seed=scenario.seed_dir("new"))
-    world = sim.World(conn, world_seed=seed, seasons_dir=out_dir, phases=phases)
+    world = sim.World(
+        conn, world_seed=seed, seasons_dir=out_dir, phases=phases,
+        rules_version=rules_version,
+    )
     with conn:
         world.initialise(seed, seat=seat)
         _apply_script(conn, world, script, 1)
@@ -115,7 +119,8 @@ def run_python(seed, seasons, out_dir, seat=None, phases=None, script=(), resume
     conn.close()
 
 
-def run_js(seed, seasons, out_dir, seat=None, phases=None, resume=None, interventions=None):
+def run_js(seed, seasons, out_dir, seat=None, phases=None, resume=None, interventions=None,
+           rules_version=None):
     """Play the same seasons with the JavaScript engine."""
     if not JS_CLI.exists():
         raise CrosscheckUnavailable(
@@ -135,6 +140,8 @@ def run_js(seed, seasons, out_dir, seat=None, phases=None, resume=None, interven
         command += ["--resume", str(resume)]
     if interventions is not None:
         command += ["--interventions", str(interventions)]
+    if rules_version is not None:
+        command += ["--rules-version", str(rules_version)]
     if seat:
         command += ["--seat", seat]
     if phases:
@@ -274,7 +281,7 @@ def _compare_range(python_dir, js_dir, first, last):
     return differences
 
 
-def crosscheck(seed, seasons, seat=None, keep=None, phases=None, script=()):
+def crosscheck(seed, seasons, seat=None, keep=None, phases=None, script=(), rules_version=None):
     """Run both engines and compare. Returns the list of differences.
 
     Raises CrosscheckUnavailable when the comparison cannot be made at all.
@@ -288,8 +295,10 @@ def crosscheck(seed, seasons, seat=None, keep=None, phases=None, script=()):
         if script:
             script_path = workspace / "interventions.json"
             script_path.write_text(json.dumps(list(script), ensure_ascii=False), encoding="utf-8")
-        run_python(seed, seasons, python_dir, seat=seat, phases=phases, script=script)
-        run_js(seed, seasons, js_dir, seat=seat, phases=phases, interventions=script_path)
+        run_python(seed, seasons, python_dir, seat=seat, phases=phases, script=script,
+                   rules_version=rules_version)
+        run_js(seed, seasons, js_dir, seat=seat, phases=phases, interventions=script_path,
+               rules_version=rules_version)
         return compare(python_dir, js_dir, seasons)
     finally:
         if keep is None:
@@ -300,6 +309,10 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--seed", type=int, default=1867)
     parser.add_argument("--seasons", type=int, default=120)
+    parser.add_argument(
+        "--rules-version", default=None,
+        help="the rules version to play under (default: rules/current.txt)",
+    )
     parser.add_argument("--seat", default=None, help="riding for the first house")
     parser.add_argument(
         "--keep", default=None,
@@ -322,15 +335,18 @@ def main(argv=None):
     try:
         phases = [p.strip() for p in args.phases.split(",")] if args.phases else None
         differences = crosscheck(
-            args.seed, args.seasons, seat=args.seat, keep=args.keep, phases=phases
+            args.seed, args.seasons, seat=args.seat, keep=args.keep, phases=phases,
+            rules_version=args.rules_version,
         )
     except CrosscheckUnavailable as exc:
         print(f"cross-check unavailable: {exc}", file=sys.stderr)
         return 2
 
     if not differences:
+        version = args.rules_version or "current"
         print(
-            f"seed {args.seed}: the two engines agree on all {args.seasons} seasons."
+            f"seed {args.seed}: the two engines agree on all {args.seasons} seasons"
+            f" (rules {version})."
         )
         return 0
 

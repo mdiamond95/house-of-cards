@@ -23,6 +23,8 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import crosscheck  # noqa: E402
 
+from hoc import rules_data  # noqa: E402
+
 # 120 seasons is long enough to be a real test and short enough to run in the
 # ordinary suite: by season 120 the map is around 80% claimed, so every
 # mechanism the engine has — founding, mortality, succession, partition,
@@ -56,16 +58,26 @@ requires_both_engines = pytest.mark.skipif(
 
 @requires_both_engines
 @pytest.mark.parametrize("seed", CROSSCHECK_SEEDS)
-def test_the_two_engines_write_identical_seasons(seed):
+@pytest.mark.parametrize("rules_version", sorted(rules_data.available_versions()))
+def test_the_two_engines_write_identical_seasons(seed, rules_version):
+    """Every version, not just the current one.
+
+    A behaviour flag is a fork in both engines, and a fork the cross-check never
+    walks is a fork that can rot: the day the record needs replaying under an
+    older version is the day anyone would find out. So each version is played by
+    both engines and compared.
+    """
     try:
-        differences = crosscheck.crosscheck(seed, CROSSCHECK_SEASONS)
+        differences = crosscheck.crosscheck(
+            seed, CROSSCHECK_SEASONS, rules_version=rules_version
+        )
     except crosscheck.CrosscheckUnavailable as exc:
         pytest.skip(str(exc))
 
     if differences:
         season, diff = differences[0]
         pytest.fail(
-            f"seed {seed}: the engines diverge at season {season}"
+            f"seed {seed}, rules {rules_version}: the engines diverge at season {season}"
             f" ({len(differences)} of {CROSSCHECK_SEASONS} seasons differ).\n\n{diff}"
         )
 

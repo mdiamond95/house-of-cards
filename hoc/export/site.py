@@ -1508,6 +1508,7 @@ def _about_page(conn, slugs):
             " transcripts after the workbook was lost — is kept frozen and readable in full:"
             f' <a href="{ARCHIVE_DIRNAME}/index.html">the 2026 playthrough</a>.</p>\n'
         )
+        + _rules_versions_section(conn)
         + f'<h3>Holders whose name was never recovered <span class="count">{len(unnamed)}</span></h3>\n'
         f"{house_list(unnamed)}\n"
         f'<h3>Houses with no Section 5 block recovered <span class="count">{len(blockless)}</span></h3>\n'
@@ -1516,6 +1517,57 @@ def _about_page(conn, slugs):
         f"{house_list(no_secondary)}\n"
     )
     return page("About", body, depth=0)
+
+
+def _rules_versions_section(conn):
+    """Which rules are current, and which each season was played under.
+
+    Rules are versioned so that a season always replays under the rules it was
+    played with; that is invisible from the site unless the site says it, and a
+    reader who notices the game changed shape at some season deserves to be able
+    to find out when and why. Ranges rather than a row per season: a long game
+    plays hundreds of seasons under one version, and the interesting fact is
+    where the boundaries fall.
+    """
+    from hoc import rules_data
+
+    rows = conn.execute(
+        "SELECT season_no, rules_version FROM seasons ORDER BY season_no"
+    ).fetchall()
+    if not rows:
+        return ""
+
+    runs = []
+    for row in rows:
+        version = row["rules_version"] or NOT_RECOVERED
+        if runs and runs[-1][0] == version and runs[-1][2] == row["season_no"] - 1:
+            runs[-1][2] = row["season_no"]
+        else:
+            runs.append([version, row["season_no"], row["season_no"]])
+
+    try:
+        current = rules_data.current_version()
+    except Exception:
+        current = NOT_RECOVERED
+
+    cells = "".join(
+        f"<tr><td>{esc(version)}</td><td>"
+        + (f"season {first}" if first == last else f"seasons {first}\u2013{last}")
+        + "</td></tr>"
+        for version, first, last in runs
+    )
+    return (
+        "<h2>Rules versions</h2>\n"
+        '<p class="prose">New seasons are played under rules'
+        f' <b>{esc(current)}</b>. A season is always replayed under the rules it was'
+        " played with, so a change to the tables never reinterprets a season already"
+        " in the record — which is why the game can be tuned without the published"
+        " history moving under it.</p>\n"
+        f'<table class="rules-versions"><thead><tr><th>rules</th><th>played</th></tr></thead>'
+        f"<tbody>{cells}</tbody></table>\n"
+        f'<p><a href="{REPO_URL}/blob/main/rules/CHANGELOG.md">What changed in each'
+        " version</a>.</p>\n"
+    )
 
 
 # ----------------------------------------------------------------- console --
@@ -2398,6 +2450,11 @@ code { font-size: 0.78rem; color: var(--muted); }
 .save-row button:disabled { opacity: 0.45; cursor: not-allowed; border-color: var(--rule);
                             color: var(--muted); font-weight: 400; }
 .save-line { margin: 0.5rem 0 0; font-size: 0.8rem; }
+.rules-versions { border-collapse: collapse; font-size: 0.88rem; margin: 0.4rem 0 0.8rem; }
+.rules-versions th, .rules-versions td { text-align: left; padding: 0.3rem 1.2rem 0.3rem 0;
+                                        border-bottom: 1px solid var(--rule); }
+.rules-versions th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+                    color: var(--muted); font-weight: 400; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);
            white-space: nowrap; }
 .status-box { border: 1px solid var(--rule); background: #fff; padding: 0.6rem 0.7rem;

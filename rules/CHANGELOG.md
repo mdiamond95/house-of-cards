@@ -135,3 +135,46 @@ Two of Phase 9d's conflict bounds failed under the new generator. Before touchin
 Both old bounds sat about one standard deviation from the mean, so about one seed in six fell outside them — seed 3 under the challenge floor, seed 14 over the dispute ceiling. That is an over-fitted bound rather than a game that drifted: the old bounds were calibrated against three particular seeds of a generator that no longer exists, and the mechanism they measure is unchanged.
 
 `hardens_probability_pct` was tried at 7 and 8 to lift the challenge count toward the old window and then **put back to 6**. Raising it moved the mean to 23 and the ceiling breaches with it (one seed reached 35); it would have been tuning the game to fit its thermometer. The bounds in `tests/test_sim.py` were widened to roughly mean ± 3 sd instead, which still says what the test means to say — conflict is a live part of every seed, and no seed is in permanent war — without failing on the seed that happens to be quiet.
+
+## 0.8 — a house is named for its own ground, and quiet seasons say so
+
+The first version under the versioned layout: `rules/versions/0.8/` is a byte-for-byte copy of 0.7 apart from `features.json`. **No number changed.** Both changes are changes in algorithm, so both are behind named flags that are false in 0.7 — seasons 1–41 replay exactly as they were played, and `tests/test_rules_versions.py` asserts it byte for byte.
+
+### `local_designations: true`
+
+A house's territorial designation was drawn from a province-wide bank, so a house seated in Halifax could be styled "of Kamloops" as readily as "of Dartmouth": the bank knew the province and nothing else. It is now drawn from the highest tier that still has a name free:
+
+1. populated places inside the seat riding, largest first;
+2. the seat riding's own name, split into its usable words;
+3. places in ridings sharing a **land** border with the seat;
+4. the province bank, as before.
+
+`data/reference/places_by_riding.csv` and `riding_tokens.csv` are the new data, built by `scripts/build_places.py` from Natural Earth's 10m populated places (public domain; provenance in `data/reference/raw/SOURCE.md`). Natural Earth resolves **255 Canadian places, covering 111 of the 343 ridings**, which is why there are four tiers and not one: most seats have no town of their own to be named for, and the seat's *name* is what always answers.
+
+Measured over a 300-season run on seed 1867 (93 designations drawn):
+
+| tier | source | share |
+| --- | --- | --- |
+| 1 | places in the seat riding | 34.4% |
+| 2 | the seat riding's own name | 62.4% |
+| 3 | places in a land neighbour | 1.1% |
+| 4 | the province bank | 2.2% |
+
+**97.8% from tiers 1–3.** `tests/test_designations.py` holds it above 95%.
+
+### `quiet_season_line: true`
+
+A season in which nothing at all reached the chronicle now says so, once:
+
+    Season N · A quiet year across the peerage.
+
+and a house that has taken no notable action for **ten consecutive seasons** is noticed once, at exactly ten:
+
+    Season N · <Title> keeps to <seat riding>.
+
+"Notable" means the house appeared in a chronicle line, taken from the event's own house list rather than by matching a title against the prose — a title can appear inside another house's line. The counter lives in `house_stats.quiet_seasons`, so it survives a snapshot and the browser and the Python engine agree about it. Over 300 seasons on seed 1867 the two lines fired once and ten times respectively, against 8,376 chronicle lines.
+
+### The mechanics did not move
+
+Neither change touches a stat, a weight, a probability or an action, so no retune was expected and none was made. The §17 smoke run and Phase 9d's conflict bounds pass under 0.8 unchanged, and the cross-check agrees on seeds 1867, 2 and 3 at 120 seasons under **both** versions.
+

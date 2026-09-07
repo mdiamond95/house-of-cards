@@ -1,0 +1,256 @@
+fed_id,place,population
+10001,Trepassey,398
+10003,Gander,3345
+10003,La Scie,817
+10003,Buchans,685
+10004,Labrador City,10313
+10004,Happy Valley - Goose Bay,7572
+10004,Port Burwell,2762
+10004,Nain,1151
+10004,Cartwright,505
+10004,Forteau,448
+10004,Hopedale,442
+10004,Port Hope Simpson,197
+10004,Rigolet,124
+10004,Churchill Falls,100
+10005,Corner Brook,20791
+10005,Stephenville,7054
+10005,Channel-Port aux Basques,4220
+10005,Deer Lake,4163
+10005,Trout River,452
+10005,St. Anthony,224
+10006,St. John's,131469
+10007,Argentia,1063
+11002,Charlottetown,42402
+12001,Yarmouth,7500
+12001,Digby,3949
+12002,Sydney,37538
+12002,Antigonish,6739
+12002,Baddeck,852
+12003,New Glasgow,20322
+12004,Amherst,9336
+12006,Halifax,359111
+12008,Windsor,3864
+12010,Liverpool,4331
+12010,Shelburne,3167
+13001,Bathurst,6111
+13003,Fredericton,52337
+13004,Moncton,90635
+13005,Edmundston,17894
+13008,Saint John,87857
+24001,Val d'Or,20625
+24001,Mistassini,2645
+24001,Matagami,1966
+24001,Inukjuak,1597
+24001,Kuujjuaq,1273
+24001,Kuujjuarapik,1243
+24001,Kangirsuk,549
+24001,Eastmain,335
+24001,Radisson,270
+24001,Ivugivik,156
+24001,Salluit,106
+24002,Rouyn-Noranda,24602
+24002,Amos,10516
+24002,La Sarre,7206
+24006,Saint-Georges,26149
+24008,Québec,624177
+24018,Chicoutimi,53940
+24020,Rivière-du-Loup,16403
+24021,Sept-Îles,25686
+24021,Baie-Comeau,10435
+24021,St-Augustin,3961
+24021,Natashquan,722
+24021,Mingan,588
+24021,Schefferville,471
+24021,Chevery,284
+24021,Port-Menier,263
+24023,Drummondville,59489
+24024,Gaspé,3677
+24024,Cap-Chat,1484
+24029,Joliette,45361
+24033,Dolbeau,13337
+24036,Mont-Laurier,11642
+24057,Pembroke,15551
+24061,Victoriaville,41500
+24062,Rimouski,35584
+24064,St.-Jerome,78439
+24070,Shawinigan,49161
+24072,Sherbrooke,139652
+24075,Trois-Rivières,119693
+24077,Montréal,3678000
+35005,Barrie,182041
+35006,Belleville,43990
+35016,Owen Sound,22625
+35016,Wiarton,2182
+35025,Orangeville,32640
+35036,Hamilton,721053
+35044,Timmins,34974
+35044,Kapuskasing,9240
+35044,Hearst,5043
+35044,Cochrane,4441
+35044,Chapleau,2663
+35044,Attawapiskat,1802
+35044,Moosonee,1725
+35045,Kenora,10852
+35045,Dryden,7862
+35045,Sioux Lookout,4570
+35045,Deer Lake,3743
+35045,Red Lake,1765
+35045,Cat Lake,277
+35045,Fort Severn,125
+35045,Big Beaver House,10
+35046,Kingston,114195
+35048,Kitchener,417001
+35052,Brockville,26458
+35053,London,346765
+35073,North Bay,50170
+35073,New Liskeard,5203
+35073,Cobalt,1372
+35078,Oshawa,450963
+35079,Ottawa,1145000
+35084,Parry Sound,7105
+35086,Peterborough,83627
+35090,Sarnia,144172
+35091,Wawa,2174
+35091,Thessalon,1464
+35099,Orillia,37483
+35102,Cornwall,48821
+35103,Sudbury,157857
+35104,Little Current,1595
+35107,Atikokan,3625
+35108,Thunder Bay,99334
+35108,Marathon,4627
+35108,Geraldton,1290
+35108,Nipigon,1204
+35108,Lansdowne House,120
+35112,Toronto,5213000
+35119,Windsor,319246
+46001,Brandon,28418
+46002,Thompson,13727
+46002,Flin Flon,6393
+46002,The Pas,6055
+46002,Norway House,6000
+46002,Nelson House,2500
+46002,Gillam,1281
+46002,Churchill,1000
+46002,Berens River,892
+46002,Shamattawa,870
+46002,Lynn Lake,482
+46002,Pukatawagan,431
+46002,Brochet,278
+46002,Oxford House,184
+46002,Island Lake,10
+46006,Steinbach,9729
+46007,Dauphin,9077
+46009,Selkirk,9986
+46009,Gimli,2623
+46010,Winnipeg,632063
+47001,North Battleford,19440
+47001,Meadow Lake,5882
+47003,La Ronge,3783
+47003,Stony Rapids,152
+47003,Uranium City,89
+47004,Moose Jaw,32166
+47005,Prince Albert,34609
+47008,Regina,176183
+47011,Saskatoon,198958
+47012,Weyburn,9362
+47013,Swift Current,14906
+47013,Kindersley,4383
+47013,Biggar,2192
+47014,Yorkton,15172
+47014,Melville,4279
+47014,Hudson Bay,2157
+48002,Camrose,15808
+48002,Stettler,5494
+48003,Brooks,14163
+48011,Calgary,1110000
+48015,Edmonton,1058000
+48025,Fort McMurray,21863
+48025,Fort Chipewyan,3222
+48025,Lac La Biche,2986
+48025,Fort Smith,518
+48026,Grand Prairie,41462
+48027,Vegreville,5813
+48027,Athabasca,2539
+48028,Wetaskiwin,11823
+48029,Lethbridge,70617
+48030,Medicine Hat,63138
+48032,Peace River,5340
+48032,Meander River,200
+48034,Red Deer,74857
+48037,Hinton,10265
+48037,Banff,7502
+48037,Jasper,3907
+48037,Lake Louise,1248
+59001,Abbotsford,151683
+59004,Williams Lake,14168
+59004,Quesnel,13788
+59005,Chilliwack,51942
+59007,Cranbrook,18610
+59007,Nelson,11779
+59007,Creston,4816
+59009,Courtenay,32793
+59009,Tofino,1655
+59014,Revelstoke,7668
+59015,Kamloops,68714
+59015,Lillooet,2893
+59016,Kelowna,125109
+59019,Nanaimo,84905
+59021,Campbell River,33430
+59021,Powell River,12779
+59021,Port Hardy,2295
+59026,Prince George,65558
+59026,Fort St. John,18776
+59026,Dawson Creek,10802
+59026,Fort Nelson,6315
+59030,Penticton,37721
+59031,Terrace,19443
+59031,Prince Rupert,14708
+59031,Smithers,6245
+59031,Burns Lake,2635
+59031,Bella Bella,1400
+59031,Sandspit,538
+59031,Dease Lake,303
+59035,Vancouver,2313328
+59042,Victoria,289625
+60001,Whitehorse,23276
+60001,Dawson City,1319
+60001,Watson Lake,802
+60001,Burwash Landing,73
+61001,Yellowknife,19234
+61001,Hay River,3900
+61001,Inuvik,3022
+61001,Fort McPherson,1069
+61001,Norman Wells,1027
+61001,Tuktoyaktuk,929
+61001,Fort Good Hope,597
+61001,Doline,525
+61001,Holman,500
+61001,Fort Resolution,448
+61001,Paulatuk,294
+61001,Fort Simpson,283
+61001,Tsiigehtchic,175
+61001,Lutselke,102
+62001,Iqaluit,6124
+62001,Rankin Inlet,2472
+62001,Arviat,1868
+62001,Igloolik,1612
+62001,Baker Lake,1584
+62001,Pond Inlet,1549
+62001,Cambridge Bay,1477
+62001,Cape Dorset,1326
+62001,Pangnirtung,1320
+62001,Kugluktuk,1302
+62001,Gjoa Haven,1109
+62001,Naujaat,1000
+62001,Coral Harbour,834
+62001,Taloyoak,774
+62001,Hall Beach,654
+62001,Arctic Bay,604
+62001,Kimmirut,385
+62001,Chesterfield Inlet,374
+62001,Resolute,250
+62001,Alert,125
+62001,Grise Fiord,23
+62001,Ennadai,0

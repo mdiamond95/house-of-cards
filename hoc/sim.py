@@ -33,8 +33,9 @@ from functools import lru_cache
 from datetime import datetime, timezone
 from pathlib import Path
 
-from hoc import palette, prng, rules as mechanics, scenario
+from hoc import palette, places, prng, rules as mechanics, scenario
 from hoc.names import NameGenerator, peerage_title
+from hoc import rules_data
 from hoc.rules_data import load_rules, probability_for_age
 
 __all__ = [
@@ -47,10 +48,15 @@ __all__ = [
     "canonical_json",
 ]
 
-# The rules/CHANGELOG.md version these seasons are played under (§11): a season
-# keeps the version it was played under so a later rules change never silently
-# reinterprets it.
-RULES_VERSION = "0.7"
+# The version a *new* season is played under, from rules/current.txt. A season
+# keeps the version it was played under, and a replay loads that version's
+# tables rather than these — so tuning a table never silently reinterprets a
+# season that is already in the record (§11, and rules/README.md).
+#
+# Read at import so callers that only want to know "what is current" keep a
+# plain constant to read; a World carries its own `rules_version`, which is the
+# one that matters when replaying.
+RULES_VERSION = rules_data.current_version()
 
 STAT_RANGE = (0, 100)
 AMBITION_RANGE = (0, 10)
@@ -311,9 +317,15 @@ class World:
     was.
     """
 
-    def __init__(self, conn, rules=None, world_seed=None, seasons_dir=None, phases=None):
+    def __init__(self, conn, rules=None, world_seed=None, seasons_dir=None, phases=None,
+                 rules_version=None):
         self.conn = conn
-        self.rules = rules or load_rules()
+        # A world plays under one version of the rules. `rules_version` names it
+        # when replaying a season that recorded one; otherwise it is whatever
+        # rules/current.txt says now. `use_rules_version` switches mid-replay,
+        # for a record that spans a version change.
+        self.rules = rules or load_rules(version=rules_version)
+        self.rules_version = self.rules.version or rules_version or RULES_VERSION
         # Which phases of the §6 loop to run. None means all of them, which is
         # the only configuration a real game is ever played in; a subset is a
         # developer's cross-check diagnostic (see PHASES).
@@ -338,7 +350,17 @@ class World:
         self._expansion_claims = {}
         self.log = []
         self.chronicle = []
+        self._noticed = set()
 
+        self._index_rules()
+
+    def _index_rules(self):
+        """The lookups derived from the rules bundle.
+
+        Rebuilt whenever the bundle changes, because a replay that crossed a
+        version boundary while still holding the previous version's action table
+        would play a game neither version describes.
+        """
         self.eras = sorted(self.rules.eras, key=lambda e: e.start_year)
         self.actions = {a.action: a for a in self.rules.actions}
         self.objectives = {o.objective: o for o in self.rules.objectives}
@@ -352,7 +374,26 @@ class World:
             if isinstance(index, int)
         }
 
+    def feature(self, name):
+        """Whether the version this world is playing under turns on a behaviour."""
+        return self.rules.feature(name)
+
     # -- persistence of the world seed --
+
+    def use_rules_version(self, version):
+        """Play the next season under `version`, loading its tables if need be.
+
+        A season file records the version it was played under; a replay reads
+        that rather than assuming the current one. A file with no version
+        recorded is from before versioning and is replayed under the version the
+        world already holds.
+        """
+        if not version or version == self.rules_version:
+            return self.rules
+        self.rules = load_rules(version=version)
+        self.rules_version = self.rules.version
+        self._index_rules()
+        return self.rules
 
     def _stored_seed(self):
         row = self.conn.execute(
@@ -520,6 +561,54 @@ class World:
             )
         ]
 
+    # Rules 0.8: where a house's territorial designation may come from, most
+    # local first. Under 0.7 there was one source — the seat's province — so a
+    # house seated in Halifax could be styled "of Kamloops"; these tiers are
+    # what fixed that, and they are behind `local_designations` so a 0.7 season
+    # still draws the way it did when it was played.
+    #
+    # Four tiers rather than one because the data is thin: Natural Earth
+    # resolves 255 Canadian places, covering 111 of 343 ridings, so most seats
+    # have no town of their own to be named for. The seat's *name* always
+    # yields something, which is what makes the draw able to answer at all.
+    DESIGNATION_TIERS = 4
+
+    def _designation_tiers(self, fed_id, province):
+        """Candidate designations for a seat, most local first.
+
+        1. Places inside the seat riding, largest population first.
+        2. The seat's own name, split into its usable words.
+        3. Places in ridings that share a land border with the seat, in fed_id
+           order — a neighbour, not a stranger three provinces away.
+        4. The province bank rules 0.7 used, as a last resort.
+
+        Land adjacency only, and for the same reason expansion uses it: two
+        ridings across a strait are not neighbours in any sense a peerage would
+        recognise.
+        """
+        by_riding = places.places_by_riding()
+        by_tokens = places.tokens_by_riding()
+
+        neighbours = [
+            row["fed_id"] for row in self.conn.execute(
+                "SELECT CASE WHEN fed_id_a = ? THEN fed_id_b ELSE fed_id_a END AS fed_id"
+                " FROM adjacency WHERE adjacency_type = 'land' AND (fed_id_a = ? OR fed_id_b = ?)"
+                " ORDER BY fed_id",
+                (fed_id, fed_id, fed_id),
+            )
+        ]
+        near = []
+        for neighbour in neighbours:
+            near.extend(by_riding.get(neighbour, ()))
+
+        bank = [row.place for row in self.rules.places if row.province == province]
+        return [
+            list(by_riding.get(fed_id, ())),
+            list(by_tokens.get(fed_id, ())),
+            near,
+            bank,
+        ]
+
     def taken_places(self):
         """Territorial designations already carried by a living house, so a new
         peerage never reuses one (rules/README.md, Naming policy)."""
@@ -578,6 +667,11 @@ class World:
         )
         if line:
             self.chronicle.append(line)
+            # Who the chronicle mentioned this season, for rules 0.8's idle-house
+            # line. Taken from the event's own house list rather than by looking
+            # for a name in the prose: a title can appear inside another house's
+            # line, and matching on text would notice the wrong house.
+            self._noticed.update(houses or ())
         return event_id
 
     # -------------------------------------------------------------- founding --
@@ -723,14 +817,24 @@ class World:
         rank_index = self.rank_index.get(rank, 0)
 
         generator = NameGenerator(self.rules, rng)
+        tiers = self._designation_tiers(fed_id, province) \
+            if self.feature("local_designations") else None
         try:
             drawn = generator.draw_house(
                 community_obj.community, province, rank,
-                taken_places=self.taken_places(), surname=surname or None,
+                taken_places=self.taken_places(), surname=surname or None, tiers=tiers,
             )
         except Exception as exc:  # a bank that cannot serve this province
             self.log.append({"purpose": "founding.abandoned", "result": str(exc)})
             return None
+        if drawn["tier"] is not None:
+            # Which tier answered. Recorded because it is the only way to tell,
+            # from the log alone, whether the local tiers are doing any work —
+            # tests/test_designations.py measures exactly this over a long run.
+            self.log.append({
+                "purpose": "founding.designation",
+                "result": {"tier": drawn["tier"], "place": drawn["place"]},
+            })
 
         house = self._unique_house_name(drawn["surname"])
 
@@ -1034,8 +1138,19 @@ class World:
             "SELECT province FROM ridings WHERE fed_id = ?", (outer[0]["fed_id"],)
         ).fetchone()["province"]
         generator = NameGenerator(self.rules, rng)
+        # A cadet line is seated on the outermost riding the parent gives up, so
+        # its designation is drawn from *that* riding's ground, not the parent's.
         try:
-            place = generator.draw_place(province, self.taken_places())
+            if self.feature("local_designations"):
+                tier, place = generator.draw_designation(
+                    self._designation_tiers(outer[0]["fed_id"], province), self.taken_places()
+                )
+                self.log.append({
+                    "purpose": "partition.designation",
+                    "result": {"tier": tier, "place": place},
+                })
+            else:
+                place = generator.draw_place(province, self.taken_places())
         except Exception:
             return None
         peerage = peerage_title("Baron", house.split(" ")[0], place, row["tradition"])
@@ -2723,10 +2838,23 @@ class World:
         self.seasons_dir.mkdir(parents=True, exist_ok=True)
         path = self.seasons_dir / f"{season:04d}.json"
         path.write_text(canonical_json(record), encoding="utf-8")
+
+        # What gets recorded is the season's home in the *record*, not wherever
+        # this particular run happened to write it. The referee replays into a
+        # scratch directory before it publishes, and recording the write path put
+        # /tmp/hoc-referee-xxxx/0001.json into the published database as the
+        # season's home — a temp path, in the canonical state, naming a
+        # directory that no longer exists.
         try:
-            return str(path.relative_to(scenario.REPO_ROOT))
-        except ValueError:
-            return str(path)
+            canonical = scenario.seasons_dir() / f"{season:04d}.json"
+        except Exception:
+            canonical = path
+        for candidate in (canonical, path):
+            try:
+                return str(candidate.relative_to(scenario.REPO_ROOT))
+            except ValueError:
+                continue
+        return str(path)
 
     def _rewrite_season_file(self, season, record):
         """Re-write a season log after adding fields the writer did not know."""
@@ -2737,6 +2865,7 @@ class World:
         season = season_no if season_no is not None else self.season_no + 1
         self.log = []
         self.chronicle = []
+        self._noticed = set()
         rng = self.rng_for(season)
 
         # 1. Clocks and ages.
@@ -2796,8 +2925,50 @@ class World:
         if "enclosure" in self.phases:
             self._recompute_enclosure(season)
 
-        # 9-10. The season record.
+        # 9. Rules 0.8: say something when nothing happened.
+        if self.feature("quiet_season_line"):
+            self._quiet_season_lines(season)
+
+        # 10. The season record.
         return self._write_season(season, outcomes, founded)
+
+    # A house that has done nothing worth recording for this many consecutive
+    # seasons is noticed once. Ten is long enough that it is a fact about the
+    # house rather than about the dice: a house acts every season, so ten
+    # seasons of silence means ten actions that all failed or all rested.
+    QUIET_HOUSE_SEASONS = 10
+
+    def _quiet_season_lines(self, season):
+        """§0.8: the two lines that fire when nothing else did.
+
+        Order matters and is fixed in both engines: the season's own line first,
+        decided against the chronicle as the season's phases left it, then the
+        idle-house lines in active-house order. Deciding the season line after
+        the house lines would mean a silent season with one idle house never got
+        one, which is backwards — that season is quieter, not louder.
+        """
+        if not self.chronicle:
+            self.chronicle.append(f"Season {season} · A quiet year across the peerage.")
+
+        for row in self.active_houses():
+            house = row["house"]
+            if house in self._noticed:
+                self.conn.execute(
+                    "UPDATE house_stats SET quiet_seasons = 0 WHERE house = ?", (house,)
+                )
+                continue
+            quiet = (row["quiet_seasons"] or 0) + 1
+            self.conn.execute(
+                "UPDATE house_stats SET quiet_seasons = ? WHERE house = ?", (quiet, house)
+            )
+            # Exactly at the threshold, so a house that stays quiet for fifty
+            # seasons is mentioned once rather than forty-one times.
+            if quiet == self.QUIET_HOUSE_SEASONS:
+                held = self.holdings(house)
+                if held:
+                    self.chronicle.append(
+                        f"Season {season} · {row['peerage']} keeps to {held[0]['name_en']}."
+                    )
 
     def _founding_roll(self, season, rng):
         """§10: high on an empty map, falling smoothly to zero as land runs out.
@@ -2888,11 +3059,11 @@ class World:
         record = {
             "season": season,
             "seed": self.world_seed,
-            "rules_version": RULES_VERSION,
+            "rules_version": self.rules_version,
             # Which engine wrote this file. Excluded from the cross-check
             # comparison by scripts/crosscheck.py — it is the one field the two
             # engines are expected to disagree about, and the only one.
-            "engine": {"impl": "python", "rules_version": RULES_VERSION},
+            "engine": {"impl": "python", "rules_version": self.rules_version},
             "interventions": self._interventions_since(season),
             "draws": self.log,
             "actions": outcomes,
@@ -2913,7 +3084,7 @@ class World:
                 path,
                 houses_after,
                 ridings_after,
-                RULES_VERSION,
+                self.rules_version,
                 datetime.now(timezone.utc).isoformat(timespec="seconds"),
             ),
         )
@@ -2958,7 +3129,7 @@ class World:
             "ridings_after": last["ridings_after"] if last else before[1],
             "chronicle": chronicle[-SUMMARY_CHRONICLE_LINES:],
             "chronicle_total": len(chronicle),
-            "rules_version": RULES_VERSION,
+            "rules_version": self.rules_version,
             "seed": self.world_seed,
         }
 
@@ -3025,10 +3196,18 @@ class World:
         # A caller replaying season by season (to interleave interventions)
         # passes the world back in so its cached rules and seed are reused.
         if world is None:
-            world = cls(conn, world_seed=first["seed"], seasons_dir=seasons_dir)
+            world = cls(
+                conn, world_seed=first["seed"], seasons_dir=seasons_dir,
+                rules_version=first.get("rules_version"),
+            )
         for path in paths:
             with open(path, encoding="utf-8") as f:
                 record = json.load(f)
+            # Each season is replayed under the rules it was played under. A
+            # record spanning a version change — which every long game
+            # eventually does — switches here, and reloading is cheap enough
+            # beside a season that it is not worth caching across the boundary.
+            world.use_rules_version(record.get("rules_version"))
             if record.get("kind") == "initial":
                 world.initialise(record["seed"], seat=record.get("seat"))
             else:

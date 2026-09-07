@@ -331,8 +331,17 @@ def test_the_engine_and_its_tables_are_copied_into_the_site(played_site):
 
     for name in play_export.ENGINE_MODULES:
         assert (played_site / "engine" / name).exists(), f"engine/{name} was not exported"
-    for name in play_export.RULES_FILES:
-        assert (played_site / "data" / "rules" / name).exists(), f"rules/{name} was not exported"
+    # Rules are versioned, and the page reads current.txt to learn which
+    # directory to fetch. Every version is exported, because a version left
+    # behind is a season the browser could not replay.
+    from hoc import rules_data
+
+    version_root = played_site / "data" / "rules" / "versions"
+    assert (played_site / "data" / "rules" / "current.txt").exists()
+    for version in rules_data.available_versions():
+        for name in play_export.RULES_FILES:
+            assert (version_root / version / name).exists(), \
+                f"rules/versions/{version}/{name} was not exported"
     for name in play_export.REFERENCE_FILES:
         assert (played_site / "data" / "reference" / name).exists(), name
     assert (played_site / "data" / "world.json").exists()
@@ -395,7 +404,16 @@ def test_the_play_page_and_its_assets_stay_under_the_download_budget(played_site
 
     files = [played_site / "play.html", played_site / "play.js"]
     files += [played_site / "engine" / name for name in play_export.ENGINE_MODULES]
-    files += [played_site / "data" / "rules" / name for name in play_export.RULES_FILES]
+    # Only the version the page actually fetches counts against the budget:
+    # the others are on disk for a replay, not on the page's critical path.
+    from hoc import rules_data
+
+    current = rules_data.current_version()
+    files += [
+        played_site / "data" / "rules" / "current.txt",
+        *(played_site / "data" / "rules" / "versions" / current / name
+          for name in play_export.RULES_FILES),
+    ]
     files += [played_site / "data" / "reference" / name for name in play_export.REFERENCE_FILES]
     files += [played_site / "data" / "world.json"]
 

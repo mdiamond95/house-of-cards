@@ -254,7 +254,12 @@ CREATE TABLE house_stats (
     -- A director's forced action (§12), waiting for this house's next turn. The
     -- engine consumes it once and clears it, so an intervention lasts exactly
     -- one season and never becomes a standing instruction nobody remembers.
-    forced_action   TEXT
+    forced_action   TEXT,
+    -- Consecutive seasons in which nothing about this house reached the
+    -- chronicle. Rules 0.8 notices a house at ten (features.quiet_season_line);
+    -- under 0.7 it is counted and never read, which costs nothing and keeps the
+    -- column meaning one thing in both versions.
+    quiet_seasons   INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX idx_house_stats_removed ON house_stats(removed_season);

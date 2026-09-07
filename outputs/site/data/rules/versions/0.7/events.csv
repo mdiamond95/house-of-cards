@@ -1,0 +1,52 @@
+personal_year,band,name,magnitude,tag,direct_effect,note
+1867,confederation,Confederation,Major,Mixed,,British North America Act; Dominion formed
+1869,confederation,Red River Resistance,Major,Mixed,cohesion:-5:prairie,Riel's provisional government; Manitoba negotiations
+1870,confederation,Confederation Extension (Manitoba Act),Major,Mixed,,Manitoba enters; Rupert's Land transferred
+1871,confederation,British Columbia Joins; Treaty 1 Signed,Significant,Mixed,,Pacific railway promised; numbered treaties begin
+1873,confederation,Pacific Scandal,Significant,Progressive,influence:-5:Conservative,Macdonald government falls over CPR financing
+1874,confederation,Long Depression Reaches Canada,Major,Conservative,capital:-10:all,Trade collapse and deflation through 1879
+1876,confederation,Indian Act,Major,Conservative,,Consolidation of assimilationist policy
+1878,confederation,National Policy,Significant,Conservative,capital:+5:Conservative,Protective tariff; Macdonald returns
+1881,confederation,Canadian Pacific Railway Chartered,Significant,Mixed,capital:+5:prairie,Land grants and construction begin
+1883,confederation,CPR Strike,Significant,Mixed,,Labour unrest on the line
+1885,confederation,North-West Resistance,Major,Conservative,cohesion:-10:metis,Batoche; Riel executed; prairie realignment
+1885,confederation,Chinese Immigration Act,Significant,Conservative,,Head tax imposed
+1885,confederation,Montréal Smallpox Epidemic,Significant,Progressive,mortality:extra:quebec,Vaccination conflict; public-health reform
+1885,confederation,Last Spike at Craigellachie,Significant,Mixed,capital:+5:bc,Transcontinental line complete
+1888,confederation,Jesuits' Estates Act Controversy,Significant,Conservative,,Equal Rights agitation; Orange mobilisation
+1890,confederation,Manitoba Schools Question,Major,Conservative,cohesion:-5:francophone,Abolition of denominational schools; decade of crisis
+1891,confederation,Death of Sir John A. Macdonald,Minor,Mixed,,End of the founding ministry
+1896,confederation,Laurier Elected,Significant,Progressive,,First francophone prime minister; Sifton immigration
+1897,confederation,Klondike Gold Rush,Significant,Mixed,capital:+10:north,Dawson boom; Yukon Territory created 1898
+1897,confederation,Diamond Jubilee,Minor,Conservative,influence:+3:Conservative,Imperial sentiment at its height
+1899,confederation,South African War,Major,Conservative,,Volunteer contingents; English-French division
+1903,dominion,Alaska Boundary Award,Minor,Mixed,,Resentment of British arbitration
+1905,dominion,Alberta and Saskatchewan Created,Significant,Progressive,capital:+5:prairie,Autonomy Bills; schools compromise
+1907,dominion,Vancouver Anti-Asian Riots,Significant,Conservative,cohesion:-10:asian,Asiatic Exclusion League
+1910,dominion,Naval Service Act,Significant,Mixed,,Tin-pot navy; nationalist and imperialist fury
+1911,dominion,Reciprocity Election,Significant,Conservative,,Borden defeats Laurier on free trade
+1912,dominion,Regulation 17,Major,Conservative,cohesion:-10:francophone,Ontario restricts French-language schooling
+1914,dominion,Komagata Maru,Major,Conservative,cohesion:-10:asian,Sikh passengers turned away at Vancouver
+1914,dominion,The Great War,Major,Global,mortality:extra:all;capital:-5:all,"Enlistment, casualties, war economy through 1918"
+1916,dominion,Prairie Women's Suffrage,Significant,Progressive,,"Manitoba, Saskatchewan, Alberta enfranchise women"
+1917,dominion,Conscription Crisis,Major,Mixed,cohesion:-10:francophone,Military Service Act; Union government; Québec riots
+1917,dominion,Halifax Explosion,Major,Mixed,capital:-15:maritime;mortality:extra:maritime,Harbour disaster; continental relief
+1918,dominion,Spanish Influenza,Significant,Global,mortality:extra:all,Pandemic; public-health reorganisation
+1919,dominion,Winnipeg General Strike,Major,Mixed,cohesion:-5:prairie,Sympathy strike; Bloody Saturday; sedition trials
+1919,dominion,Nickle Resolution Defeated,Minor,Mixed,,In this Canada the Commons declines to end titles
+1921,dominion,Progressives and the First Woman MP,Significant,Progressive,,Farmers' revolt; Agnes Macphail elected
+1923,dominion,Chinese Exclusion Act,Significant,Conservative,cohesion:-10:asian,Immigration closed until 1947
+1925,dominion,United Church Formed,Minor,Progressive,,Methodist-Presbyterian-Congregational union
+1929,dominion,The Persons Case,Significant,Progressive,influence:+5:female_line,Privy Council rules women are persons
+1930,late,The Long Contraction,Major,Conservative,capital:-15:all,Depression; Bennett austerity; relief camps
+1932,late,Founding of the CCF,Major,Progressive,,Regina Manifesto 1933; cooperative commonwealth
+1935,late,On-to-Ottawa Trek,Significant,Progressive,,Regina Riot; Bennett defeated
+1935,late,Bank of Canada Opens,Minor,Mixed,,Central banking; monetary reform
+1939,late,The Second World War,Major,Global,mortality:extra:all;capital:+5:all,Total war; industrial expansion
+1942,late,Japanese-Canadian Internment,Major,Conservative,cohesion:-15:asian;capital:-20:asian,Removal and dispossession on the Pacific coast
+1944,late,CCF Government in Saskatchewan,Significant,Progressive,,First social-democratic government in North America
+1945,late,Family Allowance,Significant,Progressive,,Universal social programme begins
+1947,late,Canadian Citizenship Act,Minor,Progressive,,Distinct citizenship; exclusion act repealed
+1949,late,Newfoundland Joins Confederation,Significant,Mixed,capital:+5:newfoundland,Tenth province
+1957,late,Hospital Insurance,Significant,Progressive,,Federal-provincial cost sharing
+1960,late,Status Indians Gain the Federal Vote,Significant,Progressive,,Enfranchisement without loss of status

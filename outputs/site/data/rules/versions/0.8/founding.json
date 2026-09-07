@@ -1,0 +1,48 @@
+{
+  "season_1": "Exactly one house is founded, by the director's choice of seat riding or by the engine's draw if none is given.",
+  "p_found": {
+    "formula": "coefficient * sqrt(unclaimed_land_adjacent_ridings / 343)",
+    "coefficient": 0.5,
+    "note": "§10: probability is high on an empty map and falls smoothly as land runs out, reaching zero when the map is full. No cap on the number of houses. The §6 'default 0.15, halved when 40+ houses exist' statement was deleted in 0.3. The coefficient and exponent are separate numbers so the founding rate can be tuned in this table rather than in hoc/sim.py, as docs/ENGINE_DESIGN.md §11 requires. The design document's 0.25 was raised to 0.50 in rules version 0.4 to meet the §17 smoke targets — see rules/CHANGELOG.md for the measurements.",
+    "exponent_note": "The exponent is fixed at one half and the formula is written as a square root (rules 0.7). IEEE-754 requires sqrt to be correctly rounded, so Python's math.sqrt and JavaScript's Math.sqrt return the same double for the same input; a general pow carries no such guarantee. This is the only floating-point computation in the engine — see docs/DETERMINISM.md."
+  },
+  "region_weights": {
+    "initial": {
+      "maritime": 300,
+      "quebec": 300,
+      "ontario": 400,
+      "prairie": 200,
+      "bc": 100,
+      "north": 50
+    },
+    "drift": "Shifts each season toward regions with more unclaimed land-adjacent capacity, so settlement moves west as the east fills, without any date driving it.",
+    "scale": "Integer weights at a fixed scale of 100 (rules 0.7): 3.0 is written 300. Every weight the engine draws against is an integer so the Python and JavaScript engines agree exactly — see docs/DETERMINISM.md.",
+    "drift_formula": "weight = base * (20 + unclaimed_land_adjacent_in_region) // 20, integer division. The old float form base * (1 + room/20) is the same number without the rounding."
+  },
+  "tag_climate_fit": "The current Confederation-band ledger sign doubles the weight of the matching tag when a new house's tag is drawn.",
+  "rank_probabilities": {
+    "Baron": 70,
+    "Viscount": 25,
+    "Earl": 5
+  },
+  "rank_index": {
+    "Baron": 0,
+    "Viscount": 1,
+    "Earl": 2,
+    "Marquis": 3,
+    "Duke": 4,
+    "note": "Gendered forms share the index: Baroness 0, Viscountess 1, Countess 2, Marchioness 3, Duchess 4. Matches the rank ladder in hoc/rules.py. Settled in rules version 0.3."
+  },
+  "seat_riding_rule": "Unclaimed, weighted toward provincial population centres early in a region's settlement and toward hinterland later.",
+  "cultural_community": "Drawn from a per-region table (rules/communities.csv). Names come from community-specific surname banks and never reproduce the name of a well-known real person — see rules/README.md, Naming policy.",
+  "cadet_foundings": "Foundings through partition (§9) do not use the founding roll and can occur on a full map.",
+  "initial_stats": {
+    "capital": "30 + 5*rank_index + d20",
+    "influence": "20 + 5*rank_index + d20",
+    "cohesion": "60 + d20",
+    "ambition": "d10",
+    "holder_age": "40 + d30",
+    "note": "rank_index is the mapping recorded under rank_index above. All draws come from the season's seeded RNG and are logged."
+  },
+  "rank_probabilities_scale": "Integer weights at a scale of 100 (rules 0.7): 0.70 is written 70. They are drawn as weights, not as probabilities, so they need not sum to 100 — these happen to."
+}

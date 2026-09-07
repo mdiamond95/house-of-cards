@@ -25,7 +25,7 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from hoc import names as pynames, palette as pypalette, prng as pyprng  # noqa: E402
+from hoc import names as pynames, palette as pypalette, prng as pyprng, rules_data  # noqa: E402
 from hoc.rules_data import load_rules, probability_for_age  # noqa: E402
 
 SELFTEST = ROOT / "web" / "engine" / "selftest.js"
@@ -173,9 +173,16 @@ def test_a_long_run_of_colour_assignments_agrees(js):
 # ----------------------------------------------------------------- the rules --
 
 
-def test_the_csv_reader_finds_the_same_rows(js):
+def test_the_csv_reader_finds_the_same_rows(js, rules):
+    """The JS side names its tables logically ("rules/actions.csv"); the path
+    they actually live at carries the rules version, so this resolves them
+    against the same version the Python bundle was loaded from."""
     for name, count in js["rules"]["csv_row_counts"].items():
-        with open(ROOT / name, newline="", encoding="utf-8") as f:
+        if name.startswith("rules/"):
+            path = rules_data.version_dir(rules.version) / name[len("rules/"):]
+        else:
+            path = ROOT / name
+        with open(path, newline="", encoding="utf-8") as f:
             assert len(list(csv.reader(f))) == count, name
 
 
