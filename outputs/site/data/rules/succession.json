@@ -1,0 +1,74 @@
+{
+  "clean_succession": {
+    "condition": "heir named",
+    "cohesion_delta": -5,
+    "clock_reset_to": 1867,
+    "effect": "heir becomes holder at heir_age"
+  },
+  "partition": {
+    "condition": "two or more heirs named, holdings >= 4",
+    "effect": "The senior heir takes the seat and the contiguous core; the junior heir founds a cadet house of the same community and tag in the outer holdings, with a \"kin\" relation to the parent.",
+    "min_holdings": 9,
+    "min_heirs": 2
+  },
+  "disorderly_succession": {
+    "condition": "no heir",
+    "cohesion_delta": -25,
+    "capital_delta": -10,
+    "sig_minus_risk": "with one neighbour",
+    "successor_age_formula": "35 + d20",
+    "riding_loss": "see losing_ridings.disorderly_succession",
+    "sig_minus_note": "§9 says a disorderly succession carries a 'Sig- risk with one neighbour' but gives no probability. Authored as 0.5 in rules version 0.5, written as the integer per cent 50 in rules 0.7 — see rules/CHANGELOG.md.",
+    "sig_minus_probability_pct": 50
+  },
+  "extinction": {
+    "triggers": [
+      "cohesion falls below 15",
+      "a disorderly succession finds no successor (roll: 20% chance of no successor)"
+    ],
+    "escheat": "Holdings escheat to unclaimed unless a ◉+ or kin partner exists, in which case that partner may absorb them (Absorb roll at +3).",
+    "record": "The removed house remains in the record with its full history."
+  },
+  "heirs": {
+    "second_heir_condition": "first heir aged 25+ and holdings >= 4",
+    "second_heir_effect": "naming a second heir raises cohesion +3 now and enables partition later",
+    "second_heir_min_holdings": 9,
+    "second_heir_min_age": 25
+  },
+  "losing_ridings": {
+    "contraction_sale": {
+      "trigger": "a Major Conservative economic event",
+      "condition": "capital < 20",
+      "effect": "must sell one non-seat riding to an adjacent house with capital >= 50 (or to the Crown, which returns it to unclaimed) at the event's resolution"
+    },
+    "debt": {
+      "trigger": "capital below 0 for three consecutive seasons",
+      "effect": "forces a sale as in contraction_sale"
+    },
+    "disorderly_succession": {
+      "condition": "house has 4+ holdings",
+      "effect": "loses its most recently acquired non-seat riding to unclaimed",
+      "note": "represents contested wills and Crown review",
+      "probability_pct": 50
+    },
+    "cession": "through the Cede / swap action",
+    "escheat": "on extinction, see extinction.escheat above",
+    "seat_riding_rule": "The seat riding is only ever lost by challenge, absorption or extinction."
+  },
+  "enclosure": {
+    "definition": "A house is enclosed when no unclaimed riding is land-adjacent to any of its holdings.",
+    "checked": "every season",
+    "effects": [
+      "Expand becomes illegal",
+      "Purchase, Marriage alliance, Absorb, Cede/swap and Challenge gain the enclosure bonus (see rules/actions.csv enclosure_bonus column, where stated)",
+      "Cultivate influence, Endow and Petition elevation weights double",
+      "Ambition drifts +1 every 10 enclosed seasons for Conservative and Mixed houses; -1 every 10 enclosed seasons for Progressive houses",
+      "Fully surrounded houses that also have cohesion < 40 draw a \"Siege\" objective: survive 10 seasons without losing a riding, or seek a protector (Marriage alliance / compact) with the strongest neighbour"
+    ],
+    "map_full_behaviour": "When the map is full (no unclaimed riding anywhere), founding stops by itself. The engine of change becomes succession: disorderly successions, partitions and extinctions return ridings to play or redistribute them, and founding resumes wherever land reopens. Regional fullness is tracked so that the Prairies can be in a land-rush while Nova Scotia is already in its dynastic phase."
+  },
+  "marriage_alliance": {
+    "dispute_block_seasons": 20,
+    "note": "§7: future disputes between two houses joined by marriage are blocked for 20 seasons."
+  }
+}

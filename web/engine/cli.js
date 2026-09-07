@@ -18,7 +18,7 @@ import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { newWorld, canonicalJson, PHASES } from './index.js';
+import { newWorld, resumeWorld, canonicalJson, PHASES } from './index.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = path.resolve(HERE, '..', '..');
@@ -26,7 +26,7 @@ const DEFAULT_ROOT = path.resolve(HERE, '..', '..');
 function parseArgs(argv) {
   const args = {
     seed: 1867, seasons: 1, seat: null, out: null,
-    root: DEFAULT_ROOT, phases: null,
+    root: DEFAULT_ROOT, phases: null, resume: null, interventions: null,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const flag = argv[i];
@@ -37,6 +37,8 @@ function parseArgs(argv) {
       case '--seat': args.seat = value; i += 1; break;
       case '--out': args.out = value; i += 1; break;
       case '--root': args.root = path.resolve(value); i += 1; break;
+      case '--resume': args.resume = value; i += 1; break;
+      case '--interventions': args.interventions = value; i += 1; break;
       case '--phases':
         args.phases = value.split(',').map((p) => p.trim()).filter(Boolean);
         i += 1;
@@ -67,15 +69,39 @@ function main() {
 
   mkdirSync(args.out, { recursive: true });
 
-  const { world, record } = newWorld(read, args.seed, args.seat, { phases: args.phases });
   const write = (season, value) => {
     const name = String(season).padStart(4, '0');
     writeFileSync(path.join(args.out, `${name}.json`), canonicalJson(value), 'utf8');
   };
-  write(1, record);
 
-  for (let season = 2; season <= args.seasons; season += 1) {
+  // Director interventions to apply between seasons, as a list of
+  // {after_season, operations} — the same shape a turn file carries, and the
+  // same shape scripts/crosscheck.py hands the Python side.
+  const script = args.interventions
+    ? JSON.parse(readFileSync(args.interventions, 'utf8'))
+    : [];
+  const dueAfter = (season) => script.filter((entry) => entry.after_season === season);
+
+  let world;
+  let first;
+  if (args.resume !== null) {
+    // Resuming: the snapshot says which season the world stands at, and the
+    // count is how many *more* to play.
+    const snapshot = JSON.parse(readFileSync(args.resume, 'utf8'));
+    world = resumeWorld(read, snapshot, { phases: args.phases });
+    first = (snapshot.season || 0) + 1;
+  } else {
+    const started = newWorld(read, args.seed, args.seat, { phases: args.phases });
+    world = started.world;
+    write(1, started.record);
+    first = 2;
+    for (const entry of dueAfter(1)) world.intervene(entry.operations, entry.title);
+  }
+
+  const last = args.resume !== null ? first + args.seasons - 1 : args.seasons;
+  for (let season = first; season <= last; season += 1) {
     write(season, world.runSeason());
+    for (const entry of dueAfter(season)) world.intervene(entry.operations, entry.title);
   }
 }
 
