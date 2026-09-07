@@ -159,7 +159,11 @@ export class LoggingRandom {
 
   chanceFloat(probability, purpose = null) {
     const roll = this.rng.randFloat();
-    return this._record(purpose, { roll, p: probability, hit: roll < probability }).hit;
+    return this._record(purpose, {
+      roll: new FloatValue(roll),
+      p: new FloatValue(probability),
+      hit: roll < probability,
+    }).hit;
   }
 
   die(sides = 6, purpose = null) {
@@ -184,6 +188,20 @@ export function seasonSeed(worldSeed, seasonNo) {
   return prngSeasonSeed(worldSeed, seasonNo);
 }
 
+// A number that must be written the way Python writes a float.
+//
+// Python distinguishes 1 from 1.0 and json.dumps writes them differently;
+// JavaScript has one number type and would write both as "1". The engine puts
+// exactly two genuine floats into a season record — §10's founding probability
+// and the rand_float() it is compared against — and both are boxed in this so
+// `encodeFloat` can render them as Python's repr does. Everything else in the
+// record is an integer and must stay one.
+export class FloatValue {
+  constructor(value) {
+    this.value = value;
+  }
+}
+
 // The one way this repo serialises a season log: sorted keys, no spaces after
 // separators, UTF-8 as written, one trailing newline. Mirrors
 // hoc/sim.py's canonical_json.
@@ -199,6 +217,7 @@ export function canonicalJson(value) {
 function encode(value) {
   if (value === null || value === undefined) return 'null';
   if (typeof value === 'boolean') return value ? 'true' : 'false';
+  if (value instanceof FloatValue) return encodeFloat(value.value);
   if (typeof value === 'number') return encodeNumber(value);
   if (typeof value === 'string') return JSON.stringify(value);
   if (Array.isArray(value)) return `[${value.map(encode).join(',')}]`;
@@ -208,29 +227,50 @@ function encode(value) {
   return `{${keys.map((key) => `${JSON.stringify(key)}:${encode(value[key])}`).join(',')}}`;
 }
 
-// Python and JavaScript both print the shortest decimal that round-trips, so
-// their float output agrees — except that JavaScript writes an integral float
-// as "1" where Python writes "1.0", and writes exponents differently. The
-// engine only ever serialises one non-integer float (the founding roll's
-// probability and its comparison roll), and the guard below turns an integral
-// one back into Python's spelling.
+// Every unboxed number in a season record is an integer, and is written as one.
 function encodeNumber(value) {
+  if (!Number.isInteger(value)) {
+    throw new Error(
+      `refusing to serialise the non-integer ${value}: wrap a genuine float in`
+      + ' FloatValue so it is written the way Python writes one',
+    );
+  }
+  return String(value);
+}
+
+// Python's repr for a float, reproduced.
+//
+// Both languages print the shortest decimal that round-trips, so the *digits*
+// agree; what differs is the formatting around them. Python always shows a
+// decimal point ("0.0", never "0"), and switches to exponential notation when
+// the decimal exponent is below -4 or at least 16 — where JavaScript switches
+// below -6 and at 21 — and pads the exponent to two digits ("1e-05", not
+// "1e-5"). All three differences bite: the engine's floats live in [0, 1), so a
+// rand_float() below 1e-4 is written one way here and another way there.
+function encodeFloat(value) {
   if (!Number.isFinite(value)) throw new Error(`cannot serialise ${value}`);
-  if (Number.isInteger(value)) {
-    // A float that happens to be integral must still be written as Python
-    // writes it. The engine's integral values are all genuine integers except
-    // p_found at an empty or full map (0.0 and 0.5 → only 0.0 is integral).
-    return Object.is(value, -0) ? '-0.0' : String(value);
+  if (value === 0) return Object.is(value, -0) ? '-0.0' : '0.0';
+
+  const negative = value < 0;
+  // toExponential() with no argument gives the shortest digits that uniquely
+  // identify the number — the same digits Python's repr chooses.
+  const [mantissa, exponentText] = Math.abs(value).toExponential().split('e');
+  const exponent = parseInt(exponentText, 10);
+  const digits = mantissa.replace('.', '');
+  const sign = negative ? '-' : '';
+
+  if (exponent < -4 || exponent >= 16) {
+    const expSign = exponent < 0 ? '-' : '+';
+    const expDigits = String(Math.abs(exponent)).padStart(2, '0');
+    return `${sign}${mantissa}e${expSign}${expDigits}`;
   }
-  const text = String(value);
-  if (text.includes('e')) {
-    // Python spells small floats like 1e-05; JavaScript like 1e-5.
-    const [mantissa, exponent] = text.split('e');
-    const sign = exponent.startsWith('-') ? '-' : '+';
-    const digits = exponent.replace(/^[+-]/, '').padStart(2, '0');
-    return `${mantissa}e${sign}${digits}`;
+
+  if (exponent >= 0) {
+    const whole = digits.slice(0, exponent + 1).padEnd(exponent + 1, '0');
+    const fraction = digits.slice(exponent + 1);
+    return `${sign}${whole}.${fraction === '' ? '0' : fraction}`;
   }
-  return text;
+  return `${sign}0.${'0'.repeat(-exponent - 1)}${digits}`;
 }
 
 // ------------------------------------------------------------------ world --
@@ -2175,7 +2215,7 @@ export class World {
     const spec = this.rules.founding.p_found;
     const room = this.state.unclaimedLandAdjacentCount();
     const probability = pFound(room, TOTAL_RIDINGS, spec.coefficient);
-    rng.draw('founding.p_found', { room, p: probability });
+    rng.draw('founding.p_found', { room, p: new FloatValue(probability) });
     if (probability <= 0) return null;
     if (!rng.chanceFloat(probability, 'founding.roll')) return null;
     return this.foundHouse(season, { rng });
