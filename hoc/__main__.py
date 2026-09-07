@@ -126,10 +126,19 @@ def cmd_check(args):
     return 0 if check.ok else 1
 
 
-def _open_world(conn, seed=None):
+def sim_phases():
+    """The §6 phase names, for the --phases help text."""
+    from hoc import sim
+
+    return sim.PHASES
+
+
+def _open_world(conn, seed=None, phases=None):
     from hoc import scenario as scen, sim
 
-    return sim.World(conn, world_seed=seed, seasons_dir=scen.seasons_dir())
+    return sim.World(
+        conn, world_seed=seed, seasons_dir=scen.seasons_dir(), phases=phases
+    )
 
 
 def cmd_sim(args):
@@ -167,8 +176,11 @@ def cmd_sim(args):
         return 0
 
     if args.sim_command == "run":
+        phases = None
+        if getattr(args, "phases", None):
+            phases = [p.strip() for p in args.phases.split(",") if p.strip()]
         try:
-            world = _open_world(conn)
+            world = _open_world(conn, phases=phases)
         except sim.SimError as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 1
@@ -296,6 +308,16 @@ def build_parser():
     run_parser.add_argument(
         "--stop-on",
         help="comma-separated pause conditions: removal, challenge, major, marquis",
+    )
+    run_parser.add_argument(
+        "--phases",
+        help=(
+            "DEVELOPER ONLY. Comma-separated subset of the §6 season loop to run"
+            f" ({', '.join(sim_phases())}); the default is all of them. This exists"
+            " so the Python and JavaScript engines can be cross-checked one phase"
+            " at a time (scripts/crosscheck.py). A world played with a subset is a"
+            " diagnostic, not a game — never use it on the live scenario."
+        ),
     )
     sim_sub.add_parser("status", help="where the autoplay game stands")
     sim_parser.set_defaults(func=cmd_sim)

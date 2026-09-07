@@ -577,3 +577,57 @@ def test_rebuild_commits_a_replayed_autoplay_scenario(tmp_path, rules, monkeypat
     assert snapshot(reopened) == expected
     assert reopened.execute("SELECT COUNT(*) AS n FROM houses").fetchone()["n"] > 0
     reopened.close()
+
+
+# ------------------------------------------------------ the --phases flag --
+#
+# `--phases` runs a subset of the §6 loop so that the Python and JavaScript
+# engines can be cross-checked one phase at a time while the port is worked on
+# (scripts/crosscheck.py). It is developer-only, and the thing that matters
+# about it is that it changes nothing unless it is asked to.
+
+
+def test_a_world_runs_every_phase_by_default(tmp_path, rules):
+    """The default must be the whole loop. A phase quietly dropped from the
+    default would be a rule silently switched off in the live game."""
+    conn = load_seed.build(tmp_path / "phases.db", seed=scenario.seed_dir("new"))
+    world = sim.World(conn, rules=rules, world_seed=5)
+    assert world.phases == frozenset(sim.PHASES)
+    assert set(sim.PHASES) == {
+        "clocks", "friction", "events", "mortality", "actions", "objectives",
+        "debt", "founding", "enclosure",
+    }
+    conn.close()
+
+
+def test_the_phases_flag_is_documented_as_developer_only():
+    import subprocess
+
+    result = subprocess.run(
+        [sys.executable, "-m", "hoc", "sim", "run", "--help"],
+        cwd=ROOT, capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "--phases" in result.stdout
+    assert "DEVELOPER ONLY" in result.stdout
+
+
+def test_an_unknown_phase_is_refused(tmp_path, rules):
+    conn = load_seed.build(tmp_path / "badphase.db", seed=scenario.seed_dir("new"))
+    with pytest.raises(sim.SimError) as raised:
+        sim.World(conn, rules=rules, world_seed=5, phases=["clocks", "teatime"])
+    assert "teatime" in str(raised.value)
+    conn.close()
+
+
+def test_dropping_a_phase_actually_drops_it(tmp_path, rules):
+    """The flag has to do something, or the cross-check's phase-by-phase mode
+    would be comparing two full runs and calling it progress."""
+    conn = load_seed.build(tmp_path / "nofound.db", seed=scenario.seed_dir("new"))
+    world = sim.World(conn, rules=rules, world_seed=5, phases=["clocks", "actions"])
+    world.initialise(5)
+    for _ in range(20):
+        world.run_season()
+    # Founding was not among the phases, so season 1's house is still the only one.
+    assert len(world.active_houses()) == 1
+    conn.close()

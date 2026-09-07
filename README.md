@@ -48,7 +48,7 @@ runs both engines and diffs their season files byte for byte, ignoring only the 
 
 `web/engine/` is plain ES modules: no build step, no bundler, no packages, loadable from the static site by `<script type="module">` alone.
 
-**As of Phase 10-1 the JavaScript season loop (`sim.js`) is not written yet.** The primitives beneath it are, and `tests/test_js_engine_parity.py` holds them to their Python counterparts value for value; the cross-check tests skip, with a reason, until there is a season loop to compare.
+Both engines are complete as of Phase 10-1b. `tests/test_crosscheck.py` runs seeds 1867, 2 and 3 for 120 seasons each and asserts zero differences; the same three seeds have been checked to 300 seasons. `tests/test_js_engine_parity.py` holds the primitives underneath to their Python counterparts value for value, so a divergence is named by the primitive that caused it rather than by the season it surfaced in. A 300-season game takes about 6 seconds under node.
 
 ## Playing the game
 
