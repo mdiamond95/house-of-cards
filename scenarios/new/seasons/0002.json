@@ -1,0 +1,55 @@
+{
+ "season": 2,
+ "seed": 1867,
+ "rules_version": "0.6",
+ "interventions": [],
+ "draws": [
+  {
+   "purpose": "mortality.Cashin",
+   "result": {
+    "roll": 0.994226,
+    "p": 0.01,
+    "hit": false
+   }
+  },
+  {
+   "purpose": "action.Cashin",
+   "result": "Cultivate influence"
+  },
+  {
+   "purpose": "resolve.Cultivate influence.Cashin",
+   "result": {
+    "dice": [
+     5,
+     2
+    ],
+    "total": 7
+   }
+  },
+  {
+   "purpose": "founding.p_found",
+   "result": {
+    "room": 342,
+    "p": 0.499271
+   }
+  },
+  {
+   "purpose": "founding.roll",
+   "result": {
+    "roll": 0.666623,
+    "p": 0.49927060500918646,
+    "hit": false
+   }
+  }
+ ],
+ "actions": [
+  {
+   "action": "Cultivate influence",
+   "success": true
+  }
+ ],
+ "founded": null,
+ "chronicle": [],
+ "houses_after": 1,
+ "ridings_after": 1
+}

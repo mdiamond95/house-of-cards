@@ -1,2 +1,4 @@
 id,house,fed_id,seat_order,hex,acquired_event_id,released_event_id
 1,Cashin,35046,1,#772222,1,
+2,Cashin,35052,2,#c63939,4,
+3,Cox,35062,1,#2f8989,6,

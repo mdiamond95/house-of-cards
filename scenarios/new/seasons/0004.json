@@ -1,0 +1,77 @@
+{
+ "season": 4,
+ "seed": 1867,
+ "rules_version": "0.6",
+ "interventions": [],
+ "draws": [
+  {
+   "purpose": "event.response.Cashin",
+   "result": 2
+  },
+  {
+   "purpose": "mortality.Cashin",
+   "result": {
+    "roll": 0.789631,
+    "p": 0.02,
+    "hit": false
+   }
+  },
+  {
+   "purpose": "action.Cashin",
+   "result": "Expand"
+  },
+  {
+   "purpose": "resolve.Expand.Cashin",
+   "result": {
+    "dice": [
+     4,
+     5
+    ],
+    "total": 9
+   }
+  },
+  {
+   "purpose": "expand.target.Cashin",
+   "result": "35052"
+  },
+  {
+   "purpose": "contest.Cashin.35052",
+   "result": {
+    "dice": [
+     2,
+     5
+    ],
+    "total": 7
+   }
+  },
+  {
+   "purpose": "founding.p_found",
+   "result": {
+    "room": 341,
+    "p": 0.49854
+   }
+  },
+  {
+   "purpose": "founding.roll",
+   "result": {
+    "roll": 0.712848,
+    "p": 0.49854014286963705,
+    "hit": false
+   }
+  }
+ ],
+ "actions": [
+  {
+   "action": "Expand",
+   "success": true,
+   "riding": "Leeds—Grenville—Thousand Islands—Rideau Lakes"
+  }
+ ],
+ "founded": null,
+ "chronicle": [
+  "Season 4 · Baron Cashin of Dundas meets Confederation Extension (Manitoba Act) and resists.",
+  "Season 4 · Baron Cashin of Dundas takes Leeds—Grenville—Thousand Islands—Rideau Lakes."
+ ],
+ "houses_after": 1,
+ "ridings_after": 2
+}

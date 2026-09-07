@@ -1,2 +1,3 @@
 id,house,name,gender,age,role,alive,married,born_season,died_season
-1,Cashin,Mary Cashin,f,57,holder,1,0,1,
+1,Cashin,Mary Cashin,f,62,holder,1,0,1,
+2,Cox,Henry Cox,m,68,holder,1,0,5,

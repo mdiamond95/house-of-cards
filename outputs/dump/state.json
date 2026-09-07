@@ -17,12 +17,44 @@
           "riding": "Kingston and the Islands",
           "province": "ON",
           "hex": "#772222"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "35052",
+          "riding": "Leeds—Grenville—Thousand Islands—Rideau Lakes",
+          "province": "ON",
+          "hex": "#c63939"
+        }
+      ],
+      "riding_count": 2,
+      "clock": {
+        "personal_year": 1872,
+        "basis": "founded season 1"
+      }
+    },
+    {
+      "house": "Cox",
+      "peerage": "Viscount Cox of Temagami",
+      "rank": "Viscount",
+      "status": "active",
+      "primary_hex": "#2f8989",
+      "secondary_hex": "#58c6c6",
+      "notes": "founded season 5",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "35062",
+          "riding": "Mississauga East—Cooksville",
+          "province": "ON",
+          "hex": "#2f8989"
         }
       ],
       "riding_count": 1,
       "clock": {
-        "personal_year": 1867,
-        "basis": "founded season 1"
+        "personal_year": 1868,
+        "basis": "founded season 5"
       }
     }
   ],
@@ -67,6 +99,96 @@
   },
   "events": [
     {
+      "id": 6,
+      "turn_id": null,
+      "kind": "founding",
+      "era_cohort": "confederation",
+      "title": "Viscount Cox of Temagami founded",
+      "narrative": "Season 5 · Viscount Cox of Temagami is created, seated at Mississauga East—Cooksville.",
+      "mechanical_delta": "{\"season\": 5, \"stats\": {\"capital\": 55, \"influence\": 33, \"cohesion\": 79, \"ambition\": 7}, \"community\": \"Toronto Industrial and Commercial\", \"tag\": \"Mixed\"}",
+      "source": "engine",
+      "created_at": "2026-09-07 12:36:59",
+      "houses": [
+        {
+          "house": "Cox",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "confederation",
+      "title": "British Columbia Joins; Treaty 1 Signed",
+      "narrative": "Season 5 · Baron Cashin of Dundas meets British Columbia Joins; Treaty 1 Signed and resists.",
+      "mechanical_delta": "{\"season\": 5, \"response\": \"Resist\", \"roll\": 3, \"personal_year\": 1871, \"magnitude\": \"Significant\", \"tag\": \"Mixed\"}",
+      "source": "engine",
+      "created_at": "2026-09-07 12:36:59",
+      "houses": [
+        {
+          "house": "Cashin",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "turn_id": null,
+      "kind": "expansion",
+      "era_cohort": "confederation",
+      "title": "Baron Cashin of Dundas takes Leeds—Grenville—Thousand Islands—Rideau Lakes",
+      "narrative": "Season 4 · Baron Cashin of Dundas takes Leeds—Grenville—Thousand Islands—Rideau Lakes.",
+      "mechanical_delta": "{\"season\": 4, \"riding\": \"Leeds\\u2014Grenville\\u2014Thousand Islands\\u2014Rideau Lakes\", \"roll\": 9}",
+      "source": "engine",
+      "created_at": "2026-09-07 12:36:59",
+      "houses": [
+        {
+          "house": "Cashin",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "confederation",
+      "title": "Confederation Extension (Manitoba Act)",
+      "narrative": "Season 4 · Baron Cashin of Dundas meets Confederation Extension (Manitoba Act) and resists.",
+      "mechanical_delta": "{\"season\": 4, \"response\": \"Resist\", \"roll\": 3, \"personal_year\": 1870, \"magnitude\": \"Major\", \"tag\": \"Mixed\"}",
+      "source": "engine",
+      "created_at": "2026-09-07 12:36:59",
+      "houses": [
+        {
+          "house": "Cashin",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "confederation",
+      "title": "Red River Resistance",
+      "narrative": "Season 3 · Baron Cashin of Dundas meets Red River Resistance and resists.",
+      "mechanical_delta": "{\"season\": 3, \"response\": \"Resist\", \"roll\": 2, \"personal_year\": 1869, \"magnitude\": \"Major\", \"tag\": \"Mixed\"}",
+      "source": "engine",
+      "created_at": "2026-09-07 12:36:59",
+      "houses": [
+        {
+          "house": "Cashin",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
       "id": 1,
       "turn_id": null,
       "kind": "founding",
@@ -86,10 +208,10 @@
     }
   ],
   "counts": {
-    "houses_active": 1,
+    "houses_active": 2,
     "houses_removed": 0,
     "ridings_total": 343,
-    "ridings_claimed": 1,
+    "ridings_claimed": 3,
     "holders_unrecovered": 0
   }
 }

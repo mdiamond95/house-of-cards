@@ -1,2 +1,7 @@
 season_no,seed,json_path,houses_after,ridings_after,rules_version,created_at
 1,1867,scenarios/new/seasons/0001.json,1,1,0.6,2026-09-06T21:50:20+00:00
+2,1867,scenarios/new/seasons/0002.json,1,1,0.6,2026-09-07T12:36:59+00:00
+3,1867,scenarios/new/seasons/0003.json,1,1,0.6,2026-09-07T12:36:59+00:00
+4,1867,scenarios/new/seasons/0004.json,1,2,0.6,2026-09-07T12:36:59+00:00
+5,1867,scenarios/new/seasons/0005.json,2,3,0.6,2026-09-07T12:36:59+00:00
+6,1867,scenarios/new/seasons/0006.json,2,3,0.6,2026-09-07T12:36:59+00:00

@@ -1,0 +1,128 @@
+{
+ "season": 5,
+ "seed": 1867,
+ "rules_version": "0.6",
+ "interventions": [],
+ "draws": [
+  {
+   "purpose": "event.response.Cashin",
+   "result": 2
+  },
+  {
+   "purpose": "mortality.Cashin",
+   "result": {
+    "roll": 0.387894,
+    "p": 0.02,
+    "hit": false
+   }
+  },
+  {
+   "purpose": "action.Cashin",
+   "result": "Consolidate (rest)"
+  },
+  {
+   "purpose": "objective.replace.Cashin",
+   "result": "Form a compact"
+  },
+  {
+   "purpose": "founding.p_found",
+   "result": {
+    "room": 341,
+    "p": 0.49854
+   }
+  },
+  {
+   "purpose": "founding.roll",
+   "result": {
+    "roll": 0.478742,
+    "p": 0.49854014286963705,
+    "hit": true
+   }
+  },
+  {
+   "purpose": "founding.region",
+   "result": "ontario"
+  },
+  {
+   "purpose": "founding.seat",
+   "result": "35062"
+  },
+  {
+   "purpose": "founding.community",
+   "result": "Toronto Industrial and Commercial"
+  },
+  {
+   "purpose": "founding.tag",
+   "result": "Mixed"
+  },
+  {
+   "purpose": "founding.rank",
+   "result": "Viscount"
+  },
+  {
+   "purpose": "unattributed",
+   "result": "m"
+  },
+  {
+   "purpose": "unattributed",
+   "result": "Cox"
+  },
+  {
+   "purpose": "unattributed",
+   "result": "Henry"
+  },
+  {
+   "purpose": "unattributed",
+   "result": "Temagami"
+  },
+  {
+   "purpose": "founding.colour",
+   "result": 49
+  },
+  {
+   "purpose": "founding.colour",
+   "result": 36
+  },
+  {
+   "purpose": "founding.capital",
+   "result": 20
+  },
+  {
+   "purpose": "founding.influence",
+   "result": 8
+  },
+  {
+   "purpose": "founding.cohesion",
+   "result": 19
+  },
+  {
+   "purpose": "founding.ambition",
+   "result": 7
+  },
+  {
+   "purpose": "founding.holder_age",
+   "result": 27
+  },
+  {
+   "purpose": "founding.objective",
+   "result": "Consolidate region"
+  },
+  {
+   "purpose": "founding.objective",
+   "result": "Secure succession"
+  }
+ ],
+ "actions": [
+  {
+   "action": "Consolidate (rest)",
+   "success": true
+  }
+ ],
+ "founded": "Cox",
+ "chronicle": [
+  "Season 5 · Baron Cashin of Dundas meets British Columbia Joins; Treaty 1 Signed and resists.",
+  "Season 5 · Viscount Cox of Temagami is created, seated at Mississauga East—Cooksville."
+ ],
+ "houses_after": 2,
+ "ridings_after": 3
+}

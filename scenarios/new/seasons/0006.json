@@ -1,0 +1,61 @@
+{
+ "season": 6,
+ "seed": 1867,
+ "rules_version": "0.6",
+ "interventions": [],
+ "draws": [
+  {
+   "purpose": "mortality.Cashin",
+   "result": {
+    "roll": 0.259737,
+    "p": 0.02,
+    "hit": false
+   }
+  },
+  {
+   "purpose": "action.Cashin",
+   "result": "Invest"
+  },
+  {
+   "purpose": "mortality.Cox",
+   "result": {
+    "roll": 0.138726,
+    "p": 0.02,
+    "hit": false
+   }
+  },
+  {
+   "purpose": "action.Cox",
+   "result": "Invest"
+  },
+  {
+   "purpose": "founding.p_found",
+   "result": {
+    "room": 340,
+    "p": 0.497809
+   }
+  },
+  {
+   "purpose": "founding.roll",
+   "result": {
+    "roll": 0.521753,
+    "p": 0.4978086088836926,
+    "hit": false
+   }
+  }
+ ],
+ "actions": [
+  {
+   "action": "Invest",
+   "success": true
+  },
+  {
+   "action": "Invest",
+   "success": true
+  }
+ ],
+ "founded": null,
+ "chronicle": [],
+ "houses_after": 2,
+ "ridings_after": 3
+}
