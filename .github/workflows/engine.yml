@@ -57,6 +57,9 @@ concurrency:
 
 permissions:
   contents: write
+  # To dispatch pages.yml after committing: a push made with GITHUB_TOKEN
+  # does not start another workflow, so the site would never redeploy.
+  actions: write
 
 jobs:
   engine:
@@ -208,6 +211,7 @@ jobs:
         run: python -m hoc export
 
       - name: Commit and push
+        id: commit
         run: |
           message="$(sed -n 's/^COMMIT_MESSAGE //p' engine-output.txt | tail -1)"
           if [ -z "$message" ]; then
@@ -227,4 +231,21 @@ jobs:
 
           git commit -m "$message"
           git push origin HEAD:main
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
           echo "Committed \`$message\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish the site
+        # A push made with GITHUB_TOKEN does not start another workflow, so the
+        # commit above will never trigger pages.yml on its own and the site
+        # would sit at the last state a human pushed. Dispatch it by hand. This
+        # is the only reason the job needs `actions: write`.
+        if: steps.commit.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -fsS -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/pages.yml/dispatches" \
+            -d '{"ref":"main"}'
+          echo "Pages deployment dispatched." >> "$GITHUB_STEP_SUMMARY"
