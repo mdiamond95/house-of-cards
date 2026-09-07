@@ -38,7 +38,7 @@ To load the seed alone, without replaying any turns:
 
 ## Two engines
 
-The game has two implementations of the same engine: `hoc/sim.py` in Python, which plays the committed game and writes the record, and `web/engine/` in JavaScript, which will play it in the browser (Phase 10-2). They are required to produce **byte-identical season files** from the same seed.
+The game has two implementations of the same engine: `hoc/sim.py` in Python, which plays the committed game and writes the record, and `web/engine/` in JavaScript, which plays it in the browser. They are required to produce **byte-identical season files** from the same seed.
 
 That is only possible because nothing in the engine is left to a language's discretion. Every random value comes from one 32-bit generator — xoshiro128\*\*, seeded by splitmix32 from `fnv1a32("seed:season")` — every draw weight is an integer, every probability is an integer per cent, and the only floating-point computation in the game is §10's founding roll, written as a square root because IEEE-754 requires `sqrt` to be correctly rounded where it makes no such promise about `pow`. `docs/DETERMINISM.md` states all of it with worked examples, including the first ten generator values for seed 1867.
 
@@ -56,9 +56,32 @@ Both engines are complete as of Phase 10-1b. `tests/test_crosscheck.py` runs see
 
 The primary way to play. The page loads the JavaScript engine, the rules tables and the world as it stands in the repository, and then plays seasons **on the device** — no network round-trip per season, and no server. Play, Pause, 1/4/12 seasons a second, Step, Run 5/25/50/100 with the six stop conditions, a scrubber back through the seasons this browser has played, and Undo to any of them. The map recolours only the ridings that changed hands and flashes them; tapping one opens the house with its live stats and objectives; the chronicle appends as it goes and filters to a single house. The director's §12 interventions are there too, applied to the local game at once.
 
-**Play in the page is local to that browser and is not saved to the repository.** A banner counts the unsaved seasons and says so. The page autosaves to IndexedDB so that closing a tab does not lose an afternoon, and offers to resume or discard that local game next time; committing a browser-played game back to `main` is Phase 10-3.
+Play in the page stays in that browser until you save it. A banner counts the seasons played and not yet in the repository, and the page autosaves to IndexedDB so that closing a tab does not lose an afternoon, offering to resume or discard that local game next time.
 
 The page and everything it fetches weigh about 630 KB (184 KB over the wire, gzipped), of which two thirds is the map's coastline — the same inline SVG the index page draws, built once and shared.
+
+### Saving your game
+
+**Save** commits the seasons this browser played, and only those: `scenarios/new/seasons/NNNN.json` exactly as the engine wrote them, plus `scenarios/new/interventions/NNNN.json` for any intervention taken during them. It does not write `hoc.db`, `outputs/` or the world snapshot — those belong to the referee, which writes them from its own replay.
+
+It needs the same token the console uses, pasted once on the [Console](https://mdiamond95.github.io/house-of-cards/console.html) and kept in that browser's local storage. For saving, the token needs **Contents: read and write** (to commit the season files through the Git Data API) and **Actions: read** (to watch the referee run afterwards and report its verdict). Nothing else. The play page holds no credential of its own and sends the token only to `api.github.com`.
+
+What happens then:
+
+1. The page re-reads `main`'s head. If the repository has moved past the base this game was played from, the save is refused — the seasons in the browser no longer follow the record, and there is no safe merge. It offers **Reload** (resume from the repository) or **Discard local play**, and never a force-push.
+2. One commit: blobs, a tree on the current one, a commit, an unforced fast-forward of `main`. The message is `Play: seasons A–B (browser engine)`, with an optional note, authored as the token's own user.
+3. `.github/workflows/referee.yml` picks it up. It replays every newly committed season with the **Python** engine and compares what it produced with what was committed, byte for byte, ignoring only the field that names which engine wrote the file. On the first mismatch it stops, names the season and the first differing draw in the run summary, and commits nothing: `hoc.db`, `outputs/` and the published site keep the last verified state. On full agreement it runs the suite, exports, commits, and Pages deploys.
+4. The page watches that run and shows its result. On success the banner clears and the local base moves to the new head; on a refusal the local game is untouched and the page links to the run.
+
+So a browser can propose a game but cannot publish one. The public state is always the Python engine's own work — a bug in the JavaScript engine, a hand-edited season file or anything else that disagrees with `hoc/sim.py` is caught before it reaches the site.
+
+The referee shares its concurrency group with the engine workflow, so the two never run at once, and only pushes by the director or the engine reach it at all.
+
+Undo will not rewind past a season that has been saved. Rewriting saved history would need a force-push, and the referee would refuse the result; the page says so rather than trying.
+
+    node web/engine/savecheck.js --seasons 5
+
+builds the payload a save would send, headlessly and with the network mocked, and checks that every blob is the file the engine wrote. `tests/test_referee.py` runs the other half: seasons the JavaScript engine played are verified end to end, a season altered by one draw is rejected with that season named, and seasons the Python engine played are recognised as already applied.
 
 ## Playing the game
 

@@ -27,7 +27,8 @@ MAP_WIDTH = 1000
 MAP_PRECISION = 0
 NOT_RECOVERED = "not recovered"
 
-REPO_URL = "https://github.com/mdiamond95/house-of-cards"
+REPO_SLUG = "mdiamond95/house-of-cards"
+REPO_URL = f"https://github.com/{REPO_SLUG}"
 
 # The one piece of build state on every page. Set by write_site so the footer
 # can say which turn the site was generated from — the only "when" the site
@@ -735,7 +736,9 @@ def _play_page(conn, features, borders, slugs):
     body = (
         '<p class="lede prose">The game, played here in this browser. Every season is'
         ' computed on this device by the same engine that plays it in the repository —'
-        ' nothing is fetched per season, and nothing is saved.</p>\n'
+        ' nothing is fetched per season. What you play stays in this browser until you'
+        ' save it, and what you save is published only once the Python engine has'
+        ' replayed it and agreed.</p>\n'
         '<p id="load-progress" class="meta" role="status">Loading the engine…</p>\n'
         '<div id="play-app" hidden>\n'
         '<p id="unsaved" class="banner unsaved" hidden></p>\n'
@@ -767,6 +770,7 @@ def _play_page(conn, features, borders, slugs):
         '<select id="feed-filter"><option value="">every house</option></select>'
         "</div>\n"
         '<ol id="feed" class="feed" aria-live="polite"></ol>\n'
+        f"{_save_block()}\n"
         f"{_intervene_forms(conn)}\n"
         "<h2>Houses by ridings held</h2>\n"
         '<ul id="play-legend" class="legend"></ul>\n'
@@ -777,7 +781,34 @@ def _play_page(conn, features, borders, slugs):
         "Play",
         body,
         depth=0,
-        subtitle="Local to this browser. Saving to the repository arrives in the next update.",
+        subtitle="Played on this device; saved to the repository when you say so.",
+    )
+
+
+def _save_block():
+    """Save what this browser played, for the referee to verify (Phase 10-3).
+
+    The button needs the console's token — the same one, under the same
+    localStorage key, so the director pastes it once. The page holds no
+    credential of its own and never embeds one.
+    """
+    return (
+        '<h2>Saving</h2>\n'
+        '<div class="save-block">'
+        '<p class="meta">A save commits only the season files this browser played,'
+        ' exactly as the engine wrote them. It does not touch <code>hoc.db</code>,'
+        ' <code>outputs/</code> or the world — the referee workflow replays every'
+        ' committed season with the Python engine and publishes them only if they'
+        ' match. Connect a token on the <a href="console.html">Console</a> first;'
+        ' it needs <b>Contents: read and write</b> and <b>Actions: read</b>.</p>'
+        '<div class="save-row">'
+        '<label class="sr-only" for="save-note">Note</label>'
+        '<input id="save-note" type="text" maxlength="72"'
+        ' placeholder="an optional note for the commit message">'
+        '<button type="button" id="save" class="primary" disabled>Save</button>'
+        "</div>"
+        '<div id="save-status" class="status-box" hidden></div>'
+        "</div>"
     )
 
 
@@ -2352,6 +2383,19 @@ code { font-size: 0.78rem; color: var(--muted); }
 .check { display: inline-flex; align-items: center; gap: 0.25rem; }
 .intervention { border-left: 2px solid var(--rule); padding-left: 0.8rem; margin: 1rem 0; }
 .intervention h3 { margin-top: 0; }
+.save-block .meta { margin: 0 0 0.6rem; }
+.save-row { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+.save-row input { font: inherit; font-size: 0.9rem; flex: 1 1 14rem; min-width: 0;
+                  padding: 0.4rem 0.45rem; border: 1px solid var(--rule); border-radius: 3px;
+                  background: #fff; color: var(--ink); }
+.save-row button { font: inherit; font-size: 0.9rem; padding: 0.4rem 0.9rem; border-radius: 3px;
+                   border: 1px solid var(--rule); background: #fff; color: var(--ink);
+                   cursor: pointer; }
+.save-row button.primary { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.save-row button:disabled { opacity: 0.45; cursor: not-allowed; border-color: var(--rule);
+                            color: var(--muted); font-weight: 400; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);
+           white-space: nowrap; }
 .status-box { border: 1px solid var(--rule); background: #fff; padding: 0.6rem 0.7rem;
               margin: 0.5rem 0; font-size: 0.88rem; }
 .status-box.good { border-left: 3px solid #4a7a4a; }
@@ -2523,7 +2567,16 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
             .replace("__RULES_FILES__", json.dumps(list(play_export.RULES_FILES)))
             .replace("__REFERENCE_FILES__", json.dumps(list(play_export.REFERENCE_FILES)))
             .replace("__UNCLAIMED_FILL__", map_export.UNCLAIMED_FILL)
-            .replace("__DEFAULT_SPEED__", str(PLAY_SPEEDS[0])),
+            .replace("__DEFAULT_SPEED__", str(PLAY_SPEEDS[0]))
+            .replace("__REPO__", REPO_SLUG)
+            .replace(
+                "__SEASONS_PATH__",
+                scenario.seasons_dir().relative_to(scenario.REPO_ROOT).as_posix(),
+            )
+            .replace(
+                "__INTERVENTIONS_PATH__",
+                scenario.interventions_dir().relative_to(scenario.REPO_ROOT).as_posix(),
+            ),
         )
         assets, asset_bytes = play_export.write_play_assets(
             conn, site_dir, scenario.REPO_ROOT
@@ -2547,7 +2600,7 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
         write(
             site_dir / "console.js",
             CONSOLE_JS
-            .replace("__REPO__", REPO_URL.rsplit("/", 2)[-2] + "/" + REPO_URL.rsplit("/", 1)[-1])
+            .replace("__REPO__", REPO_SLUG)
             .replace("__NARRATE_TEMPLATE__", json.dumps(NARRATE_TEMPLATE))
             .replace("__TONES__", json.dumps(TONES, ensure_ascii=False)),
         )

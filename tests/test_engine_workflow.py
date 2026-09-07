@@ -23,6 +23,7 @@ from hoc.turn import apply_turn  # noqa: E402
 from hoc.turnfile import TurnFileError, validate  # noqa: E402
 
 WORKFLOW = ROOT / ".github" / "workflows" / "engine.yml"
+REFEREE = ROOT / ".github" / "workflows" / "referee.yml"
 DIRECTOR = "mdiamond95"
 
 
@@ -458,3 +459,152 @@ def test_the_archive_has_no_console(tmp_path):
     assert not (archive / "console.html").exists()
     for path in archive.rglob("*.html"):
         assert "console.html" not in path.read_text(encoding="utf-8"), path.name
+
+
+# ------------------------------------------------------------- the referee --
+#
+# Phase 10-3. The play page commits seasons; referee.yml is what decides whether
+# they become the published game. It is checked here as a document, in the same
+# way engine.yml is — what it actually does is tests/test_referee.py's business.
+
+
+@pytest.fixture(scope="module")
+def referee_workflow():
+    yaml = pytest.importorskip("yaml", reason="pyyaml is needed to parse the workflow")
+    return yaml.safe_load(REFEREE.read_text(encoding="utf-8"))
+
+
+def test_the_referee_workflow_parses(referee_workflow):
+    assert referee_workflow["name"] == "Referee"
+    assert "referee" in referee_workflow["jobs"]
+
+
+def test_the_referee_runs_on_a_committed_season(referee_workflow):
+    """It must fire on exactly the two paths the browser writes, and on nothing
+    else — a push of hoc.db or outputs/ is the referee's own commit coming back
+    round, and re-verifying it would be an endless loop."""
+    on = referee_workflow[True]  # PyYAML reads the `on:` key as the boolean True.
+    assert list(on) == ["push"]
+    assert on["push"]["branches"] == ["main"]
+    assert set(on["push"]["paths"]) == {
+        "scenarios/new/seasons/**",
+        "scenarios/new/interventions/**",
+    }
+
+
+def test_the_referee_and_the_engine_never_run_together(referee_workflow, workflow):
+    """Both rebuild hoc.db. Two at once would interleave two exports over one
+    database, and the loser would commit a site that describes neither."""
+    assert referee_workflow["concurrency"]["group"] == workflow["concurrency"]["group"] == "engine"
+    assert referee_workflow["concurrency"]["cancel-in-progress"] is False
+
+
+def test_only_the_director_or_the_engine_may_move_the_game_on(referee_workflow):
+    """Anyone who can push to main could otherwise publish a season by writing
+    the file. The guard runs before the checkout that carries a write token."""
+    steps = referee_workflow["jobs"]["referee"]["steps"]
+    guard = steps[0]
+    assert DIRECTOR in guard["run"]
+    assert "House of Cards Engine" in guard["run"]
+    assert "exit 1" in guard["run"]
+
+    checkout = next(
+        step for step in steps if str(step.get("uses", "")).startswith("actions/checkout")
+    )
+    assert steps.index(checkout) > steps.index(guard)
+
+
+def test_the_referee_verifies_before_it_exports(referee_workflow):
+    """Order is the whole design: verify, then test, then export, then commit.
+    A failure anywhere above the commit must leave the published game alone."""
+    steps = referee_workflow["jobs"]["referee"]["steps"]
+    names = [step.get("name") for step in steps]
+    verify = next(i for i, step in enumerate(steps) if "scripts/referee.py" in str(step.get("run", "")))
+    commit = next(i for i, step in enumerate(steps) if "git commit" in str(step.get("run", "")))
+    assert verify < names.index("Test") < names.index("Export") < commit
+
+
+def test_the_referee_runs_the_same_suite_as_the_engine(referee_workflow):
+    steps = referee_workflow["jobs"]["referee"]["steps"]
+    test_step = next(step for step in steps if step.get("name") == "Test")
+    assert '-m "not smoke and not build"' in test_step["run"]
+    setup_node = next(
+        step for step in steps if str(step.get("uses", "")).startswith("actions/setup-node")
+    )
+    assert steps.index(setup_node) < [s.get("name") for s in steps].index("Test")
+
+
+def test_the_referee_commits_as_the_engine(referee_workflow):
+    steps = referee_workflow["jobs"]["referee"]["steps"]
+    commit = next(step for step in steps if "git commit" in str(step.get("run", "")))
+    assert "House of Cards Engine" in commit["run"]
+    assert "actions@github.com" in commit["run"]
+    # Nothing verified means nothing to publish; that is a clean exit, not a
+    # commit of whatever happened to be in the working tree (B2).
+    assert "REFEREE_RANGE" in commit["run"]
+    assert "exit 0" in commit["run"]
+
+
+# ----------------------------------------------------------- the play page --
+
+
+# The console fixture writes the whole site, play page included.
+@pytest.fixture(scope="module")
+def site_pages(console):
+    return console
+
+
+def test_the_play_page_holds_no_token(site_pages):
+    """Same rule as the console: the token is pasted into the browser and lives
+    only there. Nothing that could be one may reach the generated site."""
+    for name in ("play.html", "play.js"):
+        text = (site_pages / name).read_text(encoding="utf-8")
+        for needle in ("github_pat_", "ghp_", "Authorization: Bearer gh"):
+            assert needle not in text
+
+
+def test_the_play_page_shares_the_consoles_token(site_pages):
+    """One token, pasted once. The play page reads the key the console writes
+    rather than asking for a second paste."""
+    play = (site_pages / "play.js").read_text(encoding="utf-8")
+    console = (site_pages / "console.js").read_text(encoding="utf-8")
+    assert "hoc-token" in play
+    assert "hoc-token" in console
+
+
+def test_the_save_writes_only_the_record(site_pages):
+    """The browser commits what it played and nothing else. hoc.db, outputs/ and
+    the world snapshot are the referee's to write, from its own replay."""
+    js = (site_pages / "play.js").read_text(encoding="utf-8")
+    assert "const SEASONS_PATH = 'scenarios/new/seasons';" in js
+    assert "const INTERVENTIONS_PATH = 'scenarios/new/interventions';" in js
+
+    # The paths a save writes are built in one place, and it builds only these.
+    record = (site_pages / "engine" / "record.js").read_text(encoding="utf-8")
+    paths = set(re.findall(r"path: `\$\{(\w+)\}/", record))
+    assert paths == {"seasonsPath", "interventionsPath"}
+    defaults = dict(re.findall(r"export const DEFAULT_(\w+) = '([^']+)';", record))
+    assert defaults == {
+        "SEASONS_PATH": "scenarios/new/seasons",
+        "INTERVENTIONS_PATH": "scenarios/new/interventions",
+    }
+    # One commit, fast-forward only: never a force.
+    assert "force: false" in record
+    assert "force: true" not in record
+
+
+def test_the_save_refuses_when_the_repository_has_moved_on(site_pages):
+    """A2. The browser played from a base; if main has moved past it the seasons
+    it holds no longer follow the record, and there is no safe merge."""
+    js = (site_pages / "play.js").read_text(encoding="utf-8")
+    assert "The repository has moved on; reload to resume from it." in js
+    assert "save-reload" in js
+    assert "save-discard" in js
+
+
+def test_undo_cannot_rewind_past_a_saved_season(site_pages):
+    """C3. Rewriting a saved season would need a force-push, and the referee
+    would refuse the result anyway. The page says so instead of trying."""
+    js = (site_pages / "play.js").read_text(encoding="utf-8")
+    assert "the referee will refuse it" in js
+    assert "app.savedThrough" in js
