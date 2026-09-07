@@ -176,12 +176,35 @@ def world_snapshot(conn):
         for row in conn.execute("SELECT * FROM relations ORDER BY id")
     ]
 
-    # Events, projected to what the engine reads. `season` comes out of the
-    # mechanical delta, where sim.py stamps it because the table has no season
-    # column of its own.
+    # Events, projected to what the engine reads, and pruned to the events it
+    # reads at all. `sim.js` asks four questions of this table and no others:
+    #
+    #   firedEvents        which societal events a house has already met
+    #   seasonsSinceLoss   the season of a house's latest transfer
+    #   debtCheck          whether a house has a transfer whose title says debt
+    #   relationSeason     the season of the event a current relation hangs off
+    #
+    # So a societal event, a transfer, or an event some standing relation points
+    # at, is kept; everything else — foundings, successions, expansions,
+    # elevations, challenges, and the relational events whose relation has since
+    # been overwritten — is history the browser never consults, and at three
+    # hundred seasons that is three fifths of the table. `season` comes out of
+    # the mechanical delta, where sim.py stamps it because the table has no
+    # season column of its own.
+    # A current holding's acquiring event is kept too, and not for reading:
+    # §7's contested expansion releases a holding *to its own acquiring event*
+    # (`released_event_id = acquired_event_id`), so that number has to still
+    # mean something. Drop the event and Python's foreign key refuses the
+    # holding; null the reference instead and a contested release would write
+    # NULL, which reads as "not released" — the holding would come back to life.
     events = []
     for row in conn.execute(
-        "SELECT e.id, e.kind, e.title, e.mechanical_delta FROM events e ORDER BY e.id"
+        "SELECT e.id, e.kind, e.title, e.mechanical_delta FROM events e"
+        " WHERE e.kind IN ('societal', 'transfer')"
+        "    OR e.id IN (SELECT event_id FROM relations WHERE event_id IS NOT NULL)"
+        "    OR e.id IN (SELECT acquired_event_id FROM holdings"
+        "                WHERE released_event_id IS NULL AND acquired_event_id IS NOT NULL)"
+        " ORDER BY e.id"
     ):
         try:
             delta = json.loads(row["mechanical_delta"] or "{}")

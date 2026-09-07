@@ -156,6 +156,61 @@ pre { background: #fff; border: 1px solid var(--rule); padding: 0.6rem; overflow
           border: 1px solid var(--rule); border-left: 3px solid var(--accent);
           padding: 0.5rem 0.7rem; margin: 0 0 0.8rem; }
 
+/* -------------------------------------------------------------- the play page --
+   Mobile first, at 380px and up. The house colour is the only colour that
+   carries meaning anywhere on this site, so nothing here competes with it:
+   the controls are the same paper, rule and accent as every other page. */
+
+.play-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem;
+                 margin: 0.7rem 0 0.4rem; }
+.play-controls button, .play-run button, .feed-controls select {
+  font: inherit; font-size: 0.85rem; padding: 0.4rem 0.8rem; border: 1px solid var(--rule);
+  background: #fff; color: var(--ink); border-radius: 3px; cursor: pointer; }
+.play-controls button:hover:not(:disabled), .play-run button:hover {
+  border-color: var(--accent); color: var(--accent); }
+.play-controls button.primary { min-width: 5.5rem; font-weight: 600; }
+.play-controls button.playing { border-color: var(--accent); color: var(--accent); }
+.speed-group { display: inline-flex; gap: 0.25rem; margin-left: auto; }
+.speed-group button { padding: 0.4rem 0.55rem; font-size: 0.78rem; }
+.speed-group button.chosen { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.play-run { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; margin: 0.2rem 0; }
+.play-run button { padding: 0.3rem 0.7rem; font-size: 0.8rem; }
+.play-stops { margin: 0.4rem 0 0.2rem; font-size: 0.85rem; }
+.play-stops summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; }
+.play-stops .checks { padding-top: 0.4rem; }
+
+.banner.unsaved { border-left-color: #a0762a; background: #faf3e4; color: var(--ink); }
+
+/* A riding that changed hands this season, held just long enough to be seen at
+   twelve seasons a second and no longer. */
+#map-fills path.just-changed { stroke: var(--ink); stroke-width: 0.9; paint-order: stroke;
+                               animation: hoc-flash 0.9s ease-out; }
+@keyframes hoc-flash { from { stroke-opacity: 0.9; } to { stroke-opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  #map-fills path.just-changed { animation: none; stroke-opacity: 0.5; }
+}
+
+.feed-controls { display: flex; align-items: center; gap: 0.5rem; margin: 0.3rem 0 0.6rem; }
+.feed-controls label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+                       color: var(--muted); }
+.feed-controls select { max-width: 14rem; }
+.feed { list-style: none; padding: 0; margin: 0; }
+.feed-season { border-bottom: 1px solid var(--rule); padding: 0.55rem 0; }
+.feed-season h3 { margin: 0 0 0.2rem; font-family: var(--serif); font-size: 0.82rem;
+                  color: var(--muted); font-weight: 400; }
+.feed-season p { margin: 0.2rem 0; font-size: 0.9rem; line-height: 1.5; }
+.feed-director { border-left: 2px solid var(--accent); padding-left: 0.7rem; }
+.feed-stop { color: #a04040; font-size: 0.82rem !important; }
+.house-link { font: inherit; color: var(--accent); background: none; border: none; padding: 0;
+              cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.legend-house { display: flex; align-items: center; gap: 0.1rem; width: 100%; padding: 0.5rem 0;
+                font: inherit; background: none; border: none; color: var(--ink);
+                cursor: pointer; text-align: left; }
+.legend-house:hover .legend-name { color: var(--accent); }
+.intervene { border: 1px solid var(--rule); background: #fff; padding: 0.6rem 0.8rem;
+             margin: 1rem 0; }
+.intervene summary { cursor: pointer; font-family: var(--serif); font-size: 0.95rem; }
+
 .scrubber { display: flex; align-items: center; gap: 0.6rem; margin: 0.6rem 0 0.2rem; }
 .scrubber input[type=range] { flex: 1; min-width: 0; }
 .scrubber button { font: inherit; font-size: 0.82rem; padding: 0.3rem 0.7rem; border: 1px solid var(--rule);

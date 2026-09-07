@@ -15,7 +15,8 @@ from pathlib import Path
 
 from hoc import scenario
 from hoc.db import HOUSE_BLOCK_FIELDS
-from hoc.export import map as map_export, timeline as timeline_export
+from hoc.export import map as map_export, play as play_export, timeline as timeline_export
+from hoc.export.play_js import PLAY_JS
 from hoc.export.turn_block import TEMPLATE as NARRATE_TEMPLATE, TONES
 from hoc.sim import STOP_CONDITIONS
 
@@ -97,6 +98,7 @@ def page(title, body, depth=0, subtitle=None):
     up = "../" * depth
     nav = [
         ("index.html", "Map"),
+        ("play.html", "Play"),
         ("ridings.html", "Ridings"),
         ("chronicle.html", "Chronicle"),
         ("climate.html", "Climate"),
@@ -106,6 +108,7 @@ def page(title, body, depth=0, subtitle=None):
         # Out of the archive rather than deeper into it: one more "../" than the
         # page's own depth reaches the live site's root. The archive is frozen,
         # so it carries no console link — there is nothing there to run.
+        nav = [entry for entry in nav if entry[0] != "play.html"]
         nav.append((f"{up}../index.html", "← The live game"))
     else:
         nav.append((f"{ARCHIVE_DIRNAME}/index.html", "Archive"))
@@ -627,6 +630,231 @@ MAP_JS = """(function () {
 """
 
 
+
+
+# The play page's speeds, in seasons per second, and its Run-N lengths. Both
+# are the director's: 1 to read the chronicle as it happens, 12 to watch the map
+# fill (docs/ENGINE_DESIGN.md §12).
+PLAY_SPEEDS = (1, 4, 12)
+
+# What the play page and everything it fetches may weigh, uncompressed. Pages
+# serves all of it gzipped, so the real download is a fraction of this; the
+# budget is on the raw bytes because that is what a browser has to parse, and
+# because a file that grows past it will grow past the compressed limit next.
+PLAY_SIZE_BUDGET = 2_000_000
+PLAY_RUN_LENGTHS = (5, 25, 50, 100)
+
+
+def _map_geometry(features, borders, lookup):
+    """The projected map, as the pieces both the index and the play page need.
+
+    Extracted so the two pages cannot drift: the same projection, the same
+    viewBox pair for the north/south toggle, the same stroke correction.
+    """
+    height, to_svg = map_export.viewport(features, MAP_WIDTH)
+    # The province comes from the riding lookup, not the geometry: the projected
+    # features carry rings and an id and nothing else.
+    def province_of(feature):
+        row = lookup.get(feature["fed_id"])
+        return row["province"] if row else ""
+
+    southern_rings = [
+        feature["rings"] for feature in features
+        if province_of(feature) not in NORTHERN_TERRITORIES
+    ]
+    s_min_x, s_min_y, s_max_x, s_max_y = _extent(southern_rings)
+    pad_x = (s_max_x - s_min_x) * SOUTH_VIEW_PAD_FRACTION
+    pad_y = (s_max_y - s_min_y) * SOUTH_VIEW_PAD_FRACTION
+    top_left = to_svg(s_min_x - pad_x, s_max_y + pad_y)
+    bottom_right = to_svg(s_max_x + pad_x, s_min_y - pad_y)
+    south_view_box = (
+        f"{top_left[0]:.1f} {top_left[1]:.1f} "
+        f"{bottom_right[0] - top_left[0]:.1f} {bottom_right[1] - top_left[1]:.1f}"
+    )
+    zoom_factor = MAP_WIDTH / (bottom_right[0] - top_left[0])
+    return {
+        "to_svg": to_svg,
+        "south_view_box": south_view_box,
+        "full_view_box": f"0 0 {MAP_WIDTH} {height:.0f}",
+        "south_stroke": BASE_STROKE_WIDTH / zoom_factor,
+        "borders": map_export.border_path_data(borders, to_svg, MAP_PRECISION),
+    }
+
+
+def _play_page(conn, features, borders, slugs):
+    """The live game, played in the browser (Phase 10-2)."""
+    lookup = _riding_lookup(conn)
+    geometry = _map_geometry(features, borders, lookup)
+    to_svg = geometry["to_svg"]
+
+    paths = []
+    for feature in features:
+        fed_id = feature["fed_id"]
+        data = map_export.path_data(feature["rings"], to_svg, MAP_PRECISION)
+        if not data:
+            continue
+        row = lookup.get(fed_id)
+        paths.append(
+            f'<path fill="{map_export.UNCLAIMED_FILL}" data-fed="{esc(fed_id)}"'
+            f' data-riding="{esc(row["name_en"] if row else fed_id)}"'
+            f' data-province="{esc(row["province"] if row else "")}"'
+            f' d="{data}"/>'
+        )
+
+    svg = (
+        f'<svg id="map" viewBox="{geometry["south_view_box"]}" role="img"'
+        ' aria-label="Map of the 343 federal ridings, coloured by house"'
+        f' data-view-south="{geometry["south_view_box"]}"'
+        f' data-view-full="{geometry["full_view_box"]}"'
+        f' data-stroke-south="{geometry["south_stroke"]:.4f}"'
+        f' data-stroke-full="{BASE_STROKE_WIDTH}"'
+        ' xmlns="http://www.w3.org/2000/svg">'
+        '<g id="map-fills" stroke="none">' + "".join(paths) + "</g>"
+        f'<path id="map-borders" fill="none" stroke="#ffffff"'
+        f' stroke-width="{geometry["south_stroke"]:.4f}"'
+        ' stroke-linejoin="round" stroke-linecap="round" pointer-events="none"'
+        f' d="{geometry["borders"]}"/>'
+        "</svg>"
+    )
+
+    speeds = "".join(
+        f'<button type="button" class="speed{" chosen" if seasons == 1 else ""}"'
+        f' data-speed="{seasons}">{seasons}/s</button>'
+        for seasons in PLAY_SPEEDS
+    )
+    runs = "".join(
+        f'<button type="button" class="run-n" data-run="{n}">{n}</button>'
+        for n in PLAY_RUN_LENGTHS
+    )
+    stops = "".join(
+        f'<label class="check"><input type="checkbox" name="play-stop" value="{esc(name)}">'
+        f" {esc(name)}</label>"
+        for name in sorted(STOP_CONDITIONS)
+    )
+
+    body = (
+        '<p class="lede prose">The game, played here in this browser. Every season is'
+        ' computed on this device by the same engine that plays it in the repository —'
+        ' nothing is fetched per season, and nothing is saved.</p>\n'
+        '<p id="load-progress" class="meta" role="status">Loading the engine…</p>\n'
+        '<div id="play-app" hidden>\n'
+        '<p id="unsaved" class="banner unsaved" hidden></p>\n'
+        '<div id="play-status" class="status"></div>\n'
+        '<div class="play-controls">'
+        '<button type="button" id="play-toggle" class="primary">Play</button>'
+        '<button type="button" id="play-step">Step</button>'
+        f'<span class="speed-group" role="group" aria-label="Seasons per second">{speeds}</span>'
+        "</div>\n"
+        f'<div class="play-run"><span class="meta">Run on:</span>{runs}</div>\n'
+        '<details class="play-stops"><summary>Stop early on</summary>'
+        f'<div class="checks">{stops}</div></details>\n'
+        '<div class="scrubber">'
+        '<input id="play-season" type="range" min="1" max="1" value="1" step="1"'
+        ' aria-label="Season">'
+        '<output id="play-season-label" for="play-season">season 1</output>'
+        '<button type="button" id="play-undo">Undo to here</button>'
+        "</div>\n"
+        '<figure class="map-figure">' + svg + "</figure>\n"
+        '<div class="map-toolbar">'
+        '<button type="button" id="view-toggle">Show the north</button></div>\n'
+        '<div id="panel" class="panel" hidden>'
+        '<button id="panel-close" type="button" aria-label="Close">×</button>'
+        '<div id="panel-body"></div></div>\n'
+        '<p class="hint">Tap a riding for its house. Grey ridings are unclaimed.</p>\n'
+        '<h2>The chronicle</h2>\n'
+        '<div class="feed-controls">'
+        '<label for="feed-filter">Only</label>'
+        '<select id="feed-filter"><option value="">every house</option></select>'
+        "</div>\n"
+        '<ol id="feed" class="feed" aria-live="polite"></ol>\n'
+        f"{_intervene_forms(conn)}\n"
+        "<h2>Houses by ridings held</h2>\n"
+        '<ul id="play-legend" class="legend"></ul>\n'
+        '<script type="module" src="play.js"></script>'
+        "</div>"
+    )
+    return page(
+        "Play",
+        body,
+        depth=0,
+        subtitle="Local to this browser. Saving to the repository arrives in the next update.",
+    )
+
+
+def _intervene_forms(conn):
+    """The console's §12 controls, applied here through the local engine."""
+    from hoc.rules_data import load_rules
+
+    rules = load_rules()
+    actions = "".join(
+        f"<option>{esc(a)}</option>" for a in sorted(x.action for x in rules.actions)
+    )
+    objectives = "".join(
+        f"<option>{esc(o)}</option>" for o in sorted(x.objective for x in rules.objectives)
+    )
+    communities = "".join(
+        f"<option>{esc(c)}</option>" for c in sorted({x.community for x in rules.communities})
+    )
+    ranks = "".join(f"<option>{esc(r)}</option>" for r in ("Baron", "Viscount", "Earl"))
+    tags = "".join(
+        f"<option>{esc(t)}</option>" for t in ("Progressive", "Conservative", "Mixed", "Outside")
+    )
+    markers = "".join(
+        f"<option>{esc(m)}</option>"
+        for m in ("◎", "+", "◉+", "Sig−", "⊖", "~", "kin")
+    )
+    return (
+        '<details class="intervene"><summary>Intervene</summary>'
+        '<p class="meta">A director\'s operation, applied to this browser\'s game at once.'
+        " It shows in the chronicle and in the next season\'s record, exactly as it would"
+        " if it had gone through the repository.</p>"
+        '<div class="field"><label for="iv-house">House</label>'
+        '<select id="iv-house"></select></div>'
+        '<div class="field"><label for="iv-op">Operation</label><select id="iv-op">'
+        "<option value=\"set_objective\">Set an objective</option>"
+        "<option value=\"veto_objective\">Veto an objective</option>"
+        "<option value=\"force_action\">Force next action</option>"
+        "<option value=\"adjust_stat\">Adjust a stat</option>"
+        "<option value=\"set_clock\">Set the clock</option>"
+        "<option value=\"relation\">Record a relation</option>"
+        "<option value=\"grant_house\">Grant a house</option>"
+        "</select></div>"
+        f'<div class="field iv-for" data-for="set_objective veto_objective">'
+        f'<label for="iv-objective">Objective</label>'
+        f'<select id="iv-objective">{objectives}</select></div>'
+        f'<div class="field iv-for" data-for="force_action">'
+        f'<label for="iv-action">Action</label><select id="iv-action">{actions}</select></div>'
+        '<div class="field iv-for" data-for="adjust_stat">'
+        '<label for="iv-stat">Stat</label><select id="iv-stat">'
+        "<option>capital</option><option>influence</option>"
+        "<option>cohesion</option><option>ambition</option></select></div>"
+        '<div class="field iv-for" data-for="adjust_stat">'
+        '<label for="iv-delta">Delta</label>'
+        '<input id="iv-delta" type="number" value="10" step="1"></div>'
+        '<div class="field iv-for" data-for="set_clock">'
+        '<label for="iv-year">Personal year</label>'
+        '<input id="iv-year" type="number" value="1880" step="1"></div>'
+        '<div class="field iv-for" data-for="relation">'
+        '<label for="iv-other">With</label><select id="iv-other"></select></div>'
+        f'<div class="field iv-for" data-for="relation">'
+        f'<label for="iv-marker">Marker</label>'
+        f'<select id="iv-marker">{markers}</select></div>'
+        '<div class="field iv-for" data-for="grant_house">'
+        '<label for="iv-riding">Riding</label>'
+        '<input id="iv-riding" type="text" placeholder="an unclaimed riding"></div>'
+        f'<div class="field iv-for" data-for="grant_house">'
+        f'<label for="iv-community">Community</label>'
+        f'<select id="iv-community">{communities}</select></div>'
+        f'<div class="field iv-for" data-for="grant_house">'
+        f'<label for="iv-rank">Rank</label><select id="iv-rank">{ranks}</select></div>'
+        f'<div class="field iv-for" data-for="grant_house">'
+        f'<label for="iv-tag">Tag</label><select id="iv-tag">{tags}</select></div>'
+        '<div class="field"><label for="iv-reason">Reason</label>'
+        '<input id="iv-reason" type="text" placeholder="why"></div>'
+        '<div class="actions"><button type="button" id="iv-apply">Apply</button></div>'
+        '<div id="iv-status" class="status-box" hidden></div>'
+        "</details>"
+    )
 
 
 def _house_engine_sections(conn, house, slugs):
@@ -2139,6 +2367,61 @@ pre { background: #fff; border: 1px solid var(--rule); padding: 0.6rem; overflow
           border: 1px solid var(--rule); border-left: 3px solid var(--accent);
           padding: 0.5rem 0.7rem; margin: 0 0 0.8rem; }
 
+/* -------------------------------------------------------------- the play page --
+   Mobile first, at 380px and up. The house colour is the only colour that
+   carries meaning anywhere on this site, so nothing here competes with it:
+   the controls are the same paper, rule and accent as every other page. */
+
+.play-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem;
+                 margin: 0.7rem 0 0.4rem; }
+.play-controls button, .play-run button, .feed-controls select {
+  font: inherit; font-size: 0.85rem; padding: 0.4rem 0.8rem; border: 1px solid var(--rule);
+  background: #fff; color: var(--ink); border-radius: 3px; cursor: pointer; }
+.play-controls button:hover:not(:disabled), .play-run button:hover {
+  border-color: var(--accent); color: var(--accent); }
+.play-controls button.primary { min-width: 5.5rem; font-weight: 600; }
+.play-controls button.playing { border-color: var(--accent); color: var(--accent); }
+.speed-group { display: inline-flex; gap: 0.25rem; margin-left: auto; }
+.speed-group button { padding: 0.4rem 0.55rem; font-size: 0.78rem; }
+.speed-group button.chosen { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.play-run { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; margin: 0.2rem 0; }
+.play-run button { padding: 0.3rem 0.7rem; font-size: 0.8rem; }
+.play-stops { margin: 0.4rem 0 0.2rem; font-size: 0.85rem; }
+.play-stops summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; }
+.play-stops .checks { padding-top: 0.4rem; }
+
+.banner.unsaved { border-left-color: #a0762a; background: #faf3e4; color: var(--ink); }
+
+/* A riding that changed hands this season, held just long enough to be seen at
+   twelve seasons a second and no longer. */
+#map-fills path.just-changed { stroke: var(--ink); stroke-width: 0.9; paint-order: stroke;
+                               animation: hoc-flash 0.9s ease-out; }
+@keyframes hoc-flash { from { stroke-opacity: 0.9; } to { stroke-opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  #map-fills path.just-changed { animation: none; stroke-opacity: 0.5; }
+}
+
+.feed-controls { display: flex; align-items: center; gap: 0.5rem; margin: 0.3rem 0 0.6rem; }
+.feed-controls label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+                       color: var(--muted); }
+.feed-controls select { max-width: 14rem; }
+.feed { list-style: none; padding: 0; margin: 0; }
+.feed-season { border-bottom: 1px solid var(--rule); padding: 0.55rem 0; }
+.feed-season h3 { margin: 0 0 0.2rem; font-family: var(--serif); font-size: 0.82rem;
+                  color: var(--muted); font-weight: 400; }
+.feed-season p { margin: 0.2rem 0; font-size: 0.9rem; line-height: 1.5; }
+.feed-director { border-left: 2px solid var(--accent); padding-left: 0.7rem; }
+.feed-stop { color: #a04040; font-size: 0.82rem !important; }
+.house-link { font: inherit; color: var(--accent); background: none; border: none; padding: 0;
+              cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.legend-house { display: flex; align-items: center; gap: 0.1rem; width: 100%; padding: 0.5rem 0;
+                font: inherit; background: none; border: none; color: var(--ink);
+                cursor: pointer; text-align: left; }
+.legend-house:hover .legend-name { color: var(--accent); }
+.intervene { border: 1px solid var(--rule); background: #fff; padding: 0.6rem 0.8rem;
+             margin: 1rem 0; }
+.intervene summary { cursor: pointer; font-family: var(--serif); font-size: 0.95rem; }
+
 .scrubber { display: flex; align-items: center; gap: 0.6rem; margin: 0.6rem 0 0.2rem; }
 .scrubber input[type=range] { flex: 1; min-width: 0; }
 .scrubber button { font: inherit; font-size: 0.82rem; padding: 0.3rem 0.7rem; border: 1px solid var(--rule);
@@ -2230,6 +2513,30 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
             f" {timeline_export.SIZE_BUDGET:,} budget — snapshot less often"
         )
     write(site_dir / "index.html", _index(conn, index_features, index_borders, slugs))
+    if not archive:
+        # The play page runs the engine in the browser against the live world;
+        # the archive is a frozen game, so there is nothing there to play.
+        write(site_dir / "play.html", _play_page(conn, index_features, index_borders, slugs))
+        write(
+            site_dir / "play.js",
+            PLAY_JS
+            .replace("__RULES_FILES__", json.dumps(list(play_export.RULES_FILES)))
+            .replace("__REFERENCE_FILES__", json.dumps(list(play_export.REFERENCE_FILES)))
+            .replace("__UNCLAIMED_FILL__", map_export.UNCLAIMED_FILL)
+            .replace("__STOP_CONDITIONS__", json.dumps(sorted(STOP_CONDITIONS)))
+            .replace("__DEFAULT_SPEED__", str(PLAY_SPEEDS[0])),
+        )
+        assets, asset_bytes = play_export.write_play_assets(
+            conn, site_dir, scenario.REPO_ROOT
+        )
+        written.extend(assets)
+        page_bytes = (site_dir / "play.html").stat().st_size + (site_dir / "play.js").stat().st_size
+        total = asset_bytes + page_bytes
+        if total > PLAY_SIZE_BUDGET:
+            print(
+                f"warning: the play page and its assets are {total:,} bytes, over the"
+                f" {PLAY_SIZE_BUDGET:,} budget — a phone on mobile data pays for this"
+            )
     write(site_dir / "ridings.html", _ridings_page(conn, slugs))
     write(site_dir / "climate.html", _climate_page(conn))
     write(site_dir / "chronicle.html", _chronicle_page(conn, slugs))
