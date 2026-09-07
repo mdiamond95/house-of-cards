@@ -47,9 +47,42 @@ def test_only_the_director_may_run_it(workflow):
     guard = steps[0]
     assert f"github.actor != '{DIRECTOR}'" in guard["if"]
     assert "exit 1" in guard["run"]
+    # github.actor names the acting user for either trigger — the guard's
+    # condition does not (and must not) mention which event fired, so the same
+    # check covers a workflow_dispatch click and a repository_dispatch alike.
+    assert "event_name" not in guard["if"]
 
     checkout = next(step for step in steps if str(step.get("uses", "")).startswith("actions/checkout"))
     assert steps.index(checkout) > steps.index(guard)
+
+
+def test_both_trigger_events_are_wired(workflow):
+    """A fine-grained token with Contents read/write but not Actions read/write
+    gets a 403 from workflow_dispatch; repository_dispatch is the fallback the
+    console retries with (see hoc/export/site.py's dispatch())."""
+    on = workflow[True]  # PyYAML reads the `on:` key as the boolean True.
+    assert "workflow_dispatch" in on
+    assert on["repository_dispatch"]["types"] == ["engine"]
+
+
+def test_inputs_are_normalized_before_any_command_step(workflow):
+    """Every command step must read steps.in.outputs.*, never inputs.* or
+    github.event.client_payload.* directly, so the two triggers stay
+    interchangeable from that point on."""
+    steps = workflow["jobs"]["engine"]["steps"]
+    normalize = next(step for step in steps if step.get("id") == "in")
+    assert normalize["env"]["EVENT_NAME"] == "${{ github.event_name }}"
+
+    command_steps = [
+        step for step in steps
+        if "steps.in.outputs.command ==" in str(step.get("if", ""))
+    ]
+    assert len(command_steps) == 4
+    for step in steps[steps.index(normalize) + 1:]:
+        text = str(step.get("if", "")) + str(step.get("run", "")) + json.dumps(step.get("env", {}))
+        assert "github.event.inputs" not in text
+        assert "client_payload" not in text
+        assert " inputs." not in text
 
 
 def test_runs_are_serialised_and_never_cancelled(workflow):
@@ -68,9 +101,9 @@ def test_every_command_has_a_step(workflow):
 
     steps = workflow["jobs"]["engine"]["steps"]
     for command in commands:
-        assert any(f"inputs.command == '{command}'" in str(step.get("if", "")) for step in steps), (
-            f"no step handles the {command!r} command"
-        )
+        assert any(
+            f"steps.in.outputs.command == '{command}'" in str(step.get("if", "")) for step in steps
+        ), f"no step handles the {command!r} command"
 
 
 def test_node_is_set_up_for_the_js_syntax_tests(workflow):
@@ -387,6 +420,20 @@ def test_the_console_dispatches_the_engine_workflow(console):
     assert "var REPO = 'mdiamond95/house-of-cards'" in js
     for command in ("run", "intervene", "rules", "rebuild"):
         assert f"command: '{command}'" in js
+
+
+def test_the_console_falls_back_to_repository_dispatch_on_a_403(console):
+    """A token with Contents read/write but not Actions read/write gets a 403
+    from workflow_dispatch; the console must retry as a repository_dispatch
+    rather than just reporting the failure (see engine.yml's second trigger)."""
+    js = (console / "console.js").read_text(encoding="utf-8")
+    assert "err.status = response.status" in js
+    assert "error.status !== 403" in js
+    assert "event_type: 'engine'" in js
+    assert "client_payload: inputs" in js
+    # The fallback posts straight to the repo's own /dispatches, not the
+    # workflow-scoped endpoint workflow_dispatch needs.
+    assert "api('/dispatches'" in js
 
 
 def test_the_console_polls_every_ten_seconds(console):

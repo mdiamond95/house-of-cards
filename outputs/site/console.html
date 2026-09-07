@@ -25,7 +25,7 @@ checks its work.</p>
     <label for="token">GitHub token</label>
     <input id="token" type="password" autocomplete="off" placeholder="github_pat_…">
   </div>
-  <p class="footnote">The console needs a fine-grained personal access token with <b>Actions: read and write</b> and <b>Contents: read</b> on this repository.
+  <p class="footnote">The console needs a fine-grained personal access token with <b>Actions: read and write</b> and <b>Contents: read</b> on this repository. <b>Actions: read and write</b> is what lets it dispatch <code>engine.yml</code> directly; if a token was only granted <b>Contents: read and write</b> instead, the console falls back to a <code>repository_dispatch</code>, which needs Contents only.
   It is kept in this browser's local storage and sent only to api.github.com — it is never part
   of this site, and nobody else who opens this page has it. Revoke it any time at
   <a href="https://github.com/settings/personal-access-tokens">github.com/settings/personal-access-tokens</a>.</p>

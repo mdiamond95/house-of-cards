@@ -54,7 +54,12 @@
           if (needs) parts.push('needs: ' + needs);
           if (scopes) parts.push('token has: ' + scopes);
           if (body && body.message) parts.push(body.message);
-          throw new Error(parts.join(' - '));
+          var err = new Error(parts.join(' - '));
+          // Exposed so callers can branch on it (dispatch()'s repository_dispatch
+          // fallback needs to tell "not authorized for this" apart from any other
+          // failure) without re-parsing the message string.
+          err.status = response.status;
+          throw err;
         }
         return body;
       });
@@ -80,11 +85,32 @@
       say(box, 'Dispatched. Waiting for the run to appear…');
       return watch(started, box);
     }).catch(function (error) {
-      say(box, 'Could not dispatch: ' + error.message, 'bad');
+      if (error.status !== 403) {
+        say(box, 'Could not dispatch: ' + error.message, 'bad');
+        return;
+      }
+      // A fine-grained token with Contents read/write but not Actions read/write
+      // gets a 403 here ("Resource not accessible by personal access token") even
+      // though it can still fire a repository_dispatch, which engine.yml accepts
+      // as a second trigger for exactly this case (see .github/workflows/engine.yml).
+      return api('/dispatches', {
+        method: 'POST',
+        body: JSON.stringify({ event_type: 'engine', client_payload: inputs })
+      }).then(function () {
+        say(box, 'Dispatched via repository_dispatch (this token lacks Actions read/write). ' +
+                 'Waiting for the run to appear…');
+        return watch(started, box);
+      }).catch(function (fallbackError) {
+        say(box, 'Could not dispatch either way: ' + fallbackError.message, 'bad');
+      });
     });
   }
 
   function watch(started, box) {
+    // Listing runs by workflow file, not by triggering event, is what lets this
+    // find a run fired either as workflow_dispatch or as dispatch()'s
+    // repository_dispatch fallback: GitHub's runs-for-a-workflow endpoint
+    // returns both without needing to know which one actually fired.
     var attempts = 0;
     function poll() {
       attempts += 1;
