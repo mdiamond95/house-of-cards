@@ -1336,7 +1336,9 @@ checks its work.</p>
   <div class="actions">
     <button type="button" id="connect">Connect</button>
     <button type="button" id="disconnect">Disconnect</button>
+    <button type="button" id="check-token" data-needs-token>Check token</button>
   </div>
+  <div id="check-token-status" class="status-box" hidden></div>
 </section>
 
 <section class="console-block">
@@ -1521,9 +1523,17 @@ CONSOLE_JS = """(function () {
     }, options.headers || {});
     return fetch(API + path, options).then(function (response) {
       if (response.status === 204) return null;
-      return response.json().then(function (body) {
+      return response.text().then(function (text) {
+        var body = null;
+        try { body = text ? JSON.parse(text) : null; } catch (e) { body = null; }
         if (!response.ok) {
-          throw new Error((body && body.message) || ('GitHub said ' + response.status));
+          var parts = ['HTTP ' + response.status];
+          var needs = response.headers.get('x-accepted-github-permissions');
+          var scopes = response.headers.get('x-oauth-scopes');
+          if (needs) parts.push('needs: ' + needs);
+          if (scopes) parts.push('token has: ' + scopes);
+          if (body && body.message) parts.push(body.message);
+          throw new Error(parts.join(' - '));
         }
         return body;
       });
@@ -1903,6 +1913,36 @@ CONSOLE_JS = """(function () {
       setToken('');
       refreshConnected();
       el('runs').textContent = 'Connect to list the engine\\'s recent runs.';
+    });
+  }
+  if (el('check-token')) {
+    el('check-token').addEventListener('click', function () {
+      var box = el('check-token-status');
+      say(box, 'Checking…');
+      // A direct fetch, not api(): the check needs the x-oauth-scopes header
+      // as well as the body, and api() only ever hands callers the body.
+      fetch(API, {
+        headers: {
+          'Accept': 'application/vnd.github+json',
+          'Authorization': 'Bearer ' + token(),
+          'X-GitHub-Api-Version': '2022-11-28'
+        }
+      }).then(function (response) {
+        var scopes = response.headers.get('x-oauth-scopes') || '(none reported)';
+        return response.json().then(function (body) {
+          if (!response.ok) {
+            throw new Error('HTTP ' + response.status + ' - ' + ((body && body.message) || 'could not read the repository'));
+          }
+          var perms = body.permissions || {};
+          var permList = Object.keys(perms).filter(function (key) { return perms[key]; });
+          say(box,
+              '<p>Repository permissions: ' + (permList.length ? permList.join(', ') : '(none)') + '</p>' +
+              '<p>Token scopes: ' + scopes + '</p>',
+              'good');
+        });
+      }).catch(function (error) {
+        say(box, 'Could not check the token: ' + error.message, 'bad');
+      });
     });
   }
 
