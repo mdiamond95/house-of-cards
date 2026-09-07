@@ -27,6 +27,8 @@ import {
 } from './palette.js';
 import { loadRules, probabilityForAge } from './rules.js';
 import { NameGenerator, nameKey, fold, casefold, peerageTitle, frenchParticle } from './names.js';
+import { loadReferenceMap } from './adjacency.js';
+import { WorldState } from './state.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = process.argv[2] ? path.resolve(process.argv[2]) : path.resolve(HERE, '..', '..');
@@ -202,6 +204,87 @@ function namesSection(rules) {
   return out;
 }
 
+// A synthetic world, built purely from the reference map and the generator, so
+// the Python side can build the identical one and the two can be compared
+// without either engine's season loop existing yet. This is what exercises the
+// subtlest code in the port: the adjacency questions, whose SQL in hoc/sim.py
+// is four joins deep and whose ORDER BY decides which riding a house expands
+// into.
+function stateSection() {
+  const map = loadReferenceMap(read);
+  const state = new WorldState(map);
+  const rng = new Prng(20260907);
+
+  const HOUSES = ['Abbott', 'Beaulieu', 'Cardinal', 'Doucette', 'Éloi', 'Fraser', 'Gagnon', 'Hayes'];
+  HOUSES.forEach((house, index) => {
+    state.addHouse({ house, peerage: `Baron ${house}`, rank: 'Baron', primaryHex: '#4a6f8a', secondaryHex: '#7f9fb5' });
+    state.houseStats.set(house, {
+      house, capital: 50, influence: 40, cohesion: 60, ambition: 5, enclosed: 0,
+      community: 'Irish Catholic', region: 'ontario', tradition: 'irish', tag: 'Mixed',
+      province: 'ON', seatPlace: `Place ${index}`, foundedSeason: index + 1, forcedAction: null,
+    });
+    state.setClock(house, 1867, 'test');
+  });
+
+  // 96 ridings drawn from the 343, handed round-robin to the eight houses. The
+  // draw is from the shared generator, so Python draws the identical set in the
+  // identical order.
+  const seatOrders = new Map(HOUSES.map((h) => [h, 0]));
+  const claimed = new Set();
+  const picks = [];
+  while (picks.length < 96) {
+    const riding = map.ridings[rng.randInt(0, map.ridings.length - 1)];
+    if (claimed.has(riding.fed_id)) continue;
+    claimed.add(riding.fed_id);
+    picks.push(riding.fed_id);
+  }
+  picks.forEach((fedId, index) => {
+    const house = HOUSES[index % HOUSES.length];
+    seatOrders.set(house, seatOrders.get(house) + 1);
+    state.addHolding({ house, fedId, seatOrder: seatOrders.get(house), hex: '#4a6f8a', acquiredEventId: null });
+  });
+
+  const out = {
+    picks,
+    unclaimed_land_adjacent: state.unclaimedLandAdjacentCount(),
+    total_holdings: state.totalCurrentHoldings(),
+    active_houses: state.activeHouses().map((r) => [r.house, r.foundedSeason, r.seatFedId]),
+    expansion_targets: {},
+    neighbours: {},
+    has_target: {},
+    holdings_of: {},
+    bordering_pairs: state.borderingPairs(),
+    unenclosed: [...state.unenclosedHouses()].sort(),
+    unclaimed_by_province: [...state.unclaimedCountByProvince().entries()].sort(),
+    unclaimed_in_provinces: state.unclaimedInProvinces(['ON', 'QC']),
+    taken_places: [...state.takenPlaces()].sort(),
+    land_neighbour_counts: map.ridings.map((r) => [r.fed_id, map.land(r.fed_id).length]),
+  };
+  for (const house of HOUSES) {
+    out.expansion_targets[house] = state.expansionTargets(house);
+    out.neighbours[house] = state.neighbouringHouses(house);
+    out.has_target[house] = state.hasExpansionTarget(house);
+    out.holdings_of[house] = state.holdingsOf(house).map((h) => [h.seatOrder, h.fedId, h.id]);
+  }
+
+  // Release a scattering of holdings and ask everything again: the "released"
+  // filter is on every one of these queries and is easy to get subtly wrong.
+  const toRelease = state.holdings.filter((_, i) => i % 7 === 3);
+  for (const holding of toRelease) state.releaseHolding(holding, 999);
+  for (const house of HOUSES) state.renumber(house);
+  out.after_release = {
+    unclaimed_land_adjacent: state.unclaimedLandAdjacentCount(),
+    total_holdings: state.totalCurrentHoldings(),
+    bordering_pairs: state.borderingPairs(),
+    expansion_targets: Object.fromEntries(HOUSES.map((h) => [h, state.expansionTargets(h)])),
+    neighbours: Object.fromEntries(HOUSES.map((h) => [h, state.neighbouringHouses(h)])),
+    holdings_of: Object.fromEntries(
+      HOUSES.map((h) => [h, state.holdingsOf(h).map((x) => [x.seatOrder, x.fedId, x.id])]),
+    ),
+  };
+  return out;
+}
+
 function main() {
   const rules = loadRules(read);
   process.stdout.write(
@@ -210,6 +293,7 @@ function main() {
       palette: paletteSection(),
       rules: rulesSection(rules),
       names: namesSection(rules),
+      state: stateSection(),
     }),
   );
 }

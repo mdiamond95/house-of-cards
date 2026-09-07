@@ -299,3 +299,191 @@ def test_drawing_people_places_and_houses_agrees(js, rules):
         for _ in range(10)
     ]
     assert js["names"]["houses"] == houses
+
+
+# ----------------------------------------------------------------- the state --
+#
+# The subtlest part of the port. hoc/sim.py asks the map four-join-deep
+# questions ("which unclaimed ridings touch this house, in fed_id order") whose
+# answers decide which riding a house expands into; web/engine/state.js answers
+# them from plain objects. These tests build the identical synthetic world in
+# both engines — the same 96 ridings, drawn from the same generator in the same
+# order — and compare every answer, before and after releasing a scattering of
+# holdings so the "released" filter is exercised too.
+
+SYNTHETIC_HOUSES = ["Abbott", "Beaulieu", "Cardinal", "Doucette", "Éloi", "Fraser", "Gagnon", "Hayes"]
+SYNTHETIC_SEED = 20260907
+SYNTHETIC_PICKS = 96
+
+
+@pytest.fixture(scope="module")
+def synthetic_world(tmp_path_factory):
+    """The same world web/engine/selftest.js builds, in SQLite."""
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import load_seed  # noqa: E402
+
+    from hoc import scenario, sim  # noqa: E402
+
+    tmp = tmp_path_factory.mktemp("synthetic")
+    conn = load_seed.build(tmp / "synthetic.db", seed=scenario.seed_dir("new"))
+
+    for index, house in enumerate(SYNTHETIC_HOUSES):
+        conn.execute(
+            "INSERT INTO houses (house, peerage, rank, status, primary_hex, secondary_hex)"
+            " VALUES (?, ?, 'Baron', 'active', '#4a6f8a', '#7f9fb5')",
+            (house, f"Baron {house}"),
+        )
+        conn.execute(
+            "INSERT INTO house_stats (house, capital, influence, cohesion, ambition, enclosed,"
+            " community, region, tradition, tag, province, seat_place, founded_season)"
+            " VALUES (?, 50, 40, 60, 5, 0, 'Irish Catholic', 'ontario', 'irish', 'Mixed',"
+            " 'ON', ?, ?)",
+            (house, f"Place {index}", index + 1),
+        )
+        conn.execute(
+            "INSERT INTO clocks (house, personal_year, basis) VALUES (?, 1867, 'test')", (house,)
+        )
+
+    ridings = [row["fed_id"] for row in conn.execute("SELECT fed_id FROM ridings ORDER BY fed_id")]
+    generator = pyprng.Prng(SYNTHETIC_SEED)
+    claimed, picks = set(), []
+    while len(picks) < SYNTHETIC_PICKS:
+        fed_id = ridings[generator.rand_int(0, len(ridings) - 1)]
+        if fed_id in claimed:
+            continue
+        claimed.add(fed_id)
+        picks.append(fed_id)
+
+    seat_orders = {house: 0 for house in SYNTHETIC_HOUSES}
+    for index, fed_id in enumerate(picks):
+        house = SYNTHETIC_HOUSES[index % len(SYNTHETIC_HOUSES)]
+        seat_orders[house] += 1
+        conn.execute(
+            "INSERT INTO holdings (house, fed_id, seat_order, hex) VALUES (?, ?, ?, '#4a6f8a')",
+            (house, fed_id, seat_orders[house]),
+        )
+
+    world = sim.World(conn, world_seed=1)
+    return {"conn": conn, "world": world, "picks": picks}
+
+
+def _fresh(world):
+    """sim.World memoises the adjacency answers for the duration of one house's
+    turn; these tests ask the same questions repeatedly, so the cache is dropped
+    between them exactly as run_season drops it."""
+    world._turn_cache = {}
+    return world
+
+
+def test_the_same_ridings_are_drawn_in_both_engines(js, synthetic_world):
+    assert js["state"]["picks"] == synthetic_world["picks"]
+
+
+def test_the_land_adjacency_table_is_read_identically(js, synthetic_world):
+    conn = synthetic_world["conn"]
+    expected = []
+    for row in conn.execute("SELECT fed_id FROM ridings ORDER BY fed_id"):
+        count = conn.execute(
+            "SELECT COUNT(*) AS n FROM adjacency WHERE adjacency_type = 'land'"
+            " AND (fed_id_a = ? OR fed_id_b = ?)",
+            (row["fed_id"], row["fed_id"]),
+        ).fetchone()["n"]
+        expected.append([row["fed_id"], count])
+    assert js["state"]["land_neighbour_counts"] == expected
+
+
+def test_the_map_questions_agree(js, synthetic_world):
+    world = _fresh(synthetic_world["world"])
+    section = js["state"]
+
+    assert section["unclaimed_land_adjacent"] == world.unclaimed_land_adjacent_count()
+    assert section["total_holdings"] == synthetic_world["conn"].execute(
+        "SELECT COUNT(*) AS n FROM holdings WHERE released_event_id IS NULL"
+    ).fetchone()["n"]
+    assert section["bordering_pairs"] == [list(pair) for pair in world.bordering_pairs()]
+    assert section["unenclosed"] == sorted(world.unenclosed_houses())
+    assert section["taken_places"] == sorted(world.taken_places())
+
+    for house in SYNTHETIC_HOUSES:
+        _fresh(world)
+        assert section["expansion_targets"][house] == world.expansion_targets(house), house
+        assert section["neighbours"][house] == world.neighbouring_houses(house), house
+        assert section["has_target"][house] == world.has_expansion_target(house), house
+        assert section["holdings_of"][house] == [
+            [row["seat_order"], row["fed_id"], row["id"]] for row in world.holdings(house)
+        ], house
+
+
+def test_the_house_order_agrees(js, synthetic_world):
+    """§6's acting order. Getting this wrong would reorder every season without
+    changing any single house's behaviour, which is the hardest kind of
+    divergence to find by reading."""
+    world = _fresh(synthetic_world["world"])
+    expected = [
+        [row["house"], row["founded_season"], world.conn.execute(
+            "SELECT fed_id FROM holdings WHERE house = ? AND seat_order = 1"
+            " AND released_event_id IS NULL", (row["house"],)
+        ).fetchone()["fed_id"]]
+        for row in world.active_houses()
+    ]
+    assert js["state"]["active_houses"] == expected
+
+
+def test_the_province_counts_agree(js, synthetic_world):
+    conn = synthetic_world["conn"]
+    by_province = sorted(
+        (row["province"], row["n"])
+        for row in conn.execute(
+            "SELECT r.province, COUNT(*) AS n FROM ridings r WHERE NOT EXISTS"
+            " (SELECT 1 FROM holdings h WHERE h.fed_id = r.fed_id"
+            "  AND h.released_event_id IS NULL) GROUP BY r.province"
+        )
+    )
+    assert js["state"]["unclaimed_by_province"] == [list(pair) for pair in by_province]
+
+    in_provinces = [
+        row["fed_id"]
+        for row in conn.execute(
+            "SELECT r.fed_id FROM ridings r WHERE r.province IN ('ON', 'QC')"
+            " AND NOT EXISTS (SELECT 1 FROM holdings h WHERE h.fed_id = r.fed_id"
+            "                 AND h.released_event_id IS NULL) ORDER BY r.fed_id"
+        )
+    ]
+    assert js["state"]["unclaimed_in_provinces"] == in_provinces
+
+
+def test_the_map_questions_still_agree_after_holdings_are_released(js, synthetic_world):
+    """Every one of these queries filters on released_event_id IS NULL. A
+    released holding that still counts — or a live one that stops counting —
+    would move a house's expansion without touching any draw."""
+    conn = synthetic_world["conn"]
+    world = synthetic_world["world"]
+
+    # A real event to hang the releases off: released_event_id is a foreign key,
+    # and the engine never releases a holding without an event explaining it.
+    # The id itself is never compared — only which holdings are still live.
+    conn.execute(
+        "INSERT INTO events (id, kind, title, source, created_at)"
+        " VALUES (999, 'other', 'test release', 'test', '1970-01-01T00:00:00+00:00')"
+    )
+    ids = [row["id"] for row in conn.execute("SELECT id FROM holdings ORDER BY id")]
+    for index, holding_id in enumerate(ids):
+        if index % 7 == 3:
+            conn.execute("UPDATE holdings SET released_event_id = 999 WHERE id = ?", (holding_id,))
+    for house in SYNTHETIC_HOUSES:
+        world._renumber(house)
+
+    section = js["state"]["after_release"]
+    _fresh(world)
+    assert section["unclaimed_land_adjacent"] == world.unclaimed_land_adjacent_count()
+    assert section["total_holdings"] == conn.execute(
+        "SELECT COUNT(*) AS n FROM holdings WHERE released_event_id IS NULL"
+    ).fetchone()["n"]
+    assert section["bordering_pairs"] == [list(pair) for pair in world.bordering_pairs()]
+    for house in SYNTHETIC_HOUSES:
+        _fresh(world)
+        assert section["expansion_targets"][house] == world.expansion_targets(house), house
+        assert section["neighbours"][house] == world.neighbouring_houses(house), house
+        assert section["holdings_of"][house] == [
+            [row["seat_order"], row["fed_id"], row["id"]] for row in world.holdings(house)
+        ], house
