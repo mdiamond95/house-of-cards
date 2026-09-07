@@ -31,9 +31,12 @@ def test_action_count_matches_design_document_section_7():
 
 
 def test_mortality_table_matches_the_design_document():
+    """The table is integer per cent since rules 0.7 — §9's 1% a year is the
+    integer 1, not the float 0.01, because every probability the engine rolls
+    against has to be a number two engines can agree on exactly."""
     bundle = load_rules()
-    assert probability_for_age(bundle.mortality, 45) == 0.01
-    assert probability_for_age(bundle.mortality, 95) == 0.20
+    assert probability_for_age(bundle.mortality, 45) == 1
+    assert probability_for_age(bundle.mortality, 95) == 20
 
 
 def test_eras_cover_1867_onward_with_no_gap():

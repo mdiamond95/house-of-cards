@@ -15,6 +15,7 @@ console — none of which the legacy site renders), and the archive.
 """
 
 import shutil
+import re
 import subprocess
 import sys
 from html.parser import HTMLParser
@@ -175,3 +176,42 @@ def test_console_js_regression_the_rules_regex_and_diff_join_parse(tmp_path, pla
     assert r"replace(/\n/g, '')" in console_js
     assert r"diff.join('\n')" in console_js
     check_node_syntax(tmp_path, "console.js", console_js)
+
+
+# --------------------------------------------------- the hand-written engine --
+#
+# Everything above checks JavaScript this repo *generates*. web/engine/ is
+# JavaScript this repo *is*: the second implementation of the game engine
+# (Phase 10-1). tests/test_js_engine_parity.py exercises it far harder than a
+# syntax check by actually running it, but that only reaches the modules
+# selftest.js imports — this catches a file that parses nowhere because nothing
+# loads it yet.
+
+ENGINE_DIR = Path(__file__).resolve().parent.parent / "web" / "engine"
+
+
+@pytest.mark.skipif(NODE is None, reason="node is not available in this session")
+def test_the_javascript_engine_modules_parse():
+    modules = sorted(ENGINE_DIR.glob("*.js")) if ENGINE_DIR.exists() else []
+    assert modules, "web/engine/ holds no .js files"
+    for module in modules:
+        result = subprocess.run(
+            [NODE, "--check", str(module)], capture_output=True, text=True
+        )
+        assert result.returncode == 0, f"{module.name} does not parse:\n{result.stderr}"
+
+
+@pytest.mark.skipif(NODE is None, reason="node is not available in this session")
+def test_the_javascript_engine_uses_no_dependencies():
+    """web/engine/ is plain ES modules with no build step and no packages: it
+    has to load from a static site by <script type="module"> alone. An import
+    of anything but a relative path or a node: builtin would break that."""
+    for module in sorted(ENGINE_DIR.glob("*.js")):
+        source = module.read_text(encoding="utf-8")
+        for match in re.finditer(r"""^\s*import\s+.*?from\s+['"]([^'"]+)['"]""",
+                                 source, re.MULTILINE | re.DOTALL):
+            target = match.group(1)
+            assert target.startswith(".") or target.startswith("node:"), (
+                f"{module.name} imports {target!r}: web/engine must stay dependency-free"
+            )
+        assert "require(" not in source, f"{module.name} uses require(); this is ES modules only"

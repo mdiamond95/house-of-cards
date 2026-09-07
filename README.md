@@ -36,6 +36,20 @@ To load the seed alone, without replaying any turns:
 
 `hoc.db` is a derived artefact. The loader deletes and rebuilds it from scratch out of `data/reference/*.csv` (343 ridings and their land adjacency, from the 2023 Representation Order boundaries) and the active scenario's `seed/*.csv` (for `legacy`, the reconstructed houses, holdings, holders, successions, climate ledgers and relations), then prints a row count per table. Run it after any reconstruction commit that changes the seed. The reference CSVs themselves are rebuilt from the raw boundary file by `scripts/build_ridings.py`, `scripts/build_adjacency.py` and `scripts/build_geometry.py` — see `data/reference/raw/SOURCE.md` for provenance.
 
+## Two engines
+
+The game has two implementations of the same engine: `hoc/sim.py` in Python, which plays the committed game and writes the record, and `web/engine/` in JavaScript, which will play it in the browser (Phase 10-2). They are required to produce **byte-identical season files** from the same seed.
+
+That is only possible because nothing in the engine is left to a language's discretion. Every random value comes from one 32-bit generator — xoshiro128\*\*, seeded by splitmix32 from `fnv1a32("seed:season")` — every draw weight is an integer, every probability is an integer per cent, and the only floating-point computation in the game is §10's founding roll, written as a square root because IEEE-754 requires `sqrt` to be correctly rounded where it makes no such promise about `pow`. `docs/DETERMINISM.md` states all of it with worked examples, including the first ten generator values for seed 1867.
+
+    python scripts/crosscheck.py --seed 1867 --seasons 120
+
+runs both engines and diffs their season files byte for byte, ignoring only the field that names which engine wrote them. It prints the first differing season and a unified diff. It exits 2, not 0, when it cannot compare at all — a missing engine never reads as agreement.
+
+`web/engine/` is plain ES modules: no build step, no bundler, no packages, loadable from the static site by `<script type="module">` alone.
+
+**As of Phase 10-1 the JavaScript season loop (`sim.js`) is not written yet.** The primitives beneath it are, and `tests/test_js_engine_parity.py` holds them to their Python counterparts value for value; the cross-check tests skip, with a reason, until there is a season loop to compare.
+
 ## Playing the game
 
 The game plays itself, and the director watches it from the site and pushes it along from the site's **Console**.

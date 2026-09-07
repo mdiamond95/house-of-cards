@@ -3,5 +3,14 @@
   "seed": 1867,
   "started_season": 1,
   "kind": "autoplay",
-  "note": "The live autoplay game. seed and started_season are written by `python -m hoc sim new --seed N`, which founds the first house in season 1; until then the scenario is empty and every seed CSV holds only its header row."
+  "note": "The live autoplay game. seed and started_season are written by `python -m hoc sim new --seed N`, which founds the first house in season 1; until then the scenario is empty and every seed CSV holds only its header row.",
+  "rules_version": "0.7",
+  "restarted": {
+    "date": "2026-09-07",
+    "at_rules_version": "0.7",
+    "seed": 1867,
+    "seat": "Kingston and the Islands",
+    "previous_seasons_discarded": 6,
+    "why": "Phase 10-1 replaced the engine's random number generator. The old one was Python's random.Random — a Mersenne Twister with CPython's own seeding, 53-bit floats and float draw weights — which no second engine could ever reproduce. The new one is xoshiro128** on unsigned 32-bit words, seeded by splitmix32 from fnv1a32(\"seed:season\"), with integer weights and integer per-cent probabilities throughout (hoc/prng.py, docs/DETERMINISM.md). Every draw in the game therefore changed, and seasons 1-6 as played under rules 0.6 could no longer be replayed from their own record: `python scripts/rebuild.py` would have produced a different map from the same seed, which is the one thing the record must never do. The world was restarted from season 1 on the same seed and the same seat rather than carrying forward a history the engine can no longer verify."
+  }
 }
