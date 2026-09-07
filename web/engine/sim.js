@@ -2140,6 +2140,213 @@ export class World {
     if (this.holdingCount(house) > 1) this.sellRiding(house, season, 'debt');
   }
 
+  // ------------------------------------------------ director interventions --
+  //
+  // The §12 operations, ported from hoc/turn.py. A turn file applies them
+  // *between* seasons through the Python turn runner; here they are applied to
+  // the live world directly, and they must leave the same marks — the same
+  // state change, and the same entry in the next season's `interventions`
+  // field, or a browser-played game would not replay in Python.
+  //
+  // Each operation merges a note under its own key in one event's delta, the
+  // way _merge_mechanical_delta does, and stamps `after_season` so
+  // `interventionsSince` can find it exactly once.
+
+  currentSeason() {
+    return this.seasonNo;
+  }
+
+  // Apply one turn's worth of operations. Returns the event id.
+  intervene(operations, title = "Director's intervention", kind = 'other') {
+    const season = this.currentSeason();
+    const delta = {};
+    const houses = [];
+    const note = (key, value) => {
+      if (!Object.prototype.hasOwnProperty.call(delta, key)) delta[key] = [];
+      delta[key].push(value);
+    };
+    const subject = (house) => {
+      if (!houses.includes(house)) houses.push(house);
+    };
+
+    for (const op of operations) {
+      switch (op.op) {
+        case 'set_objective': this.opSetObjective(op, season, note, subject); break;
+        case 'veto_objective': this.opVetoObjective(op, season, note, subject); break;
+        case 'force_action': this.opForceAction(op, season, note, subject); break;
+        case 'adjust_stat': this.opAdjustStat(op, season, note, subject); break;
+        case 'grant_house': this.opGrantHouse(op, season, note, subject); break;
+        case 'set_clock': this.opSetClock(op); break;
+        case 'relation': this.opRelation(op); break;
+        default: throw new SimError(`unknown intervention operation '${op.op}'`);
+      }
+    }
+
+    // The event carries the whole turn, as the turn runner's does. Relations
+    // recorded by the `relation` operation point at it, so it is created after
+    // the operations have run and then back-filled — the same order the Python
+    // runner ends up in, since it creates the event first and merges into it.
+    const eventId = this.state.recordEvent({
+      kind,
+      title,
+      houses,
+      eraCohort: null,
+      narrative: null,
+      mechanicalDelta: delta,
+      source: 'turn',
+    });
+    for (const relation of this._pendingRelations || []) {
+      relation.eventId = eventId;
+    }
+    this._pendingRelations = [];
+    return eventId;
+  }
+
+  requireEngineHouse(house) {
+    const row = this.state.stats(house);
+    if (row === undefined) {
+      throw new SimError(
+        `${house} has no engine state; director interventions apply to the`
+        + ' autoplay game, not to the reconstructed one',
+      );
+    }
+    return row;
+  }
+
+  opSetObjective(op, season, note, subject) {
+    this.requireEngineHouse(op.house);
+    const held = this.state.heldObjectives(op.house);
+    if (held.includes(op.objective)) {
+      throw new SimError(`${op.house} already holds the objective '${op.objective}'`);
+    }
+    this.state.addObjective(op.house, op.objective, season);
+    subject(op.house);
+    note('set_objective', {
+      house: op.house, objective: op.objective, reason: op.reason ?? null, after_season: season,
+    });
+  }
+
+  opVetoObjective(op, season, note, subject) {
+    this.requireEngineHouse(op.house);
+    const held = this.state.heldObjectives(op.house);
+    if (!held.includes(op.objective)) {
+      throw new SimError(
+        `${op.house} does not currently hold the objective '${op.objective}'`,
+      );
+    }
+    this.state.satisfyObjective(op.house, op.objective, season);
+    subject(op.house);
+    note('veto_objective', {
+      house: op.house, objective: op.objective, reason: op.reason ?? null, after_season: season,
+    });
+  }
+
+  opForceAction(op, season, note, subject) {
+    this.requireEngineHouse(op.house);
+    if (!this.actions.has(op.action)) {
+      const known = [...this.actions.keys()].sort(compareStrings).join(', ');
+      throw new SimError(`unknown action '${op.action}'; valid actions are ${known}`);
+    }
+    this.state.stats(op.house).forcedAction = op.action;
+    subject(op.house);
+    note('force_action', {
+      house: op.house, action: op.action, reason: op.reason ?? null, after_season: season,
+    });
+  }
+
+  opAdjustStat(op, season, note, subject) {
+    const row = this.requireEngineHouse(op.house);
+    const bounds = {
+      capital: [0, 100], influence: [0, 100], cohesion: [0, 100], ambition: [0, 10],
+    };
+    if (!Object.prototype.hasOwnProperty.call(bounds, op.stat)) {
+      throw new SimError(
+        `unknown stat '${op.stat}'; adjustable stats are ${Object.keys(bounds).sort(compareStrings).join(', ')}`,
+      );
+    }
+    // hoc/turn.py requires a reason and says why: an unexplained adjustment is
+    // indistinguishable from a bug when someone reads the log later.
+    if (!op.reason || !String(op.reason).trim()) {
+      throw new SimError('adjust_stat needs a reason');
+    }
+    const [low, high] = bounds[op.stat];
+    const before = row[op.stat];
+    const after = clamp(before + Math.trunc(op.delta), low, high);
+    row[op.stat] = after;
+    subject(op.house);
+    note('adjust_stat', {
+      house: op.house, stat: op.stat, delta: Math.trunc(op.delta),
+      before, after, reason: op.reason, after_season: season,
+    });
+  }
+
+  opGrantHouse(op, season, note, subject) {
+    const house = this.foundHouse(season, {
+      seat: op.riding,
+      rng: this.rngFor(season),
+      community: op.community ?? null,
+      tag: op.tag ?? null,
+      rank: op.rank ?? null,
+      surname: (op.surname || '').trim() || null,
+    });
+    if (house === null) {
+      throw new SimError(
+        `could not grant a house at '${op.riding}';`
+        + " the riding may be held, or its province's place bank exhausted",
+      );
+    }
+    subject(house);
+    note('grant_house', {
+      house, riding: op.riding, community: op.community ?? null, rank: op.rank ?? null,
+      tag: op.tag ?? null, reason: op.reason ?? null, after_season: season,
+    });
+  }
+
+  opSetClock(op) {
+    if (!this.state.clocks.has(op.house)) throw new SimError(`unknown house '${op.house}'`);
+    this.state.setClock(op.house, op.personal_year, op.basis);
+  }
+
+  opRelation(op) {
+    // The turn runner inserts a relations row pointing at the turn's event,
+    // which does not exist yet here; intervene() back-fills the id.
+    const row = this.state.setRelation(
+      op.house_a, op.house_b, op.marker, null, op.text, 'turn',
+    );
+    this._pendingRelations = this._pendingRelations || [];
+    this._pendingRelations.push(row);
+  }
+
+  // Director interventions applied between the previous season and this one.
+  //
+  // A mirror of hoc/sim.py's _interventions_since: the same window (after the
+  // previous season, before this one), the same shape, the same order.
+  interventionsSince(season) {
+    let previous = null;
+    for (const row of this.state.seasons) {
+      if (row.seasonNo < season && (previous === null || row.seasonNo > previous)) {
+        previous = row.seasonNo;
+      }
+    }
+    const out = [];
+    for (const event of this.state.events) {
+      const delta = event.mechanicalDelta;
+      if (!delta || typeof delta !== 'object') continue;
+      for (const operation of Object.keys(delta)) {
+        const entries = delta[operation];
+        const list = Array.isArray(entries) ? entries : [entries];
+        for (const entry of list) {
+          if (entry === null || typeof entry !== 'object' || Array.isArray(entry)) continue;
+          const after = entry.after_season;
+          if (after === undefined || after === null || after >= season) continue;
+          if (previous !== null && after < previous) continue;
+          out.push({ operation, title: event.title, ...entry });
+        }
+      }
+    }
+    return out;
+  }
+
   // ------------------------------------------------------------ the season --
 
   initialise(worldSeed, seat = null) {
@@ -2251,10 +2458,7 @@ export class World {
       seed: this.worldSeed,
       rules_version: RULES_VERSION,
       engine: { impl: 'javascript', rules_version: RULES_VERSION },
-      // A JavaScript world is played from a seed with no turn files, so there
-      // are never director interventions to report. The Python engine computes
-      // this from the events table and gets [] for an engine-only run.
-      interventions: [],
+      interventions: this.interventionsSince(season),
       draws: this.log,
       actions: outcomes,
       founded,

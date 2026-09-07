@@ -51,8 +51,54 @@ def node_available():
     return shutil.which("node") is not None
 
 
-def run_python(seed, seasons, out_dir, seat=None, phases=None):
-    """Play `seasons` seasons with the Python engine, writing season files."""
+def _apply_script(conn, world, script, after_season):
+    """Apply a scripted intervention through the Python turn runner.
+
+    The turn runner is the only path a director's operation takes in the Python
+    engine, so the cross-check has to go through it too: applying the operations
+    some other way here would prove the two engines agree about a code path the
+    game never uses. The turn runner insists on a NNNN_slug.json filename, so
+    each entry is written under the season it follows.
+    """
+    import json as _json
+    import tempfile as _tempfile
+
+    from hoc.turn import apply_turn
+
+    for index, entry in enumerate(script):
+        if entry["after_season"] != after_season:
+            continue
+        directory = Path(_tempfile.mkdtemp(prefix="hoc-turn-"))
+        path = directory / f"{index + 1:04d}_s{after_season:04d}-crosscheck.json"
+        path.write_text(
+            _json.dumps(
+                {
+                    "directive": entry.get("directive", "cross-check intervention"),
+                    "event": {
+                        "kind": entry.get("kind", "other"),
+                        "title": entry["title"],
+                        "narrative": entry.get(
+                            "narrative", "A cross-check intervention."
+                        ),
+                        "houses": [],
+                    },
+                    "operations": entry["operations"],
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        apply_turn(conn, path)
+        shutil.rmtree(directory, ignore_errors=True)
+
+
+def run_python(seed, seasons, out_dir, seat=None, phases=None, script=(), resume_from=None):
+    """Play `seasons` seasons with the Python engine, writing season files.
+
+    `resume_from` is a season count to play *first* without writing anything —
+    the state a snapshot would have been taken at — so that the seasons this
+    does write are the ones a resumed world should reproduce.
+    """
     import load_seed  # noqa: E402  (scripts/ is on the path above)
 
     from hoc import scenario, sim
@@ -62,12 +108,14 @@ def run_python(seed, seasons, out_dir, seat=None, phases=None):
     world = sim.World(conn, world_seed=seed, seasons_dir=out_dir, phases=phases)
     with conn:
         world.initialise(seed, seat=seat)
-        if seasons > 1:
-            world.run(seasons - 1)
+        _apply_script(conn, world, script, 1)
+        for season in range(2, seasons + 1):
+            world.run_season()
+            _apply_script(conn, world, script, season)
     conn.close()
 
 
-def run_js(seed, seasons, out_dir, seat=None, phases=None):
+def run_js(seed, seasons, out_dir, seat=None, phases=None, resume=None, interventions=None):
     """Play the same seasons with the JavaScript engine."""
     if not JS_CLI.exists():
         raise CrosscheckUnavailable(
@@ -83,6 +131,10 @@ def run_js(seed, seasons, out_dir, seat=None, phases=None):
         "--seasons", str(seasons),
         "--out", str(out_dir),
     ]
+    if resume is not None:
+        command += ["--resume", str(resume)]
+    if interventions is not None:
+        command += ["--interventions", str(interventions)]
     if seat:
         command += ["--seat", seat]
     if phases:
@@ -141,7 +193,88 @@ def compare(python_dir, js_dir, seasons):
     return differences
 
 
-def crosscheck(seed, seasons, seat=None, keep=None, phases=None):
+def crosscheck_resume(seed, snapshot_at, seasons, keep=None, script=()):
+    """Snapshot a Python world, resume it in JavaScript, and compare what follows.
+
+    This is Phase 10-2's central claim: the browser picks the committed game up
+    exactly where the Python engine put it down. Both sides play the same
+    seasons — Python straight through, JavaScript from `world.json` — and the
+    files they write for those seasons must be identical.
+    """
+    import load_seed  # noqa: E402
+
+    from hoc import scenario, sim
+    from hoc.export import world as world_export
+
+    workspace = Path(keep) if keep else Path(tempfile.mkdtemp(prefix="hoc-resume-"))
+    workspace.mkdir(parents=True, exist_ok=True)
+    python_dir = workspace / "python"
+    js_dir = workspace / "javascript"
+    python_dir.mkdir(parents=True, exist_ok=True)
+    js_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        # Play to the snapshot point writing nothing, snapshot, then keep going
+        # and write only the seasons the resumed world should reproduce.
+        conn = load_seed.build(workspace / "python.db", seed=scenario.seed_dir("new"))
+        world = sim.World(conn, world_seed=seed, seasons_dir=None)
+        with conn:
+            world.initialise(seed)
+            _apply_script(conn, world, script, 1)
+            for season in range(2, snapshot_at + 1):
+                world.run_season()
+                _apply_script(conn, world, script, season)
+            snapshot = world_export.world_snapshot(conn)
+            snapshot_path = workspace / "world.json"
+            snapshot_path.write_text(
+                json.dumps(snapshot, sort_keys=True, ensure_ascii=False), encoding="utf-8"
+            )
+
+            world.seasons_dir = python_dir
+            for season in range(snapshot_at + 1, snapshot_at + seasons + 1):
+                world.run_season()
+                _apply_script(conn, world, script, season)
+        conn.close()
+
+        script_path = None
+        if script:
+            script_path = workspace / "interventions.json"
+            script_path.write_text(json.dumps(list(script), ensure_ascii=False), encoding="utf-8")
+
+        run_js(seed, seasons, js_dir, resume=snapshot_path, interventions=script_path)
+        return _compare_range(python_dir, js_dir, snapshot_at + 1, snapshot_at + seasons)
+    finally:
+        if keep is None:
+            shutil.rmtree(workspace, ignore_errors=True)
+
+
+def _compare_range(python_dir, js_dir, first, last):
+    """Compare a run of seasons by number, rather than from season 1."""
+    differences = []
+    for season in range(first, last + 1):
+        name = f"{season:04d}.json"
+        py_path, js_path = python_dir / name, js_dir / name
+        if not py_path.exists():
+            differences.append((season, f"the Python engine wrote no {name}"))
+            continue
+        if not js_path.exists():
+            differences.append((season, f"the JavaScript engine wrote no {name}"))
+            continue
+        py_raw = py_path.read_text(encoding="utf-8")
+        js_raw = js_path.read_text(encoding="utf-8")
+        if py_raw == js_raw:
+            continue
+        py_text, js_text = strip_ignored(py_raw), strip_ignored(js_raw)
+        if py_text == js_text:
+            continue
+        differences.append((season, "".join(difflib.unified_diff(
+            py_text.splitlines(keepends=True), js_text.splitlines(keepends=True),
+            fromfile=f"python/{name}", tofile=f"javascript/{name}",
+        ))))
+    return differences
+
+
+def crosscheck(seed, seasons, seat=None, keep=None, phases=None, script=()):
     """Run both engines and compare. Returns the list of differences.
 
     Raises CrosscheckUnavailable when the comparison cannot be made at all.
@@ -151,8 +284,12 @@ def crosscheck(seed, seasons, seat=None, keep=None, phases=None):
     python_dir = workspace / "python"
     js_dir = workspace / "javascript"
     try:
-        run_python(seed, seasons, python_dir, seat=seat, phases=phases)
-        run_js(seed, seasons, js_dir, seat=seat, phases=phases)
+        script_path = None
+        if script:
+            script_path = workspace / "interventions.json"
+            script_path.write_text(json.dumps(list(script), ensure_ascii=False), encoding="utf-8")
+        run_python(seed, seasons, python_dir, seat=seat, phases=phases, script=script)
+        run_js(seed, seasons, js_dir, seat=seat, phases=phases, interventions=script_path)
         return compare(python_dir, js_dir, seasons)
     finally:
         if keep is None:

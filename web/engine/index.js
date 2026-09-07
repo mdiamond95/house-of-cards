@@ -34,6 +34,23 @@ export function newWorld(read, seed, seat = null, { phases = null, data = null }
   return { world, record };
 }
 
+// Resume the committed game from a snapshot written by hoc/export/world.py.
+//
+// This is how the browser picks the world up where the Python engine left it:
+// the world's seed and season come out of the snapshot, so the very next season
+// draws from the same seed the Python engine would have drawn from.
+export function resumeWorld(read, snapshot, { phases = null, data = null } = {}) {
+  const { rules, map } = data || loadWorldData(read);
+  if (snapshot.rules_version !== RULES_VERSION) {
+    throw new SimError(
+      `this world was played under rules ${snapshot.rules_version} and the engine is`
+      + ` ${RULES_VERSION}: replaying it would reinterpret seasons already played`,
+    );
+  }
+  const state = WorldState.load(snapshot, map);
+  return new World({ state, rules, worldSeed: snapshot.world_seed, phases });
+}
+
 // Play one more season. Returns that season's record.
 export function runSeason(world) {
   return world.runSeason();
