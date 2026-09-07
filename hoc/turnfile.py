@@ -121,10 +121,17 @@ def turn_id_from_path(path):
     return int(match.group(1))
 
 
-def load(path):
-    """Read a turn file. Returns (turn_id, data)."""
+def load(path, turn_id=None):
+    """Read a turn file. Returns (turn_id, data).
+
+    `turn_id` overrides the one in the filename, which is what an intervention
+    recorded as `interventions/NNNN.json` needs: it is keyed by the season it
+    follows rather than by a turn number, and its id is allocated from a range
+    that cannot collide with a hand-written turn (hoc/turn.py).
+    """
     path = Path(path)
-    turn_id = turn_id_from_path(path)
+    if turn_id is None:
+        turn_id = turn_id_from_path(path)
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:

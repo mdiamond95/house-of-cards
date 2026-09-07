@@ -109,6 +109,19 @@ def seasons_dir(name=None, root=None):
     return scenario_dir(name, root) / "seasons"
 
 
+def interventions_dir(name=None, root=None):
+    """Where a director's intervention into an autoplay game is recorded.
+
+    One file per season it follows — `interventions/0042.json` is applied after
+    season 42 — carrying the same turn-file schema `hoc/turn.py` accepts. This
+    is the single place an intervention lives for an engine-played game,
+    whichever engine played it: the console writes here, and so does the browser
+    when it saves (Phase 10-3). `turns/` remains the director-written game's
+    record, and the reconstructed game's.
+    """
+    return scenario_dir(name, root) / "interventions"
+
+
 def read_manifest(name=None, root=None):
     """The scenario.json manifest: {name, seed, started_season}. Missing file
     yields a manifest with the directory's name and nothing else recorded —

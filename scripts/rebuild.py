@@ -22,7 +22,7 @@ sys.path.insert(0, str(ROOT))
 
 from hoc import db, scenario  # noqa: E402  (after sys.path setup)
 from hoc.export import dump, map as map_export, site, workbook  # noqa: E402
-from hoc.turn import TurnError, apply_turn  # noqa: E402
+from hoc.turn import TurnError, apply_turn, intervention_turn_id  # noqa: E402
 
 import build_archive  # noqa: E402  (same directory; imported after sys.path setup)
 import load_seed  # noqa: E402
@@ -60,10 +60,41 @@ def season_files(name=None):
     return sorted(directory.glob("[0-9][0-9][0-9][0-9].json"))
 
 
-def replay_turns(conn, name=None, verbose=True, paths=None):
+def intervention_files(name=None):
+    """`interventions/NNNN.json`, the canonical record of a director's hand in
+    an engine-played game — whichever engine played it."""
+    directory = scenario.interventions_dir(name)
+    if not directory.is_dir():
+        return []
+    return sorted(directory.glob("[0-9][0-9][0-9][0-9].json"))
+
+
+def record_interventions(name=None):
+    """Every intervention in this scenario's record, as (after_season, path,
+    turn_id), in the order they must be replayed.
+
+    Two sources, one meaning. `interventions/NNNN.json` is where the console and
+    the browser both write; `turns/NNNN_sSSSS-slug.json` is the older shape, and
+    is still replayed so that games recorded before Phase 10-3 keep rebuilding.
+    This function is the single definition of "the interventions in the record":
+    scripts/referee.py reads it rather than looking for the files itself, so the
+    referee and a rebuild can never disagree about what the record contains.
+    """
+    out = []
+    for path in intervention_files(name):
+        after = season_number(path)
+        out.append((after, path, intervention_turn_id(after)))
+    for path in turn_files(name):
+        after = turn_after_season(path)
+        if after is not None:
+            out.append((after, path, None))
+    return sorted(out, key=lambda item: (item[0], item[1].name))
+
+
+def replay_turns(conn, name=None, verbose=True, paths=None, turn_id=None):
     for path in turn_files(name) if paths is None else paths:
         try:
-            summary = apply_turn(conn, path)
+            summary = apply_turn(conn, path, turn_id=turn_id)
         except TurnError as exc:
             where = "" if exc.operation_index is None else f" (operation {exc.operation_index})"
             raise SystemExit(f"replay failed at {path.name}{where}: {exc.reason}") from exc
@@ -71,7 +102,7 @@ def replay_turns(conn, name=None, verbose=True, paths=None):
             print(f"  replayed {path.name} -> event {summary['event_id']}, holdings {summary['holdings']}")
 
 
-def replay_seasons(conn, name=None, verbose=True, interventions=()):
+def replay_seasons(conn, name=None, verbose=True, interventions=(), seasons_out=None):
     """Replay an autoplay scenario's season logs, interleaving interventions.
 
     The engine is deterministic from (world seed, season number), so replay
@@ -85,7 +116,7 @@ def replay_seasons(conn, name=None, verbose=True, interventions=()):
         return
     from hoc import sim  # imported here so a turn-only rebuild needs no engine
 
-    pending = sorted(interventions, key=lambda item: (item[0], item[1].name))
+    pending = list(interventions)
 
     # The engine never commits — the caller owns the transaction, exactly as the
     # turn runner does — so the replay has to be wrapped or it rolls back on close.
@@ -94,30 +125,39 @@ def replay_seasons(conn, name=None, verbose=True, interventions=()):
         for path in paths:
             season = season_number(path)
             while pending and pending[0][0] < season:
-                _, turn_path = pending.pop(0)
-                replay_turns(conn, name, verbose=verbose, paths=[turn_path])
-            world = sim.World.replay(conn, [path], seasons_dir=scenario.seasons_dir(name),
-                                     world=world)
-        for _, turn_path in pending:
-            replay_turns(conn, name, verbose=verbose, paths=[turn_path])
+                _, turn_path, turn_id = pending.pop(0)
+                replay_turns(conn, name, verbose=verbose, paths=[turn_path], turn_id=turn_id)
+            world = sim.World.replay(
+                conn, [path],
+                seasons_dir=seasons_out if seasons_out is not None
+                else scenario.seasons_dir(name),
+                world=world,
+            )
+        for _, turn_path, turn_id in pending:
+            replay_turns(conn, name, verbose=verbose, paths=[turn_path], turn_id=turn_id)
 
     if verbose and world is not None:
         print(f"  replayed {len(paths)} season(s) -> season {world.season_no}")
 
 
-def rebuild(db_path, export=True, name=None, verbose=True):
-    """Load the seed, replay the scenario's record, optionally export."""
+def rebuild(db_path, export=True, name=None, verbose=True, seasons_out=None):
+    """Load the seed, replay the scenario's record, optionally export.
+
+    `seasons_out` sends the replayed season logs somewhere other than the
+    scenario's own directory. The referee needs that: it compares what the
+    engine produces against what was committed, and a replay that overwrote the
+    committed files first would be comparing them with themselves
+    (scripts/referee.py).
+    """
     conn = load_seed.build(db_path, seed=scenario.seed_dir(name))
 
-    plain, interventions = [], []
-    for path in turn_files(name):
-        after = turn_after_season(path)
-        (interventions if after is not None else plain).append(
-            (after, path) if after is not None else path
-        )
+    plain = [path for path in turn_files(name) if turn_after_season(path) is None]
 
     replay_turns(conn, name, verbose=verbose, paths=plain)
-    replay_seasons(conn, name, verbose=verbose, interventions=interventions)
+    replay_seasons(
+        conn, name, verbose=verbose, interventions=record_interventions(name),
+        seasons_out=seasons_out,
+    )
 
     if export:
         dump.write_dump(conn)
