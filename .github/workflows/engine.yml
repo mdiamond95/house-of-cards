@@ -40,6 +40,14 @@ on:
         required: false
         type: string
         default: ""
+  # A second way in, for a fine-grained PAT that has Contents read/write but
+  # was not granted Actions read/write: GitHub rejects workflow_dispatch from
+  # such a token with a 403 ("Resource not accessible by personal access
+  # token") even though the same token can create a repository_dispatch.
+  # Same job, same commands — see "Normalize inputs" below, which is what
+  # lets every later step ignore which of the two events fired.
+  repository_dispatch:
+    types: [engine]
 
 # One run at a time, and never cancel one in flight: a cancelled run could leave
 # the season logs written and the database uncommitted.
@@ -55,6 +63,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Only the director may run the engine
+        # github.actor is the acting user for both events — the person who
+        # clicked Run workflow, or the owner of the PAT that sent the
+        # repository_dispatch — so one guard covers both trigger paths.
         if: github.actor != 'mdiamond95'
         run: |
           echo "::error::${{ github.actor }} is not the director; this workflow only runs for mdiamond95."
@@ -65,6 +76,45 @@ jobs:
             echo "game state on \`main\`, so it runs only for the repository's owner."
           } >> "$GITHUB_STEP_SUMMARY"
           exit 1
+
+      # workflow_dispatch inputs live at github.event.inputs.*; repository_dispatch
+      # carries the same fields at github.event.client_payload.* instead (the
+      # console sends the same shape either way — see hoc/export/site.py). Every
+      # step after this one reads steps.in.outputs.* and never looks at either
+      # event's own fields directly, so the two triggers stay interchangeable.
+      - name: Normalize inputs
+        id: in
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          WD_COMMAND: ${{ github.event.inputs.command }}
+          WD_SEASONS: ${{ github.event.inputs.seasons }}
+          WD_STOP_ON: ${{ github.event.inputs.stop_on }}
+          WD_PAYLOAD: ${{ github.event.inputs.payload }}
+          WD_NOTE: ${{ github.event.inputs.note }}
+          RD_COMMAND: ${{ github.event.client_payload.command }}
+          RD_SEASONS: ${{ github.event.client_payload.seasons }}
+          RD_STOP_ON: ${{ github.event.client_payload.stop_on }}
+          RD_PAYLOAD: ${{ github.event.client_payload.payload }}
+          RD_NOTE: ${{ github.event.client_payload.note }}
+        run: |
+          if [ "$EVENT_NAME" = "repository_dispatch" ]; then
+            command="$RD_COMMAND"; seasons="$RD_SEASONS"; stop_on="$RD_STOP_ON"; payload="$RD_PAYLOAD"; note="$RD_NOTE"
+          else
+            command="$WD_COMMAND"; seasons="$WD_SEASONS"; stop_on="$WD_STOP_ON"; payload="$WD_PAYLOAD"; note="$WD_NOTE"
+          fi
+          seasons="${seasons:-10}"
+          {
+            echo "command=$command"
+            echo "seasons=$seasons"
+            echo "stop_on=$stop_on"
+            echo "note=$note"
+          } >> "$GITHUB_OUTPUT"
+          {
+            echo "payload<<ENGINE_PAYLOAD_EOF"
+            printf '%s' "$payload"
+            echo
+            echo "ENGINE_PAYLOAD_EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v4
         with:
@@ -88,36 +138,36 @@ jobs:
         run: python -m pip install --disable-pip-version-check -r requirements-engine.txt
 
       - name: run — play seasons
-        if: inputs.command == 'run'
+        if: steps.in.outputs.command == 'run'
         run: |
           python scripts/engine_command.py run \
-            --seasons "${{ inputs.seasons }}" \
-            --stop-on "${{ inputs.stop_on }}" \
-            --note "${{ inputs.note }}" | tee engine-output.txt
+            --seasons "${{ steps.in.outputs.seasons }}" \
+            --stop-on "${{ steps.in.outputs.stop_on }}" \
+            --note "${{ steps.in.outputs.note }}" | tee engine-output.txt
 
       - name: intervene — apply a director's turn
-        if: inputs.command == 'intervene'
+        if: steps.in.outputs.command == 'intervene'
         env:
-          PAYLOAD: ${{ inputs.payload }}
+          PAYLOAD: ${{ steps.in.outputs.payload }}
         run: |
           python scripts/engine_command.py intervene \
             --payload "$PAYLOAD" \
-            --note "${{ inputs.note }}" | tee engine-output.txt
+            --note "${{ steps.in.outputs.note }}" | tee engine-output.txt
 
       - name: rules — tune a table
-        if: inputs.command == 'rules'
+        if: steps.in.outputs.command == 'rules'
         env:
-          PAYLOAD: ${{ inputs.payload }}
+          PAYLOAD: ${{ steps.in.outputs.payload }}
         run: |
           python scripts/engine_command.py rules \
             --payload "$PAYLOAD" \
-            --note "${{ inputs.note }}" | tee engine-output.txt
+            --note "${{ steps.in.outputs.note }}" | tee engine-output.txt
 
       - name: rebuild — verify the database reproduces from the record
-        if: inputs.command == 'rebuild'
+        if: steps.in.outputs.command == 'rebuild'
         run: |
           python scripts/engine_command.py rebuild \
-            --note "${{ inputs.note }}" | tee engine-output.txt
+            --note "${{ steps.in.outputs.note }}" | tee engine-output.txt
 
       # The 300-season smoke run belongs in a Code session, not here: it takes
       # longer than everything else in this workflow put together, and it tests

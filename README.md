@@ -46,6 +46,8 @@ The engine holds houses with stats and objectives that draw actions from the wei
 
 The console is a page on the site. It holds no credentials of its own: the director pastes in a fine-grained GitHub token, it is kept in that browser's local storage and sent only to `api.github.com`, and a Disconnect button drops it. Open the console with no token and everything still renders — the controls are simply disabled and say why.
 
+The token needs **Actions: read and write** and **Contents: read** on this repository — Actions read/write is what lets it dispatch `engine.yml` directly, and is what the console prefers. A token granted only **Contents: read and write** still works: the console retries a failed dispatch as a `repository_dispatch` instead, which needs Contents only.
+
 Every control ends as a dispatch of `.github/workflows/engine.yml`, which does the work, runs the suite, exports the site and commits the result. That is the only automated path by which the game changes, and it is the one that checks itself.
 
 - **Run seasons** — 1, 5, 10, 25 or 50, with pause conditions (a house removed, a challenge, a Major event, a house reaching Marquis, a partition, an extinction). The run halts at the first condition met and the summary says which one and which season.
