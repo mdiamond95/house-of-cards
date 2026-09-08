@@ -1,66 +1,172 @@
 house_a,house_b,value
+Beauvais,Benjamin,25
+Beauvais,Benjamin 2,36
+Beauvais,Chapais,9
+Beauvais,Dawes,41
+Beauvais,Furlong,42
+Beauvais,Hays,35
+Beauvais,Mercier,49
+Beauvais,Rouleau,33
+Beauvais,Rouleau 2,36
+Benjamin,Benjamin 2,0
 Benjamin,Bouchard,42
-Benjamin,Colby,30
-Benjamin,Dawes,0
+Benjamin,Chapais,30
+Benjamin,Cogswell,30
+Benjamin,Colby,54
+Benjamin,Dawes,21
+Benjamin,Dickson,32
 Benjamin,Elliott,0
+Benjamin,Elliott 2,26
 Benjamin,Hays,24
-Benjamin,Langelier,30
-Benjamin,Mercier,55
+Benjamin,Langelier,58
+Benjamin,Mercier,54
 Benjamin,Patterson,0
-Benjamin,Proulx,0
-Benjamin,Turgeon,57
+Benjamin,Proulx,45
+Benjamin,Rouleau 2,30
+Benjamin,Trudel,54
+Benjamin,Turgeon,34
+Benjamin 2,Bouchard,39
+Benjamin 2,Dawes,36
+Benjamin 2,Langelier,55
+Benjamin 2,Mercier,30
+Benjamin 2,Patterson,4
+Benjamin 2,Turgeon,54
+Bhullar,Bhullar 2,0
 Bhullar,Cornwall,20
-Bhullar,Langelier,4
-Bird,Cardinal,39
-Bird,Stefaniuk,33
-Byrne,Hendrie,0
-Byrne,Lucas,2
-Byrne,Rochon,8
-Byrne,Worts,0
-Cameron,Gillies 2,28
-Cameron,Rochon,0
-Cameron,Worts,0
-Cardinal,Stefaniuk,48
+Bhullar,Cornwall 2,30
+Bhullar,Dyck,56
+Bhullar,Langelier,52
+Bhullar,Stefaniuk 2,30
+Bhullar 2,Cornwall 2,4
+Bhullar 2,Dyck,4
+Bhullar 2,Sparrow,4
+Bhullar 2,Stefaniuk 2,4
+Bird,Cardinal,30
+Bird,Stefaniuk,36
+Bouchard,Chapais,49
+Bouchard,Dawes,27
+Bouchard,Dickson,54
+Bouchard,McLellan,27
+Bouchard,Mercier,28
+Bouchard,Patterson,32
+Bouchard,Rouleau 2,54
+Byrne,Hendrie,37
+Byrne,Jarvis,30
+Byrne,Lucas,52
+Byrne,Rochon,51
+Byrne,Worts,39
+Cameron,Gillies,53
+Cameron,Gillies 2,33
+Cameron,Meagher,11
+Cameron,Rochon,23
+Cameron,Smoke,36
+Cameron,Uniacke,30
+Cameron,Worts,17
+Cardinal,Stefaniuk,39
+Cashin,Wallace,6
+Chapais,Dickson,8
+Chapais,Mercier,33
+Chapais,Rouleau,37
+Chapais,Rouleau 2,36
+Cogswell,Langelier,10
+Cogswell,Turgeon,50
 Colby,Mercier,51
+Cornwall,Cornwall 2,0
+Cornwall,Hendry,0
+Cornwall 2,Hendry,0
+Cornwall 2,Sparrow,0
 Cousineau,Meagher,20
 Cousineau,Wallace,14
+Dawes,Furlong,30
+Dawes,Hays,28
+Dawes,Langelier 2,30
 Dawes,Marchand,0
 Dawes,Mercier,10
-Dawes,Rouleau,40
-Dawes,Turgeon,26
+Dawes,Rouleau,57
+Dawes,Rouleau 2,36
+Dawes,Turgeon,32
+Dickson,Forbes,19
+Dickson,McLellan,44
+Dickson,Patterson,42
+Dyck,Sparrow,0
+Elliott,Elliott 2,0
 Elliott,Hoover,0
 Elliott,Langelier,0
-Elliott,Meagher,0
-Elliott,Proulx,0
-Elliott,Skye,32
-Forbes,McLellan,38
-Forbes,Patterson,0
-Furlong,Hays,40
-Furlong,Rouleau,40
-Gillies,Rochon,30
-Hays,Rouleau,46
-Hendrie,Worts,42
-Hoover,Proulx,0
+Elliott,Meagher,35
+Elliott,Proulx,45
+Elliott,Skye,41
+Elliott,Uniacke,39
+Elliott 2,Hoover,26
+Elliott 2,Langelier,20
+Elliott 2,Meagher,20
+Elliott 2,Proulx,56
+Forbes,McLellan,30
+Forbes,Patterson,5
+Furlong,Hays,30
+Furlong,Langelier 2,30
+Furlong,Rouleau,42
+Gillies,Rochon,48
+Gillies,Worts,1
+Gillies 2,Meagher,30
+Gillies 2,Skye,16
+Gillies 2,Smoke,39
+Gillies 2,Uniacke,30
+Hays,Langelier 2,42
+Hays,Rouleau,30
+Hendrie,Rochon,30
+Hendrie,Worts,30
+Hoover,Proulx,45
+Jarvis,Rochon,30
 Langelier,Meagher,0
-Langelier,Patterson,0
-Langelier,Pegahmagabow,0
-Lucas,Wallace,16
-Lucas,Wallace 2,16
-Lucas,Worts,16
-Marchand,Proulx,2
-Marchand,Rouleau,56
-Marchand,Turgeon,28
+Langelier,Mercier,0
+Langelier,Patterson,2
+Langelier,Pegahmagabow,22
+Langelier,Trudel,27
+Langelier,Turgeon,20
+Langelier 2,Rouleau,30
+Lucas,Smoke,57
+Lucas,Wallace,30
+Lucas,Wallace 2,30
+Lucas,Worts,30
+Marchand,Proulx,21
+Marchand,Rouleau,54
+Marchand,Rouleau 2,31
+Marchand,Turgeon,42
+McLellan,Murray,45
 McLellan,Patterson,12
 Meagher,Pegahmagabow,0
+Meagher,Proulx,15
+Meagher,Skye,17
+Meagher,Smoke,46
+Meagher,Uniacke,31
 Meagher,Wallace 2,0
-Meagher 2,Wallace 2,30
-Mercier,Proulx,12
-Mercier,Rouleau,48
-Mercier,Turgeon,48
-Pegahmagabow,Stefaniuk,12
-Proulx,Rouleau,42
-Proulx,Turgeon,6
-Rouleau,Turgeon,40
+Meagher 2,Wallace,55
+Meagher 2,Wallace 2,51
+Mercier,Patterson,2
+Mercier,Proulx,33
+Mercier,Rouleau,32
+Mercier,Rouleau 2,33
+Mercier,Turgeon,58
+Pegahmagabow,Stefaniuk,30
+Pegahmagabow,Stefaniuk 2,42
+Proulx,Rouleau,57
+Proulx,Turgeon,48
+Proulx,Uniacke,5
+Rochon,Worts,33
+Rouleau,Rouleau 2,40
+Rouleau,Turgeon,45
+Rouleau 2,Turgeon,36
+Shawanaga,Wallace 2,33
+Skye,Uniacke,30
+Smoke,Wallace,0
+Smoke,Wallace 2,40
+Smoke,Worts,54
+Stefaniuk,Stefaniuk 2,48
+Stefaniuk,Stefaniuk 3,23
+Stefaniuk 2,Stefaniuk 3,42
 Wallace,Wallace 2,0
-Wallace,Worts,0
-Wallace 2,Worts,0
+Wallace,Wallace 3,2
+Wallace,Worts,39
+Wallace 2,Wallace 3,0
+Wallace 2,Worts,39
+Wallace 3,Worts,2

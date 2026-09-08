@@ -7,34 +7,34 @@ id,house_a,house_b,marker,event_id,event_text,source
 6,Langelier,Mercier,◉+,319,compact,engine
 7,McLellan,Mercier,kin,949,marriage alliance,engine
 8,Benjamin,McLellan,~,459,correspondence,engine
-9,Langelier,Meagher,◉+,433,compact,engine
+9,Langelier,Meagher,◉+,2496,correspondence,engine
 10,Benjamin,Wallace,kin,649,marriage alliance,engine
 11,Hays,Meagher,kin,434,correspondence,engine
 12,Hoover,Stefaniuk,kin,357,correspondence,engine
 13,Bouchard,Wallace,kin,709,correspondence,engine
-14,Hays,Hoover,◉+,710,compact,engine
+14,Hays,Hoover,kin,2455,marriage alliance,engine
 15,Elliott,Stefaniuk,◉+,430,compact,engine
 16,Hays,McLellan,kin,561,marriage alliance,engine
-17,Hoover,Langelier,+,1225,correspondence,engine
+17,Hoover,Langelier,kin,1612,marriage alliance,engine
 18,Elliott,Wallace,◉+,347,compact,engine
 19,Forbes,Langelier,kin,304,marriage alliance,engine
 20,Elliott,Mercier,◉+,1047,correspondence,engine
 21,Bouchard,Hays,◉+,543,compact,engine
-22,Benjamin,Mercier,~,1178,cession,engine
-23,Meagher,Wallace,+,1183,correspondence,engine
+22,Benjamin,Mercier,~,2097,dispute won,engine
+23,Meagher,Wallace,+,1899,correspondence,engine
 24,Patterson,Rochon,~,467,reconciliation,engine
 25,Cameron,Hoover,+,388,correspondence,engine
-26,Benjamin,Langelier,Sig−,1387,a boundary the two houses read differently,engine
+26,Benjamin,Langelier,~,2422,reconciliation,engine
 27,Langelier,Stefaniuk,+,339,correspondence,engine
 28,Cameron,Meagher,◉+,674,compact,engine
 29,Bird,Mercier,kin,421,marriage alliance,engine
 30,Bird,Hays,+,528,correspondence,engine
 31,Elliott,Hoover,◉+,1353,correspondence,engine
 32,Elliott,Langelier,◉+,559,compact,engine
-33,Cameron,Rochon,kin,868,correspondence,engine
+33,Cameron,Rochon,kin,1695,correspondence,engine
 34,Bouchard,Mercier,◉+,632,compact,engine
-35,Bhullar,Cornwall,kin,1413,correspondence,engine
-36,Cardinal,Hays,◉+,816,compact,engine
+35,Bhullar,Cornwall,kin,1716,correspondence,engine
+36,Cardinal,Hays,◉+,2842,correspondence,engine
 37,Patterson,Rouleau,◉+,1007,compact,engine
 38,Benjamin,Stefaniuk,◉+,746,compact,engine
 39,Cardinal,Cousineau,◎,505,correspondence,engine
@@ -52,77 +52,252 @@ id,house_a,house_b,marker,event_id,event_text,source
 51,McLellan,Rouleau,◉+,1136,compact,engine
 52,Cameron,Hendrie,◉+,1423,compact,engine
 53,Elliott,Pegahmagabow,kin,1263,correspondence,engine
-54,Forbes,Rouleau,+,1358,correspondence,engine
+54,Forbes,Rouleau,◉+,1647,compact,engine
 55,Cardinal,Proulx,kin,872,marriage alliance,engine
-56,Hoover,Wallace,+,713,correspondence,engine
+56,Hoover,Wallace,◉+,2234,compact,engine
 57,Mercier,Stefaniuk,~,1372,correspondence,engine
-58,Pegahmagabow,Wallace,+,943,correspondence,engine
-59,Cameron,Proulx,+,851,correspondence,engine
+58,Pegahmagabow,Wallace,◉+,1772,compact,engine
+59,Cameron,Proulx,◉+,3037,compact,engine
 60,Mercier,Patterson,◉+,788,compact,engine
-61,Forbes,McLellan,Sig−,1390,disorderly succession,engine
+61,Forbes,McLellan,~,1807,lapsed: no longer pressed,engine
 62,Bird,Skye,kin,1120,marriage alliance,engine
 63,Hays,Langelier,◉+,865,compact,engine
-64,Cardinal,Worts,◉+,1146,compact,engine
+64,Cardinal,Worts,kin,3032,marriage alliance,engine
 65,Benjamin,Hendrie,+,846,correspondence,engine
-66,Cardinal,Stefaniuk,~,1046,lapsed: no longer pressed,engine
+66,Cardinal,Stefaniuk,~,3075,cession,engine
 67,Hoover,Skye,◉+,1375,compact,engine
-68,Bird,Gillies,◉+,871,compact,engine
-69,Bird,Cardinal,~,908,cession,engine
-70,Bird,Stefaniuk,~,944,reconciliation,engine
-71,Elliott,Skye,◉+,1252,compact,engine
+68,Bird,Gillies,kin,1824,marriage alliance,engine
+69,Bird,Cardinal,Sig−,3062,the patronage of a shared riding's offices,engine
+70,Bird,Stefaniuk,~,2962,dispute won,engine
+71,Elliott,Skye,kin,1651,marriage alliance,engine
 72,Marchand,Patterson,◉+,1228,compact,engine
-73,Bouchard,Dawes,+,1050,correspondence,engine
+73,Bouchard,Dawes,◉+,1758,compact,engine
 74,Hendrie,Rouleau,◉+,1206,compact,engine
-75,Wallace,Wallace 2,kin,1175,correspondence,engine
+75,Wallace,Wallace 2,kin,2043,correspondence,engine
 76,Colby,Hays,kin,1381,marriage alliance,engine
 77,Gillies,Pegahmagabow,kin,1254,marriage alliance,engine
-78,Forbes,Patterson,+,1054,correspondence,engine
+78,Forbes,Patterson,◉+,1479,compact,engine
 79,Bird,Byrne,◉+,1297,compact,engine
 80,Dawes,Worts,+,1368,correspondence,engine
-81,Benjamin,Bouchard,~,946,reconciliation,engine
+81,Benjamin,Bouchard,~,2891,dispute won,engine
 82,Cardinal,Hoover,◉+,1073,compact,engine
-83,Bouchard,Turgeon,+,1290,correspondence,engine
+83,Bouchard,Turgeon,kin,2840,marriage alliance,engine
 84,Colby,McLellan,◉+,1412,compact,engine
-85,Langelier,Rouleau,+,1027,correspondence,engine
-86,Dawes,Marchand,+,1015,correspondence,engine
+85,Langelier,Rouleau,◉+,2737,compact,engine
+86,Dawes,Marchand,kin,1623,marriage alliance,engine
 87,Cameron,Turgeon,kin,1111,marriage alliance,engine
-88,Cornwall,Fairbanks,◉+,1242,compact,engine
-89,Rochon,Wallace 2,+,1053,correspondence,engine
-90,Byrne,Marchand,+,1103,correspondence,engine
-91,Proulx,Rouleau,+,1100,correspondence,engine
+88,Cornwall,Fairbanks,kin,1513,marriage alliance,engine
+89,Rochon,Wallace 2,kin,1904,marriage alliance,engine
+90,Byrne,Marchand,kin,2566,marriage alliance,engine
+91,Proulx,Rouleau,kin,1789,marriage alliance,engine
 92,Gillies,Hendrie,+,1215,correspondence,engine
-93,Hendrie,Worts,~,1127,reconciliation,engine
-94,Benjamin,Colby,Sig−,1314,a boundary the two houses read differently,engine
-95,McLellan,Patterson,+,1395,correspondence,engine
+93,Hendrie,Worts,~,2175,cession,engine
+94,Benjamin,Colby,~,2804,dispute won,engine
+95,McLellan,Patterson,◉+,2932,compact,engine
 96,Dawes,Turgeon,+,1218,correspondence,engine
-97,Benjamin,Worts,+,1287,correspondence,engine
-98,Meagher 2,Mercier,+,1143,correspondence,engine
-99,Bhullar,Fairbanks,◉+,1283,compact,engine
+97,Benjamin,Worts,kin,1642,marriage alliance,engine
+98,Meagher 2,Mercier,kin,2002,marriage alliance,engine
+99,Bhullar,Fairbanks,◉+,1621,correspondence,engine
 100,Meagher 2,Skye,~,1233,reconciliation,engine
-101,Marchand,Wallace,+,1198,correspondence,engine
-102,Cardinal,Gillies 2,+,1205,correspondence,engine
-103,Patterson,Pegahmagabow,+,1210,correspondence,engine
+101,Marchand,Wallace,+,2453,correspondence,engine
+102,Cardinal,Gillies 2,◉+,1791,compact,engine
+103,Patterson,Pegahmagabow,◉+,1673,compact,engine
 104,Colby,Worts,+,1380,correspondence,engine
-105,Byrne,Lucas,+,1216,correspondence,engine
-106,Meagher,Wallace 2,+,1311,correspondence,engine
+105,Byrne,Lucas,◉+,1756,compact,engine
+106,Meagher,Wallace 2,kin,1652,marriage alliance,engine
 107,Bird,Fairbanks,◉+,1341,compact,engine
-108,Meagher,Turgeon,◎,1260,correspondence,engine
-109,Byrne,Hays,◎,1265,correspondence,engine
+108,Meagher,Turgeon,◉+,2262,compact,engine
+109,Byrne,Hays,◉+,2132,compact,engine
 110,Gillies,Meagher 2,+,1324,correspondence,engine
 111,Colby,Rouleau,+,1344,correspondence,engine
-112,Gillies 2,Stefaniuk,+,1337,correspondence,engine
-113,Bouchard,Gillies 2,+,1371,correspondence,engine
-114,Cameron,Lucas,◎,1321,correspondence,engine
+112,Gillies 2,Stefaniuk,kin,1545,marriage alliance,engine
+113,Bouchard,Gillies 2,◉+,1707,compact,engine
+114,Cameron,Lucas,kin,2429,marriage alliance,engine
 115,Marchand,Meagher 2,+,1364,correspondence,engine
-116,Meagher,Skye,◎,1326,correspondence,engine
-117,Colby,Langelier,+,1403,correspondence,engine
-118,Turgeon,Wallace 2,◎,1350,correspondence,engine
-119,Furlong,Gillies 2,◎,1352,correspondence,engine
-120,Bouchard,Cardinal,◎,1361,correspondence,engine
-121,Hendrie,Skye,◎,1362,correspondence,engine
-122,Bird,Lucas,◎,1396,correspondence,engine
-123,Pegahmagabow,Turgeon,◎,1398,correspondence,engine
-124,Meagher 2,Rouleau,◎,1400,correspondence,engine
+116,Meagher,Skye,+,1788,correspondence,engine
+117,Colby,Langelier,◉+,2100,compact,engine
+118,Turgeon,Wallace 2,+,1947,correspondence,engine
+119,Furlong,Gillies 2,+,1571,correspondence,engine
+120,Bouchard,Cardinal,+,1474,correspondence,engine
+121,Hendrie,Skye,~,2337,reconciliation,engine
+122,Bird,Lucas,◉+,1531,compact,engine
+123,Pegahmagabow,Turgeon,◉+,2538,compact,engine
+124,Meagher 2,Rouleau,kin,1535,marriage alliance,engine
 125,Marchand,Wallace 2,+,1425,correspondence,engine
-126,Proulx,Stefaniuk,◎,1408,correspondence,engine
-127,Gillies,Mercier,◎,1410,correspondence,engine
+126,Proulx,Stefaniuk,◉+,1578,compact,engine
+127,Gillies,Mercier,+,1512,correspondence,engine
+128,Benjamin,Turgeon,~,3023,reconciliation,engine
+129,Patterson,Worts,+,1460,correspondence,engine
+130,Dawes,Lucas,◉+,2941,compact,engine
+131,Benjamin,Marchand,+,1536,correspondence,engine
+132,Fairbanks,Stefaniuk,+,1524,correspondence,engine
+133,Furlong,Hays,Sig−,2831,the patronage of a shared riding's offices,engine
+134,Furlong,Rouleau,~,2971,dispute won,engine
+135,Mercier,Turgeon,~,1630,dispute won,engine
+136,Langelier,McLellan,+,1965,correspondence,engine
+137,Cardinal,Rochon,◉+,2428,compact,engine
+138,Lucas,Meagher 2,◉+,1941,compact,engine
+139,Pegahmagabow,Worts,◉+,1596,compact,engine
+140,Elliott,Gillies 2,kin,2452,marriage alliance,engine
+141,Benjamin,Benjamin 2,kin,1525,cadet line,engine
+142,Lucas,Pegahmagabow,+,1704,correspondence,engine
+143,Hays,Rouleau,~,3076,dispute won,engine
+144,Rouleau,Turgeon,~,2849,reconciliation,engine
+145,Bouchard,Patterson,+,2168,correspondence,engine
+146,Rouleau,Rouleau 2,kin,1589,cadet line,engine
+147,Gillies,Lucas,◉+,1831,compact,engine
+148,Smoke,Wallace,kin,2515,marriage alliance,engine
+149,Benjamin 2,Worts,◉+,2746,compact,engine
+150,Meagher,Rouleau 2,◉+,1834,compact,engine
+151,Bouchard,Elliott,+,2556,correspondence,engine
+152,Chapais,Hays,+,1796,correspondence,engine
+153,Marchand,Stefaniuk,+,1702,correspondence,engine
+154,Colby,Forbes,+,1703,correspondence,engine
+155,Bird,Wallace,+,2421,correspondence,engine
+156,Gillies,Hoover,kin,3085,marriage alliance,engine
+157,Furlong,Meagher 2,+,1885,correspondence,engine
+158,Benjamin,Hays,+,2229,correspondence,engine
+159,Beauvais,Forbes,+,1762,correspondence,engine
+160,Gillies 2,Hendrie,◉+,2156,compact,engine
+161,Hendrie,Rochon,~,2418,lapsed: no longer pressed,engine
+162,Patterson,Turgeon,kin,1884,marriage alliance,engine
+163,Marchand,Rouleau 2,◉+,2182,compact,engine
+164,Beauvais,Pegahmagabow,◉+,1907,compact,engine
+165,Dickson,Rouleau 2,kin,2050,marriage alliance,engine
+166,Skye,Uniacke,Sig−,2833,a church and school dispute in the border townships,engine
+167,Benjamin 2,Turgeon,~,2869,reconciliation,engine
+168,Lucas,Wallace,~,1808,lapsed: no longer pressed,engine
+169,Lucas,Wallace 2,~,1912,reconciliation,engine
+170,Lucas,Worts,~,3086,dispute won,engine
+171,Elliott,Rouleau 2,+,1931,correspondence,engine
+172,Stefaniuk,Stefaniuk 3,kin,1812,cadet line,engine
+173,Hoover,Mercier,◉+,2597,compact,engine
+174,Bouchard,Chapais,◉+,2181,compact,engine
+175,Beauvais,Benjamin 2,~,2282,lapsed: no longer pressed,engine
+176,Beauvais,Stefaniuk,+,1863,correspondence,engine
+177,Cornwall,Cornwall 2,kin,2410,correspondence,engine
+178,Cornwall,Stefaniuk 3,kin,2134,marriage alliance,engine
+179,Bird,Proulx,◉+,2299,compact,engine
+180,Beauvais,Cardinal,◉+,2402,compact,engine
+181,Cornwall 2,Stefaniuk 2,kin,2015,marriage alliance,engine
+182,Proulx,Turgeon,~,1943,cession,engine
+183,Mercier,Skye,kin,2855,marriage alliance,engine
+184,Furlong,Worts,◉+,2657,correspondence,engine
+185,Jarvis,Skye,◉+,2984,compact,engine
+186,Beauvais,Furlong,~,2998,dispute won,engine
+187,Proulx,Rouleau 2,+,2011,correspondence,engine
+188,Byrne,Cardinal,◉+,2980,compact,engine
+189,Bhullar,Stefaniuk 3,kin,3035,correspondence,engine
+190,Meagher,Pegahmagabow,◉+,2653,compact,engine
+191,Colby,Uniacke,+,2005,correspondence,engine
+192,Chapais,Dickson,+,2081,correspondence,engine
+193,Benjamin 2,Mercier,~,3069,dispute won,engine
+194,Benjamin 2,Langelier,+,2078,correspondence,engine
+195,Cameron,Worts,kin,2857,marriage alliance,engine
+196,Furlong,Meagher,+,2065,correspondence,engine
+197,Langelier 2,Stefaniuk,kin,2759,correspondence,engine
+198,Dawes,Patterson,+,2073,correspondence,engine
+199,Beauvais,Skye,+,2801,correspondence,engine
+200,Dyck,Stefaniuk,+,2631,correspondence,engine
+201,Cornwall 2,Stefaniuk 3,◉+,2355,compact,engine
+202,Meagher,Uniacke,◉+,2716,compact,engine
+203,Beauvais,Hays,~,2092,lapsed: no longer pressed,engine
+204,Smoke,Worts,~,2812,cession,engine
+205,Elliott,Elliott 2,kin,2095,cadet line,engine
+206,Patterson,Wallace 2,◉+,2942,correspondence,engine
+207,Turgeon,Worts,+,2209,correspondence,engine
+208,Chapais,Rouleau 2,~,2584,dispute won,engine
+209,Rochon,Worts,~,3029,cession,engine
+210,Stefaniuk,Stefaniuk 2,~,2926,reconciliation,engine
+211,Dickson,McLellan,+,2219,correspondence,engine
+212,Cameron,Gillies 2,~,2616,cession,engine
+213,Gillies 2,Hoover,+,2390,correspondence,engine
+214,Bhullar,Langelier,~,2609,dispute won,engine
+215,Chapais,Mercier,~,3044,reconciliation,engine
+216,Cogswell,Meagher,kin,2333,marriage alliance,engine
+217,Dawes,Rouleau 2,~,2574,dispute won,engine
+218,Elliott,Gillies,~,2228,lapsed: no longer pressed,engine
+219,Beauvais,Langelier,◉+,2545,compact,engine
+220,Langelier 2,Turgeon,+,2311,correspondence,engine
+221,Dickson,Jarvis,◉+,3046,compact,engine
+222,Beauvais,Dawes,~,2612,reconciliation,engine
+223,Pegahmagabow,Stefaniuk,Sig−,3065,the water rights of a shared river,engine
+224,McLellan,Rouleau 2,+,2292,correspondence,engine
+225,Benjamin 2,Bouchard,~,2672,dispute won,engine
+226,Langelier,Shawanaga,◉+,2954,compact,engine
+227,Beauvais,Rouleau 2,~,3001,reconciliation,engine
+228,Hays,Patterson,◉+,2533,compact,engine
+229,Proulx,Uniacke,◉+,3004,compact,engine
+230,Benjamin 2,Wallace 2,+,2399,correspondence,engine
+231,Bird,Stefaniuk 2,+,2361,correspondence,engine
+232,Stefaniuk 2,Stefaniuk 3,~,3007,dispute won,engine
+233,Furlong,Shawanaga,kin,2549,marriage alliance,engine
+234,Dickson,Mercier,+,2531,correspondence,engine
+235,Cornwall,Dyck,◉+,2717,compact,engine
+236,Gillies 2,Lucas,+,2436,correspondence,engine
+237,Colby,Elliott 2,kin,2774,marriage alliance,engine
+238,Cameron,Uniacke,Sig−,2828,a boundary the two houses read differently,engine
+239,Gillies 2,Uniacke,Sig−,2922,a slighted marriage between the two houses,engine
+240,Meagher,Smoke,~,2440,reconciliation,engine
+241,Bouchard,Dickson,~,2730,cession,engine
+242,Hoover,Langelier 2,+,2443,correspondence,engine
+243,Marchand,Turgeon,~,2568,dispute won,engine
+244,Bouchard,Elliott 2,◎,2450,correspondence,engine
+245,Beauvais,Rouleau,~,2621,cession,engine
+246,Furlong,McLellan,+,2491,correspondence,engine
+247,Lucas,Rochon,+,2498,correspondence,engine
+248,Cameron,Marchand,+,2699,correspondence,engine
+249,Proulx,Wallace 2,◉+,2707,compact,engine
+250,Cameron,Langelier 2,+,2647,correspondence,engine
+251,Bhullar,Cornwall 2,Sig−,2886,the patronage of a shared riding's offices,engine
+252,Byrne,Cogswell,+,2901,correspondence,engine
+253,Jarvis,Meagher 2,+,2768,correspondence,engine
+254,Gillies,Shawanaga,+,2659,correspondence,engine
+255,Cornwall,Stefaniuk 2,+,3024,correspondence,engine
+256,Rouleau 2,Turgeon,~,2527,lapsed: no longer pressed,engine
+257,Smoke,Stefaniuk,+,2580,correspondence,engine
+258,Byrne,Rochon,~,2763,dispute won,engine
+259,Rochon,Uniacke,◎,2561,correspondence,engine
+260,Rouleau,Wallace,◎,2563,correspondence,engine
+261,Gillies 2,Meagher,Sig−,2592,the water rights of a shared river,engine
+262,Beauvais,McLellan,◎,2600,correspondence,engine
+263,Benjamin 2,Hoover,+,2692,correspondence,engine
+264,Murray,Patterson,kin,2789,marriage alliance,engine
+265,Marchand,Smoke,+,2655,correspondence,engine
+266,Dickson,Turgeon,+,2714,correspondence,engine
+267,Gillies,Rochon,~,2990,cession,engine
+268,Elliott 2,Hays,◉+,2819,compact,engine
+269,Langelier,Wallace,◎,2645,correspondence,engine
+270,Elliott,Stefaniuk 2,+,2795,correspondence,engine
+271,Gillies 2,Stefaniuk 2,+,2906,correspondence,engine
+272,Rouleau,Shawanaga,+,3052,correspondence,engine
+273,Mercier,Pegahmagabow,+,2978,correspondence,engine
+274,Bird,Colby,◎,2739,correspondence,engine
+275,Dawes,Meagher,+,3026,correspondence,engine
+276,Cameron,Chapais,◎,2765,correspondence,engine
+277,Dawes,Langelier 2,Sig−,2793,a boundary the two houses read differently,engine
+278,Hays,Langelier 2,~,2912,reconciliation,engine
+279,Chapais,Murray,Sig−,2821,a letter that gave offence,engine
+280,Benjamin,Proulx,~,2856,dispute won,engine
+281,Elliott,Proulx,~,2835,cession,engine
+282,Elliott,Uniacke,~,3020,correspondence,engine
+283,Meagher 2,Trudel,+,2956,correspondence,engine
+284,Elliott 2,Patterson,+,3055,correspondence,engine
+285,Beauvais,Dickson,◎,2910,correspondence,engine
+286,Bhullar,Stefaniuk 2,Sig−,2977,correspondence,engine
+287,Byrne,Gillies,◎,2936,correspondence,engine
+288,Chapais,Smoke,◎,2946,correspondence,engine
+289,Hendrie,Jarvis,◎,2973,correspondence,engine
+290,Bhullar,Bhullar 2,kin,3077,correspondence,engine
+291,Wallace 2,Wallace 3,kin,3058,correspondence,engine
+292,Hoover,Trudel,+,3027,correspondence,engine
+293,Meagher 2,Shawanaga,◎,3036,correspondence,engine
+294,Langelier,Wallace 2,◎,3039,correspondence,engine
+295,Byrne,Furlong,◎,3041,correspondence,engine
+296,Hendrie,Stefaniuk 3,◎,3050,correspondence,engine
+297,Cogswell,Turgeon,◎,3054,correspondence,engine
+298,Benjamin,Chapais,Sig−,3060,a slighted marriage between the two houses,engine
+299,Byrne,Jarvis,Sig−,3063,the water rights of a shared river,engine
+300,Jarvis,Rochon,Sig−,3064,a boundary the two houses read differently,engine
+301,Dickson,Elliott,Sig−,3066,a letter that gave offence,engine
+302,Marchand,Murray,+,3100,correspondence,engine

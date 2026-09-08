@@ -26,7 +26,7 @@ id,house,name,gender,age,role,alive,married,born_season,died_season
 25,Hoover,Anna Hoover,f,65,holder,0,0,27,62
 26,Stefaniuk,Tekla Stefaniuk,f,72,holder,0,1,33,65
 27,Forbes,Roderick Forbes,m,74,holder,0,0,34,49
-28,Mercier,Léocadie Mercier,f,78,holder,1,1,36,
+28,Mercier,Léocadie Mercier,f,82,holder,0,1,36,104
 29,Bouchard,Blanche Bouchard,f,76,holder,0,1,36,94
 30,Rochon,Honoré Rochon,m,82,holder,0,0,36,73
 31,Hays,Sarah Hays,f,60,holder,0,0,37,53
@@ -35,96 +35,214 @@ id,house,name,gender,age,role,alive,married,born_season,died_season
 34,Hays,Harris Hays,m,29,holder,0,1,40,56
 35,Forbes,Donald Forbes,m,62,holder,0,1,40,73
 36,Patterson,Catriona Patterson,f,67,holder,0,0,40,50
-37,Patterson,Farquhar Patterson,m,81,holder,1,0,41,
+37,Patterson,Farquhar Patterson,m,82,holder,0,0,41,101
 38,Cameron,Alexander Cameron,m,81,holder,0,0,41,63
 39,Hoover,Justina Hoover,f,50,holder,0,1,42,87
-40,Benjamin,Bertha Benjamin,f,76,holder,1,1,44,
+40,Benjamin,Bertha Benjamin,f,81,holder,0,1,44,105
 41,Cameron,Isabella Cameron,f,80,holder,0,1,44,93
 42,Bird,Alexander Bird,m,84,holder,0,0,44,75
-43,Cornwall,Eleanor Cornwall,f,67,holder,1,1,45,
-44,Bird,Thomas Bird,m,83,holder,1,1,45,
+43,Cornwall,Eleanor Cornwall,f,83,holder,0,1,45,116
+44,Bird,Thomas Bird,m,89,holder,0,1,45,106
 45,Cardinal,Martha Cardinal,f,65,holder,0,0,46,64
 46,Rouleau,Pierre Rouleau,m,80,holder,0,0,47,62
-47,Rouleau,Octavien Rouleau,m,85,holder,1,0,48,
+47,Rouleau,Octavien Rouleau,m,92,holder,0,0,48,107
 48,Hendrie,Eleanor Hendrie,f,71,holder,0,0,49,76
 49,Bhullar,Arjan Bhullar,m,80,holder,0,0,52,63
 50,Cousineau,Hyacinthe Cousineau,m,72,holder,0,0,53,60
-51,Hendrie,Jane Hendrie,f,64,holder,1,1,54,
+51,Hendrie,Jane Hendrie,f,71,holder,0,1,54,107
 52,Bhullar,Inder Bhullar,m,71,holder,0,0,54,92
 53,Pegahmagabow,Josephine Pegahmagabow,f,75,holder,0,0,54,81
-54,Pegahmagabow,Joseph Pegahmagabow,m,57,holder,1,1,55,
-55,Wallace,Sarah Wallace,f,74,holder,1,1,56,
+54,Pegahmagabow,Joseph Pegahmagabow,m,59,holder,0,1,55,102
+55,Wallace,Sarah Wallace,f,96,holder,0,1,56,122
 56,Hays,Joseph Hays,m,70,holder,0,0,56,76
-57,Hays,Rosa Hays,f,66,holder,1,1,56,
-58,Cardinal,Nancy Cardinal,f,71,holder,1,0,56,
+57,Hays,Rosa Hays,f,77,holder,0,1,56,111
+58,Cardinal,Nancy Cardinal,f,90,holder,0,0,56,119
 59,Byrne,Agnes Byrne,f,86,holder,0,0,56,78
 60,Byrne,Norah Byrne,f,73,holder,0,1,57,98
 61,Meagher 2,Owen Meagher,m,82,holder,0,0,57,98
 62,McLellan,Iain McLellan,m,65,holder,0,1,58,90
 63,Marchand,Édouard Marchand,m,80,holder,0,0,58,93
-64,Elliott,Maureen Elliott,f,59,holder,1,1,59,
-65,Wallace 2,Frederick Wallace,m,68,holder,1,1,61,
-66,Langelier,Marguerite Langelier,f,84,holder,1,0,61,
+64,Elliott,Maureen Elliott,f,83,holder,0,1,59,124
+65,Wallace 2,Frederick Wallace,m,116,holder,0,1,61,148
+66,Langelier,Marguerite Langelier,f,86,holder,0,0,61,102
 67,Stefaniuk,Hryhoriy Stefaniuk,m,47,holder,0,0,62,78
 68,Skye,Lydia Skye,f,75,holder,0,0,62,93
-69,Meagher,Malachy Meagher,m,53,holder,1,1,63,
-70,Meagher 2,Brendan Meagher,m,52,holder,1,1,63,
-71,Skye,Deborah Skye,f,43,holder,1,1,63,
-72,Bouchard,Télesphore Bouchard,m,50,holder,1,1,64,
-73,Proulx,Clémence Proulx,f,86,holder,1,0,64,
-74,Cameron,Alexander Cameron,m,51,holder,1,1,65,
+69,Meagher,Malachy Meagher,m,72,holder,0,1,63,119
+70,Meagher 2,Brendan Meagher,m,67,holder,0,1,63,115
+71,Skye,Deborah Skye,f,68,holder,0,1,63,125
+72,Bouchard,Télesphore Bouchard,m,63,holder,0,1,64,113
+73,Proulx,Clémence Proulx,f,90,holder,0,0,64,104
+74,Cameron,Alexander Cameron,m,78,holder,0,1,65,127
 75,Worts,Anne Worts,f,76,holder,0,0,65,89
-76,Bhullar,Jaswant Bhullar,f,50,holder,1,1,67,
-77,Proulx,Léocadie Proulx,f,55,heir,1,1,67,
+76,Bhullar,Jaswant Bhullar,f,98,holder,0,1,67,148
+77,Proulx,Léocadie Proulx,f,80,holder,0,1,67,125
 78,Colby,James Colby,m,76,holder,0,0,68,89
-79,Worts,Ellen Worts,f,52,holder,1,0,69,
-80,Colby,Samuel Colby,m,59,holder,1,0,69,
-81,Gillies,Margaret Gillies,f,84,holder,1,0,70,
-82,Marchand,Cyrille Marchand,m,60,holder,1,0,71,
-83,Fairbanks,Sarah Fairbanks,f,75,holder,1,0,71,
-84,Langelier,Louis Langelier,m,45,heir,1,1,72,
-85,Rouleau,Octavien Rouleau,m,57,heir,1,1,72,
+79,Worts,Ellen Worts,f,95,holder,0,0,69,143
+80,Colby,Samuel Colby,m,65,holder,0,0,69,106
+81,Gillies,Margaret Gillies,f,88,holder,0,0,70,104
+82,Marchand,Cyrille Marchand,m,92,holder,0,0,71,132
+83,Fairbanks,Sarah Fairbanks,f,80,holder,0,0,71,105
+84,Langelier,Louis Langelier,m,81,holder,0,1,72,136
+85,Rouleau,Octavien Rouleau,m,90,holder,0,1,72,133
 86,Lucas,Albert Lucas,m,74,holder,0,0,72,83
-87,Forbes,Rachel Forbes,f,78,holder,1,0,73,
-88,Lucas,Anne Lucas,f,59,holder,1,0,73,
-89,Cardinal,Simon Cardinal,m,37,heir,1,1,74,
-90,Dawes,Ronald Dawes,m,84,holder,1,0,74,
-91,Wallace,Edwin Wallace,m,45,heir,1,1,76,
-92,Bird,Ruth Bird,f,52,heir,1,1,76,
-93,Dawes,Alasdair Dawes,m,46,heir,1,0,76,
-94,Mercier,Clémence Mercier,f,45,heir,1,1,77,
-95,Rochon,Cyrille Rochon,m,48,holder,1,1,77,
-96,Patterson,Farquhar Patterson,m,42,heir,1,1,77,
+87,Forbes,Rachel Forbes,f,90,holder,0,0,73,112
+88,Lucas,Anne Lucas,f,66,holder,0,0,73,107
+89,Cardinal,Simon Cardinal,m,81,holder,0,1,74,144
+90,Dawes,Ronald Dawes,m,89,holder,0,0,74,105
+91,Wallace,Edwin Wallace,m,70,holder,0,1,76,125
+92,Bird,Ruth Bird,f,74,holder,0,1,76,122
+93,Dawes,Alasdair Dawes,m,93,holder,0,0,76,147
+94,Mercier,Clémence Mercier,f,76,holder,0,1,77,131
+95,Rochon,Cyrille Rochon,m,84,holder,0,1,77,136
+96,Patterson,Farquhar Patterson,m,84,holder,0,1,77,142
 97,Turgeon,Marguerite Turgeon,f,77,holder,0,0,77,95
-98,Stefaniuk,Domka Stefaniuk,f,71,holder,1,0,78,
-99,Stefaniuk,Fedir Stefaniuk,m,45,heir,1,0,78,
+98,Stefaniuk,Domka Stefaniuk,f,86,holder,0,0,78,115
+99,Stefaniuk,Fedir Stefaniuk,m,72,holder,0,1,78,127
 100,McLellan,Roderick McLellan,m,45,holder,0,1,78,99
-101,Gillies,Mary Gillies,f,53,heir,1,1,80,
-102,Forbes,Alexander Forbes,m,45,heir,1,1,81,
-103,Wallace 2,Albert Wallace,m,35,heir,1,0,83,
-104,Benjamin,Rachel Benjamin,f,44,heir,1,0,84,
-105,Fairbanks,Francis Fairbanks,m,38,heir,1,0,84,
-106,Turgeon,Télesphore Turgeon,m,49,holder,1,1,84,
-107,Hays,Moses Hays,m,40,heir,1,1,86,
+101,Gillies,Mary Gillies,f,83,holder,0,1,80,130
+102,Forbes,Alexander Forbes,m,61,holder,0,1,81,116
+103,Wallace 2,Albert Wallace,m,85,holder,1,1,83,
+104,Benjamin,Rachel Benjamin,f,60,holder,0,0,84,116
+105,Fairbanks,Francis Fairbanks,m,46,holder,0,1,84,108
+106,Turgeon,Télesphore Turgeon,m,90,holder,0,1,84,141
+107,Hays,Moses Hays,m,70,holder,0,1,86,130
 108,Byrne,Owen Byrne,m,34,holder,0,0,86,99
-109,Gillies 2,Flora Gillies,f,77,holder,1,0,86,
-110,Elliott,Annie Elliott,f,32,heir,1,0,87,
-111,Hoover,Isaac Hoover,m,65,holder,1,0,87,
-112,Benjamin,Jacob Benjamin,m,43,heir2,1,0,90,
-113,Hendrie,Edith Hendrie,f,37,heir,1,0,90,
-114,Colby,John Colby,m,21,heir,1,1,90,
-115,Pegahmagabow,Elizabeth Pegahmagabow,f,26,heir,1,1,91,
-116,Lucas,Charlotte Lucas,f,19,heir,1,0,91,
-117,Furlong,Josephine Furlong,f,52,holder,1,0,92,
-118,Marchand,Wilfrid Marchand,m,33,heir,1,0,93,
-119,Cameron,Norman Cameron,m,15,heir,1,1,94,
-120,Rouleau,Corinne Rouleau,f,51,heir2,1,0,94,
-121,Worts,Herbert Worts,m,20,heir,1,0,95,
-122,Furlong,Margaret Furlong,f,15,heir,1,0,95,
-123,Meagher,Kathleen Meagher,f,22,heir,1,0,97,
-124,Meagher 2,Catherine Meagher,f,25,heir,1,0,98,
-125,Bouchard,Blanche Bouchard,f,20,heir,1,1,99,
-126,McLellan,Flora McLellan,f,56,holder,1,0,99,
-127,Hoover,Wilhelm Hoover,m,36,heir,1,0,99,
-128,Byrne,Johanna Byrne,f,39,holder,1,0,99,
-129,Beauvais,Abram Beauvais,m,66,holder,1,0,100,
+109,Gillies 2,Flora Gillies,f,80,holder,0,0,86,103
+110,Elliott,Annie Elliott,f,82,holder,1,1,87,
+111,Hoover,Isaac Hoover,m,80,holder,0,0,87,115
+112,Benjamin 2,Jacob Benjamin,m,86,holder,0,0,90,143
+113,Hendrie,Edith Hendrie,f,48,holder,0,0,90,111
+114,Colby,John Colby,m,69,holder,0,1,90,148
+115,Pegahmagabow,Elizabeth Pegahmagabow,f,67,holder,0,1,91,141
+116,Lucas,Charlotte Lucas,f,69,holder,1,0,91,
+117,Furlong,Josephine Furlong,f,67,holder,0,0,92,115
+118,Marchand,Wilfrid Marchand,m,83,holder,1,1,93,
+119,Cameron,Norman Cameron,m,65,holder,1,1,94,
+120,Rouleau 2,Corinne Rouleau,f,68,holder,0,1,94,117
+121,Worts,Herbert Worts,m,70,holder,1,1,95,
+122,Furlong,Margaret Furlong,f,65,holder,1,0,95,
+123,Meagher,Kathleen Meagher,f,72,holder,1,1,97,
+124,Meagher 2,Catherine Meagher,f,75,holder,1,1,98,
+125,Bouchard,Blanche Bouchard,f,70,holder,1,1,99,
+126,McLellan,Flora McLellan,f,79,holder,0,0,99,123
+127,Hoover,Wilhelm Hoover,m,82,holder,0,1,99,146
+128,Byrne,Johanna Byrne,f,75,holder,0,0,99,136
+129,Beauvais,Abram Beauvais,m,75,holder,0,0,100,109
+130,Gillies 2,Jean Gillies,f,55,holder,0,0,101,106
+131,Smoke,Hannah Smoke,f,70,holder,0,0,101,120
+132,Cornwall,Anne Cornwall,f,70,holder,0,1,102,136
+133,Gillies 2,Sarah Gillies,f,70,holder,0,1,103,148
+134,Wallace 3,William Wallace,m,83,holder,1,1,104,
+135,Smoke,Rachel Smoke,f,50,holder,0,0,104,140
+136,Proulx,Delphine Proulx,f,71,holder,1,1,105,
+137,Dawes,Marjory Dawes,f,56,holder,1,1,105,
+138,Beauvais,Jacob Beauvais,m,59,holder,0,0,105,122
+139,Chapais,Zoé Chapais,f,70,holder,0,0,105,118
+140,Benjamin,David Benjamin,m,50,holder,0,1,106,137
+141,Bhullar,Swaran Bhullar,f,68,holder,1,1,106,
+142,Skye,Sarah Skye,f,55,holder,1,1,106,
+143,Langelier,Clémence Langelier,f,63,holder,0,1,107,147
+144,Rochon,Marie Rochon,f,58,holder,0,1,107,139
+145,Turgeon,Corinne Turgeon,f,71,holder,0,1,107,148
+146,Bhullar 2,Balbir Bhullar,f,64,holder,1,0,109,
+147,Dickson,Alasdair Dickson,m,68,holder,0,0,109,129
+148,Cornwall 2,Reginald Cornwall,m,91,holder,0,0,110,150
+149,Hendrie,Louisa Hendrie,f,55,holder,1,0,110,
+150,Langelier 2,Télesphore Langelier,m,81,holder,1,0,110,
+151,Bird,Annie Bird,f,63,holder,1,1,112,
+152,Beauvais,William Beauvais,m,35,holder,0,0,112,135
+153,Benjamin 2,Samuel Benjamin,m,53,holder,1,0,112,
+154,Stefaniuk 2,Marta Stefaniuk,f,92,holder,0,0,112,145
+155,Elliott 2,Brendan Elliott,m,71,holder,1,0,113,
+156,Mercier,Hermine Mercier,f,57,holder,1,1,113,
+157,Patterson,Marion Patterson,f,64,holder,1,1,113,
+158,Gillies,Lachlan Gillies,m,69,holder,0,1,113,145
+159,Chapais,Octavien Chapais,m,72,holder,0,0,113,147
+160,Uniacke,Ellen Uniacke,f,70,holder,0,0,113,114
+161,Stefaniuk 3,Kateryna Stefaniuk,f,75,holder,0,0,114,132
+162,Rouleau,Corinne Rouleau,f,71,holder,1,1,114,
+163,Rouleau 2,Hermine Rouleau,f,74,holder,1,0,114,
+164,Uniacke,Harriet Uniacke,f,66,holder,0,0,114,132
+165,Jarvis,Charles Jarvis,m,76,holder,0,0,114,124
+166,Uniacke,Robert Uniacke,m,47,holder,1,0,115,
+167,Dickson,Farquhar Dickson,m,60,holder,1,1,116,
+168,Dyck,Gertruda Dyck,f,77,holder,0,0,116,150
+169,Langelier 2,Angélique Langelier,f,48,heir,1,1,117,
+170,Shawanaga,Agnes Shawanaga,f,71,holder,0,0,117,144
+171,Stefaniuk 2,Varvara Stefaniuk,f,61,holder,1,1,118,
+172,Cornwall 2,Charlotte Cornwall,f,54,holder,1,1,118,
+173,McLellan,Euphemia McLellan,f,73,holder,1,0,119,
+174,Meagher 2,Agnes Meagher,f,46,heir,1,1,120,
+175,Jarvis,Sarah Jarvis,f,62,holder,1,0,120,
+176,Cogswell,Arthur Cogswell,m,80,holder,1,0,120,
+177,Chapais,Émilie Chapais,f,49,holder,1,0,121,
+178,Cornwall,Anne Cornwall,f,44,holder,1,1,122,
+179,Rouleau 2,Ludger Rouleau,m,39,heir,1,1,122,
+180,Dyck,Johann Dyck,m,49,holder,1,0,123,
+181,Shawanaga,Solomon Shawanaga,m,44,holder,1,1,123,
+182,Stefaniuk 3,Ivan Stefaniuk,m,65,holder,1,1,124,
+183,Wallace,Florence Wallace,f,76,holder,1,0,125,
+184,Meagher,Owen Meagher,m,35,heir,1,1,125,
+185,Byrne,Hugh Byrne,m,63,holder,1,0,126,
+186,Elliott,Daniel Elliott,m,51,heir,1,1,127,
+187,Stefaniuk,Paraska Stefaniuk,f,55,holder,0,0,127,131
+188,Stefaniuk,Kost Stefaniuk,m,42,holder,1,1,127,
+189,Bouchard,Olivier Bouchard,m,35,heir,1,1,128,
+190,Gillies 2,Iain Gillies,m,44,holder,1,1,128,
+191,Cogswell,Arthur Cogswell,m,52,heir,1,1,128,
+192,Hays,Simon Hays,m,60,holder,0,0,130,148
+193,Lucas,Margaret Lucas,f,39,heir,1,1,130,
+194,Hoover,Isaac Hoover,m,51,holder,1,1,131,
+195,Marchand,Cyrille Marchand,m,47,heir,1,1,132,
+196,Colby,Eleanor Colby,f,35,holder,1,1,132,
+197,Wallace,Arthur Wallace,m,47,heir,1,1,133,
+198,Hays,Abraham Hays,m,24,holder,1,1,133,
+199,Cameron,Farquhar Cameron,m,33,heir,1,1,133,
+200,Pegahmagabow,Marguerite Pegahmagabow,f,49,holder,1,0,135,
+201,Beauvais,Henry Beauvais,m,59,holder,1,0,135,
+202,Smoke,Mary Smoke,f,21,holder,1,1,135,
+203,Murray,Marion Murray,f,62,holder,1,0,135,
+204,Furlong,Cornelius Furlong,m,34,heir,1,1,136,
+205,Murray,Ann Murray,f,28,heir,1,1,136,
+206,Benjamin,Maurice Benjamin,m,64,holder,1,0,137,
+207,Byrne,Rose Byrne,f,36,heir,1,1,137,
+208,Dickson,Hector Dickson,m,25,heir,1,0,137,
+209,Rochon,Jean-Baptiste Rochon,m,59,holder,1,0,139,
+210,Bird,Rachel Bird,f,30,heir,1,0,139,
+211,Rouleau,Alphonsine Rouleau,f,33,heir,1,0,139,
+212,Skye,Aaron Skye,m,16,heir,1,1,140,
+213,Turgeon,Anastasie Turgeon,f,34,holder,1,1,141,
+214,Elliott 2,Ellen Elliott,f,43,heir,1,1,141,
+215,Trudel,Léocadie Trudel,f,62,holder,1,0,141,
+216,Benjamin,Miriam Benjamin,f,25,heir,1,0,142,
+217,Beauvais,Catharine Beauvais,f,31,heir,1,0,142,
+218,Mercier,Eugénie Mercier,f,24,heir,1,1,143,
+219,Patterson,Alexander Patterson,m,28,heir,1,1,143,
+220,Stefaniuk 3,Mykhailo Stefaniuk,m,31,heir,1,1,143,
+221,Cardinal,George Cardinal,m,61,holder,1,0,144,
+222,Worts,Alfred Worts,m,38,heir,1,1,144,
+223,Benjamin 2,Joseph Benjamin,m,17,heir,1,0,144,
+224,Trudel,Marguerite Trudel,f,25,heir,1,0,144,
+225,Cashin,Honora Cashin,f,52,holder,1,0,144,
+226,McLellan,Isabella McLellan,f,40,heir,1,0,145,
+227,Cameron,Neil Cameron,m,25,heir2,1,1,145,
+228,Gillies,Norman Gillies,m,52,holder,1,0,145,
+229,Cashin,Bernard Cashin,m,18,heir,1,0,145,
+230,Hendry,Jean Hendry,f,58,holder,1,0,145,
+231,Cardinal,Catherine Cardinal,f,22,heir,1,1,146,
+232,Sparrow,Chief Sparrow,m,72,holder,0,0,146,148
+233,Bouchard,Napoléon Bouchard,m,40,heir2,1,0,147,
+234,Langelier,Léocadie Langelier,f,54,holder,1,0,147,
+235,Hoover,Isaac Hoover,m,14,heir,1,1,147,
+236,Sparrow,Dan Sparrow,m,48,holder,1,0,147,
+237,Langelier,Geneviève Langelier,f,25,heir,1,0,148,
+238,Worts,Samuel Worts,m,44,heir2,1,1,148,
+239,Chapais,Alexandre Chapais,m,14,heir,1,0,148,
+240,Wallace,Agnes Wallace,f,38,heir2,1,0,149,
+241,Gillies,Farquhar Gillies,m,13,heir,1,1,149,
+242,Bhullar 2,Harbans Bhullar,f,37,heir,1,0,149,
+243,McLellan,Iain McLellan,m,33,heir2,1,0,150,
+244,Proulx,Olivier Proulx,m,32,heir,1,0,150,
+245,Dyck,Barbara Dyck,f,19,heir,1,0,150,
+246,Hendry,Marjory Hendry,f,32,heir,1,0,150,
+247,Sparrow,Julia Sparrow,f,13,heir,1,0,150,

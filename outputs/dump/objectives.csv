@@ -7,7 +7,7 @@ id,house,objective,acquired_season,satisfied_season
 6,Stefaniuk,Secure succession,5,6
 7,Stefaniuk,Defend the seat,6,9
 8,Benjamin,Consolidate region,8,35
-9,Benjamin,Seek elevation,8,
+9,Benjamin,Seek elevation,8,138
 10,Stefaniuk,Consolidate region,9,26
 11,Mercier,Consolidate region,9,26
 12,Mercier,Answer a grievance,9,40
@@ -39,7 +39,7 @@ id,house,objective,acquired_season,satisfied_season
 38,Bouchard,Secure succession,21,43
 39,Wallace,Secure succession,22,23
 40,Wallace,Seek elevation,23,
-41,Stefaniuk,Seek elevation,26,
+41,Stefaniuk,Seek elevation,26,120
 42,Mercier,Form a compact,26,35
 43,Langelier,Form a compact,27,41
 44,Hays,Seek elevation,31,61
@@ -50,7 +50,7 @@ id,house,objective,acquired_season,satisfied_season
 49,Forbes,Siege,34,41
 50,Forbes,Seek elevation,34,96
 51,Benjamin,Answer a grievance,35,52
-52,Mercier,Seek elevation,35,
+52,Mercier,Seek elevation,35,107
 53,McLellan,Secure succession,35,36
 54,Cornwall,Siege,35,36
 55,Elliott,Secure succession,36,37
@@ -62,13 +62,13 @@ id,house,objective,acquired_season,satisfied_season
 61,McLellan,Seek elevation,37,85
 62,Cornwall,Answer a grievance,37,
 63,Elliott,Form a compact,38,45
-64,Mercier,Endow an institution,40,
+64,Mercier,Endow an institution,40,130
 65,Bouchard,Form a compact,40,59
-66,Rochon,Answer a grievance,40,
+66,Rochon,Answer a grievance,40,114
 67,Patterson,Secure succession,40,44
 68,Patterson,Consolidate region,40,79
 69,Forbes,Consolidate region,41,53
-70,Cameron,Answer a grievance,41,
+70,Cameron,Answer a grievance,41,129
 71,Cameron,Endow an institution,41,
 72,Langelier,Answer a grievance,42,89
 73,Bouchard,Secure succession,43,44
@@ -82,17 +82,17 @@ id,house,objective,acquired_season,satisfied_season
 81,Elliott,Siege,46,47
 82,Cardinal,Answer a grievance,46,77
 83,Cardinal,Siege,46,57
-84,Elliott,Answer a grievance,47,
+84,Elliott,Answer a grievance,47,145
 85,Rouleau,Form a compact,47,73
 86,Rouleau,Secure succession,47,48
-87,Hays,Endow an institution,48,
-88,Rouleau,Answer a grievance,48,
+87,Hays,Endow an institution,48,108
+88,Rouleau,Answer a grievance,48,105
 89,Hendrie,Form a compact,49,69
 90,Hendrie,Defend the seat,49,53
 91,Bird,Endow an institution,50,70
 92,Benjamin,Form a compact,52,65
 93,Bhullar,Form a compact,52,72
-94,Bhullar,Seek elevation,52,
+94,Bhullar,Seek elevation,52,145
 95,Forbes,Answer a grievance,53,82
 96,Hendrie,Secure succession,53,61
 97,Cousineau,Secure succession,53,
@@ -102,7 +102,7 @@ id,house,objective,acquired_season,satisfied_season
 101,Byrne,Form a compact,56,73
 102,Byrne,Secure succession,56,57
 103,Cardinal,Form a compact,57,69
-104,Byrne,Seek elevation,57,
+104,Byrne,Seek elevation,57,110
 105,Meagher 2,Consolidate region,57,85
 106,Meagher 2,Answer a grievance,57,91
 107,Langelier,Seek elevation,58,78
@@ -111,10 +111,10 @@ id,house,objective,acquired_season,satisfied_season
 110,Marchand,Defend the seat,58,62
 111,Bouchard,Form a compact,59,64
 112,Hays,Form a compact,61,68
-113,Hendrie,Seek elevation,61,
+113,Hendrie,Seek elevation,61,119
 114,Marchand,Consolidate region,62,
 115,Skye,Endow an institution,62,
-116,Skye,Answer a grievance,62,
+116,Skye,Answer a grievance,62,115
 117,Bouchard,Siege,64,65
 118,Proulx,Endow an institution,64,
 119,Proulx,Form a compact,64,69
@@ -140,7 +140,7 @@ id,house,objective,acquired_season,satisfied_season
 139,Cardinal,Seek elevation,70,
 140,Gillies,Form a compact,70,75
 141,Gillies,Secure succession,70,80
-142,Marchand,Seek elevation,71,
+142,Marchand,Seek elevation,71,147
 143,Fairbanks,Consolidate region,71,89
 144,Fairbanks,Seek elevation,71,
 145,Elliott,Form a compact,72,75
@@ -154,16 +154,16 @@ id,house,objective,acquired_season,satisfied_season
 153,Patterson,Form a compact,73,80
 154,Bhullar,Form a compact,73,93
 155,Byrne,Answer a grievance,73,
-156,Lucas,Answer a grievance,73,
+156,Lucas,Answer a grievance,73,116
 157,Cornwall,Form a compact,74,92
-158,Rouleau,Endow an institution,74,
-159,Dawes,Form a compact,74,
+158,Rouleau,Endow an institution,74,120
+159,Dawes,Form a compact,74,101
 160,Dawes,Endow an institution,74,88
 161,Elliott,Defend the seat,75,76
 162,Hays,Secure succession,75,86
-163,Bird,Answer a grievance,75,
+163,Bird,Answer a grievance,75,138
 164,Gillies,Consolidate region,75,89
-165,Elliott,Endow an institution,76,
+165,Elliott,Endow an institution,76,136
 166,Wallace 2,Defend the seat,76,80
 167,Wallace 2,Secure succession,76,90
 168,Benjamin,Secure succession,76,77
@@ -175,7 +175,7 @@ id,house,objective,acquired_season,satisfied_season
 174,Turgeon,Form a compact,77,85
 175,Benjamin,Siege,78,79
 176,Langelier,Seek elevation,78,86
-177,Proulx,Seek elevation,78,
+177,Proulx,Seek elevation,78,124
 178,Benjamin,Defend the seat,79,80
 179,Patterson,Seek elevation,79,100
 180,Colby,Secure succession,79,80
@@ -186,37 +186,37 @@ id,house,objective,acquired_season,satisfied_season
 185,Wallace 2,Siege,80,87
 186,Hoover,Defend the seat,81,82
 187,Bird,Siege,81,86
-188,Hendrie,Endow an institution,81,
+188,Hendrie,Endow an institution,81,137
 189,Colby,Siege,81,82
 190,Hoover,Siege,82,83
 191,Forbes,Secure succession,82,83
 192,Colby,Defend the seat,82,83
-193,Hoover,Seek elevation,83,
+193,Hoover,Seek elevation,83,146
 194,Forbes,Form a compact,83,100
 195,Colby,Consolidate region,83,
 196,Cardinal,Form a compact,84,87
 197,McLellan,Answer a grievance,85,95
 198,Meagher 2,Defend the seat,85,86
-199,Turgeon,Form a compact,85,
-200,Hays,Seek elevation,86,
+199,Turgeon,Form a compact,85,117
+200,Hays,Seek elevation,86,123
 201,Langelier,Siege,86,87
-202,Meagher,Form a compact,86,
+202,Meagher,Form a compact,86,109
 203,Bird,Form a compact,86,94
 204,Meagher 2,Seek elevation,86,
 205,Worts,Defend the seat,86,87
-206,Gillies 2,Endow an institution,86,
-207,Gillies 2,Form a compact,86,
+206,Gillies 2,Endow an institution,86,107
+207,Gillies 2,Form a compact,86,105
 208,Langelier,Siege,87,88
 209,Worts,Siege,87,88
 210,Colby,Answer a grievance,87,88
-211,Wallace 2,Answer a grievance,87,
-212,Langelier,Form a compact,88,
+211,Wallace 2,Answer a grievance,87,118
+212,Langelier,Form a compact,88,108
 213,Cardinal,Consolidate region,88,
-214,Worts,Secure succession,88,
+214,Worts,Secure succession,88,105
 215,Colby,Form a compact,88,98
 216,Dawes,Defend the seat,88,89
 217,Langelier,Siege,89,90
-218,Worts,Answer a grievance,89,
+218,Worts,Answer a grievance,89,125
 219,Gillies,Endow an institution,89,
 220,Fairbanks,Siege,89,90
 221,Dawes,Endow an institution,89,
@@ -225,34 +225,335 @@ id,house,objective,acquired_season,satisfied_season
 224,Wallace 2,Consolidate region,90,91
 225,Meagher 2,Defend the seat,91,92
 226,Fairbanks,Consolidate region,91,92
-227,Wallace 2,Form a compact,91,
-228,Cornwall,Secure succession,92,
+227,Wallace 2,Form a compact,91,109
+228,Cornwall,Secure succession,92,102
 229,Meagher 2,Defend the seat,92,93
 230,Gillies,Siege,92,93
 231,Fairbanks,Siege,92,93
 232,Furlong,Consolidate region,92,
-233,Furlong,Secure succession,92,
+233,Furlong,Secure succession,92,110
 234,Meagher 2,Endow an institution,93,
 235,Gillies,Secure succession,93,94
 236,Fairbanks,Answer a grievance,93,
 237,Bird,Form a compact,94,96
-238,Bhullar,Form a compact,94,
-239,Pegahmagabow,Endow an institution,94,
-240,Gillies,Seek elevation,94,
+238,Bhullar,Form a compact,94,146
+239,Pegahmagabow,Endow an institution,94,104
+240,Gillies,Seek elevation,94,120
 241,McLellan,Siege,95,100
 242,Turgeon,Consolidate region,95,96
 243,Forbes,Endow an institution,96,
 244,Bird,Defend the seat,96,97
 245,Turgeon,Seek elevation,96,
-246,Bird,Seek elevation,97,
+246,Bird,Seek elevation,97,114
 247,Colby,Form a compact,98,100
-248,Lucas,Secure succession,98,
+248,Lucas,Secure succession,98,106
 249,Bouchard,Endow an institution,100,
 250,McLellan,Seek elevation,100,
-251,Langelier,Answer a grievance,100,
+251,Langelier,Answer a grievance,100,114
 252,Forbes,Seek elevation,100,
-253,Rochon,Consolidate region,100,
-254,Patterson,Seek elevation,100,
-255,Colby,Siege,100,
-256,Beauvais,Answer a grievance,100,
-257,Beauvais,Consolidate region,100,
+253,Rochon,Consolidate region,100,101
+254,Patterson,Seek elevation,100,137
+255,Colby,Siege,100,101
+256,Beauvais,Answer a grievance,100,139
+257,Beauvais,Consolidate region,100,137
+258,Bouchard,Answer a grievance,101,142
+259,Rochon,Siege,101,102
+260,Colby,Endow an institution,101,104
+261,Dawes,Secure succession,101,102
+262,Smoke,Form a compact,101,136
+263,Smoke,Consolidate region,101,116
+264,Cornwall,Form a compact,102,104
+265,Rochon,Seek elevation,102,119
+266,Dawes,Form a compact,102,108
+267,Pegahmagabow,Seek elevation,104,129
+268,Colby,Form a compact,104,124
+269,Benjamin 2,Seek elevation,105,136
+270,Benjamin 2,Form a compact,105,142
+271,Cornwall,Form a compact,105,125
+272,Rouleau,Siege,105,106
+273,Worts,Endow an institution,105,150
+274,Gillies 2,Form a compact,105,111
+275,Chapais,Form a compact,105,126
+276,Chapais,Secure succession,105,113
+277,Rouleau,Siege,106,107
+278,Lucas,Secure succession,106,136
+279,Mercier,Answer a grievance,107,114
+280,Rouleau 2,Form a compact,107,115
+281,Rouleau 2,Siege,107,115
+282,Rouleau,Answer a grievance,107,132
+283,Gillies 2,Endow an institution,107,
+284,Hays,Siege,108,109
+285,Langelier,Siege,108,109
+286,Dawes,Form a compact,108,113
+287,Hays,Form a compact,109,125
+288,Langelier,Form a compact,109,124
+289,Wallace 2,Siege,109,110
+290,Dickson,Consolidate region,109,
+291,Dickson,Secure succession,109,116
+292,Meagher,Seek elevation,110,115
+293,Byrne,Seek elevation,110,129
+294,Wallace 2,Siege,110,111
+295,Furlong,Answer a grievance,110,113
+296,Langelier 2,Endow an institution,110,132
+297,Langelier 2,Defend the seat,110,114
+298,Wallace 2,Form a compact,111,118
+299,Gillies 2,Answer a grievance,111,139
+300,Stefaniuk 2,Consolidate region,112,127
+301,Stefaniuk 2,Form a compact,112,119
+302,Dawes,Form a compact,113,147
+303,Furlong,Defend the seat,113,114
+304,Chapais,Consolidate region,113,
+305,Uniacke,Form a compact,113,141
+306,Uniacke,Siege,113,126
+307,Mercier,Seek elevation,114,116
+308,Langelier,Answer a grievance,114,125
+309,Rochon,Form a compact,114,118
+310,Bird,Consolidate region,114,115
+311,Furlong,Defend the seat,114,115
+312,Langelier 2,Consolidate region,114,
+313,Jarvis,Consolidate region,114,131
+314,Jarvis,Secure succession,114,120
+315,Stefaniuk 3,Form a compact,115,125
+316,Stefaniuk 3,Defend the seat,115,119
+317,Meagher,Form a compact,115,115
+318,Bird,Seek elevation,115,
+319,Skye,Siege,115,126
+320,Furlong,Secure succession,115,141
+321,Rouleau 2,Secure succession,115,116
+322,Mercier,Secure succession,116,118
+323,Cornwall 2,Form a compact,116,119
+324,Cornwall 2,Endow an institution,116,139
+325,Meagher,Defend the seat,116,117
+326,Lucas,Form a compact,116,119
+327,Smoke,Endow an institution,116,131
+328,Rouleau 2,Seek elevation,116,
+329,Dickson,Form a compact,116,121
+330,Dyck,Consolidate region,116,130
+331,Dyck,Form a compact,116,141
+332,Meagher,Form a compact,117,129
+333,Turgeon,Siege,117,118
+334,Rouleau 2,Consolidate region,117,
+335,Shawanaga,Form a compact,117,137
+336,Shawanaga,Consolidate region,117,
+337,Mercier,Form a compact,118,121
+338,Rochon,Siege,118,119
+339,Wallace 2,Siege,118,119
+340,Turgeon,Consolidate region,118,119
+341,Rochon,Siege,119,120
+342,Hendrie,Form a compact,119,125
+343,Lucas,Seek elevation,119,
+344,Wallace 2,Endow an institution,119,132
+345,Turgeon,Form a compact,119,129
+346,Stefaniuk 3,Answer a grievance,119,135
+347,Cornwall 2,Form a compact,119,121
+348,Stefaniuk,Secure succession,120,
+349,Rochon,Form a compact,120,134
+350,Rouleau,Endow an institution,120,
+351,Gillies,Seek elevation,120,134
+352,Wallace 2,Form a compact,120,127
+353,Stefaniuk 2,Siege,120,121
+354,Jarvis,Form a compact,120,148
+355,Cogswell,Form a compact,120,131
+356,Cogswell,Endow an institution,120,143
+357,Rochon,Siege,121,122
+358,Dickson,Form a compact,121,122
+359,Stefaniuk 2,Defend the seat,121,122
+360,Cornwall 2,Form a compact,121,131
+361,Mercier,Form a compact,122,139
+362,Rochon,Endow an institution,122,
+363,Dickson,Defend the seat,122,123
+364,Stefaniuk 2,Form a compact,122,
+365,Hays,Defend the seat,123,124
+366,Dickson,Siege,123,124
+367,Elliott 2,Seek elevation,124,
+368,Elliott 2,Form a compact,124,143
+369,Hays,Answer a grievance,124,
+370,Langelier,Endow an institution,124,127
+371,Proulx,Siege,124,130
+372,Colby,Seek elevation,124,
+373,Dickson,Siege,124,125
+374,Beauvais,Siege,124,125
+375,Hays,Siege,125,126
+376,Cornwall,Endow an institution,125,
+377,Langelier,Secure succession,125,126
+378,Worts,Defend the seat,125,130
+379,Dickson,Form a compact,125,149
+380,Stefaniuk 3,Seek elevation,125,
+381,Beauvais,Siege,125,126
+382,Hays,Form a compact,126,135
+383,Langelier,Answer a grievance,126,
+384,Hendrie,Seek elevation,126,149
+385,Skye,Siege,126,127
+386,Chapais,Secure succession,126,127
+387,Uniacke,Answer a grievance,126,135
+388,Beauvais,Siege,126,127
+389,Langelier,Form a compact,127,137
+390,Skye,Secure succession,127,
+391,Wallace 2,Form a compact,127,141
+392,Chapais,Seek elevation,127,
+393,Stefaniuk 2,Consolidate region,127,128
+394,Stefaniuk 2,Endow an institution,128,149
+395,Beauvais,Siege,128,129
+396,Meagher,Siege,129,130
+397,Cameron,Answer a grievance,129,
+398,Pegahmagabow,Seek elevation,129,133
+399,Byrne,Defend the seat,129,130
+400,Turgeon,Secure succession,129,130
+401,Beauvais,Siege,129,130
+402,Mercier,Seek elevation,130,
+403,Meagher,Seek elevation,130,
+404,Byrne,Consolidate region,130,131
+405,Proulx,Seek elevation,130,144
+406,Worts,Secure succession,130,131
+407,Turgeon,Consolidate region,130,131
+408,Dyck,Secure succession,130,131
+409,Beauvais,Siege,130,131
+410,Byrne,Siege,131,132
+411,Worts,Form a compact,131,142
+412,Turgeon,Defend the seat,131,134
+413,Smoke,Answer a grievance,131,134
+414,Jarvis,Seek elevation,131,
+415,Dyck,Siege,131,132
+416,Cornwall 2,Defend the seat,131,132
+417,Cogswell,Answer a grievance,131,
+418,Rouleau,Form a compact,132,142
+419,Byrne,Form a compact,132,138
+420,Wallace 2,Defend the seat,132,133
+421,Langelier 2,Form a compact,132,
+422,Dyck,Defend the seat,132,133
+423,Cornwall 2,Form a compact,132,
+424,Pegahmagabow,Defend the seat,133,134
+425,Wallace 2,Siege,133,134
+426,Dyck,Defend the seat,133,134
+427,Rochon,Answer a grievance,134,143
+428,Pegahmagabow,Secure succession,134,135
+429,Gillies,Form a compact,134,150
+430,Wallace 2,Defend the seat,134,135
+431,Turgeon,Form a compact,134,137
+432,Smoke,Consolidate region,134,135
+433,Dyck,Siege,134,135
+434,Hays,Secure succession,135,
+435,Pegahmagabow,Form a compact,135,137
+436,Wallace 2,Siege,135,136
+437,Smoke,Siege,135,136
+438,Uniacke,Seek elevation,135,149
+439,Stefaniuk 3,Form a compact,135,146
+440,Dyck,Defend the seat,135,136
+441,Murray,Siege,135,143
+442,Murray,Form a compact,135,143
+443,Beauvais,Siege,135,136
+444,Elliott,Form a compact,136,
+445,Lucas,Answer a grievance,136,150
+446,Wallace 2,Endow an institution,136,148
+447,Smoke,Consolidate region,136,137
+448,Benjamin 2,Defend the seat,136,137
+449,Dyck,Answer a grievance,136,
+450,Beauvais,Siege,136,137
+451,Patterson,Consolidate region,137,138
+452,Hendrie,Form a compact,137,
+453,Pegahmagabow,Siege,137,138
+454,Turgeon,Form a compact,137,145
+455,Beauvais,Seek elevation,137,150
+456,Smoke,Consolidate region,137,138
+457,Benjamin 2,Defend the seat,137,138
+458,Shawanaga,Defend the seat,137,138
+459,Benjamin,Answer a grievance,138,149
+460,Langelier,Seek elevation,138,
+461,Patterson,Consolidate region,138,139
+462,Bird,Answer a grievance,138,
+463,Pegahmagabow,Seek elevation,138,144
+464,Byrne,Form a compact,138,148
+465,Smoke,Defend the seat,138,139
+466,Benjamin 2,Answer a grievance,138,140
+467,Shawanaga,Answer a grievance,138,
+468,Mercier,Endow an institution,139,
+469,Patterson,Defend the seat,139,140
+470,Gillies 2,Siege,139,150
+471,Beauvais,Secure succession,139,144
+472,Smoke,Defend the seat,139,140
+473,Cornwall 2,Secure succession,139,140
+474,Beauvais,Siege,139,150
+475,Patterson,Consolidate region,140,141
+476,Smoke,Seek elevation,140,
+477,Benjamin 2,Siege,140,141
+478,Cornwall 2,Seek elevation,140,
+479,Patterson,Siege,141,142
+480,Wallace 2,Answer a grievance,141,
+481,Furlong,Seek elevation,141,
+482,Smoke,Consolidate region,141,142
+483,Benjamin 2,Answer a grievance,141,143
+484,Uniacke,Defend the seat,141,144
+485,Dyck,Consolidate region,141,142
+486,Trudel,Form a compact,141,
+487,Trudel,Seek elevation,141,
+488,Bouchard,Defend the seat,142,146
+489,Patterson,Defend the seat,142,143
+490,Rouleau,Seek elevation,142,
+491,Smoke,Answer a grievance,142,144
+492,Benjamin 2,Endow an institution,142,
+493,Dyck,Form a compact,142,
+494,Rochon,Form a compact,143,
+495,Patterson,Form a compact,143,143
+496,Worts,Secure succession,143,144
+497,Benjamin 2,Answer a grievance,143,145
+498,Cogswell,Endow an institution,143,
+499,Elliott 2,Secure succession,143,144
+500,Murray,Answer a grievance,143,
+501,Patterson,Form a compact,144,147
+502,Pegahmagabow,Consolidate region,144,145
+503,Proulx,Secure succession,144,150
+504,Worts,Siege,144,145
+505,Smoke,Endow an institution,144,
+506,Uniacke,Endow an institution,144,147
+507,Elliott 2,Consolidate region,144,145
+508,Murray,Siege,144,146
+509,Cashin,Defend the seat,144,148
+510,Cashin,Siege,144,
+511,Elliott,Answer a grievance,145,147
+512,Bhullar,Endow an institution,145,
+513,Pegahmagabow,Form a compact,145,
+514,Worts,Form a compact,145,149
+515,Turgeon,Form a compact,145,
+516,Benjamin 2,Answer a grievance,145,
+517,Elliott 2,Form a compact,145,
+518,Hendry,Siege,145,
+519,Hendry,Form a compact,145,
+520,Bouchard,Secure succession,146,147
+521,Hoover,Form a compact,146,150
+522,Stefaniuk 3,Defend the seat,146,147
+523,Murray,Consolidate region,146,
+524,Sparrow,Consolidate region,146,
+525,Sparrow,Endow an institution,146,
+526,Elliott,Answer a grievance,147,
+527,Bouchard,Seek elevation,147,
+528,Patterson,Defend the seat,147,148
+529,Bhullar,Secure succession,147,
+530,Marchand,Defend the seat,147,148
+531,Dawes,Form a compact,147,
+532,Uniacke,Secure succession,147,
+533,Stefaniuk 3,Form a compact,147,
+534,Patterson,Consolidate region,148,149
+535,Bhullar 2,Form a compact,148,
+536,Bhullar 2,Siege,148,
+537,Byrne,Form a compact,148,
+538,Marchand,Form a compact,148,
+539,Wallace 3,Secure succession,148,
+540,Wallace 3,Endow an institution,148,
+541,Wallace 2,Siege,148,149
+542,Jarvis,Secure succession,148,
+543,Cashin,Form a compact,148,
+544,Benjamin,Form a compact,149,
+545,Patterson,Seek elevation,149,
+546,Hendrie,Seek elevation,149,
+547,Worts,Seek elevation,149,
+548,Wallace 2,Defend the seat,149,150
+549,Dickson,Seek elevation,149,
+550,Stefaniuk 2,Endow an institution,149,
+551,Uniacke,Form a compact,149,
+552,Proulx,Form a compact,150,
+553,Worts,Consolidate region,150,
+554,Gillies,Siege,150,
+555,Lucas,Siege,150,
+556,Wallace 2,Endow an institution,150,
+557,Gillies 2,Seek elevation,150,
+558,Beauvais,Secure succession,150,
