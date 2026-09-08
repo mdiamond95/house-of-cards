@@ -1,24 +1,128 @@
 id,house_a,house_b,marker,event_id,event_text,source
-1,Stefaniuk,Wallace,kin,37,correspondence,engine
-2,Benjamin,Elliott,kin,100,marriage alliance,engine
-3,Bouchard,McLellan,kin,299,correspondence,engine
-4,Hays,Mercier,+,165,correspondence,engine
-5,Elliott,Hays,◉+,220,correspondence,engine
-6,Langelier,Mercier,+,119,correspondence,engine
-7,McLellan,Mercier,◉+,237,compact,engine
-8,Benjamin,McLellan,~,270,correspondence,engine
-9,Langelier,Meagher,+,231,correspondence,engine
-10,Benjamin,Wallace,+,174,correspondence,engine
-11,Hays,Meagher,◉+,263,correspondence,engine
-12,Hoover,Stefaniuk,+,199,correspondence,engine
-13,Bouchard,Wallace,+,224,correspondence,engine
-14,Hays,Hoover,+,211,correspondence,engine
-15,Elliott,Stefaniuk,+,257,correspondence,engine
-16,Hays,McLellan,+,240,correspondence,engine
-17,Hoover,Langelier,◎,232,correspondence,engine
-18,Elliott,Wallace,+,268,correspondence,engine
+1,Stefaniuk,Wallace,kin,1048,correspondence,engine
+2,Benjamin,Elliott,kin,730,correspondence,engine
+3,Bouchard,McLellan,kin,361,correspondence,engine
+4,Hays,Mercier,◉+,947,correspondence,engine
+5,Elliott,Hays,◉+,903,correspondence,engine
+6,Langelier,Mercier,◉+,319,compact,engine
+7,McLellan,Mercier,kin,949,marriage alliance,engine
+8,Benjamin,McLellan,~,459,correspondence,engine
+9,Langelier,Meagher,◉+,433,compact,engine
+10,Benjamin,Wallace,kin,649,marriage alliance,engine
+11,Hays,Meagher,kin,434,correspondence,engine
+12,Hoover,Stefaniuk,kin,357,correspondence,engine
+13,Bouchard,Wallace,kin,709,correspondence,engine
+14,Hays,Hoover,◉+,710,compact,engine
+15,Elliott,Stefaniuk,◉+,430,compact,engine
+16,Hays,McLellan,kin,561,marriage alliance,engine
+17,Hoover,Langelier,+,1225,correspondence,engine
+18,Elliott,Wallace,◉+,347,compact,engine
 19,Forbes,Langelier,kin,304,marriage alliance,engine
-20,Elliott,Mercier,◎,271,correspondence,engine
-21,Bouchard,Hays,+,282,correspondence,engine
-22,Benjamin,Mercier,~,289,cession,engine
-23,Meagher,Wallace,◎,294,correspondence,engine
+20,Elliott,Mercier,◉+,1047,correspondence,engine
+21,Bouchard,Hays,◉+,543,compact,engine
+22,Benjamin,Mercier,~,1178,cession,engine
+23,Meagher,Wallace,+,1183,correspondence,engine
+24,Patterson,Rochon,~,467,reconciliation,engine
+25,Cameron,Hoover,+,388,correspondence,engine
+26,Benjamin,Langelier,Sig−,1387,a boundary the two houses read differently,engine
+27,Langelier,Stefaniuk,+,339,correspondence,engine
+28,Cameron,Meagher,◉+,674,compact,engine
+29,Bird,Mercier,kin,421,marriage alliance,engine
+30,Bird,Hays,+,528,correspondence,engine
+31,Elliott,Hoover,◉+,1353,correspondence,engine
+32,Elliott,Langelier,◉+,559,compact,engine
+33,Cameron,Rochon,kin,868,correspondence,engine
+34,Bouchard,Mercier,◉+,632,compact,engine
+35,Bhullar,Cornwall,kin,1413,correspondence,engine
+36,Cardinal,Hays,◉+,816,compact,engine
+37,Patterson,Rouleau,◉+,1007,compact,engine
+38,Benjamin,Stefaniuk,◉+,746,compact,engine
+39,Cardinal,Cousineau,◎,505,correspondence,engine
+40,Pegahmagabow,Rouleau,◉+,1102,compact,engine
+41,Langelier,Patterson,kin,981,marriage alliance,engine
+42,Hoover,Rochon,◉+,979,compact,engine
+43,Langelier,Meagher 2,+,545,correspondence,engine
+44,Bouchard,Forbes,kin,1416,marriage alliance,engine
+45,Cameron,Meagher 2,kin,1304,marriage alliance,engine
+46,Hendrie,Meagher,kin,826,marriage alliance,engine
+47,Pegahmagabow,Rochon,~,661,reconciliation,engine
+48,Byrne,Rouleau,kin,829,marriage alliance,engine
+49,Hoover,Patterson,~,566,lapsed: no longer pressed,engine
+50,Rochon,Wallace,kin,999,marriage alliance,engine
+51,McLellan,Rouleau,◉+,1136,compact,engine
+52,Cameron,Hendrie,◉+,1423,compact,engine
+53,Elliott,Pegahmagabow,kin,1263,correspondence,engine
+54,Forbes,Rouleau,+,1358,correspondence,engine
+55,Cardinal,Proulx,kin,872,marriage alliance,engine
+56,Hoover,Wallace,+,713,correspondence,engine
+57,Mercier,Stefaniuk,~,1372,correspondence,engine
+58,Pegahmagabow,Wallace,+,943,correspondence,engine
+59,Cameron,Proulx,+,851,correspondence,engine
+60,Mercier,Patterson,◉+,788,compact,engine
+61,Forbes,McLellan,Sig−,1390,disorderly succession,engine
+62,Bird,Skye,kin,1120,marriage alliance,engine
+63,Hays,Langelier,◉+,865,compact,engine
+64,Cardinal,Worts,◉+,1146,compact,engine
+65,Benjamin,Hendrie,+,846,correspondence,engine
+66,Cardinal,Stefaniuk,~,1046,lapsed: no longer pressed,engine
+67,Hoover,Skye,◉+,1375,compact,engine
+68,Bird,Gillies,◉+,871,compact,engine
+69,Bird,Cardinal,~,908,cession,engine
+70,Bird,Stefaniuk,~,944,reconciliation,engine
+71,Elliott,Skye,◉+,1252,compact,engine
+72,Marchand,Patterson,◉+,1228,compact,engine
+73,Bouchard,Dawes,+,1050,correspondence,engine
+74,Hendrie,Rouleau,◉+,1206,compact,engine
+75,Wallace,Wallace 2,kin,1175,correspondence,engine
+76,Colby,Hays,kin,1381,marriage alliance,engine
+77,Gillies,Pegahmagabow,kin,1254,marriage alliance,engine
+78,Forbes,Patterson,+,1054,correspondence,engine
+79,Bird,Byrne,◉+,1297,compact,engine
+80,Dawes,Worts,+,1368,correspondence,engine
+81,Benjamin,Bouchard,~,946,reconciliation,engine
+82,Cardinal,Hoover,◉+,1073,compact,engine
+83,Bouchard,Turgeon,+,1290,correspondence,engine
+84,Colby,McLellan,◉+,1412,compact,engine
+85,Langelier,Rouleau,+,1027,correspondence,engine
+86,Dawes,Marchand,+,1015,correspondence,engine
+87,Cameron,Turgeon,kin,1111,marriage alliance,engine
+88,Cornwall,Fairbanks,◉+,1242,compact,engine
+89,Rochon,Wallace 2,+,1053,correspondence,engine
+90,Byrne,Marchand,+,1103,correspondence,engine
+91,Proulx,Rouleau,+,1100,correspondence,engine
+92,Gillies,Hendrie,+,1215,correspondence,engine
+93,Hendrie,Worts,~,1127,reconciliation,engine
+94,Benjamin,Colby,Sig−,1314,a boundary the two houses read differently,engine
+95,McLellan,Patterson,+,1395,correspondence,engine
+96,Dawes,Turgeon,+,1218,correspondence,engine
+97,Benjamin,Worts,+,1287,correspondence,engine
+98,Meagher 2,Mercier,+,1143,correspondence,engine
+99,Bhullar,Fairbanks,◉+,1283,compact,engine
+100,Meagher 2,Skye,~,1233,reconciliation,engine
+101,Marchand,Wallace,+,1198,correspondence,engine
+102,Cardinal,Gillies 2,+,1205,correspondence,engine
+103,Patterson,Pegahmagabow,+,1210,correspondence,engine
+104,Colby,Worts,+,1380,correspondence,engine
+105,Byrne,Lucas,+,1216,correspondence,engine
+106,Meagher,Wallace 2,+,1311,correspondence,engine
+107,Bird,Fairbanks,◉+,1341,compact,engine
+108,Meagher,Turgeon,◎,1260,correspondence,engine
+109,Byrne,Hays,◎,1265,correspondence,engine
+110,Gillies,Meagher 2,+,1324,correspondence,engine
+111,Colby,Rouleau,+,1344,correspondence,engine
+112,Gillies 2,Stefaniuk,+,1337,correspondence,engine
+113,Bouchard,Gillies 2,+,1371,correspondence,engine
+114,Cameron,Lucas,◎,1321,correspondence,engine
+115,Marchand,Meagher 2,+,1364,correspondence,engine
+116,Meagher,Skye,◎,1326,correspondence,engine
+117,Colby,Langelier,+,1403,correspondence,engine
+118,Turgeon,Wallace 2,◎,1350,correspondence,engine
+119,Furlong,Gillies 2,◎,1352,correspondence,engine
+120,Bouchard,Cardinal,◎,1361,correspondence,engine
+121,Hendrie,Skye,◎,1362,correspondence,engine
+122,Bird,Lucas,◎,1396,correspondence,engine
+123,Pegahmagabow,Turgeon,◎,1398,correspondence,engine
+124,Meagher 2,Rouleau,◎,1400,correspondence,engine
+125,Marchand,Wallace 2,+,1425,correspondence,engine
+126,Proulx,Stefaniuk,◎,1408,correspondence,engine
+127,Gillies,Mercier,◎,1410,correspondence,engine

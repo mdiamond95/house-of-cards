@@ -41,3 +41,143 @@ id,era_cohort,seq,event,magnitude,tag,cumulative_after,event_id,source
 40,confederation,38,Montréal Smallpox Epidemic,Significant,Progressive,+15,,turn
 41,confederation,39,Pacific Scandal,Significant,Progressive,+14,,turn
 42,confederation,40,Long Depression Reaches Canada,Major,Conservative,+15,,turn
+43,confederation,41,Laurier Elected,Significant,Progressive,+14,,turn
+44,confederation,42,Chinese Immigration Act,Significant,Conservative,+15,,turn
+45,confederation,43,Diamond Jubilee,Minor,Conservative,+16,,turn
+46,confederation,44,Long Depression Reaches Canada,Major,Conservative,+17,,turn
+47,confederation,45,South African War,Major,Conservative,+18,,turn
+48,confederation,46,Indian Act,Major,Conservative,+17,,turn
+49,dominion,2,Alberta and Saskatchewan Created,Significant,Progressive,+1,,turn
+50,confederation,47,Jesuits' Estates Act Controversy,Significant,Conservative,+18,,turn
+51,confederation,48,Laurier Elected,Significant,Progressive,+19,,turn
+52,confederation,49,Laurier Elected,Significant,Progressive,+20,,turn
+53,confederation,50,Chinese Immigration Act,Significant,Conservative,+21,,turn
+54,confederation,51,Diamond Jubilee,Minor,Conservative,+22,,turn
+55,confederation,52,National Policy,Significant,Conservative,+21,,turn
+56,confederation,53,Long Depression Reaches Canada,Major,Conservative,+22,,turn
+57,confederation,54,Pacific Scandal,Significant,Progressive,+21,,turn
+58,confederation,55,Manitoba Schools Question,Major,Conservative,+22,,turn
+59,confederation,56,Indian Act,Major,Conservative,+23,,turn
+60,confederation,57,Pacific Scandal,Significant,Progressive,+22,,turn
+61,confederation,58,Long Depression Reaches Canada,Major,Conservative,+21,,turn
+62,confederation,59,Laurier Elected,Significant,Progressive,+22,,turn
+63,confederation,60,Montréal Smallpox Epidemic,Significant,Progressive,+21,,turn
+64,dominion,3,Alberta and Saskatchewan Created,Significant,Progressive,+2,,turn
+65,confederation,61,Indian Act,Major,Conservative,+20,,turn
+66,confederation,62,Pacific Scandal,Significant,Progressive,+21,,turn
+67,dominion,4,Vancouver Anti-Asian Riots,Significant,Conservative,+1,,turn
+68,confederation,63,South African War,Major,Conservative,+22,,turn
+69,confederation,64,South African War,Major,Conservative,+21,,turn
+70,confederation,65,National Policy,Significant,Conservative,+22,,turn
+71,confederation,66,Laurier Elected,Significant,Progressive,+21,,turn
+72,confederation,67,National Policy,Significant,Conservative,+22,,turn
+73,confederation,68,Indian Act,Major,Conservative,+23,,turn
+74,confederation,69,Diamond Jubilee,Minor,Conservative,+24,,turn
+75,confederation,70,Manitoba Schools Question,Major,Conservative,+25,,turn
+76,confederation,71,Long Depression Reaches Canada,Major,Conservative,+26,,turn
+77,confederation,72,Pacific Scandal,Significant,Progressive,+27,,turn
+78,confederation,73,Pacific Scandal,Significant,Progressive,+26,,turn
+79,dominion,5,Alberta and Saskatchewan Created,Significant,Progressive,0,,turn
+80,dominion,6,Alberta and Saskatchewan Created,Significant,Progressive,-1,,turn
+81,confederation,74,National Policy,Significant,Conservative,+27,,turn
+82,confederation,75,Indian Act,Major,Conservative,+26,,turn
+83,confederation,76,Pacific Scandal,Significant,Progressive,+27,,turn
+84,dominion,7,Komagata Maru,Major,Conservative,-2,,turn
+85,dominion,8,Vancouver Anti-Asian Riots,Significant,Conservative,-1,,turn
+86,confederation,77,National Policy,Significant,Conservative,+26,,turn
+87,confederation,78,Indian Act,Major,Conservative,+27,,turn
+88,confederation,79,Montréal Smallpox Epidemic,Significant,Progressive,+26,,turn
+89,confederation,80,Diamond Jubilee,Minor,Conservative,+27,,turn
+90,confederation,81,Indian Act,Major,Conservative,+26,,turn
+91,confederation,82,South African War,Major,Conservative,+25,,turn
+92,confederation,83,Chinese Immigration Act,Significant,Conservative,+26,,turn
+93,confederation,84,National Policy,Significant,Conservative,+27,,turn
+94,confederation,85,Pacific Scandal,Significant,Progressive,+26,,turn
+95,dominion,9,Reciprocity Election,Significant,Conservative,0,,turn
+96,confederation,86,Laurier Elected,Significant,Progressive,+25,,turn
+97,confederation,87,Pacific Scandal,Significant,Progressive,+26,,turn
+98,dominion,10,Progressives and the First Woman MP,Significant,Progressive,-1,,turn
+99,confederation,88,Diamond Jubilee,Minor,Conservative,+27,,turn
+100,confederation,89,Jesuits' Estates Act Controversy,Significant,Conservative,+26,,turn
+101,confederation,90,Indian Act,Major,Conservative,+27,,turn
+102,confederation,91,Manitoba Schools Question,Major,Conservative,+28,,turn
+103,confederation,92,Long Depression Reaches Canada,Major,Conservative,+29,,turn
+104,dominion,11,Chinese Exclusion Act,Significant,Conservative,0,,turn
+105,confederation,93,Manitoba Schools Question,Major,Conservative,+30,,turn
+106,confederation,94,Manitoba Schools Question,Major,Conservative,+31,,turn
+107,confederation,95,National Policy,Significant,Conservative,+30,,turn
+108,confederation,96,Chinese Immigration Act,Significant,Conservative,+31,,turn
+109,confederation,97,Indian Act,Major,Conservative,+32,,turn
+110,confederation,98,Pacific Scandal,Significant,Progressive,+31,,turn
+111,dominion,12,United Church Formed,Minor,Progressive,+1,,turn
+112,confederation,99,National Policy,Significant,Conservative,+30,,turn
+113,confederation,100,Pacific Scandal,Significant,Progressive,+29,,turn
+114,confederation,101,Indian Act,Major,Conservative,+30,,turn
+115,confederation,102,Long Depression Reaches Canada,Major,Conservative,+31,,turn
+116,confederation,103,Pacific Scandal,Significant,Progressive,+32,,turn
+117,dominion,13,The Persons Case,Significant,Progressive,0,,turn
+118,confederation,104,Laurier Elected,Significant,Progressive,+33,,turn
+119,late,2,The Long Contraction,Major,Conservative,+1,,turn
+120,late,3,The Long Contraction,Major,Conservative,+2,,turn
+121,confederation,105,Manitoba Schools Question,Major,Conservative,+34,,turn
+122,confederation,106,Montréal Smallpox Epidemic,Significant,Progressive,+33,,turn
+123,confederation,107,Indian Act,Major,Conservative,+32,,turn
+124,confederation,108,South African War,Major,Conservative,+33,,turn
+125,confederation,109,Montréal Smallpox Epidemic,Significant,Progressive,+32,,turn
+126,confederation,110,Manitoba Schools Question,Major,Conservative,+33,,turn
+127,confederation,111,Long Depression Reaches Canada,Major,Conservative,+34,,turn
+128,late,4,Founding of the CCF,Major,Progressive,+1,,turn
+129,late,5,Founding of the CCF,Major,Progressive,+2,,turn
+130,confederation,112,South African War,Major,Conservative,+35,,turn
+131,confederation,113,Chinese Immigration Act,Significant,Conservative,+36,,turn
+132,confederation,114,National Policy,Significant,Conservative,+37,,turn
+133,confederation,115,Pacific Scandal,Significant,Progressive,+36,,turn
+134,confederation,116,Jesuits' Estates Act Controversy,Significant,Conservative,+37,,turn
+135,confederation,117,National Policy,Significant,Conservative,+38,,turn
+136,confederation,118,Jesuits' Estates Act Controversy,Significant,Conservative,+39,,turn
+137,dominion,14,Reciprocity Election,Significant,Conservative,-1,,turn
+138,confederation,119,Jesuits' Estates Act Controversy,Significant,Conservative,+40,,turn
+139,confederation,120,Jesuits' Estates Act Controversy,Significant,Conservative,+41,,turn
+140,confederation,121,Laurier Elected,Significant,Progressive,+42,,turn
+141,dominion,15,Reciprocity Election,Significant,Conservative,0,,turn
+142,confederation,122,Jesuits' Estates Act Controversy,Significant,Conservative,+43,,turn
+143,confederation,123,Indian Act,Major,Conservative,+42,,turn
+144,dominion,16,Regulation 17,Major,Conservative,+1,,turn
+145,confederation,124,Jesuits' Estates Act Controversy,Significant,Conservative,+43,,turn
+146,dominion,17,Alberta and Saskatchewan Created,Significant,Progressive,+2,,turn
+147,confederation,125,Manitoba Schools Question,Major,Conservative,+44,,turn
+148,confederation,126,Laurier Elected,Significant,Progressive,+43,,turn
+149,confederation,127,Manitoba Schools Question,Major,Conservative,+44,,turn
+150,dominion,18,Alberta and Saskatchewan Created,Significant,Progressive,+3,,turn
+151,confederation,128,South African War,Major,Conservative,+45,,turn
+152,confederation,129,Chinese Immigration Act,Significant,Conservative,+46,,turn
+153,dominion,19,Vancouver Anti-Asian Riots,Significant,Conservative,+4,,turn
+154,confederation,130,Jesuits' Estates Act Controversy,Significant,Conservative,+47,,turn
+155,dominion,20,Vancouver Anti-Asian Riots,Significant,Conservative,+3,,turn
+156,dominion,21,Prairie Women's Suffrage,Significant,Progressive,+2,,turn
+157,confederation,131,South African War,Major,Conservative,+48,,turn
+158,confederation,132,Laurier Elected,Significant,Progressive,+49,,turn
+159,confederation,133,Jesuits' Estates Act Controversy,Significant,Conservative,+48,,turn
+160,late,6,Japanese-Canadian Internment,Major,Conservative,+1,,turn
+161,confederation,134,Laurier Elected,Significant,Progressive,+49,,turn
+162,confederation,135,Jesuits' Estates Act Controversy,Significant,Conservative,+50,,turn
+163,dominion,22,Reciprocity Election,Significant,Conservative,+3,,turn
+164,confederation,136,Manitoba Schools Question,Major,Conservative,+49,,turn
+165,late,7,CCF Government in Saskatchewan,Significant,Progressive,0,,turn
+166,dominion,23,Reciprocity Election,Significant,Conservative,+4,,turn
+167,dominion,24,Alberta and Saskatchewan Created,Significant,Progressive,+5,,turn
+168,confederation,137,North-West Resistance,Major,Conservative,+50,,turn
+169,dominion,25,Regulation 17,Major,Conservative,+6,,turn
+170,confederation,138,Jesuits' Estates Act Controversy,Significant,Conservative,+51,,turn
+171,confederation,139,South African War,Major,Conservative,+52,,turn
+172,dominion,26,Vancouver Anti-Asian Riots,Significant,Conservative,+7,,turn
+173,confederation,140,South African War,Major,Conservative,+51,,turn
+174,dominion,27,Komagata Maru,Major,Conservative,+6,,turn
+175,dominion,28,Vancouver Anti-Asian Riots,Significant,Conservative,+5,,turn
+176,dominion,29,Vancouver Anti-Asian Riots,Significant,Conservative,+6,,turn
+177,confederation,141,Manitoba Schools Question,Major,Conservative,+52,,turn
+178,confederation,142,Diamond Jubilee,Minor,Conservative,+53,,turn
+179,dominion,30,Prairie Women's Suffrage,Significant,Progressive,+7,,turn
+180,confederation,143,Manitoba Schools Question,Major,Conservative,+54,,turn
+181,confederation,144,South African War,Major,Conservative,+55,,turn
+182,confederation,145,Laurier Elected,Significant,Progressive,+54,,turn

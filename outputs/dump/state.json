@@ -1,6 +1,31 @@
 {
   "houses": [
     {
+      "house": "Beauvais",
+      "peerage": "Earl Beauvais of Charles-LeMoyne",
+      "rank": "Earl",
+      "status": "active",
+      "primary_hex": "#2a8937",
+      "secondary_hex": "#4fc960",
+      "notes": "founded season 100",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "24041",
+          "riding": "Longueuil—Charles-LeMoyne",
+          "province": "QC",
+          "hex": "#2a8937"
+        }
+      ],
+      "riding_count": 1,
+      "clock": {
+        "personal_year": 1867,
+        "basis": "founded season 100"
+      }
+    },
+    {
       "house": "Benjamin",
       "peerage": "Viscount Benjamin of Bellechasse",
       "rank": "Viscount",
@@ -45,18 +70,194 @@
           "riding": "Longueuil—Saint-Hubert",
           "province": "QC",
           "hex": "#803cc3"
+        },
+        {
+          "seat_order": 6,
+          "fed_id": "24020",
+          "riding": "Côte-du-Sud—Rivière-du-Loup—Kataskomiq—Témiscouata",
+          "province": "QC",
+          "hex": "#803cc3"
+        },
+        {
+          "seat_order": 7,
+          "fed_id": "24008",
+          "riding": "Beauport—Limoilou",
+          "province": "QC",
+          "hex": "#803cc3"
+        },
+        {
+          "seat_order": 8,
+          "fed_id": "24012",
+          "riding": "Berthier—Maskinongé",
+          "province": "QC",
+          "hex": "#803cc3"
+        },
+        {
+          "seat_order": 9,
+          "fed_id": "24031",
+          "riding": "La Pointe-de-l'Île",
+          "province": "QC",
+          "hex": "#803cc3"
+        },
+        {
+          "seat_order": 10,
+          "fed_id": "24046",
+          "riding": "Mégantic—L’Érable—Lotbinière",
+          "province": "QC",
+          "hex": "#803cc3"
         }
       ],
-      "riding_count": 5,
+      "riding_count": 10,
       "clock": {
-        "personal_year": 1883,
-        "basis": "synced at season 40, event 289"
+        "personal_year": 1899,
+        "basis": "synced at season 89, event 1178"
+      }
+    },
+    {
+      "house": "Bhullar",
+      "peerage": "Viscount Bhullar of Nanaimo",
+      "rank": "Viscount",
+      "status": "active",
+      "primary_hex": "#337a6c",
+      "secondary_hex": "#5abaa7",
+      "notes": "founded season 52",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "59019",
+          "riding": "Nanaimo—Ladysmith",
+          "province": "BC",
+          "hex": "#337a6c"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "59010",
+          "riding": "Cowichan—Malahat—Langford",
+          "province": "BC",
+          "hex": "#5abaa7"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "59009",
+          "riding": "Courtenay—Alberni",
+          "province": "BC",
+          "hex": "#5abaa7"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "59021",
+          "riding": "North Island—Powell River",
+          "province": "BC",
+          "hex": "#5abaa7"
+        },
+        {
+          "seat_order": 5,
+          "fed_id": "59031",
+          "riding": "Skeena—Bulkley Valley",
+          "province": "BC",
+          "hex": "#5abaa7"
+        },
+        {
+          "seat_order": 6,
+          "fed_id": "59026",
+          "riding": "Prince George—Peace River—Northern Rockies",
+          "province": "BC",
+          "hex": "#5abaa7"
+        },
+        {
+          "seat_order": 7,
+          "fed_id": "60001",
+          "riding": "Yukon",
+          "province": "YT",
+          "hex": "#5abaa7"
+        },
+        {
+          "seat_order": 8,
+          "fed_id": "48026",
+          "riding": "Grande Prairie",
+          "province": "AB",
+          "hex": "#5abaa7"
+        },
+        {
+          "seat_order": 9,
+          "fed_id": "61001",
+          "riding": "Northwest Territories",
+          "province": "NT",
+          "hex": "#5abaa7"
+        }
+      ],
+      "riding_count": 9,
+      "clock": {
+        "personal_year": 1875,
+        "basis": "reset at accession, season 92"
+      }
+    },
+    {
+      "house": "Bird",
+      "peerage": "Viscount Bird of Winnipeg",
+      "rank": "Viscount",
+      "status": "active",
+      "primary_hex": "#556827",
+      "secondary_hex": "#91b342",
+      "notes": "founded season 44",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "46010",
+          "riding": "Winnipeg Centre",
+          "province": "MB",
+          "hex": "#556827"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "46014",
+          "riding": "Winnipeg West",
+          "province": "MB",
+          "hex": "#91b342"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "46003",
+          "riding": "Elmwood—Transcona",
+          "province": "MB",
+          "hex": "#91b342"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "46011",
+          "riding": "Winnipeg North",
+          "province": "MB",
+          "hex": "#91b342"
+        },
+        {
+          "seat_order": 5,
+          "fed_id": "46004",
+          "riding": "Kildonan—St. Paul",
+          "province": "MB",
+          "hex": "#91b342"
+        },
+        {
+          "seat_order": 6,
+          "fed_id": "46008",
+          "riding": "St. Boniface—St. Vital",
+          "province": "MB",
+          "hex": "#91b342"
+        }
+      ],
+      "riding_count": 6,
+      "clock": {
+        "personal_year": 1905,
+        "basis": "synced at season 86, event 1120"
       }
     },
     {
       "house": "Bouchard",
-      "peerage": "Viscount Bouchard de Terrebonne",
-      "rank": "Viscount",
+      "peerage": "Earl Bouchard de Terrebonne",
+      "rank": "Earl",
       "status": "active",
       "primary_hex": "#2c6339",
       "secondary_hex": "#4ca962",
@@ -86,17 +287,105 @@
           "hex": "#4ca962"
         },
         {
-          "seat_order": 4,
-          "fed_id": "24008",
-          "riding": "Beauport—Limoilou",
+          "seat_order": 5,
+          "fed_id": "24058",
+          "riding": "Portneuf—Jacques-Cartier",
+          "province": "QC",
+          "hex": "#4ca962"
+        },
+        {
+          "seat_order": 6,
+          "fed_id": "24016",
+          "riding": "Charlesbourg—Haute-Saint-Charles",
+          "province": "QC",
+          "hex": "#4ca962"
+        },
+        {
+          "seat_order": 7,
+          "fed_id": "24040",
+          "riding": "Lévis—Lotbinière",
+          "province": "QC",
+          "hex": "#4ca962"
+        },
+        {
+          "seat_order": 8,
+          "fed_id": "24010",
+          "riding": "Bellechasse—Les Etchemins—Lévis",
           "province": "QC",
           "hex": "#4ca962"
         }
       ],
-      "riding_count": 4,
+      "riding_count": 7,
       "clock": {
-        "personal_year": 1895,
-        "basis": "synced at season 40, event 290"
+        "personal_year": 1894,
+        "basis": "synced at season 100, event 1416"
+      }
+    },
+    {
+      "house": "Byrne",
+      "peerage": "Baron Byrne of Cooksville",
+      "rank": "Baron",
+      "status": "active",
+      "primary_hex": "#4d275d",
+      "secondary_hex": "#8945a5",
+      "notes": "founded season 56",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "35062",
+          "riding": "Mississauga East—Cooksville",
+          "province": "ON",
+          "hex": "#4d275d"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "35064",
+          "riding": "Mississauga—Lakeshore",
+          "province": "ON",
+          "hex": "#8945a5"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "35063",
+          "riding": "Mississauga—Erin Mills",
+          "province": "ON",
+          "hex": "#8945a5"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "35030",
+          "riding": "Etobicoke—Lakeshore",
+          "province": "ON",
+          "hex": "#8945a5"
+        },
+        {
+          "seat_order": 5,
+          "fed_id": "35066",
+          "riding": "Mississauga—Streetsville",
+          "province": "ON",
+          "hex": "#8945a5"
+        },
+        {
+          "seat_order": 6,
+          "fed_id": "35105",
+          "riding": "Taiaiako'n—Parkdale—High Park",
+          "province": "ON",
+          "hex": "#8945a5"
+        },
+        {
+          "seat_order": 7,
+          "fed_id": "35022",
+          "riding": "Davenport",
+          "province": "ON",
+          "hex": "#8945a5"
+        }
+      ],
+      "riding_count": 7,
+      "clock": {
+        "personal_year": 1868,
+        "basis": "reset at disorderly accession, season 99"
       }
     },
     {
@@ -116,12 +405,97 @@
           "riding": "Richmond Hill South",
           "province": "ON",
           "hex": "#764528"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "35047",
+          "riding": "King—Vaughan",
+          "province": "ON",
+          "hex": "#bf7245"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "35106",
+          "riding": "Thornhill",
+          "province": "ON",
+          "hex": "#bf7245"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "35058",
+          "riding": "Markham—Unionville",
+          "province": "ON",
+          "hex": "#bf7245"
+        },
+        {
+          "seat_order": 5,
+          "fed_id": "35056",
+          "riding": "Markham—Stouffville",
+          "province": "ON",
+          "hex": "#bf7245"
+        }
+      ],
+      "riding_count": 5,
+      "clock": {
+        "personal_year": 1910,
+        "basis": "synced at season 94, event 1304"
+      }
+    },
+    {
+      "house": "Cardinal",
+      "peerage": "Baron Cardinal of Steinbach",
+      "rank": "Baron",
+      "status": "active",
+      "primary_hex": "#9a2d43",
+      "secondary_hex": "#d05d74",
+      "notes": "founded season 46",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "46012",
+          "riding": "Winnipeg South",
+          "province": "MB",
+          "hex": "#9a2d43"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "46013",
+          "riding": "Winnipeg South Centre",
+          "province": "MB",
+          "hex": "#d05d74"
+        }
+      ],
+      "riding_count": 2,
+      "clock": {
+        "personal_year": 1903,
+        "basis": "synced at season 77, event 908"
+      }
+    },
+    {
+      "house": "Colby",
+      "peerage": "Viscount Colby of Trois-Rivières",
+      "rank": "Viscount",
+      "status": "active",
+      "primary_hex": "#376c76",
+      "secondary_hex": "#5fa6b4",
+      "notes": "founded season 68",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "24075",
+          "riding": "Trois-Rivières",
+          "province": "QC",
+          "hex": "#376c76"
         }
       ],
       "riding_count": 1,
       "clock": {
-        "personal_year": 1867,
-        "basis": "founded season 41"
+        "personal_year": 1891,
+        "basis": "synced at season 98, event 1381"
       }
     },
     {
@@ -169,18 +543,102 @@
           "riding": "Kamloops—Thompson—Nicola",
           "province": "BC",
           "hex": "#adb658"
+        },
+        {
+          "seat_order": 6,
+          "fed_id": "59022",
+          "riding": "North Vancouver—Capilano",
+          "province": "BC",
+          "hex": "#adb658"
+        },
+        {
+          "seat_order": 7,
+          "fed_id": "59014",
+          "riding": "Kamloops—Shuswap—Central Rockies",
+          "province": "BC",
+          "hex": "#adb658"
+        },
+        {
+          "seat_order": 8,
+          "fed_id": "59024",
+          "riding": "Pitt Meadows—Maple Ridge",
+          "province": "BC",
+          "hex": "#adb658"
+        },
+        {
+          "seat_order": 9,
+          "fed_id": "59027",
+          "riding": "Richmond Centre—Marpole",
+          "province": "BC",
+          "hex": "#adb658"
         }
       ],
-      "riding_count": 5,
+      "riding_count": 9,
       "clock": {
-        "personal_year": 1867,
-        "basis": "reset at accession, season 41"
+        "personal_year": 1874,
+        "basis": "reset at accession, season 93"
+      }
+    },
+    {
+      "house": "Cousineau",
+      "peerage": "Baron Cousineau de Wiarton",
+      "rank": "Baron",
+      "status": "removed",
+      "primary_hex": "#2d5c9a",
+      "secondary_hex": "#5d8fd0",
+      "notes": "founded season 53",
+      "holder": null,
+      "blocks": [],
+      "holdings": [],
+      "riding_count": 0,
+      "clock": {
+        "personal_year": 1874,
+        "basis": "founded season 53"
+      }
+    },
+    {
+      "house": "Dawes",
+      "peerage": "Viscount Dawes of Bourassa",
+      "rank": "Viscount",
+      "status": "active",
+      "primary_hex": "#955037",
+      "secondary_hex": "#c8836a",
+      "notes": "founded season 74",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "24013",
+          "riding": "Bourassa",
+          "province": "QC",
+          "hex": "#955037"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "24027",
+          "riding": "Honoré-Mercier",
+          "province": "QC",
+          "hex": "#c8836a"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "24069",
+          "riding": "Saint-Léonard—Saint-Michel",
+          "province": "QC",
+          "hex": "#c8836a"
+        }
+      ],
+      "riding_count": 3,
+      "clock": {
+        "personal_year": 1893,
+        "basis": "founded season 74"
       }
     },
     {
       "house": "Elliott",
-      "peerage": "Baron Elliott of Glengarry",
-      "rank": "Baron",
+      "peerage": "Viscount Elliott of Glengarry",
+      "rank": "Viscount",
       "status": "active",
       "primary_hex": "#673232",
       "secondary_hex": "#ac5353",
@@ -215,18 +673,92 @@
           "riding": "Kanata",
           "province": "ON",
           "hex": "#ac5353"
+        },
+        {
+          "seat_order": 5,
+          "fed_id": "24057",
+          "riding": "Pontiac—Kitigan Zibi",
+          "province": "QC",
+          "hex": "#ac5353"
+        },
+        {
+          "seat_order": 6,
+          "fed_id": "24001",
+          "riding": "Abitibi—Baie-James—Nunavik—Eeyou",
+          "province": "QC",
+          "hex": "#ac5353"
+        },
+        {
+          "seat_order": 7,
+          "fed_id": "35002",
+          "riding": "Algonquin—Renfrew—Pembroke",
+          "province": "ON",
+          "hex": "#ac5353"
         }
       ],
-      "riding_count": 4,
+      "riding_count": 7,
       "clock": {
-        "personal_year": 1900,
-        "basis": "synced at season 20, event 100"
+        "personal_year": 1881,
+        "basis": "reset at accession, season 86"
+      }
+    },
+    {
+      "house": "Fairbanks",
+      "peerage": "Baron Fairbanks of Edmonton Griesbach",
+      "rank": "Baron",
+      "status": "active",
+      "primary_hex": "#70296c",
+      "secondary_hex": "#bb44b3",
+      "notes": "founded season 71",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "48017",
+          "riding": "Edmonton Griesbach",
+          "province": "AB",
+          "hex": "#70296c"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "48019",
+          "riding": "Edmonton Northwest",
+          "province": "AB",
+          "hex": "#bb44b3"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "48035",
+          "riding": "Sherwood Park—Fort Saskatchewan",
+          "province": "AB",
+          "hex": "#bb44b3"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "48028",
+          "riding": "Leduc—Wetaskiwin",
+          "province": "AB",
+          "hex": "#bb44b3"
+        },
+        {
+          "seat_order": 5,
+          "fed_id": "48027",
+          "riding": "Lakeland",
+          "province": "AB",
+          "hex": "#bb44b3"
+        }
+      ],
+      "riding_count": 5,
+      "clock": {
+        "personal_year": 1896,
+        "basis": "founded season 71"
       }
     },
     {
       "house": "Forbes",
-      "peerage": "Earl Forbes of Preston",
-      "rank": "Earl",
+      "peerage": "Marquis Forbes of Preston",
+      "rank": "Marquis",
       "status": "active",
       "primary_hex": "#413592",
       "secondary_hex": "#7265c8",
@@ -240,18 +772,163 @@
           "riding": "Acadie—Annapolis",
           "province": "NS",
           "hex": "#413592"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "12008",
+          "riding": "Kings—Hants",
+          "province": "NS",
+          "hex": "#7265c8"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "12010",
+          "riding": "South Shore—St. Margarets",
+          "province": "NS",
+          "hex": "#7265c8"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "12009",
+          "riding": "Sackville—Bedford—Preston",
+          "province": "NS",
+          "hex": "#7265c8"
+        },
+        {
+          "seat_order": 5,
+          "fed_id": "12007",
+          "riding": "Halifax West",
+          "province": "NS",
+          "hex": "#7265c8"
+        },
+        {
+          "seat_order": 6,
+          "fed_id": "12006",
+          "riding": "Halifax",
+          "province": "NS",
+          "hex": "#7265c8"
+        },
+        {
+          "seat_order": 7,
+          "fed_id": "13006",
+          "riding": "Miramichi—Grand Lake",
+          "province": "NB",
+          "hex": "#7265c8"
+        }
+      ],
+      "riding_count": 7,
+      "clock": {
+        "personal_year": 1894,
+        "basis": "synced at season 100, event 1416"
+      }
+    },
+    {
+      "house": "Furlong",
+      "peerage": "Baron Furlong of Émard",
+      "rank": "Baron",
+      "status": "active",
+      "primary_hex": "#489730",
+      "secondary_hex": "#79cd60",
+      "notes": "founded season 92",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "24035",
+          "riding": "LaSalle—Émard—Verdun",
+          "province": "QC",
+          "hex": "#489730"
         }
       ],
       "riding_count": 1,
       "clock": {
-        "personal_year": 1891,
-        "basis": "synced at season 41, event 304"
+        "personal_year": 1875,
+        "basis": "founded season 92"
+      }
+    },
+    {
+      "house": "Gillies",
+      "peerage": "Baron Gillies of Woburn",
+      "rank": "Baron",
+      "status": "active",
+      "primary_hex": "#3b2370",
+      "secondary_hex": "#633cbe",
+      "notes": "founded season 70",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "35097",
+          "riding": "Scarborough—Woburn",
+          "province": "ON",
+          "hex": "#3b2370"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "35095",
+          "riding": "Scarborough North",
+          "province": "ON",
+          "hex": "#633cbe"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "35092",
+          "riding": "Scarborough—Agincourt",
+          "province": "ON",
+          "hex": "#633cbe"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "35094",
+          "riding": "Scarborough—Guildwood—Rouge Park",
+          "province": "ON",
+          "hex": "#633cbe"
+        }
+      ],
+      "riding_count": 4,
+      "clock": {
+        "personal_year": 1897,
+        "basis": "synced at season 92, event 1254"
+      }
+    },
+    {
+      "house": "Gillies 2",
+      "peerage": "Baron Gillies of Aurora",
+      "rank": "Baron",
+      "status": "active",
+      "primary_hex": "#608529",
+      "secondary_hex": "#96c84c",
+      "notes": "founded season 86",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "35003",
+          "riding": "Aurora—Oak Ridges—Richmond Hill",
+          "province": "ON",
+          "hex": "#608529"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "35068",
+          "riding": "Newmarket—Aurora",
+          "province": "ON",
+          "hex": "#96c84c"
+        }
+      ],
+      "riding_count": 2,
+      "clock": {
+        "personal_year": 1881,
+        "basis": "founded season 86"
       }
     },
     {
       "house": "Hays",
-      "peerage": "Viscount Hays of Beloeil",
-      "rank": "Viscount",
+      "peerage": "Earl Hays of Beloeil",
+      "rank": "Earl",
       "status": "active",
       "primary_hex": "#2f4175",
       "secondary_hex": "#506cb9",
@@ -279,12 +956,79 @@
           "riding": "Laurier—Sainte-Marie",
           "province": "QC",
           "hex": "#506cb9"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "24048",
+          "riding": "Mount Royal",
+          "province": "QC",
+          "hex": "#506cb9"
         }
       ],
-      "riding_count": 3,
+      "riding_count": 4,
       "clock": {
-        "personal_year": 1871,
-        "basis": "reset at disorderly accession, season 37"
+        "personal_year": 1891,
+        "basis": "synced at season 98, event 1381"
+      }
+    },
+    {
+      "house": "Hendrie",
+      "peerage": "Viscount Hendrie of Brampton",
+      "rank": "Viscount",
+      "status": "active",
+      "primary_hex": "#338054",
+      "secondary_hex": "#5bbe86",
+      "notes": "founded season 49",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "35009",
+          "riding": "Brampton Centre",
+          "province": "ON",
+          "hex": "#338054"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "35013",
+          "riding": "Brampton South",
+          "province": "ON",
+          "hex": "#5bbe86"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "35065",
+          "riding": "Mississauga—Malton",
+          "province": "ON",
+          "hex": "#5bbe86"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "35031",
+          "riding": "Etobicoke North",
+          "province": "ON",
+          "hex": "#5bbe86"
+        },
+        {
+          "seat_order": 5,
+          "fed_id": "35029",
+          "riding": "Etobicoke Centre",
+          "province": "ON",
+          "hex": "#5bbe86"
+        },
+        {
+          "seat_order": 6,
+          "fed_id": "35061",
+          "riding": "Mississauga Centre",
+          "province": "ON",
+          "hex": "#5bbe86"
+        }
+      ],
+      "riding_count": 6,
+      "clock": {
+        "personal_year": 1891,
+        "basis": "reset at accession, season 76"
       }
     },
     {
@@ -304,18 +1048,46 @@
           "riding": "Ottawa South",
           "province": "ON",
           "hex": "#2c5268"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "35081",
+          "riding": "Ottawa—Vanier—Gloucester",
+          "province": "ON",
+          "hex": "#4b8aaf"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "35067",
+          "riding": "Nepean",
+          "province": "ON",
+          "hex": "#4b8aaf"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "24025",
+          "riding": "Gatineau",
+          "province": "QC",
+          "hex": "#4b8aaf"
+        },
+        {
+          "seat_order": 5,
+          "fed_id": "35079",
+          "riding": "Ottawa Centre",
+          "province": "ON",
+          "hex": "#4b8aaf"
         }
       ],
-      "riding_count": 1,
+      "riding_count": 5,
       "clock": {
-        "personal_year": 1878,
-        "basis": "reset at accession, season 30"
+        "personal_year": 1880,
+        "basis": "reset at disorderly accession, season 87"
       }
     },
     {
       "house": "Langelier",
-      "peerage": "Baron Langelier de Charlevoix",
-      "rank": "Baron",
+      "peerage": "Earl Langelier de Charlevoix",
+      "rank": "Earl",
       "status": "active",
       "primary_hex": "#326a29",
       "secondary_hex": "#55b446",
@@ -336,18 +1108,124 @@
           "riding": "Jonquière",
           "province": "QC",
           "hex": "#55b446"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "24021",
+          "riding": "Côte-Nord—Kawawachikamach—Nitassinan",
+          "province": "QC",
+          "hex": "#55b446"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "10005",
+          "riding": "Long Range Mountains",
+          "province": "NL",
+          "hex": "#55b446"
+        },
+        {
+          "seat_order": 5,
+          "fed_id": "10004",
+          "riding": "Labrador",
+          "province": "NL",
+          "hex": "#55b446"
+        },
+        {
+          "seat_order": 6,
+          "fed_id": "62001",
+          "riding": "Nunavut",
+          "province": "NU",
+          "hex": "#55b446"
         }
       ],
-      "riding_count": 2,
+      "riding_count": 6,
       "clock": {
-        "personal_year": 1891,
-        "basis": "synced at season 41, event 304"
+        "personal_year": 1917,
+        "basis": "synced at season 80, event 981"
+      }
+    },
+    {
+      "house": "Lucas",
+      "peerage": "Baron Lucas of Oakville",
+      "rank": "Baron",
+      "status": "active",
+      "primary_hex": "#712352",
+      "secondary_hex": "#bf3b8a",
+      "notes": "founded season 72",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "35076",
+          "riding": "Oakville West",
+          "province": "ON",
+          "hex": "#712352"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "35075",
+          "riding": "Oakville East",
+          "province": "ON",
+          "hex": "#bf3b8a"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "35017",
+          "riding": "Burlington",
+          "province": "ON",
+          "hex": "#bf3b8a"
+        }
+      ],
+      "riding_count": 3,
+      "clock": {
+        "personal_year": 1884,
+        "basis": "reset at accession, season 83"
+      }
+    },
+    {
+      "house": "Marchand",
+      "peerage": "Viscount Marchand de Lac-Saint-Louis",
+      "rank": "Viscount",
+      "status": "active",
+      "primary_hex": "#6d5131",
+      "secondary_hex": "#b28553",
+      "notes": "founded season 58",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "24034",
+          "riding": "Lac-Saint-Louis",
+          "province": "QC",
+          "hex": "#6d5131"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "24056",
+          "riding": "Pierrefonds—Dollard",
+          "province": "QC",
+          "hex": "#b28553"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "24038",
+          "riding": "Laval—Les Îles",
+          "province": "QC",
+          "hex": "#b28553"
+        }
+      ],
+      "riding_count": 3,
+      "clock": {
+        "personal_year": 1874,
+        "basis": "reset at accession, season 93"
       }
     },
     {
       "house": "McLellan",
-      "peerage": "Baron McLellan of Belfast",
-      "rank": "Baron",
+      "peerage": "Viscount McLellan of Belfast",
+      "rank": "Viscount",
       "status": "active",
       "primary_hex": "#852e71",
       "secondary_hex": "#c454aa",
@@ -389,18 +1267,46 @@
           "riding": "Cumberland—Colchester",
           "province": "NS",
           "hex": "#c454aa"
+        },
+        {
+          "seat_order": 6,
+          "fed_id": "11002",
+          "riding": "Charlottetown",
+          "province": "PE",
+          "hex": "#c454aa"
+        },
+        {
+          "seat_order": 7,
+          "fed_id": "11001",
+          "riding": "Cardigan",
+          "province": "PE",
+          "hex": "#c454aa"
+        },
+        {
+          "seat_order": 8,
+          "fed_id": "12005",
+          "riding": "Dartmouth—Cole Harbour",
+          "province": "NS",
+          "hex": "#c454aa"
+        },
+        {
+          "seat_order": 9,
+          "fed_id": "13002",
+          "riding": "Beauséjour",
+          "province": "NB",
+          "hex": "#c454aa"
         }
       ],
-      "riding_count": 5,
+      "riding_count": 9,
       "clock": {
-        "personal_year": 1895,
-        "basis": "synced at season 40, event 290"
+        "personal_year": 1868,
+        "basis": "reset at disorderly accession, season 99"
       }
     },
     {
       "house": "Meagher",
-      "peerage": "Viscount Meagher of Chatham",
-      "rank": "Viscount",
+      "peerage": "Earl Meagher of Chatham",
+      "rank": "Earl",
       "status": "active",
       "primary_hex": "#225d46",
       "secondary_hex": "#3ea87d",
@@ -414,12 +1320,86 @@
           "riding": "Kapuskasing—Timmins—Mushkegowuk",
           "province": "ON",
           "hex": "#225d46"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "35073",
+          "riding": "Nipissing—Timiskaming",
+          "province": "ON",
+          "hex": "#3ea87d"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "35104",
+          "riding": "Sudbury East—Manitoulin—Nickel Belt",
+          "province": "ON",
+          "hex": "#3ea87d"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "35084",
+          "riding": "Parry Sound—Muskoka",
+          "province": "ON",
+          "hex": "#3ea87d"
         }
       ],
-      "riding_count": 1,
+      "riding_count": 4,
       "clock": {
-        "personal_year": 1872,
-        "basis": "reset at accession, season 36"
+        "personal_year": 1874,
+        "basis": "reset at accession, season 93"
+      }
+    },
+    {
+      "house": "Meagher 2",
+      "peerage": "Baron Meagher of Windsor",
+      "rank": "Baron",
+      "status": "active",
+      "primary_hex": "#64342b",
+      "secondary_hex": "#ab5a49",
+      "notes": "founded season 57",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "35118",
+          "riding": "Windsor—Tecumseh—Lakeshore",
+          "province": "ON",
+          "hex": "#64342b"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "35119",
+          "riding": "Windsor West",
+          "province": "ON",
+          "hex": "#ab5a49"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "35028",
+          "riding": "Essex",
+          "province": "ON",
+          "hex": "#ab5a49"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "35090",
+          "riding": "Sarnia—Lambton—Bkejwanong",
+          "province": "ON",
+          "hex": "#ab5a49"
+        },
+        {
+          "seat_order": 5,
+          "fed_id": "35021",
+          "riding": "Chatham-Kent—Leamington",
+          "province": "ON",
+          "hex": "#ab5a49"
+        }
+      ],
+      "riding_count": 5,
+      "clock": {
+        "personal_year": 1869,
+        "basis": "reset at accession, season 98"
       }
     },
     {
@@ -460,18 +1440,32 @@
           "riding": "Montcalm",
           "province": "QC",
           "hex": "#9e884c"
+        },
+        {
+          "seat_order": 5,
+          "fed_id": "24064",
+          "riding": "Rivière-du-Nord",
+          "province": "QC",
+          "hex": "#9e884c"
+        },
+        {
+          "seat_order": 6,
+          "fed_id": "24074",
+          "riding": "Thérèse-De Blainville",
+          "province": "QC",
+          "hex": "#9e884c"
         }
       ],
-      "riding_count": 4,
+      "riding_count": 6,
       "clock": {
-        "personal_year": 1883,
-        "basis": "synced at season 40, event 289"
+        "personal_year": 1899,
+        "basis": "synced at season 89, event 1178"
       }
     },
     {
       "house": "Patterson",
-      "peerage": "Baron Patterson of Kennebecasis",
-      "rank": "Baron",
+      "peerage": "Earl Patterson of Kennebecasis",
+      "rank": "Earl",
       "status": "active",
       "primary_hex": "#5a2b3e",
       "secondary_hex": "#9e4c6d",
@@ -485,18 +1479,159 @@
           "riding": "Acadie—Bathurst",
           "province": "NB",
           "hex": "#5a2b3e"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "24024",
+          "riding": "Gaspésie—Les Îles-de-la-Madeleine—Listuguj",
+          "province": "QC",
+          "hex": "#9e4c6d"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "13005",
+          "riding": "Madawaska—Restigouche",
+          "province": "NB",
+          "hex": "#9e4c6d"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "13010",
+          "riding": "Tobique—Mactaquac",
+          "province": "NB",
+          "hex": "#9e4c6d"
+        },
+        {
+          "seat_order": 5,
+          "fed_id": "13009",
+          "riding": "Saint John—St. Croix",
+          "province": "NB",
+          "hex": "#9e4c6d"
         }
       ],
-      "riding_count": 1,
+      "riding_count": 5,
       "clock": {
-        "personal_year": 1868,
-        "basis": "founded season 40"
+        "personal_year": 1917,
+        "basis": "synced at season 80, event 981"
+      }
+    },
+    {
+      "house": "Pegahmagabow",
+      "peerage": "Baron Pegahmagabow of Wawa",
+      "rank": "Baron",
+      "status": "active",
+      "primary_hex": "#24296a",
+      "secondary_hex": "#3e46b6",
+      "notes": "founded season 54",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "35091",
+          "riding": "Sault Ste. Marie—Algoma",
+          "province": "ON",
+          "hex": "#24296a"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "35108",
+          "riding": "Thunder Bay—Superior North",
+          "province": "ON",
+          "hex": "#3e46b6"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "35107",
+          "riding": "Thunder Bay—Rainy River",
+          "province": "ON",
+          "hex": "#3e46b6"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "35045",
+          "riding": "Kenora—Kiiwetinoong",
+          "province": "ON",
+          "hex": "#3e46b6"
+        }
+      ],
+      "riding_count": 4,
+      "clock": {
+        "personal_year": 1897,
+        "basis": "synced at season 92, event 1254"
+      }
+    },
+    {
+      "house": "Proulx",
+      "peerage": "Baron Proulx de Cumberland",
+      "rank": "Baron",
+      "status": "active",
+      "primary_hex": "#538a38",
+      "secondary_hex": "#85c167",
+      "notes": "founded season 64",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "35088",
+          "riding": "Prescott—Russell—Cumberland",
+          "province": "ON",
+          "hex": "#538a38"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "24007",
+          "riding": "Beauharnois—Salaberry—Soulanges—Huntingdon",
+          "province": "QC",
+          "hex": "#85c167"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "35102",
+          "riding": "Stormont—Dundas—Glengarry",
+          "province": "ON",
+          "hex": "#85c167"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "24005",
+          "riding": "Argenteuil—La Petite-Nation",
+          "province": "QC",
+          "hex": "#85c167"
+        },
+        {
+          "seat_order": 5,
+          "fed_id": "35052",
+          "riding": "Leeds—Grenville—Thousand Islands—Rideau Lakes",
+          "province": "ON",
+          "hex": "#85c167"
+        },
+        {
+          "seat_order": 6,
+          "fed_id": "35077",
+          "riding": "Orléans",
+          "province": "ON",
+          "hex": "#85c167"
+        },
+        {
+          "seat_order": 7,
+          "fed_id": "24047",
+          "riding": "Mirabel",
+          "province": "QC",
+          "hex": "#85c167"
+        }
+      ],
+      "riding_count": 7,
+      "clock": {
+        "personal_year": 1903,
+        "basis": "synced at season 75, event 872"
       }
     },
     {
       "house": "Rochon",
-      "peerage": "Baron Rochon de Rosedale",
-      "rank": "Baron",
+      "peerage": "Viscount Rochon de Rosedale",
+      "rank": "Viscount",
       "status": "active",
       "primary_hex": "#73257e",
       "secondary_hex": "#b641c8",
@@ -517,12 +1652,167 @@
           "riding": "Beaches—East York",
           "province": "ON",
           "hex": "#b641c8"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "35110",
+          "riding": "Toronto—Danforth",
+          "province": "ON",
+          "hex": "#b641c8"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "35093",
+          "riding": "Scarborough Centre—Don Valley East",
+          "province": "ON",
+          "hex": "#b641c8"
+        },
+        {
+          "seat_order": 5,
+          "fed_id": "35026",
+          "riding": "Eglinton—Lawrence",
+          "province": "ON",
+          "hex": "#b641c8"
+        },
+        {
+          "seat_order": 6,
+          "fed_id": "35120",
+          "riding": "York Centre",
+          "province": "ON",
+          "hex": "#b641c8"
         }
       ],
-      "riding_count": 2,
+      "riding_count": 6,
       "clock": {
-        "personal_year": 1872,
-        "basis": "founded season 36"
+        "personal_year": 1882,
+        "basis": "reset at accession, season 85"
+      }
+    },
+    {
+      "house": "Rouleau",
+      "peerage": "Baron Rouleau de LaSalle",
+      "rank": "Baron",
+      "status": "active",
+      "primary_hex": "#746c25",
+      "secondary_hex": "#c2b53d",
+      "notes": "founded season 47",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "24022",
+          "riding": "Dorval—Lachine—LaSalle",
+          "province": "QC",
+          "hex": "#746c25"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "24032",
+          "riding": "La Prairie—Atateken",
+          "province": "QC",
+          "hex": "#c2b53d"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "24017",
+          "riding": "Châteauguay—Les Jardins-de-Napierville",
+          "province": "QC",
+          "hex": "#c2b53d"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "24067",
+          "riding": "Saint-Jean",
+          "province": "QC",
+          "hex": "#c2b53d"
+        },
+        {
+          "seat_order": 5,
+          "fed_id": "24011",
+          "riding": "Beloeil—Chambly",
+          "province": "QC",
+          "hex": "#c2b53d"
+        },
+        {
+          "seat_order": 6,
+          "fed_id": "24076",
+          "riding": "Vaudreuil",
+          "province": "QC",
+          "hex": "#c2b53d"
+        },
+        {
+          "seat_order": 7,
+          "fed_id": "24068",
+          "riding": "Saint-Laurent",
+          "province": "QC",
+          "hex": "#c2b53d"
+        },
+        {
+          "seat_order": 8,
+          "fed_id": "24003",
+          "riding": "Ahuntsic-Cartierville",
+          "province": "QC",
+          "hex": "#c2b53d"
+        },
+        {
+          "seat_order": 9,
+          "fed_id": "24014",
+          "riding": "Brome—Missisquoi",
+          "province": "QC",
+          "hex": "#c2b53d"
+        }
+      ],
+      "riding_count": 9,
+      "clock": {
+        "personal_year": 1911,
+        "basis": "synced at season 73, event 829"
+      }
+    },
+    {
+      "house": "Skye",
+      "peerage": "Baron Skye of Belleville",
+      "rank": "Baron",
+      "status": "active",
+      "primary_hex": "#36557c",
+      "secondary_hex": "#5f86b9",
+      "notes": "founded season 62",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "35006",
+          "riding": "Bay of Quinte",
+          "province": "ON",
+          "hex": "#36557c"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "35040",
+          "riding": "Hastings—Lennox and Addington—Tyendinaga",
+          "province": "ON",
+          "hex": "#5f86b9"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "35086",
+          "riding": "Peterborough",
+          "province": "ON",
+          "hex": "#5f86b9"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "35074",
+          "riding": "Northumberland—Clarke",
+          "province": "ON",
+          "hex": "#5f86b9"
+        }
+      ],
+      "riding_count": 4,
+      "clock": {
+        "personal_year": 1874,
+        "basis": "reset at accession, season 93"
       }
     },
     {
@@ -570,12 +1860,86 @@
           "riding": "Souris—Moose Mountain",
           "province": "SK",
           "hex": "#82bd47"
+        },
+        {
+          "seat_order": 6,
+          "fed_id": "47004",
+          "riding": "Moose Jaw—Lake Centre—Lanigan",
+          "province": "SK",
+          "hex": "#82bd47"
+        },
+        {
+          "seat_order": 7,
+          "fed_id": "46005",
+          "riding": "Portage—Lisgar",
+          "province": "MB",
+          "hex": "#82bd47"
+        },
+        {
+          "seat_order": 8,
+          "fed_id": "47005",
+          "riding": "Prince Albert",
+          "province": "SK",
+          "hex": "#82bd47"
+        }
+      ],
+      "riding_count": 8,
+      "clock": {
+        "personal_year": 1889,
+        "basis": "reset at disorderly accession, season 78"
+      }
+    },
+    {
+      "house": "Turgeon",
+      "peerage": "Baron Turgeon de St.-Jerome",
+      "rank": "Baron",
+      "status": "active",
+      "primary_hex": "#798a38",
+      "secondary_hex": "#afc167",
+      "notes": "founded season 77",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "24073",
+          "riding": "Terrebonne",
+          "province": "QC",
+          "hex": "#798a38"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "24004",
+          "riding": "Alfred-Pellan",
+          "province": "QC",
+          "hex": "#afc167"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "24045",
+          "riding": "Marc-Aurèle-Fortin",
+          "province": "QC",
+          "hex": "#afc167"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "24078",
+          "riding": "Vimy",
+          "province": "QC",
+          "hex": "#afc167"
+        },
+        {
+          "seat_order": 5,
+          "fed_id": "24063",
+          "riding": "Rivière-des-Mille-Îles",
+          "province": "QC",
+          "hex": "#afc167"
         }
       ],
       "riding_count": 5,
       "clock": {
-        "personal_year": 1879,
-        "basis": "reset at accession, season 29"
+        "personal_year": 1872,
+        "basis": "reset at accession, season 95"
       }
     },
     {
@@ -619,37 +1983,171 @@
         },
         {
           "seat_order": 5,
-          "fed_id": "35070",
-          "riding": "Niagara Falls—Niagara-on-the-Lake",
-          "province": "ON",
-          "hex": "#54c0c0"
-        },
-        {
-          "seat_order": 6,
           "fed_id": "35032",
           "riding": "Flamborough—Glanbrook—Brant North",
           "province": "ON",
           "hex": "#54c0c0"
         },
         {
-          "seat_order": 7,
+          "seat_order": 6,
           "fed_id": "35083",
           "riding": "Oxford",
           "province": "ON",
           "hex": "#54c0c0"
         },
         {
-          "seat_order": 8,
-          "fed_id": "35085",
-          "riding": "Perth—Wellington",
+          "seat_order": 7,
+          "fed_id": "35115",
+          "riding": "Wellington—Halton Hills North",
           "province": "ON",
           "hex": "#54c0c0"
         }
       ],
+      "riding_count": 7,
+      "clock": {
+        "personal_year": 1894,
+        "basis": "synced at season 81, event 999"
+      }
+    },
+    {
+      "house": "Wallace 2",
+      "peerage": "Baron Wallace of Hespeler",
+      "rank": "Baron",
+      "status": "active",
+      "primary_hex": "#949438",
+      "secondary_hex": "#c7c76b",
+      "notes": "cadet of Wallace, season 76",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "35050",
+          "riding": "Kitchener South—Hespeler",
+          "province": "ON",
+          "hex": "#949438"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "35049",
+          "riding": "Kitchener—Conestoga",
+          "province": "ON",
+          "hex": "#c7c76b"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "35085",
+          "riding": "Perth—Wellington",
+          "province": "ON",
+          "hex": "#c7c76b"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "35036",
+          "riding": "Hamilton Centre",
+          "province": "ON",
+          "hex": "#c7c76b"
+        },
+        {
+          "seat_order": 5,
+          "fed_id": "35070",
+          "riding": "Niagara Falls—Niagara-on-the-Lake",
+          "province": "ON",
+          "hex": "#c7c76b"
+        },
+        {
+          "seat_order": 6,
+          "fed_id": "35059",
+          "riding": "Middlesex—London",
+          "province": "ON",
+          "hex": "#c7c76b"
+        },
+        {
+          "seat_order": 7,
+          "fed_id": "35019",
+          "riding": "Cambridge",
+          "province": "ON",
+          "hex": "#c7c76b"
+        },
+        {
+          "seat_order": 8,
+          "fed_id": "35016",
+          "riding": "Bruce—Grey—Owen Sound",
+          "province": "ON",
+          "hex": "#c7c76b"
+        }
+      ],
       "riding_count": 8,
       "clock": {
-        "personal_year": 1904,
-        "basis": "synced at season 11, event 30"
+        "personal_year": 1891,
+        "basis": "cadet founding by partition, season 76"
+      }
+    },
+    {
+      "house": "Worts",
+      "peerage": "Viscount Worts of Milton",
+      "rank": "Viscount",
+      "status": "active",
+      "primary_hex": "#3a7e3c",
+      "secondary_hex": "#65b868",
+      "notes": "founded season 65",
+      "holder": null,
+      "blocks": [],
+      "holdings": [
+        {
+          "seat_order": 1,
+          "fed_id": "35060",
+          "riding": "Milton East—Halton Hills South",
+          "province": "ON",
+          "hex": "#3a7e3c"
+        },
+        {
+          "seat_order": 2,
+          "fed_id": "35012",
+          "riding": "Brampton North—Caledon",
+          "province": "ON",
+          "hex": "#65b868"
+        },
+        {
+          "seat_order": 3,
+          "fed_id": "35010",
+          "riding": "Brampton—Chinguacousy Park",
+          "province": "ON",
+          "hex": "#65b868"
+        },
+        {
+          "seat_order": 4,
+          "fed_id": "35018",
+          "riding": "Burlington North—Milton West",
+          "province": "ON",
+          "hex": "#65b868"
+        },
+        {
+          "seat_order": 5,
+          "fed_id": "35011",
+          "riding": "Brampton East",
+          "province": "ON",
+          "hex": "#65b868"
+        },
+        {
+          "seat_order": 6,
+          "fed_id": "35025",
+          "riding": "Dufferin—Caledon",
+          "province": "ON",
+          "hex": "#65b868"
+        },
+        {
+          "seat_order": 7,
+          "fed_id": "35113",
+          "riding": "Vaughan—Woodbridge",
+          "province": "ON",
+          "hex": "#65b868"
+        }
+      ],
+      "riding_count": 7,
+      "clock": {
+        "personal_year": 1878,
+        "basis": "reset at accession, season 89"
       }
     }
   ],
@@ -975,6 +2473,846 @@
           "tag": "Conservative",
           "cumulative_after": "+15",
           "source": "turn"
+        },
+        {
+          "seq": 41,
+          "event": "Laurier Elected",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+14",
+          "source": "turn"
+        },
+        {
+          "seq": 42,
+          "event": "Chinese Immigration Act",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+15",
+          "source": "turn"
+        },
+        {
+          "seq": 43,
+          "event": "Diamond Jubilee",
+          "magnitude": "Minor",
+          "tag": "Conservative",
+          "cumulative_after": "+16",
+          "source": "turn"
+        },
+        {
+          "seq": 44,
+          "event": "Long Depression Reaches Canada",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+17",
+          "source": "turn"
+        },
+        {
+          "seq": 45,
+          "event": "South African War",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+18",
+          "source": "turn"
+        },
+        {
+          "seq": 46,
+          "event": "Indian Act",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+17",
+          "source": "turn"
+        },
+        {
+          "seq": 47,
+          "event": "Jesuits' Estates Act Controversy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+18",
+          "source": "turn"
+        },
+        {
+          "seq": 48,
+          "event": "Laurier Elected",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+19",
+          "source": "turn"
+        },
+        {
+          "seq": 49,
+          "event": "Laurier Elected",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+20",
+          "source": "turn"
+        },
+        {
+          "seq": 50,
+          "event": "Chinese Immigration Act",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+21",
+          "source": "turn"
+        },
+        {
+          "seq": 51,
+          "event": "Diamond Jubilee",
+          "magnitude": "Minor",
+          "tag": "Conservative",
+          "cumulative_after": "+22",
+          "source": "turn"
+        },
+        {
+          "seq": 52,
+          "event": "National Policy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+21",
+          "source": "turn"
+        },
+        {
+          "seq": 53,
+          "event": "Long Depression Reaches Canada",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+22",
+          "source": "turn"
+        },
+        {
+          "seq": 54,
+          "event": "Pacific Scandal",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+21",
+          "source": "turn"
+        },
+        {
+          "seq": 55,
+          "event": "Manitoba Schools Question",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+22",
+          "source": "turn"
+        },
+        {
+          "seq": 56,
+          "event": "Indian Act",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+23",
+          "source": "turn"
+        },
+        {
+          "seq": 57,
+          "event": "Pacific Scandal",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+22",
+          "source": "turn"
+        },
+        {
+          "seq": 58,
+          "event": "Long Depression Reaches Canada",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+21",
+          "source": "turn"
+        },
+        {
+          "seq": 59,
+          "event": "Laurier Elected",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+22",
+          "source": "turn"
+        },
+        {
+          "seq": 60,
+          "event": "Montréal Smallpox Epidemic",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+21",
+          "source": "turn"
+        },
+        {
+          "seq": 61,
+          "event": "Indian Act",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+20",
+          "source": "turn"
+        },
+        {
+          "seq": 62,
+          "event": "Pacific Scandal",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+21",
+          "source": "turn"
+        },
+        {
+          "seq": 63,
+          "event": "South African War",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+22",
+          "source": "turn"
+        },
+        {
+          "seq": 64,
+          "event": "South African War",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+21",
+          "source": "turn"
+        },
+        {
+          "seq": 65,
+          "event": "National Policy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+22",
+          "source": "turn"
+        },
+        {
+          "seq": 66,
+          "event": "Laurier Elected",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+21",
+          "source": "turn"
+        },
+        {
+          "seq": 67,
+          "event": "National Policy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+22",
+          "source": "turn"
+        },
+        {
+          "seq": 68,
+          "event": "Indian Act",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+23",
+          "source": "turn"
+        },
+        {
+          "seq": 69,
+          "event": "Diamond Jubilee",
+          "magnitude": "Minor",
+          "tag": "Conservative",
+          "cumulative_after": "+24",
+          "source": "turn"
+        },
+        {
+          "seq": 70,
+          "event": "Manitoba Schools Question",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+25",
+          "source": "turn"
+        },
+        {
+          "seq": 71,
+          "event": "Long Depression Reaches Canada",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+26",
+          "source": "turn"
+        },
+        {
+          "seq": 72,
+          "event": "Pacific Scandal",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+27",
+          "source": "turn"
+        },
+        {
+          "seq": 73,
+          "event": "Pacific Scandal",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+26",
+          "source": "turn"
+        },
+        {
+          "seq": 74,
+          "event": "National Policy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+27",
+          "source": "turn"
+        },
+        {
+          "seq": 75,
+          "event": "Indian Act",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+26",
+          "source": "turn"
+        },
+        {
+          "seq": 76,
+          "event": "Pacific Scandal",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+27",
+          "source": "turn"
+        },
+        {
+          "seq": 77,
+          "event": "National Policy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+26",
+          "source": "turn"
+        },
+        {
+          "seq": 78,
+          "event": "Indian Act",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+27",
+          "source": "turn"
+        },
+        {
+          "seq": 79,
+          "event": "Montréal Smallpox Epidemic",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+26",
+          "source": "turn"
+        },
+        {
+          "seq": 80,
+          "event": "Diamond Jubilee",
+          "magnitude": "Minor",
+          "tag": "Conservative",
+          "cumulative_after": "+27",
+          "source": "turn"
+        },
+        {
+          "seq": 81,
+          "event": "Indian Act",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+26",
+          "source": "turn"
+        },
+        {
+          "seq": 82,
+          "event": "South African War",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+25",
+          "source": "turn"
+        },
+        {
+          "seq": 83,
+          "event": "Chinese Immigration Act",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+26",
+          "source": "turn"
+        },
+        {
+          "seq": 84,
+          "event": "National Policy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+27",
+          "source": "turn"
+        },
+        {
+          "seq": 85,
+          "event": "Pacific Scandal",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+26",
+          "source": "turn"
+        },
+        {
+          "seq": 86,
+          "event": "Laurier Elected",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+25",
+          "source": "turn"
+        },
+        {
+          "seq": 87,
+          "event": "Pacific Scandal",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+26",
+          "source": "turn"
+        },
+        {
+          "seq": 88,
+          "event": "Diamond Jubilee",
+          "magnitude": "Minor",
+          "tag": "Conservative",
+          "cumulative_after": "+27",
+          "source": "turn"
+        },
+        {
+          "seq": 89,
+          "event": "Jesuits' Estates Act Controversy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+26",
+          "source": "turn"
+        },
+        {
+          "seq": 90,
+          "event": "Indian Act",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+27",
+          "source": "turn"
+        },
+        {
+          "seq": 91,
+          "event": "Manitoba Schools Question",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+28",
+          "source": "turn"
+        },
+        {
+          "seq": 92,
+          "event": "Long Depression Reaches Canada",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+29",
+          "source": "turn"
+        },
+        {
+          "seq": 93,
+          "event": "Manitoba Schools Question",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+30",
+          "source": "turn"
+        },
+        {
+          "seq": 94,
+          "event": "Manitoba Schools Question",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+31",
+          "source": "turn"
+        },
+        {
+          "seq": 95,
+          "event": "National Policy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+30",
+          "source": "turn"
+        },
+        {
+          "seq": 96,
+          "event": "Chinese Immigration Act",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+31",
+          "source": "turn"
+        },
+        {
+          "seq": 97,
+          "event": "Indian Act",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+32",
+          "source": "turn"
+        },
+        {
+          "seq": 98,
+          "event": "Pacific Scandal",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+31",
+          "source": "turn"
+        },
+        {
+          "seq": 99,
+          "event": "National Policy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+30",
+          "source": "turn"
+        },
+        {
+          "seq": 100,
+          "event": "Pacific Scandal",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+29",
+          "source": "turn"
+        },
+        {
+          "seq": 101,
+          "event": "Indian Act",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+30",
+          "source": "turn"
+        },
+        {
+          "seq": 102,
+          "event": "Long Depression Reaches Canada",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+31",
+          "source": "turn"
+        },
+        {
+          "seq": 103,
+          "event": "Pacific Scandal",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+32",
+          "source": "turn"
+        },
+        {
+          "seq": 104,
+          "event": "Laurier Elected",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+33",
+          "source": "turn"
+        },
+        {
+          "seq": 105,
+          "event": "Manitoba Schools Question",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+34",
+          "source": "turn"
+        },
+        {
+          "seq": 106,
+          "event": "Montréal Smallpox Epidemic",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+33",
+          "source": "turn"
+        },
+        {
+          "seq": 107,
+          "event": "Indian Act",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+32",
+          "source": "turn"
+        },
+        {
+          "seq": 108,
+          "event": "South African War",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+33",
+          "source": "turn"
+        },
+        {
+          "seq": 109,
+          "event": "Montréal Smallpox Epidemic",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+32",
+          "source": "turn"
+        },
+        {
+          "seq": 110,
+          "event": "Manitoba Schools Question",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+33",
+          "source": "turn"
+        },
+        {
+          "seq": 111,
+          "event": "Long Depression Reaches Canada",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+34",
+          "source": "turn"
+        },
+        {
+          "seq": 112,
+          "event": "South African War",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+35",
+          "source": "turn"
+        },
+        {
+          "seq": 113,
+          "event": "Chinese Immigration Act",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+36",
+          "source": "turn"
+        },
+        {
+          "seq": 114,
+          "event": "National Policy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+37",
+          "source": "turn"
+        },
+        {
+          "seq": 115,
+          "event": "Pacific Scandal",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+36",
+          "source": "turn"
+        },
+        {
+          "seq": 116,
+          "event": "Jesuits' Estates Act Controversy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+37",
+          "source": "turn"
+        },
+        {
+          "seq": 117,
+          "event": "National Policy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+38",
+          "source": "turn"
+        },
+        {
+          "seq": 118,
+          "event": "Jesuits' Estates Act Controversy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+39",
+          "source": "turn"
+        },
+        {
+          "seq": 119,
+          "event": "Jesuits' Estates Act Controversy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+40",
+          "source": "turn"
+        },
+        {
+          "seq": 120,
+          "event": "Jesuits' Estates Act Controversy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+41",
+          "source": "turn"
+        },
+        {
+          "seq": 121,
+          "event": "Laurier Elected",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+42",
+          "source": "turn"
+        },
+        {
+          "seq": 122,
+          "event": "Jesuits' Estates Act Controversy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+43",
+          "source": "turn"
+        },
+        {
+          "seq": 123,
+          "event": "Indian Act",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+42",
+          "source": "turn"
+        },
+        {
+          "seq": 124,
+          "event": "Jesuits' Estates Act Controversy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+43",
+          "source": "turn"
+        },
+        {
+          "seq": 125,
+          "event": "Manitoba Schools Question",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+44",
+          "source": "turn"
+        },
+        {
+          "seq": 126,
+          "event": "Laurier Elected",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+43",
+          "source": "turn"
+        },
+        {
+          "seq": 127,
+          "event": "Manitoba Schools Question",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+44",
+          "source": "turn"
+        },
+        {
+          "seq": 128,
+          "event": "South African War",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+45",
+          "source": "turn"
+        },
+        {
+          "seq": 129,
+          "event": "Chinese Immigration Act",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+46",
+          "source": "turn"
+        },
+        {
+          "seq": 130,
+          "event": "Jesuits' Estates Act Controversy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+47",
+          "source": "turn"
+        },
+        {
+          "seq": 131,
+          "event": "South African War",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+48",
+          "source": "turn"
+        },
+        {
+          "seq": 132,
+          "event": "Laurier Elected",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+49",
+          "source": "turn"
+        },
+        {
+          "seq": 133,
+          "event": "Jesuits' Estates Act Controversy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+48",
+          "source": "turn"
+        },
+        {
+          "seq": 134,
+          "event": "Laurier Elected",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+49",
+          "source": "turn"
+        },
+        {
+          "seq": 135,
+          "event": "Jesuits' Estates Act Controversy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+50",
+          "source": "turn"
+        },
+        {
+          "seq": 136,
+          "event": "Manitoba Schools Question",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+49",
+          "source": "turn"
+        },
+        {
+          "seq": 137,
+          "event": "North-West Resistance",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+50",
+          "source": "turn"
+        },
+        {
+          "seq": 138,
+          "event": "Jesuits' Estates Act Controversy",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+51",
+          "source": "turn"
+        },
+        {
+          "seq": 139,
+          "event": "South African War",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+52",
+          "source": "turn"
+        },
+        {
+          "seq": 140,
+          "event": "South African War",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+51",
+          "source": "turn"
+        },
+        {
+          "seq": 141,
+          "event": "Manitoba Schools Question",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+52",
+          "source": "turn"
+        },
+        {
+          "seq": 142,
+          "event": "Diamond Jubilee",
+          "magnitude": "Minor",
+          "tag": "Conservative",
+          "cumulative_after": "+53",
+          "source": "turn"
+        },
+        {
+          "seq": 143,
+          "event": "Manitoba Schools Question",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+54",
+          "source": "turn"
+        },
+        {
+          "seq": 144,
+          "event": "South African War",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+55",
+          "source": "turn"
+        },
+        {
+          "seq": 145,
+          "event": "Laurier Elected",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+54",
+          "source": "turn"
         }
       ],
       "dominion": [
@@ -985,6 +3323,238 @@
           "tag": null,
           "cumulative_after": "0",
           "source": "engine"
+        },
+        {
+          "seq": 2,
+          "event": "Alberta and Saskatchewan Created",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+1",
+          "source": "turn"
+        },
+        {
+          "seq": 3,
+          "event": "Alberta and Saskatchewan Created",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+2",
+          "source": "turn"
+        },
+        {
+          "seq": 4,
+          "event": "Vancouver Anti-Asian Riots",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+1",
+          "source": "turn"
+        },
+        {
+          "seq": 5,
+          "event": "Alberta and Saskatchewan Created",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "0",
+          "source": "turn"
+        },
+        {
+          "seq": 6,
+          "event": "Alberta and Saskatchewan Created",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "-1",
+          "source": "turn"
+        },
+        {
+          "seq": 7,
+          "event": "Komagata Maru",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "-2",
+          "source": "turn"
+        },
+        {
+          "seq": 8,
+          "event": "Vancouver Anti-Asian Riots",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "-1",
+          "source": "turn"
+        },
+        {
+          "seq": 9,
+          "event": "Reciprocity Election",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "0",
+          "source": "turn"
+        },
+        {
+          "seq": 10,
+          "event": "Progressives and the First Woman MP",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "-1",
+          "source": "turn"
+        },
+        {
+          "seq": 11,
+          "event": "Chinese Exclusion Act",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "0",
+          "source": "turn"
+        },
+        {
+          "seq": 12,
+          "event": "United Church Formed",
+          "magnitude": "Minor",
+          "tag": "Progressive",
+          "cumulative_after": "+1",
+          "source": "turn"
+        },
+        {
+          "seq": 13,
+          "event": "The Persons Case",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "0",
+          "source": "turn"
+        },
+        {
+          "seq": 14,
+          "event": "Reciprocity Election",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "-1",
+          "source": "turn"
+        },
+        {
+          "seq": 15,
+          "event": "Reciprocity Election",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "0",
+          "source": "turn"
+        },
+        {
+          "seq": 16,
+          "event": "Regulation 17",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+1",
+          "source": "turn"
+        },
+        {
+          "seq": 17,
+          "event": "Alberta and Saskatchewan Created",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+2",
+          "source": "turn"
+        },
+        {
+          "seq": 18,
+          "event": "Alberta and Saskatchewan Created",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+3",
+          "source": "turn"
+        },
+        {
+          "seq": 19,
+          "event": "Vancouver Anti-Asian Riots",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+4",
+          "source": "turn"
+        },
+        {
+          "seq": 20,
+          "event": "Vancouver Anti-Asian Riots",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+3",
+          "source": "turn"
+        },
+        {
+          "seq": 21,
+          "event": "Prairie Women's Suffrage",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+2",
+          "source": "turn"
+        },
+        {
+          "seq": 22,
+          "event": "Reciprocity Election",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+3",
+          "source": "turn"
+        },
+        {
+          "seq": 23,
+          "event": "Reciprocity Election",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+4",
+          "source": "turn"
+        },
+        {
+          "seq": 24,
+          "event": "Alberta and Saskatchewan Created",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+5",
+          "source": "turn"
+        },
+        {
+          "seq": 25,
+          "event": "Regulation 17",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+6",
+          "source": "turn"
+        },
+        {
+          "seq": 26,
+          "event": "Vancouver Anti-Asian Riots",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+7",
+          "source": "turn"
+        },
+        {
+          "seq": 27,
+          "event": "Komagata Maru",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+6",
+          "source": "turn"
+        },
+        {
+          "seq": 28,
+          "event": "Vancouver Anti-Asian Riots",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+5",
+          "source": "turn"
+        },
+        {
+          "seq": 29,
+          "event": "Vancouver Anti-Asian Riots",
+          "magnitude": "Significant",
+          "tag": "Conservative",
+          "cumulative_after": "+6",
+          "source": "turn"
+        },
+        {
+          "seq": 30,
+          "event": "Prairie Women's Suffrage",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "+7",
+          "source": "turn"
         }
       ],
       "late": [
@@ -995,26 +3565,300 @@
           "tag": null,
           "cumulative_after": "0",
           "source": "engine"
+        },
+        {
+          "seq": 2,
+          "event": "The Long Contraction",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+1",
+          "source": "turn"
+        },
+        {
+          "seq": 3,
+          "event": "The Long Contraction",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+2",
+          "source": "turn"
+        },
+        {
+          "seq": 4,
+          "event": "Founding of the CCF",
+          "magnitude": "Major",
+          "tag": "Progressive",
+          "cumulative_after": "+1",
+          "source": "turn"
+        },
+        {
+          "seq": 5,
+          "event": "Founding of the CCF",
+          "magnitude": "Major",
+          "tag": "Progressive",
+          "cumulative_after": "+2",
+          "source": "turn"
+        },
+        {
+          "seq": 6,
+          "event": "Japanese-Canadian Internment",
+          "magnitude": "Major",
+          "tag": "Conservative",
+          "cumulative_after": "+1",
+          "source": "turn"
+        },
+        {
+          "seq": 7,
+          "event": "CCF Government in Saskatchewan",
+          "magnitude": "Significant",
+          "tag": "Progressive",
+          "cumulative_after": "0",
+          "source": "turn"
         }
       ]
     },
     "current": {
-      "confederation": "+15",
-      "dominion": "0",
+      "confederation": "+54",
+      "dominion": "+7",
       "late": "0"
     }
   },
   "events": [
     {
-      "id": 306,
+      "id": 1432,
       "turn_id": null,
       "kind": "founding",
       "era_cohort": "confederation",
-      "title": "Viscount Cameron of Cornwall founded",
-      "narrative": "Season 41 · Viscount Cameron of Cornwall is created, seated at Richmond Hill South.",
-      "mechanical_delta": "{\"season\": 41, \"stats\": {\"capital\": 44, \"influence\": 26, \"cohesion\": 63, \"ambition\": 6}, \"community\": \"Scots Presbyterian\", \"tag\": \"Mixed\"}",
+      "title": "Earl Beauvais of Charles-LeMoyne founded",
+      "narrative": "Season 100 · Earl Beauvais of Charles-LeMoyne is created, seated at Longueuil—Charles-LeMoyne.",
+      "mechanical_delta": "{\"season\": 100, \"stats\": {\"capital\": 47, \"influence\": 48, \"cohesion\": 68, \"ambition\": 8}, \"community\": \"Huron-Wendat and Kanien'keh\\u00e1:ka\", \"tag\": \"Progressive\"}",
       "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Beauvais",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1431,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "confederation",
+      "title": "Canadian Pacific Railway Chartered",
+      "narrative": "Season 100 · Baron Gillies of Aurora meets Canadian Pacific Railway Chartered and exploits.",
+      "mechanical_delta": "{\"season\": 100, \"response\": \"Exploit\", \"roll\": 5, \"personal_year\": 1881, \"magnitude\": \"Significant\", \"tag\": \"Mixed\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Gillies 2",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1430,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "confederation",
+      "title": "Death of Sir John A. Macdonald",
+      "narrative": "Season 100 · Baron Wallace of Hespeler meets Death of Sir John A. Macdonald and exploits.",
+      "mechanical_delta": "{\"season\": 100, \"response\": \"Exploit\", \"roll\": 4, \"personal_year\": 1891, \"magnitude\": \"Minor\", \"tag\": \"Mixed\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Wallace 2",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1429,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "confederation",
+      "title": "Laurier Elected",
+      "narrative": "Season 100 · Baron Fairbanks of Edmonton Griesbach meets Laurier Elected and resists.",
+      "mechanical_delta": "{\"season\": 100, \"response\": \"Resist\", \"roll\": 2, \"personal_year\": 1896, \"magnitude\": \"Significant\", \"tag\": \"Progressive\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Fairbanks",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1428,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "confederation",
+      "title": "Klondike Gold Rush",
+      "narrative": "Season 100 · Baron Gillies of Woburn meets Klondike Gold Rush and exploits.",
+      "mechanical_delta": "{\"season\": 100, \"response\": \"Exploit\", \"roll\": 4, \"personal_year\": 1897, \"magnitude\": \"Significant\", \"tag\": \"Mixed\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Gillies",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1427,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "confederation",
+      "title": "Death of Sir John A. Macdonald",
+      "narrative": "Season 100 · Viscount Colby of Trois-Rivières meets Death of Sir John A. Macdonald and resists.",
+      "mechanical_delta": "{\"season\": 100, \"response\": \"Resist\", \"roll\": 3, \"personal_year\": 1891, \"magnitude\": \"Minor\", \"tag\": \"Mixed\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Colby",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1426,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "dominion",
+      "title": "Alaska Boundary Award",
+      "narrative": "Season 100 · Baron Proulx de Cumberland meets Alaska Boundary Award and exploits.",
+      "mechanical_delta": "{\"season\": 100, \"response\": \"Exploit\", \"roll\": 4, \"personal_year\": 1903, \"magnitude\": \"Minor\", \"tag\": \"Mixed\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Proulx",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1425,
+      "turn_id": null,
+      "kind": "relational",
+      "era_cohort": "confederation",
+      "title": "Viscount Marchand de Lac-Saint-Louis corresponds with Baron Wallace of Hespeler",
+      "narrative": "Season 100 · Viscount Marchand de Lac-Saint-Louis opens a correspondence with Baron Wallace of Hespeler.",
+      "mechanical_delta": "{\"season\": 100, \"marker\": \"+\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Marchand",
+          "role": "participant",
+          "personal_year": null
+        },
+        {
+          "house": "Wallace 2",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1424,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "confederation",
+      "title": "Diamond Jubilee",
+      "narrative": "Season 100 · Baron Pegahmagabow of Wawa meets Diamond Jubilee and stands aside.",
+      "mechanical_delta": "{\"season\": 100, \"response\": \"Neutral\", \"roll\": 1, \"personal_year\": 1897, \"magnitude\": \"Minor\", \"tag\": \"Conservative\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Pegahmagabow",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1423,
+      "turn_id": null,
+      "kind": "relational",
+      "era_cohort": "confederation",
+      "title": "Viscount Hendrie of Brampton and Viscount Cameron of Cornwall form a compact",
+      "narrative": "Season 100 · Viscount Hendrie of Brampton and Viscount Cameron of Cornwall enter into a compact.",
+      "mechanical_delta": "{\"season\": 100, \"marker\": \"\\u25c9+\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Cameron",
+          "role": "participant",
+          "personal_year": null
+        },
+        {
+          "house": "Hendrie",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1422,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "dominion",
+      "title": "Reciprocity Election",
+      "narrative": "Season 100 · Baron Rouleau de LaSalle meets Reciprocity Election and exploits.",
+      "mechanical_delta": "{\"season\": 100, \"response\": \"Exploit\", \"roll\": 4, \"personal_year\": 1911, \"magnitude\": \"Significant\", \"tag\": \"Conservative\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Rouleau",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1421,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "dominion",
+      "title": "Alaska Boundary Award",
+      "narrative": "Season 100 · Baron Cardinal of Steinbach meets Alaska Boundary Award and resists.",
+      "mechanical_delta": "{\"season\": 100, \"response\": \"Resist\", \"roll\": 2, \"personal_year\": 1903, \"magnitude\": \"Minor\", \"tag\": \"Mixed\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Cardinal",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1420,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "dominion",
+      "title": "Naval Service Act",
+      "narrative": "Season 100 · Viscount Cameron of Cornwall meets Naval Service Act and leads.",
+      "mechanical_delta": "{\"season\": 100, \"response\": \"Lead\", \"roll\": 6, \"personal_year\": 1910, \"magnitude\": \"Significant\", \"tag\": \"Mixed\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
       "houses": [
         {
           "house": "Cameron",
@@ -1024,15 +3868,15 @@
       ]
     },
     {
-      "id": 305,
+      "id": 1419,
       "turn_id": null,
-      "kind": "other",
-      "era_cohort": "confederation",
-      "title": "Baron Patterson of Kennebecasis names an heir",
-      "narrative": "Season 41 · Baron Patterson of Kennebecasis names Farquhar Patterson heir.",
-      "mechanical_delta": "{\"season\": 41, \"heir_age\": 22, \"role\": \"heir\"}",
+      "kind": "elevation",
+      "era_cohort": "dominion",
+      "title": "Earl Patterson of Kennebecasis elevated",
+      "narrative": "Season 100 · Viscount Patterson of Kennebecasis is raised to Earl.",
+      "mechanical_delta": "{\"season\": 100, \"from\": \"Viscount\", \"to\": \"Earl\"}",
       "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
+      "created_at": "2026-09-08 03:23:26",
       "houses": [
         {
           "house": "Patterson",
@@ -1042,56 +3886,520 @@
       ]
     },
     {
-      "id": 304,
-      "turn_id": null,
-      "kind": "relational",
-      "era_cohort": "confederation",
-      "title": "Earl Forbes of Preston and Baron Langelier de Charlevoix are joined by marriage",
-      "narrative": "Season 41 · Donald Forbes marries Clémence Langelier, binding Earl Forbes of Preston to Baron Langelier de Charlevoix.",
-      "mechanical_delta": "{\"season\": 41, \"marker\": \"kin\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Forbes",
-          "role": "participant",
-          "personal_year": 1891
-        },
-        {
-          "house": "Langelier",
-          "role": "participant",
-          "personal_year": 1891
-        }
-      ]
-    },
-    {
-      "id": 303,
+      "id": 1418,
       "turn_id": null,
       "kind": "societal",
-      "era_cohort": "confederation",
-      "title": "Long Depression Reaches Canada",
-      "narrative": "Season 41 · Earl Forbes of Preston meets Long Depression Reaches Canada and resists.",
-      "mechanical_delta": "{\"season\": 41, \"response\": \"Resist\", \"roll\": 2, \"personal_year\": 1874, \"magnitude\": \"Major\", \"tag\": \"Conservative\"}",
+      "era_cohort": "dominion",
+      "title": "Conscription Crisis",
+      "narrative": "Season 100 · Viscount Patterson of Kennebecasis meets Conscription Crisis and resists.",
+      "mechanical_delta": "{\"season\": 100, \"response\": \"Resist\", \"roll\": 2, \"personal_year\": 1917, \"magnitude\": \"Major\", \"tag\": \"Mixed\"}",
       "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
+      "created_at": "2026-09-08 03:23:26",
       "houses": [
         {
-          "house": "Forbes",
+          "house": "Patterson",
           "role": "participant",
           "personal_year": null
         }
       ]
     },
     {
-      "id": 302,
+      "id": 1417,
+      "turn_id": null,
+      "kind": "elevation",
+      "era_cohort": "confederation",
+      "title": "Viscount Rochon de Rosedale elevated",
+      "narrative": "Season 100 · Baron Rochon de Rosedale is raised to Viscount.",
+      "mechanical_delta": "{\"season\": 100, \"from\": \"Baron\", \"to\": \"Viscount\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Rochon",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1416,
+      "turn_id": null,
+      "kind": "relational",
+      "era_cohort": "confederation",
+      "title": "Marquis Forbes of Preston and Earl Bouchard de Terrebonne are joined by marriage",
+      "narrative": "Season 100 · Alexander Forbes marries Blanche Bouchard, binding Marquis Forbes of Preston to Earl Bouchard de Terrebonne.",
+      "mechanical_delta": "{\"season\": 100, \"marker\": \"kin\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Bouchard",
+          "role": "participant",
+          "personal_year": 1894
+        },
+        {
+          "house": "Forbes",
+          "role": "participant",
+          "personal_year": 1894
+        }
+      ]
+    },
+    {
+      "id": 1415,
+      "turn_id": null,
+      "kind": "other",
+      "era_cohort": "dominion",
+      "title": "Earl Langelier de Charlevoix endows an institution",
+      "narrative": "Season 100 · Earl Langelier de Charlevoix endows an institution.",
+      "mechanical_delta": "{\"season\": 100}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Langelier",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1414,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "dominion",
+      "title": "Halifax Explosion",
+      "narrative": "Season 100 · Earl Langelier de Charlevoix meets Halifax Explosion and exploits.",
+      "mechanical_delta": "{\"season\": 100, \"response\": \"Exploit\", \"roll\": 5, \"personal_year\": 1917, \"magnitude\": \"Major\", \"tag\": \"Mixed\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Langelier",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1413,
+      "turn_id": null,
+      "kind": "relational",
+      "era_cohort": "confederation",
+      "title": "Baron Cornwall of Steveston corresponds with Viscount Bhullar of Nanaimo",
+      "narrative": "Season 100 · Baron Cornwall of Steveston opens a correspondence with Viscount Bhullar of Nanaimo.",
+      "mechanical_delta": "{\"season\": 100, \"marker\": \"kin\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Bhullar",
+          "role": "participant",
+          "personal_year": null
+        },
+        {
+          "house": "Cornwall",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1412,
+      "turn_id": null,
+      "kind": "relational",
+      "era_cohort": "confederation",
+      "title": "Viscount McLellan of Belfast and Viscount Colby of Trois-Rivières form a compact",
+      "narrative": "Season 100 · Viscount McLellan of Belfast and Viscount Colby of Trois-Rivières enter into a compact.",
+      "mechanical_delta": "{\"season\": 100, \"marker\": \"\\u25c9+\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Colby",
+          "role": "participant",
+          "personal_year": null
+        },
+        {
+          "house": "McLellan",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1411,
+      "turn_id": null,
+      "kind": "elevation",
+      "era_cohort": "confederation",
+      "title": "Earl Bouchard de Terrebonne elevated",
+      "narrative": "Season 100 · Viscount Bouchard de Terrebonne is raised to Earl.",
+      "mechanical_delta": "{\"season\": 100, \"from\": \"Viscount\", \"to\": \"Earl\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Bouchard",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1410,
+      "turn_id": null,
+      "kind": "relational",
+      "era_cohort": "confederation",
+      "title": "Viscount Mercier de Rimouski corresponds with Baron Gillies of Woburn",
+      "narrative": "Season 100 · Viscount Mercier de Rimouski opens a correspondence with Baron Gillies of Woburn.",
+      "mechanical_delta": "{\"season\": 100, \"marker\": \"\\u25ce\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Gillies",
+          "role": "participant",
+          "personal_year": null
+        },
+        {
+          "house": "Mercier",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1409,
       "turn_id": null,
       "kind": "societal",
       "era_cohort": "confederation",
-      "title": "National Policy",
-      "narrative": "Season 41 · Baron Hoover of Simcoe meets National Policy and exploits.",
-      "mechanical_delta": "{\"season\": 41, \"response\": \"Exploit\", \"roll\": 4, \"personal_year\": 1878, \"magnitude\": \"Significant\", \"tag\": \"Conservative\"}",
+      "title": "South African War",
+      "narrative": "Season 100 · Viscount Benjamin of Bellechasse meets South African War and resists.",
+      "mechanical_delta": "{\"season\": 100, \"response\": \"Resist\", \"roll\": 2, \"personal_year\": 1899, \"magnitude\": \"Major\", \"tag\": \"Conservative\"}",
       "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Benjamin",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1408,
+      "turn_id": null,
+      "kind": "relational",
+      "era_cohort": "confederation",
+      "title": "Baron Stefaniuk of Emerson corresponds with Baron Proulx de Cumberland",
+      "narrative": "Season 100 · Baron Stefaniuk of Emerson opens a correspondence with Baron Proulx de Cumberland.",
+      "mechanical_delta": "{\"season\": 100, \"marker\": \"\\u25ce\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Proulx",
+          "role": "participant",
+          "personal_year": null
+        },
+        {
+          "house": "Stefaniuk",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1407,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "confederation",
+      "title": "Long Depression Reaches Canada",
+      "narrative": "Season 99 · Baron Furlong of Émard meets Long Depression Reaches Canada and exploits.",
+      "mechanical_delta": "{\"season\": 99, \"response\": \"Exploit\", \"roll\": 5, \"personal_year\": 1874, \"magnitude\": \"Major\", \"tag\": \"Conservative\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Furlong",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1406,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "confederation",
+      "title": "Manitoba Schools Question",
+      "narrative": "Season 99 · Baron Wallace of Hespeler meets Manitoba Schools Question and resists.",
+      "mechanical_delta": "{\"season\": 99, \"response\": \"Resist\", \"roll\": 2, \"personal_year\": 1890, \"magnitude\": \"Major\", \"tag\": \"Conservative\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Wallace 2",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1405,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "confederation",
+      "title": "CPR Strike",
+      "narrative": "Season 99 · Baron Lucas of Oakville meets CPR Strike and exploits.",
+      "mechanical_delta": "{\"season\": 99, \"response\": \"Exploit\", \"roll\": 4, \"personal_year\": 1883, \"magnitude\": \"Significant\", \"tag\": \"Mixed\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Lucas",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1404,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "confederation",
+      "title": "Laurier Elected",
+      "narrative": "Season 99 · Baron Gillies of Woburn meets Laurier Elected and stands aside.",
+      "mechanical_delta": "{\"season\": 99, \"response\": \"Neutral\", \"roll\": 0, \"personal_year\": 1896, \"magnitude\": \"Significant\", \"tag\": \"Progressive\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Gillies",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1403,
+      "turn_id": null,
+      "kind": "relational",
+      "era_cohort": "confederation",
+      "title": "Viscount Colby of Trois-Rivières corresponds with Earl Langelier de Charlevoix",
+      "narrative": "Season 99 · Viscount Colby of Trois-Rivières opens a correspondence with Earl Langelier de Charlevoix.",
+      "mechanical_delta": "{\"season\": 99, \"marker\": \"+\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Colby",
+          "role": "participant",
+          "personal_year": null
+        },
+        {
+          "house": "Langelier",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1402,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "confederation",
+      "title": "Manitoba Schools Question",
+      "narrative": "Season 99 · Viscount Colby of Trois-Rivières meets Manitoba Schools Question and exploits.",
+      "mechanical_delta": "{\"season\": 99, \"response\": \"Exploit\", \"roll\": 5, \"personal_year\": 1890, \"magnitude\": \"Major\", \"tag\": \"Conservative\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Colby",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1401,
+      "turn_id": null,
+      "kind": "relational",
+      "era_cohort": "confederation",
+      "title": "Viscount Marchand de Lac-Saint-Louis corresponds with Baron Wallace of Hespeler",
+      "narrative": "Season 99 · Viscount Marchand de Lac-Saint-Louis opens a correspondence with Baron Wallace of Hespeler.",
+      "mechanical_delta": "{\"season\": 99, \"marker\": \"\\u25ce\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Marchand",
+          "role": "participant",
+          "personal_year": null
+        },
+        {
+          "house": "Wallace 2",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1400,
+      "turn_id": null,
+      "kind": "relational",
+      "era_cohort": "confederation",
+      "title": "Baron Meagher of Windsor corresponds with Baron Rouleau de LaSalle",
+      "narrative": "Season 99 · Baron Meagher of Windsor opens a correspondence with Baron Rouleau de LaSalle.",
+      "mechanical_delta": "{\"season\": 99, \"marker\": \"\\u25ce\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Meagher 2",
+          "role": "participant",
+          "personal_year": null
+        },
+        {
+          "house": "Rouleau",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1399,
+      "turn_id": null,
+      "kind": "succession",
+      "era_cohort": "confederation",
+      "title": "Baron Byrne of Cooksville: disorderly succession",
+      "narrative": "Season 99 · Baron Byrne of Cooksville passes in disorder to Johanna Byrne.",
+      "mechanical_delta": "{\"season\": 99, \"nature\": \"disorderly\", \"cause\": \"death\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Byrne",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1398,
+      "turn_id": null,
+      "kind": "relational",
+      "era_cohort": "confederation",
+      "title": "Baron Pegahmagabow of Wawa corresponds with Baron Turgeon de St.-Jerome",
+      "narrative": "Season 99 · Baron Pegahmagabow of Wawa opens a correspondence with Baron Turgeon de St.-Jerome.",
+      "mechanical_delta": "{\"season\": 99, \"marker\": \"\\u25ce\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Pegahmagabow",
+          "role": "participant",
+          "personal_year": null
+        },
+        {
+          "house": "Turgeon",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1397,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "dominion",
+      "title": "Naval Service Act",
+      "narrative": "Season 99 · Baron Rouleau de LaSalle meets Naval Service Act and leads.",
+      "mechanical_delta": "{\"season\": 99, \"response\": \"Lead\", \"roll\": 6, \"personal_year\": 1910, \"magnitude\": \"Significant\", \"tag\": \"Mixed\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Rouleau",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1396,
+      "turn_id": null,
+      "kind": "relational",
+      "era_cohort": "dominion",
+      "title": "Viscount Bird of Winnipeg corresponds with Baron Lucas of Oakville",
+      "narrative": "Season 99 · Viscount Bird of Winnipeg opens a correspondence with Baron Lucas of Oakville.",
+      "mechanical_delta": "{\"season\": 99, \"marker\": \"\\u25ce\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Bird",
+          "role": "participant",
+          "personal_year": null
+        },
+        {
+          "house": "Lucas",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1395,
+      "turn_id": null,
+      "kind": "relational",
+      "era_cohort": "dominion",
+      "title": "Viscount Patterson of Kennebecasis corresponds with Viscount McLellan of Belfast",
+      "narrative": "Season 99 · Viscount Patterson of Kennebecasis opens a correspondence with Viscount McLellan of Belfast.",
+      "mechanical_delta": "{\"season\": 99, \"marker\": \"+\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "McLellan",
+          "role": "participant",
+          "personal_year": null
+        },
+        {
+          "house": "Patterson",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1394,
+      "turn_id": null,
+      "kind": "societal",
+      "era_cohort": "dominion",
+      "title": "Prairie Women's Suffrage",
+      "narrative": "Season 99 · Viscount Patterson of Kennebecasis meets Prairie Women's Suffrage and stands aside.",
+      "mechanical_delta": "{\"season\": 99, \"response\": \"Neutral\", \"roll\": 1, \"personal_year\": 1916, \"magnitude\": \"Significant\", \"tag\": \"Progressive\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Patterson",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1393,
+      "turn_id": null,
+      "kind": "other",
+      "era_cohort": "confederation",
+      "title": "Baron Hoover of Simcoe names an heir",
+      "narrative": "Season 99 · Baron Hoover of Simcoe names Wilhelm Hoover heir.",
+      "mechanical_delta": "{\"season\": 99, \"heir_age\": 35, \"role\": \"heir\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
       "houses": [
         {
           "house": "Hoover",
@@ -1101,15 +4409,38 @@
       ]
     },
     {
-      "id": 301,
+      "id": 1392,
+      "turn_id": null,
+      "kind": "relational",
+      "era_cohort": "dominion",
+      "title": "Earl Langelier de Charlevoix loses a dispute with Viscount Benjamin of Bellechasse",
+      "narrative": "Season 99 · Earl Langelier de Charlevoix presses a claim against Viscount Benjamin of Bellechasse and is rebuffed.",
+      "mechanical_delta": "{\"season\": 99, \"outcome\": \"lost\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Benjamin",
+          "role": "participant",
+          "personal_year": null
+        },
+        {
+          "house": "Langelier",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1391,
       "turn_id": null,
       "kind": "societal",
-      "era_cohort": "confederation",
-      "title": "Death of Sir John A. Macdonald",
-      "narrative": "Season 41 · Baron Langelier de Charlevoix meets Death of Sir John A. Macdonald and stands aside.",
-      "mechanical_delta": "{\"season\": 41, \"response\": \"Neutral\", \"roll\": 1, \"personal_year\": 1891, \"magnitude\": \"Minor\", \"tag\": \"Mixed\"}",
+      "era_cohort": "dominion",
+      "title": "Prairie Women's Suffrage",
+      "narrative": "Season 99 · Earl Langelier de Charlevoix meets Prairie Women's Suffrage and leads.",
+      "mechanical_delta": "{\"season\": 99, \"response\": \"Lead\", \"roll\": 7, \"personal_year\": 1916, \"magnitude\": \"Significant\", \"tag\": \"Progressive\"}",
       "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
+      "created_at": "2026-09-08 03:23:26",
       "houses": [
         {
           "house": "Langelier",
@@ -1119,36 +4450,18 @@
       ]
     },
     {
-      "id": 300,
-      "turn_id": null,
-      "kind": "succession",
-      "era_cohort": "confederation",
-      "title": "Baron Cornwall of Steveston: clean succession",
-      "narrative": "Season 41 · Frances Cornwall succeeds to Baron Cornwall of Steveston.",
-      "mechanical_delta": "{\"season\": 41, \"nature\": \"clean\", \"cause\": \"death\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Cornwall",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 299,
+      "id": 1390,
       "turn_id": null,
       "kind": "relational",
       "era_cohort": "confederation",
-      "title": "Baron McLellan of Belfast corresponds with Viscount Bouchard de Terrebonne",
-      "narrative": "Season 41 · Baron McLellan of Belfast opens a correspondence with Viscount Bouchard de Terrebonne.",
-      "mechanical_delta": "{\"season\": 41, \"marker\": \"kin\"}",
+      "title": "Viscount McLellan of Belfast falls out with Marquis Forbes of Preston",
+      "narrative": null,
+      "mechanical_delta": "{\"season\": 99, \"marker\": \"Sig\\u2212\", \"cause\": \"disorderly succession\"}",
       "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
+      "created_at": "2026-09-08 03:23:26",
       "houses": [
         {
-          "house": "Bouchard",
+          "house": "Forbes",
           "role": "participant",
           "personal_year": null
         },
@@ -1160,821 +4473,131 @@
       ]
     },
     {
-      "id": 298,
+      "id": 1389,
       "turn_id": null,
-      "kind": "founding",
+      "kind": "succession",
       "era_cohort": "confederation",
-      "title": "Baron Patterson of Kennebecasis founded",
-      "narrative": "Season 40 · Baron Patterson of Kennebecasis is created, seated at Acadie—Bathurst.",
-      "mechanical_delta": "{\"season\": 40, \"stats\": {\"capital\": 46, \"influence\": 24, \"cohesion\": 64, \"ambition\": 4}, \"community\": \"Scottish Presbyterian\", \"tag\": \"Mixed\"}",
+      "title": "Viscount McLellan of Belfast: disorderly succession",
+      "narrative": "Season 99 · Viscount McLellan of Belfast passes in disorder to Flora McLellan.",
+      "mechanical_delta": "{\"season\": 99, \"nature\": \"disorderly\", \"cause\": \"death\"}",
       "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
+      "created_at": "2026-09-08 03:23:26",
       "houses": [
         {
-          "house": "Patterson",
+          "house": "McLellan",
           "role": "participant",
           "personal_year": null
         }
       ]
     },
     {
-      "id": 297,
-      "turn_id": null,
-      "kind": "societal",
-      "era_cohort": "confederation",
-      "title": "British Columbia Joins; Treaty 1 Signed",
-      "narrative": "Season 40 · Baron Rochon de Rosedale meets British Columbia Joins; Treaty 1 Signed and stands aside.",
-      "mechanical_delta": "{\"season\": 40, \"response\": \"Neutral\", \"roll\": 1, \"personal_year\": 1871, \"magnitude\": \"Significant\", \"tag\": \"Mixed\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Rochon",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 296,
+      "id": 1388,
       "turn_id": null,
       "kind": "other",
       "era_cohort": "confederation",
-      "title": "Earl Forbes of Preston names an heir",
-      "narrative": "Season 40 · Earl Forbes of Preston names Donald Forbes heir.",
-      "mechanical_delta": "{\"season\": 40, \"heir_age\": 29, \"role\": \"heir\"}",
+      "title": "Viscount Bouchard de Terrebonne names an heir",
+      "narrative": "Season 99 · Viscount Bouchard de Terrebonne names Blanche Bouchard heir.",
+      "mechanical_delta": "{\"season\": 99, \"heir_age\": 19, \"role\": \"heir\"}",
       "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
+      "created_at": "2026-09-08 03:23:26",
       "houses": [
         {
-          "house": "Forbes",
+          "house": "Bouchard",
           "role": "participant",
           "personal_year": null
         }
       ]
     },
     {
-      "id": 295,
+      "id": 1387,
+      "turn_id": null,
+      "kind": "relational",
+      "era_cohort": "confederation",
+      "title": "Viscount Benjamin of Bellechasse and Earl Langelier de Charlevoix fall out",
+      "narrative": "Season 99 · Viscount Benjamin of Bellechasse and Earl Langelier de Charlevoix fall out over a boundary the two houses read differently.",
+      "mechanical_delta": "{\"season\": 99, \"marker\": \"Sig\\u2212\", \"cause\": \"friction\", \"grievance\": \"a boundary the two houses read differently\"}",
+      "source": "engine",
+      "created_at": "2026-09-08 03:23:26",
+      "houses": [
+        {
+          "house": "Benjamin",
+          "role": "participant",
+          "personal_year": null
+        },
+        {
+          "house": "Langelier",
+          "role": "participant",
+          "personal_year": null
+        }
+      ]
+    },
+    {
+      "id": 1386,
       "turn_id": null,
       "kind": "societal",
       "era_cohort": "confederation",
       "title": "Pacific Scandal",
-      "narrative": "Season 40 · Earl Forbes of Preston meets Pacific Scandal and resists.",
-      "mechanical_delta": "{\"season\": 40, \"response\": \"Resist\", \"roll\": 2, \"personal_year\": 1873, \"magnitude\": \"Significant\", \"tag\": \"Progressive\"}",
+      "narrative": "Season 98 · Baron Furlong of Émard meets Pacific Scandal and exploits.",
+      "mechanical_delta": "{\"season\": 98, \"response\": \"Exploit\", \"roll\": 4, \"personal_year\": 1873, \"magnitude\": \"Significant\", \"tag\": \"Progressive\"}",
       "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
+      "created_at": "2026-09-08 03:23:26",
       "houses": [
         {
-          "house": "Forbes",
+          "house": "Furlong",
           "role": "participant",
           "personal_year": null
         }
       ]
     },
     {
-      "id": 294,
-      "turn_id": null,
-      "kind": "relational",
-      "era_cohort": "confederation",
-      "title": "Viscount Meagher of Chatham corresponds with Viscount Wallace of Perth",
-      "narrative": "Season 40 · Viscount Meagher of Chatham opens a correspondence with Viscount Wallace of Perth.",
-      "mechanical_delta": "{\"season\": 40, \"marker\": \"\\u25ce\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Meagher",
-          "role": "participant",
-          "personal_year": null
-        },
-        {
-          "house": "Wallace",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 293,
-      "turn_id": null,
-      "kind": "societal",
-      "era_cohort": "confederation",
-      "title": "Manitoba Schools Question",
-      "narrative": "Season 40 · Baron Langelier de Charlevoix meets Manitoba Schools Question and stands aside.",
-      "mechanical_delta": "{\"season\": 40, \"response\": \"Neutral\", \"roll\": 1, \"personal_year\": 1890, \"magnitude\": \"Major\", \"tag\": \"Conservative\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Langelier",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 292,
+      "id": 1385,
       "turn_id": null,
       "kind": "expansion",
       "era_cohort": "confederation",
-      "title": "Baron McLellan of Belfast takes Cumberland—Colchester",
-      "narrative": "Season 40 · Baron McLellan of Belfast takes Cumberland—Colchester.",
-      "mechanical_delta": "{\"season\": 40, \"riding\": \"Cumberland\\u2014Colchester\", \"roll\": 7}",
+      "title": "Baron Turgeon de St.-Jerome takes Rivière-des-Mille-Îles",
+      "narrative": "Season 98 · Baron Turgeon de St.-Jerome takes Rivière-des-Mille-Îles.",
+      "mechanical_delta": "{\"season\": 98, \"riding\": \"Rivi\\u00e8re-des-Mille-\\u00celes\", \"roll\": 10}",
       "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
+      "created_at": "2026-09-08 03:23:26",
       "houses": [
         {
-          "house": "McLellan",
+          "house": "Turgeon",
           "role": "participant",
           "personal_year": null
         }
       ]
     },
     {
-      "id": 291,
-      "turn_id": null,
-      "kind": "other",
-      "era_cohort": "confederation",
-      "title": "Viscount Hays of Beloeil names an heir",
-      "narrative": "Season 40 · Viscount Hays of Beloeil names Harris Hays heir.",
-      "mechanical_delta": "{\"season\": 40, \"heir_age\": 13, \"role\": \"heir\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Hays",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 290,
-      "turn_id": null,
-      "kind": "relational",
-      "era_cohort": "confederation",
-      "title": "Viscount Bouchard de Terrebonne and Baron McLellan of Belfast are joined by marriage",
-      "narrative": "Season 40 · Blanche Bouchard marries Elspeth McLellan, binding Viscount Bouchard de Terrebonne to Baron McLellan of Belfast.",
-      "mechanical_delta": "{\"season\": 40, \"marker\": \"kin\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Bouchard",
-          "role": "participant",
-          "personal_year": 1894
-        },
-        {
-          "house": "McLellan",
-          "role": "participant",
-          "personal_year": 1894
-        }
-      ]
-    },
-    {
-      "id": 289,
-      "turn_id": null,
-      "kind": "relational",
-      "era_cohort": "confederation",
-      "title": "Viscount Mercier de Rimouski settles with Viscount Benjamin of Bellechasse",
-      "narrative": "Season 40 · Viscount Mercier de Rimouski settles its grievance with Viscount Benjamin of Bellechasse by cession.",
-      "mechanical_delta": "{\"season\": 40, \"marker\": \"~\", \"ceded\": \"24042\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Benjamin",
-          "role": "participant",
-          "personal_year": 1882
-        },
-        {
-          "house": "Mercier",
-          "role": "participant",
-          "personal_year": 1882
-        }
-      ]
-    },
-    {
-      "id": 288,
-      "turn_id": null,
-      "kind": "transfer",
-      "era_cohort": "confederation",
-      "title": "Viscount Mercier de Rimouski loses Longueuil—Saint-Hubert",
-      "narrative": "Season 40 · Viscount Mercier de Rimouski gives up Longueuil—Saint-Hubert (cession).",
-      "mechanical_delta": "{\"season\": 40, \"reason\": \"cession\", \"riding\": \"Longueuil\\u2014Saint-Hubert\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Benjamin",
-          "role": "participant",
-          "personal_year": null
-        },
-        {
-          "house": "Mercier",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 287,
-      "turn_id": null,
-      "kind": "expansion",
-      "era_cohort": "dominion",
-      "title": "Viscount Wallace of Perth takes Perth—Wellington",
-      "narrative": "Season 40 · Viscount Wallace of Perth takes Perth—Wellington.",
-      "mechanical_delta": "{\"season\": 40, \"riding\": \"Perth\\u2014Wellington\", \"roll\": 7}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Wallace",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 286,
-      "turn_id": null,
-      "kind": "societal",
-      "era_cohort": "dominion",
-      "title": "Alaska Boundary Award",
-      "narrative": "Season 40 · Viscount Wallace of Perth meets Alaska Boundary Award and exploits.",
-      "mechanical_delta": "{\"season\": 40, \"response\": \"Exploit\", \"roll\": 5, \"personal_year\": 1903, \"magnitude\": \"Minor\", \"tag\": \"Mixed\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Wallace",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 285,
-      "turn_id": null,
-      "kind": "societal",
-      "era_cohort": "confederation",
-      "title": "South African War",
-      "narrative": "Season 40 · Baron Elliott of Glengarry meets South African War and stands aside.",
-      "mechanical_delta": "{\"season\": 40, \"response\": \"Neutral\", \"roll\": 1, \"personal_year\": 1899, \"magnitude\": \"Major\", \"tag\": \"Conservative\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Elliott",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 284,
-      "turn_id": null,
-      "kind": "societal",
-      "era_cohort": "confederation",
-      "title": "Confederation Extension (Manitoba Act)",
-      "narrative": "Season 39 · Baron Rochon de Rosedale meets Confederation Extension (Manitoba Act) and leads.",
-      "mechanical_delta": "{\"season\": 39, \"response\": \"Lead\", \"roll\": 6, \"personal_year\": 1870, \"magnitude\": \"Major\", \"tag\": \"Mixed\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Rochon",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 283,
-      "turn_id": null,
-      "kind": "other",
-      "era_cohort": "confederation",
-      "title": "Viscount Meagher of Chatham names an heir",
-      "narrative": "Season 39 · Viscount Meagher of Chatham names Eileen Meagher heir.",
-      "mechanical_delta": "{\"season\": 39, \"heir_age\": 24, \"role\": \"heir\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Meagher",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 282,
-      "turn_id": null,
-      "kind": "relational",
-      "era_cohort": "confederation",
-      "title": "Viscount Hays of Beloeil corresponds with Viscount Bouchard de Terrebonne",
-      "narrative": "Season 39 · Viscount Hays of Beloeil opens a correspondence with Viscount Bouchard de Terrebonne.",
-      "mechanical_delta": "{\"season\": 39, \"marker\": \"+\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Bouchard",
-          "role": "participant",
-          "personal_year": null
-        },
-        {
-          "house": "Hays",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 281,
-      "turn_id": null,
-      "kind": "societal",
-      "era_cohort": "confederation",
-      "title": "Montréal Smallpox Epidemic",
-      "narrative": "Season 39 · Viscount Bouchard de Terrebonne meets Montréal Smallpox Epidemic and resists.",
-      "mechanical_delta": "{\"season\": 39, \"response\": \"Resist\", \"roll\": 3, \"personal_year\": 1885, \"magnitude\": \"Significant\", \"tag\": \"Progressive\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Bouchard",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 280,
+      "id": 1384,
       "turn_id": null,
       "kind": "expansion",
       "era_cohort": "confederation",
-      "title": "Baron Stefaniuk of Emerson takes Souris—Moose Mountain",
-      "narrative": "Season 39 · Baron Stefaniuk of Emerson takes Souris—Moose Mountain.",
-      "mechanical_delta": "{\"season\": 39, \"riding\": \"Souris\\u2014Moose Mountain\", \"roll\": 8}",
+      "title": "Baron Wallace of Hespeler takes Bruce—Grey—Owen Sound",
+      "narrative": "Season 98 · Baron Wallace of Hespeler takes Bruce—Grey—Owen Sound.",
+      "mechanical_delta": "{\"season\": 98, \"riding\": \"Bruce\\u2014Grey\\u2014Owen Sound\", \"roll\": 7}",
       "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
+      "created_at": "2026-09-08 03:23:26",
       "houses": [
         {
-          "house": "Stefaniuk",
+          "house": "Wallace 2",
           "role": "participant",
           "personal_year": null
         }
       ]
     },
     {
-      "id": 279,
-      "turn_id": null,
-      "kind": "relational",
-      "era_cohort": "confederation",
-      "title": "Viscount Benjamin of Bellechasse and Viscount Mercier de Rimouski fall out",
-      "narrative": "Season 39 · Viscount Benjamin of Bellechasse and Viscount Mercier de Rimouski fall out over a boundary the two houses read differently.",
-      "mechanical_delta": "{\"season\": 39, \"marker\": \"Sig\\u2212\", \"cause\": \"friction\", \"grievance\": \"a boundary the two houses read differently\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Benjamin",
-          "role": "participant",
-          "personal_year": null
-        },
-        {
-          "house": "Mercier",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 278,
-      "turn_id": null,
-      "kind": "expansion",
-      "era_cohort": "confederation",
-      "title": "Baron Rochon de Rosedale takes Beaches—East York",
-      "narrative": "Season 38 · Baron Rochon de Rosedale takes Beaches—East York.",
-      "mechanical_delta": "{\"season\": 38, \"riding\": \"Beaches\\u2014East York\", \"roll\": 8}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Rochon",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 277,
-      "turn_id": null,
-      "kind": "societal",
-      "era_cohort": "confederation",
-      "title": "Red River Resistance",
-      "narrative": "Season 38 · Baron Rochon de Rosedale meets Red River Resistance and exploits.",
-      "mechanical_delta": "{\"season\": 38, \"response\": \"Exploit\", \"roll\": 4, \"personal_year\": 1869, \"magnitude\": \"Major\", \"tag\": \"Mixed\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Rochon",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 276,
-      "turn_id": null,
-      "kind": "societal",
-      "era_cohort": "confederation",
-      "title": "British Columbia Joins; Treaty 1 Signed",
-      "narrative": "Season 38 · Earl Forbes of Preston meets British Columbia Joins; Treaty 1 Signed and exploits.",
-      "mechanical_delta": "{\"season\": 38, \"response\": \"Exploit\", \"roll\": 4, \"personal_year\": 1871, \"magnitude\": \"Significant\", \"tag\": \"Mixed\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Forbes",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 275,
-      "turn_id": null,
-      "kind": "societal",
-      "era_cohort": "confederation",
-      "title": "Jesuits' Estates Act Controversy",
-      "narrative": "Season 38 · Baron Langelier de Charlevoix meets Jesuits' Estates Act Controversy and resists.",
-      "mechanical_delta": "{\"season\": 38, \"response\": \"Resist\", \"roll\": 2, \"personal_year\": 1888, \"magnitude\": \"Significant\", \"tag\": \"Conservative\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Langelier",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 274,
-      "turn_id": null,
-      "kind": "expansion",
-      "era_cohort": "confederation",
-      "title": "Baron Cornwall of Steveston takes Kamloops—Thompson—Nicola",
-      "narrative": "Season 38 · Baron Cornwall of Steveston takes Kamloops—Thompson—Nicola.",
-      "mechanical_delta": "{\"season\": 38, \"riding\": \"Kamloops\\u2014Thompson\\u2014Nicola\", \"roll\": 7}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
-      "houses": [
-        {
-          "house": "Cornwall",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 273,
+      "id": 1383,
       "turn_id": null,
       "kind": "societal",
       "era_cohort": "confederation",
       "title": "Death of Sir John A. Macdonald",
-      "narrative": "Season 38 · Baron Cornwall of Steveston meets Death of Sir John A. Macdonald and leads.",
-      "mechanical_delta": "{\"season\": 38, \"response\": \"Lead\", \"roll\": 7, \"personal_year\": 1891, \"magnitude\": \"Minor\", \"tag\": \"Mixed\"}",
+      "narrative": "Season 98 · Viscount Dawes of Bourassa meets Death of Sir John A. Macdonald and resists.",
+      "mechanical_delta": "{\"season\": 98, \"response\": \"Resist\", \"roll\": 3, \"personal_year\": 1891, \"magnitude\": \"Minor\", \"tag\": \"Mixed\"}",
       "source": "engine",
-      "created_at": "2026-09-07 21:00:51",
+      "created_at": "2026-09-08 03:23:26",
       "houses": [
         {
-          "house": "Cornwall",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 272,
-      "turn_id": null,
-      "kind": "relational",
-      "era_cohort": "confederation",
-      "title": "Viscount Bouchard de Terrebonne corresponds with Viscount Hays of Beloeil",
-      "narrative": "Season 38 · Viscount Bouchard de Terrebonne opens a correspondence with Viscount Hays of Beloeil.",
-      "mechanical_delta": "{\"season\": 38, \"marker\": \"\\u25ce\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:50",
-      "houses": [
-        {
-          "house": "Bouchard",
-          "role": "participant",
-          "personal_year": null
-        },
-        {
-          "house": "Hays",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 271,
-      "turn_id": null,
-      "kind": "relational",
-      "era_cohort": "confederation",
-      "title": "Viscount Mercier de Rimouski corresponds with Baron Elliott of Glengarry",
-      "narrative": "Season 38 · Viscount Mercier de Rimouski opens a correspondence with Baron Elliott of Glengarry.",
-      "mechanical_delta": "{\"season\": 38, \"marker\": \"\\u25ce\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:50",
-      "houses": [
-        {
-          "house": "Elliott",
-          "role": "participant",
-          "personal_year": null
-        },
-        {
-          "house": "Mercier",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 270,
-      "turn_id": null,
-      "kind": "relational",
-      "era_cohort": "confederation",
-      "title": "Viscount Benjamin of Bellechasse corresponds with Baron McLellan of Belfast",
-      "narrative": "Season 38 · Viscount Benjamin of Bellechasse opens a correspondence with Baron McLellan of Belfast.",
-      "mechanical_delta": "{\"season\": 38, \"marker\": \"~\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:50",
-      "houses": [
-        {
-          "house": "Benjamin",
-          "role": "participant",
-          "personal_year": null
-        },
-        {
-          "house": "McLellan",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 269,
-      "turn_id": null,
-      "kind": "expansion",
-      "era_cohort": "dominion",
-      "title": "Viscount Wallace of Perth takes Oxford",
-      "narrative": "Season 38 · Viscount Wallace of Perth takes Oxford.",
-      "mechanical_delta": "{\"season\": 38, \"riding\": \"Oxford\", \"roll\": 10}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:50",
-      "houses": [
-        {
-          "house": "Wallace",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 268,
-      "turn_id": null,
-      "kind": "relational",
-      "era_cohort": "confederation",
-      "title": "Baron Elliott of Glengarry corresponds with Viscount Wallace of Perth",
-      "narrative": "Season 38 · Baron Elliott of Glengarry opens a correspondence with Viscount Wallace of Perth.",
-      "mechanical_delta": "{\"season\": 38, \"marker\": \"+\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:50",
-      "houses": [
-        {
-          "house": "Elliott",
-          "role": "participant",
-          "personal_year": null
-        },
-        {
-          "house": "Wallace",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 267,
-      "turn_id": null,
-      "kind": "societal",
-      "era_cohort": "confederation",
-      "title": "Klondike Gold Rush",
-      "narrative": "Season 38 · Baron Elliott of Glengarry meets Klondike Gold Rush and resists.",
-      "mechanical_delta": "{\"season\": 38, \"response\": \"Resist\", \"roll\": 3, \"personal_year\": 1897, \"magnitude\": \"Significant\", \"tag\": \"Mixed\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:50",
-      "houses": [
-        {
-          "house": "Elliott",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 266,
-      "turn_id": null,
-      "kind": "other",
-      "era_cohort": "confederation",
-      "title": "Baron Rochon de Rosedale names an heir",
-      "narrative": "Season 37 · Baron Rochon de Rosedale names Olivier Rochon heir.",
-      "mechanical_delta": "{\"season\": 37, \"heir_age\": 18, \"role\": \"heir\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:50",
-      "houses": [
-        {
-          "house": "Rochon",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 265,
-      "turn_id": null,
-      "kind": "relational",
-      "era_cohort": "confederation",
-      "title": "Earl Forbes of Preston corresponds with Baron Langelier de Charlevoix",
-      "narrative": "Season 37 · Earl Forbes of Preston opens a correspondence with Baron Langelier de Charlevoix.",
-      "mechanical_delta": "{\"season\": 37, \"marker\": \"+\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:50",
-      "houses": [
-        {
-          "house": "Forbes",
-          "role": "participant",
-          "personal_year": null
-        },
-        {
-          "house": "Langelier",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 264,
-      "turn_id": null,
-      "kind": "societal",
-      "era_cohort": "confederation",
-      "title": "Confederation Extension (Manitoba Act)",
-      "narrative": "Season 37 · Earl Forbes of Preston meets Confederation Extension (Manitoba Act) and exploits.",
-      "mechanical_delta": "{\"season\": 37, \"response\": \"Exploit\", \"roll\": 4, \"personal_year\": 1870, \"magnitude\": \"Major\", \"tag\": \"Mixed\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:50",
-      "houses": [
-        {
-          "house": "Forbes",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 263,
-      "turn_id": null,
-      "kind": "relational",
-      "era_cohort": "confederation",
-      "title": "Viscount Meagher of Chatham corresponds with Viscount Hays of Beloeil",
-      "narrative": "Season 37 · Viscount Meagher of Chatham opens a correspondence with Viscount Hays of Beloeil.",
-      "mechanical_delta": "{\"season\": 37, \"marker\": \"\\u25c9+\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:50",
-      "houses": [
-        {
-          "house": "Hays",
-          "role": "participant",
-          "personal_year": null
-        },
-        {
-          "house": "Meagher",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 262,
-      "turn_id": null,
-      "kind": "societal",
-      "era_cohort": "confederation",
-      "title": "Manitoba Schools Question",
-      "narrative": "Season 37 · Baron Cornwall of Steveston meets Manitoba Schools Question and resists.",
-      "mechanical_delta": "{\"season\": 37, \"response\": \"Resist\", \"roll\": 2, \"personal_year\": 1890, \"magnitude\": \"Major\", \"tag\": \"Conservative\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:50",
-      "houses": [
-        {
-          "house": "Cornwall",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 261,
-      "turn_id": null,
-      "kind": "expansion",
-      "era_cohort": "confederation",
-      "title": "Baron McLellan of Belfast takes Cape Breton—Canso—Antigonish",
-      "narrative": "Season 37 · Baron McLellan of Belfast takes Cape Breton—Canso—Antigonish.",
-      "mechanical_delta": "{\"season\": 37, \"riding\": \"Cape Breton\\u2014Canso\\u2014Antigonish\", \"roll\": 10}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:50",
-      "houses": [
-        {
-          "house": "McLellan",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 260,
-      "turn_id": null,
-      "kind": "societal",
-      "era_cohort": "confederation",
-      "title": "Death of Sir John A. Macdonald",
-      "narrative": "Season 37 · Baron McLellan of Belfast meets Death of Sir John A. Macdonald and leads.",
-      "mechanical_delta": "{\"season\": 37, \"response\": \"Lead\", \"roll\": 6, \"personal_year\": 1891, \"magnitude\": \"Minor\", \"tag\": \"Mixed\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:50",
-      "houses": [
-        {
-          "house": "McLellan",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 259,
-      "turn_id": null,
-      "kind": "succession",
-      "era_cohort": "confederation",
-      "title": "Viscount Hays of Beloeil: disorderly succession",
-      "narrative": "Season 37 · Viscount Hays of Beloeil passes in disorder to Sarah Hays.",
-      "mechanical_delta": "{\"season\": 37, \"nature\": \"disorderly\", \"cause\": \"death\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:50",
-      "houses": [
-        {
-          "house": "Hays",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 258,
-      "turn_id": null,
-      "kind": "societal",
-      "era_cohort": "confederation",
-      "title": "CPR Strike",
-      "narrative": "Season 37 · Viscount Bouchard de Terrebonne meets CPR Strike and exploits.",
-      "mechanical_delta": "{\"season\": 37, \"response\": \"Exploit\", \"roll\": 5, \"personal_year\": 1883, \"magnitude\": \"Significant\", \"tag\": \"Mixed\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:50",
-      "houses": [
-        {
-          "house": "Bouchard",
-          "role": "participant",
-          "personal_year": null
-        }
-      ]
-    },
-    {
-      "id": 257,
-      "turn_id": null,
-      "kind": "relational",
-      "era_cohort": "confederation",
-      "title": "Baron Stefaniuk of Emerson corresponds with Baron Elliott of Glengarry",
-      "narrative": "Season 37 · Baron Stefaniuk of Emerson opens a correspondence with Baron Elliott of Glengarry.",
-      "mechanical_delta": "{\"season\": 37, \"marker\": \"+\"}",
-      "source": "engine",
-      "created_at": "2026-09-07 21:00:50",
-      "houses": [
-        {
-          "house": "Elliott",
-          "role": "participant",
-          "personal_year": null
-        },
-        {
-          "house": "Stefaniuk",
+          "house": "Dawes",
           "role": "participant",
           "personal_year": null
         }
@@ -1982,10 +4605,10 @@
     }
   ],
   "counts": {
-    "houses_active": 16,
-    "houses_removed": 0,
+    "houses_active": 38,
+    "houses_removed": 1,
     "ridings_total": 343,
-    "ridings_claimed": 52,
+    "ridings_claimed": 207,
     "holders_unrecovered": 0
   }
 }

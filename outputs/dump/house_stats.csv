@@ -1,17 +1,40 @@
 house,capital,influence,cohesion,ambition,enclosed,enclosed_since,community,region,tradition,tag,province,seat_place,founded_season,removed_season,forced_action,quiet_seasons
-Benjamin,24,66,100,4,0,,Jewish Montréal,quebec,jewish,Conservative,QC,Bellechasse,8,,,0
-Bouchard,45,32,100,10,0,,Canadien Catholic,quebec,french,Mixed,QC,Terrebonne,10,,,0
-Cameron,44,26,63,6,0,,Scots Presbyterian,ontario,scots,Mixed,ON,Cornwall,41,,,0
-Cornwall,49,54,93,1,0,,British and Anglo-Colonial,bc,english,Mixed,BC,Steveston,14,,,0
-Elliott,26,55,100,1,0,,Irish Protestant (Orange),ontario,irish,Mixed,ON,Glengarry,1,,,0
-Forbes,55,37,89,5,0,,Scottish Presbyterian,maritime,scots,Mixed,NS,Preston,34,,,0
-Hays,30,42,70,2,0,,Jewish Montréal,quebec,jewish,Progressive,QC,Beloeil,11,,,0
-Hoover,45,55,100,1,0,,Mennonite and Pennsylvania German,ontario,german,Mixed,ON,Simcoe,20,,,0
-Langelier,41,31,100,2,0,,Canadien Catholic,quebec,french,Progressive,QC,Charlevoix,17,,,0
-McLellan,28,35,100,10,0,,Scottish Presbyterian,maritime,scots,Progressive,PE,Belfast,13,,,0
-Meagher,20,84,100,6,0,,Irish Catholic,ontario,irish,Progressive,ON,Chatham,18,,,0
-Mercier,28,39,94,8,0,,Canadien Catholic,quebec,french,Progressive,QC,Rimouski,9,,,0
-Patterson,46,24,64,4,0,,Scottish Presbyterian,maritime,scots,Mixed,NB,Kennebecasis,40,,,0
-Rochon,31,50,63,8,0,,Franco-Ontarian,ontario,french,Conservative,ON,Rosedale,36,,,0
-Stefaniuk,40,52,100,8,0,,Ukrainian,prairie,ukrainian,Conservative,MB,Emerson,5,,,0
-Wallace,22,28,100,4,0,,Toronto Industrial and Commercial,ontario,english,Outside,ON,Perth,4,,,0
+Beauvais,47,48,68,8,0,,Huron-Wendat and Kanien'kehá:ka,quebec,haudenosaunee,Progressive,QC,Charles-LeMoyne,100,,,0
+Benjamin,44,87,100,4,0,,Jewish Montréal,quebec,jewish,Conservative,QC,Bellechasse,8,,,0
+Bhullar,28,37,100,10,0,,Punjabi Sikh,bc,punjabi,Progressive,BC,Nanaimo,52,,,0
+Bird,27,81,100,10,1,62,Cree and Saulteaux,prairie,cree,Conservative,MB,Winnipeg,44,,,1
+Bouchard,32,60,100,10,0,,Canadien Catholic,quebec,french,Mixed,QC,Terrebonne,10,,,0
+Byrne,28,59,78,2,0,,Irish Catholic,ontario,irish,Mixed,ON,Cooksville,56,,,1
+Cameron,45,65,100,6,0,,Scots Presbyterian,ontario,scots,Mixed,ON,Cornwall,41,,,0
+Cardinal,26,100,90,8,1,62,Cree and Saulteaux,prairie,cree,Mixed,MB,Steinbach,46,,,0
+Colby,74,66,100,0,1,71,Eastern Townships Loyalist,quebec,english,Progressive,QC,Trois-Rivières,68,,,0
+Cornwall,44,74,100,1,0,,British and Anglo-Colonial,bc,english,Mixed,BC,Steveston,14,,,0
+Cousineau,11,42,69,7,0,,Franco-Ontarian,ontario,french,Conservative,ON,Wiarton,53,60,,0
+Dawes,42,50,100,1,0,,Anglo-Scots Montréal Commercial,quebec,scots,Mixed,QC,Bourassa,74,,,2
+Elliott,66,53,100,1,0,,Irish Protestant (Orange),ontario,irish,Mixed,ON,Glengarry,1,,,3
+Fairbanks,42,53,100,9,0,,Ontario-British Settler,prairie,english,Mixed,AB,Edmonton Griesbach,71,,,0
+Forbes,42,68,85,7,0,,Scottish Presbyterian,maritime,scots,Mixed,NS,Preston,34,,,0
+Furlong,97,19,75,9,0,,Irish Catholic,quebec,irish,Conservative,QC,Émard,92,,,1
+Gillies,42,51,100,5,0,,Scots Presbyterian,ontario,scots,Conservative,ON,Woburn,70,,,0
+Gillies 2,77,27,96,10,0,,Scots Presbyterian,ontario,scots,Progressive,ON,Aurora,86,,,0
+Hays,31,80,100,2,0,,Jewish Montréal,quebec,jewish,Progressive,QC,Beloeil,11,,,2
+Hendrie,53,62,100,1,0,,Toronto Industrial and Commercial,ontario,english,Progressive,ON,Brampton,49,,,0
+Hoover,35,80,88,1,0,,Mennonite and Pennsylvania German,ontario,german,Mixed,ON,Simcoe,20,,,1
+Langelier,40,59,75,2,0,,Canadien Catholic,quebec,french,Progressive,QC,Charlevoix,17,,,0
+Lucas,43,66,100,7,1,88,Black Underground Railroad Descent,ontario,english,Mixed,ON,Oakville,72,,,1
+Marchand,36,82,95,4,1,98,Canadien Catholic,quebec,french,Progressive,QC,Lac-Saint-Louis,58,,,0
+McLellan,39,67,68,10,0,,Scottish Presbyterian,maritime,scots,Progressive,PE,Belfast,13,,,0
+Meagher,37,66,95,6,0,,Irish Catholic,ontario,irish,Progressive,ON,Chatham,18,,,3
+Meagher 2,25,32,95,10,0,,Irish Catholic,ontario,irish,Outside,ON,Windsor,57,,,1
+Mercier,34,69,100,8,0,,Canadien Catholic,quebec,french,Progressive,QC,Rimouski,9,,,0
+Patterson,34,63,100,4,0,,Scottish Presbyterian,maritime,scots,Mixed,NB,Kennebecasis,40,,,0
+Pegahmagabow,58,89,96,1,0,,Anishinaabe,ontario,anishinaabe,Mixed,ON,Wawa,54,,,0
+Proulx,54,13,100,4,0,,Franco-Ontarian,ontario,french,Mixed,ON,Cumberland,64,,,0
+Rochon,44,81,100,8,0,,Franco-Ontarian,ontario,french,Conservative,ON,Rosedale,36,,,0
+Rouleau,34,38,100,10,0,,Canadien Catholic,quebec,french,Progressive,QC,LaSalle,47,,,0
+Skye,42,50,100,8,0,,Haudenosaunee,ontario,haudenosaunee,Outside,ON,Belleville,62,,,2
+Stefaniuk,44,75,81,8,0,,Ukrainian,prairie,ukrainian,Conservative,MB,Emerson,5,,,0
+Turgeon,29,13,95,9,1,98,Canadien Catholic,quebec,french,Progressive,QC,St.-Jerome,77,,,1
+Wallace,35,57,100,4,0,,Toronto Industrial and Commercial,ontario,english,Outside,ON,Perth,4,,,9
+Wallace 2,43,12,100,4,0,,Toronto Industrial and Commercial,ontario,english,Outside,ON,Hespeler,76,,,0
+Worts,32,42,95,1,0,,Toronto Industrial and Commercial,ontario,english,Conservative,ON,Milton,65,,,2
