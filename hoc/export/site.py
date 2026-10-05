@@ -13,7 +13,7 @@ import json
 import unicodedata
 from pathlib import Path
 
-from hoc import scenario
+from hoc import places, scenario
 from hoc.db import HOUSE_BLOCK_FIELDS
 from hoc.export import map as map_export, play as play_export, timeline as timeline_export
 from hoc.export.play_js import PLAY_JS
@@ -2739,8 +2739,10 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
         _GENERATED_FROM = "generated before any turn"
 
     slugs = _slugs(conn)
-    index_features = map_export.projected_site_features()
-    index_borders = map_export.projected_site_borders()
+    # The map is drawn from the reference-data set this database was built on.
+    reference_dir = places.reference_dir_for(conn)
+    index_features = map_export.projected_site_features(reference_dir)
+    index_borders = map_export.projected_site_borders(reference_dir)
 
     written = []
 
@@ -2778,7 +2780,10 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
             site_dir / "play.js",
             PLAY_JS
             .replace("__RULES_FILES__", json.dumps(list(play_export.RULES_FILES)))
-            .replace("__REFERENCE_FILES__", json.dumps(list(play_export.REFERENCE_FILES)))
+            .replace(
+                "__REFERENCE_FILES__",
+                json.dumps(list(play_export.reference_files(reference_dir))),
+            )
             .replace("__UNCLAIMED_FILL__", map_export.UNCLAIMED_FILL)
             .replace("__DEFAULT_SPEED__", str(PLAY_SPEEDS[0]))
             .replace("__REPO__", REPO_SLUG)

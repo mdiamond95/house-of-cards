@@ -149,7 +149,9 @@ def rebuild(db_path, export=True, name=None, verbose=True, seasons_out=None):
     committed files first would be comparing them with themselves
     (scripts/referee.py).
     """
-    conn = load_seed.build(db_path, seed=scenario.seed_dir(name))
+    conn = load_seed.build(
+        db_path, seed=scenario.seed_dir(name), reference_data=scenario.reference_data(name)
+    )
 
     plain = [path for path in turn_files(name) if turn_after_season(path) is None]
 

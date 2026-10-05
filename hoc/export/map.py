@@ -12,14 +12,26 @@ from pathlib import Path
 
 from pyproj import Transformer
 
+from hoc import places
+
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_OUT_DIR = REPO_ROOT / "outputs"
-GEOMETRY_PATH = REPO_ROOT / "data" / "reference" / "geometry_simplified.geojson"
-BORDERS_PATH = REPO_ROOT / "data" / "reference" / "borders_shared.geojson"
+
+# The geometry is the reference-data set's, like the rest of the map: callers
+# pass the directory the database was built from (places.reference_dir_for),
+# and the default is ne-2026's data/reference/.
+GEOMETRY_FILE = "geometry_simplified.geojson"
+BORDERS_FILE = "borders_shared.geojson"
 # A more aggressively simplified pair for the site's inline map only — see
-# scripts/build_geometry.py's SITE_PATH_BYTES_BUDGET for why.
-SITE_GEOMETRY_PATH = REPO_ROOT / "data" / "reference" / "geometry_site.geojson"
-SITE_BORDERS_PATH = REPO_ROOT / "data" / "reference" / "borders_site.geojson"
+# scripts/build_geometry.py's SITE_PATH_BYTES_BUDGET for why. A set without
+# them (meridian-v1.0.3, whose layer is already drawn coarse) uses the pair above.
+SITE_GEOMETRY_FILE = "geometry_site.geojson"
+SITE_BORDERS_FILE = "borders_site.geojson"
+
+GEOMETRY_PATH = places.DEFAULT_REFERENCE_DIR / GEOMETRY_FILE
+BORDERS_PATH = places.DEFAULT_REFERENCE_DIR / BORDERS_FILE
+SITE_GEOMETRY_PATH = places.DEFAULT_REFERENCE_DIR / SITE_GEOMETRY_FILE
+SITE_BORDERS_PATH = places.DEFAULT_REFERENCE_DIR / SITE_BORDERS_FILE
 
 UNCLAIMED_FILL = "#E5E5E5"
 BORDER = "#FFFFFF"
@@ -214,30 +226,44 @@ def _render(features, borders, fills, legend, title, precision):
     return "\n".join(out)
 
 
-def projected_features():
+def _reference(reference_dir):
+    return places.DEFAULT_REFERENCE_DIR if reference_dir is None else Path(reference_dir)
+
+
+def _site_path(reference_dir, site_file, main_file):
+    directory = _reference(reference_dir)
+    path = directory / site_file
+    return path if path.exists() else directory / main_file
+
+
+def projected_features(reference_dir=None):
     """Every riding as projected rings. Shared by the SVG map and the site map."""
     transformer = Transformer.from_crs("EPSG:4326", PROJECTION, always_xy=True)
-    return _project_features(transformer)
+    return _project_features(transformer, path=_reference(reference_dir) / GEOMETRY_FILE)
 
 
-def projected_borders():
+def projected_borders(reference_dir=None):
     """Riding-to-riding borders as projected lines. Shared by the SVG map and
     the site map — never the coastline."""
     transformer = Transformer.from_crs("EPSG:4326", PROJECTION, always_xy=True)
-    return _project_borders(transformer)
+    return _project_borders(transformer, path=_reference(reference_dir) / BORDERS_FILE)
 
 
-def projected_site_features():
+def projected_site_features(reference_dir=None):
     """Every riding, at the site's coarser simplification (see
     scripts/build_geometry.py)."""
     transformer = Transformer.from_crs("EPSG:4326", PROJECTION, always_xy=True)
-    return _project_features(transformer, path=SITE_GEOMETRY_PATH)
+    return _project_features(
+        transformer, path=_site_path(reference_dir, SITE_GEOMETRY_FILE, GEOMETRY_FILE)
+    )
 
 
-def projected_site_borders():
+def projected_site_borders(reference_dir=None):
     """Riding-to-riding borders at the site's coarser simplification."""
     transformer = Transformer.from_crs("EPSG:4326", PROJECTION, always_xy=True)
-    return _project_borders(transformer, path=SITE_BORDERS_PATH)
+    return _project_borders(
+        transformer, path=_site_path(reference_dir, SITE_BORDERS_FILE, BORDERS_FILE)
+    )
 
 
 def viewport(features, width, margin=0):
@@ -261,9 +287,9 @@ def write_maps(conn, out_dir=DEFAULT_OUT_DIR):
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    transformer = Transformer.from_crs("EPSG:4326", PROJECTION, always_xy=True)
-    features = _project_features(transformer)
-    borders = _project_borders(transformer)
+    reference_dir = places.reference_dir_for(conn)
+    features = projected_features(reference_dir)
+    borders = projected_borders(reference_dir)
 
     written = []
     for filename, use_secondary, title in (

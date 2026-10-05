@@ -864,7 +864,9 @@ async function boot() {
   const committed = await worldResponse.json();
 
   app.rules = loadRules(read, rulesVersion);
-  app.map = loadReferenceMap(read);
+  // REFERENCE_FILES is the set this game was built on, as the exporter
+  // shipped it: the riding_stats/jurisdictions tables are read when it has them.
+  app.map = loadReferenceMap(read, 'data/reference', REFERENCE_FILES);
   app.committedSeason = committed.season || 0;
   app.committedSha = committed.last_season_sha256;
 

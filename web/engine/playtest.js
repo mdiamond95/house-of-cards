@@ -12,7 +12,7 @@
 // It deliberately reads the *exported site*, not the repository: if an export
 // forgot to copy a module or a rules table, this fails, which is the point.
 
-import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -54,13 +54,19 @@ async function main() {
 
   const committed = JSON.parse(readFileSync(path.join(args.site, 'data', 'world.json'), 'utf8'));
 
+  // The reference tables the export shipped, as play.js is told them.
+  const { REFERENCE_TABLES, WORLD_TABLES } = await import(path.join(engine, 'adjacency.js'));
+  const tables = REFERENCE_TABLES.concat(WORLD_TABLES.filter(
+    (name) => existsSync(path.join(args.site, 'data', 'reference', name)),
+  ));
+
   // The page plays *new* seasons, and a new season is played under whatever
   // rules/current.txt names — not under the version the committed world's last
   // season was played at, which is older across every version change. So this
   // reads the version the same way the page does, and plays forward with it.
   const rulesVersion = read('rules/current.txt').trim();
   const world = new World({
-    state: WorldState.load(committed, loadReferenceMap(read)),
+    state: WorldState.load(committed, loadReferenceMap(read, 'data/reference', tables)),
     rules: loadRules(read, rulesVersion),
     worldSeed: committed.world_seed,
   });

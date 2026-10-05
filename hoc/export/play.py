@@ -22,11 +22,12 @@ import json
 import shutil
 from pathlib import Path
 
-from hoc import rules_data
+from hoc import places, rules_data
 from hoc.export import world as world_export
 
 __all__ = [
     "write_play_assets", "ENGINE_MODULES", "ENGINE_TOOLS", "RULES_FILES", "REFERENCE_FILES",
+    "WORLD_FILES", "reference_files",
 ]
 
 # The engine's own modules. Copied rather than imported across directories so
@@ -53,10 +54,24 @@ RULES_FILES = (
 )
 
 # The reference tables `web/engine/adjacency.js` reads. places_by_riding and
-# riding_tokens joined them at rules 0.8, for the designation draw.
+# riding_tokens joined them at rules 0.8, for the designation draw. Every
+# reference-data set has these (adjacency.js REFERENCE_TABLES).
 REFERENCE_FILES = (
     "ridings.csv", "adjacency.csv", "places_by_riding.csv", "riding_tokens.csv",
 )
+
+# The tables only some sets have (meridian-v1.0.3), shipped when the set has
+# them so the browser's engine holds what the Python engine holds
+# (adjacency.js WORLD_TABLES).
+WORLD_FILES = ("riding_stats.csv", "riding_jurisdictions.csv")
+
+
+def reference_files(reference_dir):
+    """The reference tables a set ships to the browser: every set's, then those
+    of WORLD_FILES the set has."""
+    return REFERENCE_FILES + tuple(
+        name for name in WORLD_FILES if (Path(reference_dir) / name).exists()
+    )
 
 
 def write_play_assets(conn, site_dir, repo_root):
@@ -101,10 +116,17 @@ def write_play_assets(conn, site_dir, repo_root):
             target = version_dir / name
             shutil.copyfile(source, target)
             written.append(target)
-    for name in REFERENCE_FILES:
+    # The set this database was built on (scripts/load_seed.py records it),
+    # copied to data/reference/ whichever set it is: the page reads one map.
+    source_dir = places.reference_dir_for(conn)
+    shipped = reference_files(source_dir)
+    for name in shipped:
         target = reference_dir / name
-        shutil.copyfile(Path(repo_root) / "data" / "reference" / name, target)
+        shutil.copyfile(source_dir / name, target)
         written.append(target)
+    for stale in reference_dir.iterdir():
+        if stale.is_file() and stale.name not in shipped:
+            stale.unlink()
 
     world_path, _ = world_export.write_world(conn, site_dir / "data")
     written.append(world_path)

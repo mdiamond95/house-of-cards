@@ -1,59 +1,148 @@
-"""Where a riding's territorial designations can come from (rules 0.8).
+"""The reference tables the engine reads from CSV rather than from `hoc.db`.
 
 Rules 0.7 drew a house's designation from a province-wide bank, so a Baron
 seated in Halifax could be styled "of Kamloops" as readily as "of Dartmouth" —
 the bank knew the province and nothing else. Rules 0.8 draws from the seat's own
 ground instead, and this module is the data that makes that possible.
 
-Two tables, both built by `scripts/build_places.py` and committed:
+Two tables in every reference-data set:
 
-* `places_by_riding.csv` — Natural Earth's Canadian populated places, each
-  assigned to the riding whose polygon covers it, largest population first.
-  There are 255 of them across 111 of the 343 ridings, which is thin — hence
-  the tiers rather than a single source.
+* `places_by_riding.csv` — populated places, each assigned to the riding its
+  point falls in, largest population first. In `ne-2026` they are Natural
+  Earth's 255 Canadian places across 111 ridings, which is thin — hence the
+  tiers rather than a single source. In `meridian-v1.0.3` they are the census
+  subdivisions, with a `spans_ridings` column: 1 when the place's population
+  exceeds its riding's, as a city filed under the riding its point fell in does
+  (Halifax under Central Nova). Such a place is never a designation for that
+  riding, and is dropped here, on load, in both engines.
 * `riding_tokens.csv` — the usable words in a riding's own name, in name order.
   Every riding has at least one, which is what makes the draw always able to
   answer.
 
+Two more in `meridian-v1.0.3` only, loaded so that both engines hold them but
+read by nothing yet:
+
+* `riding_stats.csv` — per-riding integers (population, tiers, shares per
+  mille, urban class, industry, opens_year).
+* `riding_jurisdictions.csv` — the jurisdiction a riding lay under, by year.
+
 Read from the CSVs rather than from `hoc.db`, deliberately: `web/engine/` reads
-the same two files, so both engines see identical bytes in identical order and
+the same files, so both engines see identical bytes in identical order and
 the row ordering the draws depend on cannot diverge between them
 (docs/DETERMINISM.md).
+
+Which set is read is the caller's to say — a World passes the directory its
+database was built from (`reference_dir_for`). The default is `ne-2026`, the set
+both frozen games were played on.
 """
 
 import csv
 from pathlib import Path
 
-__all__ = ["places_by_riding", "tokens_by_riding", "PLACES_PATH", "TOKENS_PATH"]
+__all__ = [
+    "places_by_riding", "tokens_by_riding", "riding_stats", "riding_jurisdictions",
+    "reference_dir_for", "DEFAULT_REFERENCE_DIR", "PLACES_PATH", "TOKENS_PATH",
+]
 
-REFERENCE_DIR = Path(__file__).resolve().parent.parent / "data" / "reference"
-PLACES_PATH = REFERENCE_DIR / "places_by_riding.csv"
-TOKENS_PATH = REFERENCE_DIR / "riding_tokens.csv"
+REPO_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_REFERENCE_DIR = REPO_ROOT / "data" / "reference"
+REFERENCE_DIR = DEFAULT_REFERENCE_DIR
+PLACES_PATH = DEFAULT_REFERENCE_DIR / "places_by_riding.csv"
+TOKENS_PATH = DEFAULT_REFERENCE_DIR / "riding_tokens.csv"
 
-_places = None
-_tokens = None
+STATS_FILE = "riding_stats.csv"
+JURISDICTIONS_FILE = "riding_jurisdictions.csv"
+
+# (kind, resolved directory) -> table. A reference set never changes during a
+# run, and a process may read more than one set (a rebuild, then the archive).
+_cache = {}
 
 
-def _load(path, key, value):
+def _dir(reference_dir):
+    return DEFAULT_REFERENCE_DIR if reference_dir is None else Path(reference_dir)
+
+
+def _rows(path):
+    with open(path, newline="", encoding="utf-8") as f:
+        return list(csv.DictReader(f))
+
+
+def _cached(kind, reference_dir, build):
+    key = (kind, str(_dir(reference_dir).resolve()))
+    if key not in _cache:
+        _cache[key] = build(_dir(reference_dir))
+    return _cache[key]
+
+
+def _group(rows, key, value):
     """{fed_id: [value, ...]} in file order — the order the draws depend on."""
     out = {}
-    with open(path, newline="", encoding="utf-8") as f:
-        for row in csv.DictReader(f):
-            out.setdefault(row[key], []).append(row[value])
+    for row in rows:
+        out.setdefault(row[key], []).append(row[value])
     return out
 
 
-def places_by_riding():
-    """fed_id -> place names, largest population first (the file's own order)."""
-    global _places
-    if _places is None:
-        _places = _load(PLACES_PATH, "fed_id", "place")
-    return _places
+def reference_dir_for(conn):
+    """The reference directory a database was built from (its `reference_data`
+    row, written by scripts/load_seed.py), or the default for a database that
+    predates the table or never had a row."""
+    try:
+        row = conn.execute("SELECT path FROM reference_data").fetchone()
+    except Exception:  # sqlite3.OperationalError: a database without the table
+        return DEFAULT_REFERENCE_DIR
+    return DEFAULT_REFERENCE_DIR if row is None else REPO_ROOT / row[0]
 
 
-def tokens_by_riding():
+def places_by_riding(reference_dir=None):
+    """fed_id -> place names, largest population first (the file's own order),
+    without any place that spans its riding."""
+    def build(directory):
+        rows = [
+            row for row in _rows(directory / "places_by_riding.csv")
+            if row.get("spans_ridings", "0") != "1"
+        ]
+        return _group(rows, "fed_id", "place")
+    return _cached("places", reference_dir, build)
+
+
+def tokens_by_riding(reference_dir=None):
     """fed_id -> the usable words of the riding's name, in name order."""
-    global _tokens
-    if _tokens is None:
-        _tokens = _load(TOKENS_PATH, "fed_id", "token")
-    return _tokens
+    return _cached(
+        "tokens", reference_dir,
+        lambda directory: _group(_rows(directory / "riding_tokens.csv"), "fed_id", "token"),
+    )
+
+
+def riding_stats(reference_dir=None):
+    """fed_id -> {column: int}, or {} for a set without the table."""
+    def build(directory):
+        path = directory / STATS_FILE
+        if not path.exists():
+            return {}
+        return {
+            row["fed_id"]: {k: int(v) for k, v in row.items() if k != "fed_id"}
+            for row in _rows(path)
+        }
+    return _cached("stats", reference_dir, build)
+
+
+def riding_jurisdictions(reference_dir=None):
+    """fed_id -> [{from_year, to_year, unit, name, status, sovereign}, ...] in
+    year order, to_year None for the span in force today; {} for a set without
+    the table."""
+    def build(directory):
+        path = directory / JURISDICTIONS_FILE
+        if not path.exists():
+            return {}
+        out = {}
+        for row in _rows(path):
+            out.setdefault(row["fed_id"], []).append({
+                "from_year": int(row["from_year"]),
+                "to_year": int(row["to_year"]) if row["to_year"] else None,
+                "unit": row["unit"],
+                "name": row["name"],
+                "status": row["status"],
+                "sovereign": row["sovereign"],
+            })
+        return out
+    return _cached("jurisdictions", reference_dir, build)

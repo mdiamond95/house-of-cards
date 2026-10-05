@@ -9,17 +9,22 @@
 // step and no dependency: that is the point of the directory.
 
 import { loadRules, currentVersion, feature } from './rules.js';
-import { loadReferenceMap } from './adjacency.js';
+import { loadReferenceMap, REFERENCE_TABLES, WORLD_TABLES } from './adjacency.js';
 import { WorldState } from './state.js';
 import { World, canonicalJson, PHASES, RULES_VERSION, SimError } from './sim.js';
 
 export { World, WorldState, canonicalJson, PHASES, RULES_VERSION, SimError };
-export { loadRules, loadReferenceMap, currentVersion, feature };
+export { loadRules, loadReferenceMap, currentVersion, feature, REFERENCE_TABLES, WORLD_TABLES };
 
 // Load the rules and the reference map once. Both are immutable for the life of
 // a game, so a caller playing several worlds should hold on to the result.
-export function loadWorldData(read, version = null) {
-  return { rules: loadRules(read, version), map: loadReferenceMap(read) };
+// `reference` is {dir, tables}: which reference-data set's directory, and which
+// of its files exist (loadReferenceMap); the default is data/reference/.
+export function loadWorldData(read, version = null, reference = {}) {
+  return {
+    rules: loadRules(read, version),
+    map: loadReferenceMap(read, reference.dir, reference.tables),
+  };
 }
 
 // The rules bundle for a given version, cached against the map so a replay

@@ -14,11 +14,13 @@
 // engines can be compared a phase at a time while the port is being built. The
 // default is every phase, and that is the only way the game is ever played.
 
-import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { newWorld, resumeWorld, canonicalJson, PHASES } from './index.js';
+import {
+  newWorld, resumeWorld, canonicalJson, loadWorldData, PHASES, REFERENCE_TABLES, WORLD_TABLES,
+} from './index.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = path.resolve(HERE, '..', '..');
@@ -27,7 +29,7 @@ function parseArgs(argv) {
   const args = {
     seed: 1867, seasons: 1, seat: null, out: null,
     root: DEFAULT_ROOT, phases: null, resume: null, interventions: null,
-    rulesVersion: null,
+    rulesVersion: null, reference: 'data/reference',
   };
   for (let i = 0; i < argv.length; i += 1) {
     const flag = argv[i];
@@ -44,6 +46,9 @@ function parseArgs(argv) {
       // which is right for a new season; a replay of a recorded season
       // passes the version that season recorded.
       case '--rules-version': args.rulesVersion = value; i += 1; break;
+      // The reference-data set's directory, relative to --root: the one the
+      // scenario's manifest names (hoc/scenario.py REFERENCE_SETS).
+      case '--reference': args.reference = value.replace(/\/+$/, ''); i += 1; break;
       case '--phases':
         args.phases = value.split(',').map((p) => p.trim()).filter(Boolean);
         i += 1;
@@ -87,17 +92,24 @@ function main() {
     : [];
   const dueAfter = (season) => script.filter((entry) => entry.after_season === season);
 
+  // The reference map, from the set --reference names; its optional tables
+  // are read when the set has them.
+  const tables = REFERENCE_TABLES.concat(
+    WORLD_TABLES.filter((name) => existsSync(path.join(args.root, args.reference, name))),
+  );
+  const data = loadWorldData(read, args.rulesVersion, { dir: args.reference, tables });
+
   let world;
   let first;
   if (args.resume !== null) {
     // Resuming: the snapshot says which season the world stands at, and the
     // count is how many *more* to play.
     const snapshot = JSON.parse(readFileSync(args.resume, 'utf8'));
-    world = resumeWorld(read, snapshot, { phases: args.phases, version: args.rulesVersion });
+    world = resumeWorld(read, snapshot, { phases: args.phases, version: args.rulesVersion, data });
     first = (snapshot.season || 0) + 1;
   } else {
     const started = newWorld(read, args.seed, args.seat,
-      { phases: args.phases, version: args.rulesVersion });
+      { phases: args.phases, version: args.rulesVersion, data });
     world = started.world;
     write(1, started.record);
     first = 2;
