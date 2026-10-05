@@ -261,6 +261,17 @@ def _op_force_action(conn, op, event_id, data):
             f"unknown action {op['action']!r}; valid actions are {', '.join(sorted(known))}"
         )
 
+    # Rules 0.9 `atlas_jurisdiction`: forcing Expand on a house whose every
+    # unclaimed land neighbour is closed to it is refused now, by name, rather
+    # than quietly falling back to an ordinary draw next season.
+    if op["action"] == "Expand":
+        from hoc import sim
+
+        # No draw is made, so the world needs no seed of its own.
+        refusal = sim.World(conn, world_seed=0).expand_refusal(op["house"])
+        if refusal is not None:
+            raise rules.RuleError(f"cannot force Expand: {refusal}")
+
     conn.execute(
         "UPDATE house_stats SET forced_action = ? WHERE house = ?", (op["action"], op["house"])
     )

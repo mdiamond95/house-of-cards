@@ -43,6 +43,8 @@ function splitList(raw) {
 export const FEATURE_DEFAULTS = {
   local_designations: false,
   quiet_season_line: false,
+  atlas_jurisdiction: false,
+  riding_endowments: false,
 };
 
 // Where a version's tables live. Rules are versioned so that a season always

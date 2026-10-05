@@ -44,6 +44,12 @@ export const RULES_VERSION = '0.7';
 const QUIET_HOUSE_SEASONS = 10;
 export const WEIGHT_SCALE = 100;
 export const TOTAL_RIDINGS = 343;
+// Rules 0.9 (`atlas_jurisdiction`): the personal year every founding and every
+// accession starts a clock at, and so the year a Crown grant reads the map at.
+export const FOUNDING_YEAR = 1867;
+// Rules 0.9 (`riding_endowments`): the middle quintile, and what a reference
+// set without riding_stats.csv (ne-2026) reads every riding as.
+export const NEUTRAL_WEALTH_TIER = 3;
 export const STAT_RANGE = [0, 100];
 export const AMBITION_RANGE = [0, 10];
 
@@ -334,6 +340,87 @@ export class World {
     return featureOf(this.rules, name);
   }
 
+  // -- rules 0.9: the atlas a house reads, and what its ground is worth --
+  // Mirrors of hoc/sim.py's opens_year ... _jurisdiction_suffix, one for one.
+
+  opensYear(fedId) {
+    const stats = this.state.map.ridingStats.get(fedId);
+    if (!stats || stats.opens_year === undefined) return FOUNDING_YEAR;
+    return stats.opens_year;
+  }
+
+  ridingOpen(fedId, personalYear) {
+    if (!this.feature('atlas_jurisdiction')) return true;
+    return personalYear >= this.opensYear(fedId);
+  }
+
+  foundable(fedId) {
+    return this.ridingOpen(fedId, FOUNDING_YEAR);
+  }
+
+  closedMessage(fedId, who, personalYear) {
+    return `${this.ridingName(fedId)} is closed to ${who}: personal year`
+      + ` ${personalYear} is before its opens_year ${this.opensYear(fedId)}`;
+  }
+
+  wealthOffset(fedId) {
+    if (!this.feature('riding_endowments')) return 0;
+    const stats = this.state.map.ridingStats.get(fedId) || {};
+    const tier = stats.wealth_tier === undefined ? NEUTRAL_WEALTH_TIER : stats.wealth_tier;
+    return tier - NEUTRAL_WEALTH_TIER;
+  }
+
+  jurisdictionName(fedId, year) {
+    for (const span of this.state.map.ridingJurisdictions.get(fedId) || []) {
+      if (span.from_year <= year && (span.to_year === null || year <= span.to_year)) {
+        return span.name;
+      }
+    }
+    return null;
+  }
+
+  jurisdictionSuffix(fedId, year) {
+    if (!this.feature('atlas_jurisdiction')) return '';
+    const then = this.jurisdictionName(fedId, year);
+    const spans = this.state.map.ridingJurisdictions.get(fedId) || [];
+    const now = spans.length ? spans[spans.length - 1].name : null;
+    return then !== null && then !== now ? ` (${then})` : '';
+  }
+
+  openExpansionTargets(house) {
+    const targets = this.state.expansionTargets(house);
+    if (!this.feature('atlas_jurisdiction')) return targets;
+    const year = this.personalYear(house);
+    return targets.filter((fedId) => this.ridingOpen(fedId, year));
+  }
+
+  canExpandIntoOpen(house) {
+    if (!this.feature('atlas_jurisdiction')) return this.hasExpansionTarget(house);
+    const key = `can_expand_open|${house}`;
+    if (!this._turnCache.has(key)) {
+      this._turnCache.set(key, this.openExpansionTargets(house).length > 0);
+    }
+    return this._turnCache.get(key);
+  }
+
+  foundingRoom() {
+    if (!this.feature('atlas_jurisdiction')) return this.state.unclaimedLandAdjacentCount();
+    let count = 0;
+    for (const fedId of this.state.map.hasLandNeighbour) {
+      if (!this.state.isHeld(fedId) && this.foundable(fedId)) count += 1;
+    }
+    return count;
+  }
+
+  expandRefusal(house) {
+    if (!this.feature('atlas_jurisdiction')) return null;
+    const targets = this.state.expansionTargets(house);
+    if (targets.length === 0) return null;
+    const year = this.personalYear(house) + 1;
+    if (targets.some((fedId) => this.ridingOpen(fedId, year))) return null;
+    return this.closedMessage(targets[0], house, year);
+  }
+
   // Rules 0.8: where a house's territorial designation may come from, most
   // local first. Under 0.7 there was one source — the seat's province — so a
   // house seated in Halifax could be styled "of Kamloops"; these tiers are what
@@ -514,9 +601,18 @@ export class World {
 
   drawRegion(rng) {
     const capacity = new Map();
-    for (const [province, count] of this.state.unclaimedCountByProvince()) {
-      const region = PROVINCE_REGION[province] ?? 'north';
-      capacity.set(region, (capacity.get(region) ?? 0) + count);
+    if (this.feature('atlas_jurisdiction')) {
+      // Rules 0.9: "unclaimed" means unclaimed and foundable.
+      for (const riding of this.state.map.ridings) {
+        if (this.state.isHeld(riding.fed_id) || !this.foundable(riding.fed_id)) continue;
+        const region = PROVINCE_REGION[riding.province] ?? 'north';
+        capacity.set(region, (capacity.get(region) ?? 0) + 1);
+      }
+    } else {
+      for (const [province, count] of this.state.unclaimedCountByProvince()) {
+        const region = PROVINCE_REGION[province] ?? 'north';
+        capacity.set(region, (capacity.get(region) ?? 0) + count);
+      }
     }
     const weights = [];
     for (const region of Object.keys(this.regionWeights).sort(compareStrings)) {
@@ -531,7 +627,8 @@ export class World {
   drawSeat(rng, region) {
     const provinces = Object.keys(PROVINCE_REGION).filter((p) => PROVINCE_REGION[p] === region);
     if (provinces.length === 0) return null;
-    const rows = this.state.unclaimedInProvinces(provinces);
+    const rows = this.state.unclaimedInProvinces(provinces)
+      .filter((fedId) => this.foundable(fedId));
     if (rows.length === 0) return null;
     return rng.choice(rows, 'founding.seat');
   }
@@ -558,6 +655,11 @@ export class World {
       fedId = this.state.map.resolve(nameKey(seat));
       if (fedId === null) throw new SimError(`unknown riding '${seat}'`);
       if (this.state.holderOfRiding(fedId) !== null) throw new SimError(`riding '${seat}' is already held`);
+      if (!this.foundable(fedId)) {
+        throw new SimError(
+          `cannot found a house at ${this.closedMessage(fedId, 'a new house', FOUNDING_YEAR)}`,
+        );
+      }
       province = this.state.map.province(fedId);
       region = PROVINCE_REGION[province] ?? 'north';
     } else {
@@ -628,7 +730,11 @@ export class World {
     });
 
     const stats = {
-      capital: clamp(30 + 5 * rankIndex + draws.randint(1, 20, 'founding.capital'), STAT_RANGE[0], STAT_RANGE[1]),
+      // Rules 0.9 `riding_endowments`: + 2*(wealth_tier - 3) of the seat.
+      capital: clamp(
+        30 + 5 * rankIndex + draws.randint(1, 20, 'founding.capital') + 2 * this.wealthOffset(fedId),
+        STAT_RANGE[0], STAT_RANGE[1],
+      ),
       influence: clamp(20 + 5 * rankIndex + draws.randint(1, 20, 'founding.influence'), STAT_RANGE[0], STAT_RANGE[1]),
       cohesion: clamp(60 + draws.randint(1, 20, 'founding.cohesion'), STAT_RANGE[0], STAT_RANGE[1]),
       ambition: clamp(draws.randint(1, 10, 'founding.ambition'), AMBITION_RANGE[0], AMBITION_RANGE[1]),
@@ -664,6 +770,17 @@ export class World {
     });
     this.state.setClock(house, 1867, `founded season ${season}`);
 
+    const foundingDelta = { stats, community: communityObj.community, tag: chosenTag };
+    const seatJurisdiction = this.feature('atlas_jurisdiction')
+      ? this.jurisdictionName(fedId, FOUNDING_YEAR)
+      : null;
+    if (seatJurisdiction !== null) {
+      foundingDelta.jurisdiction = seatJurisdiction;
+      this.log.push({
+        purpose: 'founding.jurisdiction',
+        result: { riding: this.ridingName(fedId), jurisdiction: seatJurisdiction },
+      });
+    }
     const eventId = this.record(
       'founding',
       `${drawn.peerage} founded`,
@@ -671,8 +788,9 @@ export class World {
       season,
       {
         band: 'confederation',
-        line: `Season ${season} · ${drawn.peerage} is created, seated at ${this.ridingName(fedId)}.`,
-        delta: { stats, community: communityObj.community, tag: chosenTag },
+        line: `Season ${season} · ${drawn.peerage} is created, seated at ${this.ridingName(fedId)}`
+          + `${this.jurisdictionSuffix(fedId, FOUNDING_YEAR)}.`,
+        delta: foundingDelta,
       },
     );
     this.state.addHolding({ house, fedId, seatOrder: 1, hex: primary, acquiredEventId: eventId });
@@ -1373,7 +1491,7 @@ export class World {
     const holdings = this.holdingCount(house);
     const legal = new Set(['Invest', 'Consolidate (rest)']);
 
-    if (row.capital >= 40 && !row.enclosed && this.hasExpansionTarget(house)) legal.add('Expand');
+    if (row.capital >= 40 && !row.enclosed && this.canExpandIntoOpen(house)) legal.add('Expand');
     if (row.capital >= 20) legal.add('Cultivate influence');
     if (holder !== null && holder.age >= 45) {
       const existing = this.heirs(house);
@@ -1579,10 +1697,11 @@ export class World {
       return { action: 'Expand', success: false };
     }
 
-    const targets = this.state.expansionTargets(house);
+    const targets = this.openExpansionTargets(house);
     if (targets.length === 0) return { action: 'Expand', success: false, note: 'no target' };
     const fedId = rng.choice(targets, `expand.target.${house}`);
     const name = this.ridingName(fedId);
+    const year = this.personalYear(house);
 
     const rival = this._expansionClaims.get(fedId);
     if (rival !== undefined && rival.house !== house) {
@@ -1606,17 +1725,25 @@ export class World {
       });
     }
 
+    const expansionDelta = { riding: name, roll };
+    const jurisdiction = this.feature('atlas_jurisdiction')
+      ? this.jurisdictionName(fedId, year)
+      : null;
+    if (jurisdiction !== null) expansionDelta.jurisdiction = jurisdiction;
     const eventId = this.record('expansion', `${row.peerage} takes ${name}`, [house], season, {
       band,
-      line: `Season ${season} · ${row.peerage} takes ${name}.`,
-      delta: { riding: name, roll },
+      line: `Season ${season} · ${row.peerage} takes ${name}${this.jurisdictionSuffix(fedId, year)}.`,
+      delta: expansionDelta,
     });
     this.state.addHolding({
       house, fedId, seatOrder: this.nextSeatOrder(house),
       hex: this.expansionHex(house), acquiredEventId: eventId,
     });
-    this.setStats(house, { capital: -15 });
-    return { action: 'Expand', success: true, riding: name };
+    // Rules 0.9 `riding_endowments`: 15 + (wealth_tier - 3) of the target.
+    this.setStats(house, { capital: -(15 + this.wealthOffset(fedId)) });
+    const outcome = { action: 'Expand', success: true, riding: name };
+    if (jurisdiction !== null) outcome.jurisdiction = jurisdiction;
+    return outcome;
   }
 
   grievanceFromContest(loser, winner, riding, season, band) {
@@ -2334,6 +2461,11 @@ export class World {
       const known = [...this.actions.keys()].sort(compareStrings).join(', ');
       throw new SimError(`unknown action '${op.action}'; valid actions are ${known}`);
     }
+    // Rules 0.9 `atlas_jurisdiction`: hoc/turn.py refuses this by name.
+    if (op.action === 'Expand') {
+      const refusal = this.expandRefusal(op.house);
+      if (refusal !== null) throw new SimError(`cannot force Expand: ${refusal}`);
+    }
     this.state.stats(op.house).forcedAction = op.action;
     subject(op.house);
     note('force_action', {
@@ -2542,7 +2674,7 @@ export class World {
 
   foundingRoll(season, rng) {
     const spec = this.rules.founding.p_found;
-    const room = this.state.unclaimedLandAdjacentCount();
+    const room = this.foundingRoom();
     const probability = pFound(room, TOTAL_RIDINGS, spec.coefficient);
     rng.draw('founding.p_found', { room, p: new FloatValue(probability) });
     if (probability <= 0) return null;
