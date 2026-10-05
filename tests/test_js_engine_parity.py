@@ -332,7 +332,7 @@ def synthetic_world(tmp_path_factory):
     from hoc import scenario, sim  # noqa: E402
 
     tmp = tmp_path_factory.mktemp("synthetic")
-    conn = load_seed.build(tmp / "synthetic.db", seed=scenario.seed_dir("new"))
+    conn = load_seed.build(tmp / "synthetic.db", seed=scenario.blank_seed_dir())
 
     for index, house in enumerate(SYNTHETIC_HOUSES):
         conn.execute(

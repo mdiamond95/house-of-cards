@@ -36,8 +36,10 @@ const REPO = '__REPO__';
 const GITHUB_API = 'https://api.github.com';
 const API = `${GITHUB_API}/repos/${REPO}`;
 const BRANCH = 'main';
-const SEASONS_PATH = '__SEASONS_PATH__';
-const INTERVENTIONS_PATH = '__INTERVENTIONS_PATH__';
+// The game this page was built for: {name, title, status}. Written by the
+// exporter from the scenario manifests; the paths a save commits to are derived
+// from `name` in record.js, and a status other than "live" is refused there.
+const SCENARIO = __SCENARIO__;
 // The same key the console keeps its token under: one token, pasted once.
 const TOKEN_KEY = 'hoc-token';
 const RULES_FILES = __RULES_FILES__;
@@ -514,8 +516,8 @@ async function autosave() {
 // ref. Never a force: if main has moved past the base this game was played on,
 // the save refuses and offers to reload.
 //
-// What is written is only the record — `scenarios/new/seasons/NNNN.json` and
-// `scenarios/new/interventions/NNNN.json`, exactly as the engine produced them.
+// What is written is only the record — `scenarios/<name>/seasons/NNNN.json` and
+// `scenarios/<name>/interventions/NNNN.json`, exactly as the engine produced them.
 // `hoc.db`, `outputs/` and `world.json` are the referee's to write, after it has
 // replayed these seasons in Python and found them identical. A browser that
 // wrote the database would be asking to be believed; this way it is checked.
@@ -681,6 +683,13 @@ async function ensureRecords() {
 }
 
 async function saveToGitHub() {
+  // record.js refuses a frozen game too; saying so first, on the page, is the
+  // difference between a refusal and a mystery.
+  if (SCENARIO.status !== 'live') {
+    return stopSave(
+      `${escapeHtml(SCENARIO.title)} is frozen and cannot be written to. Nothing was saved.`,
+    );
+  }
   if (!token()) {
     return stopSave(
       'No GitHub token in this browser. Paste one on the'
@@ -737,16 +746,16 @@ async function saveToGitHub() {
   //    and any intervention taken during them. web/engine/record.js is the one
   //    definition of that shape, shared with the headless check.
   const files = recordFiles({
+    scenario: SCENARIO,
     records,
     interventions: app.pendingInterventions,
     committedSeason: savedFloor(),
-    seasonsPath: SEASONS_PATH,
-    interventionsPath: INTERVENTIONS_PATH,
   });
 
   // 3. Blobs, tree, commit, fast-forward — never a force.
   const message = `Play: seasons ${first}–${last} (browser engine)${note ? ` — ${note}` : ''}`;
   const commit = await commitRecord(api, {
+    scenario: SCENARIO,
     branch: BRANCH,
     baseSha: headSha,
     files,

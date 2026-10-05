@@ -31,6 +31,10 @@ import load_seed  # noqa: E402
 from hoc import scenario, sim  # noqa: E402
 from hoc.export import site  # noqa: E402
 
+# The machinery under test plays and saves a game, which only a live scenario allows.
+# See tests/conftest.py; the refusal itself is tested in tests/test_frozen.py.
+pytestmark = pytest.mark.usefixtures("live_game")
+
 NODE = shutil.which("node")
 
 
@@ -116,7 +120,7 @@ def legacy_site(tmp_path_factory):
 @pytest.fixture(scope="module")
 def played_site(tmp_path_factory):
     tmp = tmp_path_factory.mktemp("played")
-    conn = load_seed.build(tmp / "played.db", seed=scenario.seed_dir("new"))
+    conn = load_seed.build(tmp / "played.db", seed=scenario.blank_seed_dir())
     world = sim.World(conn, world_seed=1867)
     world.initialise(1867)
     for _ in range(9):

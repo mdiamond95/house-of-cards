@@ -25,7 +25,7 @@ SEASONS = 40
 @pytest.fixture(scope="module")
 def played(tmp_path_factory):
     tmp = tmp_path_factory.mktemp("timeline")
-    conn = load_seed.build(tmp / "played.db", seed=scenario.seed_dir("new"))
+    conn = load_seed.build(tmp / "played.db", seed=scenario.blank_seed_dir())
     world = sim.World(conn, world_seed=17)
     world.initialise(17)
     for _ in range(SEASONS - 1):
@@ -107,7 +107,7 @@ def test_index_carries_a_scrubber(rendered):
 
 def test_a_one_season_world_has_no_scrubber(tmp_path):
     """Nothing to scrub through yet, so the control would only be noise."""
-    conn = load_seed.build(tmp_path / "fresh.db", seed=scenario.seed_dir("new"))
+    conn = load_seed.build(tmp_path / "fresh.db", seed=scenario.blank_seed_dir())
     world = sim.World(conn, world_seed=2)
     world.initialise(2)
     site.write_site(conn, out_dir=tmp_path)

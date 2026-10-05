@@ -14,19 +14,25 @@
 //   * every blob it would post hashes to the same git object as the file
 //     `cli.js` wrote to disk, so what is committed is what was played.
 //
+// It also checks the refusal: a frozen scenario (every one in scenarios/ that is
+// not live, and a scenario that is missing) must make `recordFiles` and
+// `commitRecord` throw before any file is built or any request is made.
+//
 // `api` is a mock. Nothing here reaches the network, and no token is needed.
 // It exits 0 when everything agrees and 1 when it does not; a difference is
 // printed with the path it belongs to.
 
 import { createHash } from 'node:crypto';
-import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 import { newWorld } from './index.js';
-import { recordFiles, commitRecord, DEFAULT_SEASONS_PATH } from './record.js';
+import {
+  recordFiles, commitRecord, scenarioPaths, FrozenScenarioError,
+} from './record.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = path.resolve(HERE, '..', '..');
@@ -72,6 +78,52 @@ function mockApi(calls) {
   };
 }
 
+// The scenario a save is checked against: a made-up live one, so that the check
+// does not depend on whether the repository has a live game at the moment.
+const SCENARIO = { name: 'savecheck', title: 'Savecheck', status: 'live' };
+
+// Every way a write to a game that is not live could be attempted.
+async function checkRefusals(root, failures) {
+  const calls = [];
+  const frozen = [
+    { name: 'frozen-case', title: 'Frozen case', status: 'frozen' },
+    { name: 'no-status', title: 'No status' },
+    undefined,
+  ];
+  const scenariosDir = path.join(root, 'scenarios');
+  for (const entry of readdirSync(scenariosDir, { withFileTypes: true })) {
+    const manifest = path.join(scenariosDir, entry.name, 'scenario.json');
+    if (!entry.isDirectory() || !existsSync(manifest)) continue;
+    const data = JSON.parse(readFileSync(manifest, 'utf8'));
+    // A missing status reads as frozen — the page is handed whatever the manifest says.
+    if (data.status !== 'live') {
+      frozen.push({ name: entry.name, title: data.title, status: data.status });
+    }
+  }
+  for (const scenario of frozen) {
+    const label = scenario ? scenario.name : 'no scenario';
+    let built = null;
+    try {
+      built = recordFiles({ scenario, records: [{ season: 1 }], committedSeason: 0 });
+    } catch (error) {
+      if (!(error instanceof FrozenScenarioError)) failures.push(`${label}: recordFiles threw ${error.name}`);
+    }
+    if (built !== null) failures.push(`recordFiles built files for ${label}, which is not live`);
+
+    let committed = false;
+    try {
+      await commitRecord(async (endpoint) => { calls.push(endpoint); return {}; }, {
+        scenario, baseSha: 'x', files: [{ path: 'scenarios/x/seasons/0001.json', content: '{}' }], message: 'm',
+      });
+      committed = true;
+    } catch (error) {
+      if (!(error instanceof FrozenScenarioError)) failures.push(`${label}: commitRecord threw ${error.name}`);
+    }
+    if (committed) failures.push(`commitRecord committed to ${label}, which is not live`);
+  }
+  if (calls.length > 0) failures.push(`a refused save still made ${calls.length} request(s)`);
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const read = (relative) => readFileSync(path.join(args.root, relative), 'utf8');
@@ -93,13 +145,14 @@ async function main() {
       records.push(world.runSeason());
     }
 
-    const files = recordFiles({ records, committedSeason: 0 });
+    const files = recordFiles({ scenario: SCENARIO, records, committedSeason: 0 });
     if (files.length !== args.seasons) {
       failures.push(`built ${files.length} file(s) for ${args.seasons} season(s)`);
     }
 
     const calls = [];
     const commit = await commitRecord(mockApi(calls), {
+      scenario: SCENARIO,
       baseSha: 'base-commit-sha',
       files,
       message: `Play: seasons 1–${args.seasons} (browser engine)`,
@@ -107,7 +160,7 @@ async function main() {
 
     // Paths: the record and nothing else.
     for (const file of files) {
-      if (!file.path.startsWith(`${DEFAULT_SEASONS_PATH}/`)) {
+      if (!file.path.startsWith(`${scenarioPaths(SCENARIO.name).seasonsPath}/`)) {
         failures.push(`a save would write outside the record: ${file.path}`);
       }
     }
@@ -150,12 +203,17 @@ async function main() {
     rmSync(out, { recursive: true, force: true });
   }
 
+  await checkRefusals(args.root, failures);
+
   if (failures.length > 0) {
     for (const failure of failures) console.error(`savecheck: ${failure}`);
     process.exitCode = 1;
     return;
   }
-  console.log(`savecheck: ${args.seasons} season(s) would be committed exactly as played`);
+  console.log(
+    `savecheck: ${args.seasons} season(s) would be committed exactly as played;`
+    + ' a frozen scenario is refused',
+  );
 }
 
 main().catch((error) => {

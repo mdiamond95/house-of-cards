@@ -1,5 +1,8 @@
 {
   "name": "legacy",
+  "title": "The 2026 Playthrough",
+  "status": "frozen",
+  "reference_data": "ne-2026",
   "seed": null,
   "started_season": null,
   "kind": "director",

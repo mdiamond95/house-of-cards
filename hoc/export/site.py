@@ -35,13 +35,22 @@ REPO_URL = f"https://github.com/{REPO_SLUG}"
 # carries, since a wall-clock timestamp would churn the diff on every export.
 _GENERATED_FROM = ""
 
-# Set while the archive is being rendered. The archive is the same site built
-# from a different scenario, so rather than a second exporter it is a mode: the
-# nav points back at the live game instead of forward into itself, and every
-# page carries a banner saying which world the reader is in.
+# Set while an archived game is being rendered. The archive is the same site
+# built from a frozen scenario, so rather than a second exporter it is a mode:
+# the nav points back out of the archive instead of forward into itself, and
+# every page carries a banner saying which world the reader is in. Each frozen
+# scenario is rendered into archive/<name>/, two directories below the site's
+# root; archive/index.html lists them.
 _ARCHIVE = False
+_ARCHIVE_NAME = None
+_ARCHIVE_TITLE = None
 ARCHIVE_DIRNAME = "archive"
-ARCHIVE_BANNER = "Archive — the 2026 playthrough"
+ARCHIVE_DEPTH = 2  # archive/<name>/ — how far an archived page's root is below the site's
+
+
+def archive_banner(title):
+    return f"Archive — {title}"
+
 
 __all__ = ["write_site", "DEFAULT_OUT_DIR", "SITE_DIRNAME"]
 
@@ -106,11 +115,12 @@ def page(title, body, depth=0, subtitle=None):
         ("about.html", "About"),
     ]
     if _ARCHIVE:
-        # Out of the archive rather than deeper into it: one more "../" than the
-        # page's own depth reaches the live site's root. The archive is frozen,
-        # so it carries no console link — there is nothing there to run.
+        # Out of the archive rather than deeper into it: the archived site's own
+        # root is two directories below the site's. A frozen game carries no play
+        # or console link — there is nothing there to run.
         nav = [entry for entry in nav if entry[0] != "play.html"]
-        nav.append((f"{up}../index.html", "← The live game"))
+        nav.append((f"{up}../index.html", "← Archive"))
+        nav.append((f"{up}{'../' * ARCHIVE_DEPTH}index.html", "← Back to the site"))
     else:
         nav.append((f"{ARCHIVE_DIRNAME}/index.html", "Archive"))
         nav.append(("console.html", "Console"))
@@ -119,7 +129,7 @@ def page(title, body, depth=0, subtitle=None):
         for href, label in nav
     )
     banner = (
-        f'<p class="banner">{esc(ARCHIVE_BANNER)}</p>' if _ARCHIVE else ""
+        f'<p class="banner">{esc(archive_banner(_ARCHIVE_TITLE))}</p>' if _ARCHIVE else ""
     )
     sub = f'<p class="subtitle">{subtitle}</p>' if subtitle else ""
     footer = f'<footer>{esc(_GENERATED_FROM)}</footer>' if _GENERATED_FROM else ""
@@ -330,7 +340,7 @@ def _status_strip(conn):
         progress_text = "not started"
     return (
         '<div class="status">'
-        f'<span class="stat scenario">scenario <b>{esc(scenario.current_name())}</b></span>'
+        f'<span class="stat scenario">scenario <b>{esc(_ARCHIVE_NAME if _ARCHIVE else scenario.current_name())}</b></span>'
         f'<span class="stat"><b>{counts["active"]}</b> active houses</span>'
         f'<span class="stat"><b>{counts["removed"]}</b> removed</span>'
         f'<span class="stat"><b>{counts["claimed"]}</b> of {counts["ridings"]} ridings held</span>'
@@ -680,6 +690,59 @@ def _map_geometry(features, borders, lookup):
         "south_stroke": BASE_STROKE_WIDTH / zoom_factor,
         "borders": map_export.border_path_data(borders, to_svg, MAP_PRECISION),
     }
+
+
+def _scenario_for_browser(name):
+    """What a page that writes needs to know about the game it writes to. The
+    browser's refusal to write to a frozen game reads `status`; the paths it
+    commits to are derived from `name` in web/engine/record.js, never spelled
+    out in a page."""
+    return {"name": name, "title": scenario.title(name), "status": scenario.status(name)}
+
+
+def _sweep_play_assets(site_dir):
+    """Remove what a previous export shipped for a game that can now be played:
+    left behind, an old engine and world snapshot would still be loadable."""
+    import shutil
+
+    for name in ("play.js", "console.js", "data/world.json"):
+        path = site_dir / name
+        if path.exists():
+            path.unlink()
+    for name in ("engine", "data/rules", "data/reference"):
+        path = site_dir / name
+        if path.is_dir():
+            shutil.rmtree(path)
+
+
+def _no_live_page(heading, live, conn):
+    """The play page and the console when there is nothing to write to."""
+    held = scenario.current_name()
+    if live is None:
+        what = (
+            "<b>There is no live game.</b> Every scenario is frozen, so there is nothing to"
+            f" {'play' if heading == 'Play' else 'run or tune'} and nothing that could be saved."
+        )
+        season = _latest_season(conn)
+        ended = (
+            f" The last game, <b>{esc(scenario.title(held))}</b>, ended at season {season}."
+            if season else ""
+        )
+    else:
+        what = (
+            f"<b>The live game, {esc(scenario.title(live))}, is not the one this site was built"
+            f" from</b> (hoc.db holds {esc(scenario.title(held))}), so it cannot be played from here."
+        )
+        ended = ""
+    body = (
+        f'<p class="lede prose">{what}{ended}</p>\n'
+        '<p class="prose">Frozen games are kept whole and readable in the'
+        f' <a href="{ARCHIVE_DIRNAME}/index.html">Archive</a> — the map, the houses, the'
+        " chronicle and the climate as they ended. A game is begun by declaring a scenario"
+        " live in its <code>scenario.json</code>; the play page and the console open again"
+        " the next time the site is exported.</p>\n"
+    )
+    return page(heading, body, depth=0)
 
 
 def _play_page(conn, features, borders, slugs):
@@ -1492,21 +1555,25 @@ def _about_page(conn, slugs):
         " electoral districts of the 2023 Representation Order. Each house keeps its own personal"
         " clock beginning at 1867 — there is no shared calendar, and clocks meet only when houses"
         " do. This site is generated from the game database and is read-only.</p>\n"
-        '<h2>Reconstruction</h2>\n'
-        '<p class="prose">The original workbook was lost, and the game state here was rebuilt from'
-        " conversation transcripts. What follows is what the record still does not hold. Nothing"
-        " on this site fills those gaps with invention: an unrecovered value is shown as"
-        ' <span class="unrecovered">not recovered</span>.</p>\n'
-        f'<p><a href="{REPO_URL}/blob/main/scenarios/legacy/RECONSTRUCTION.md">Read the full reconstruction'
-        " record on GitHub</a>.</p>\n"
+        + (
+            '<h2>Reconstruction</h2>\n'
+            '<p class="prose">The original workbook was lost, and the game state here was rebuilt from'
+            " conversation transcripts. What follows is what the record still does not hold. Nothing"
+            " on this site fills those gaps with invention: an unrecovered value is shown as"
+            ' <span class="unrecovered">not recovered</span>.</p>\n'
+            f'<p><a href="{REPO_URL}/blob/main/scenarios/legacy/RECONSTRUCTION.md">Read the full reconstruction'
+            " record on GitHub</a>.</p>\n"
+            if _director_written(conn) else ""
+        )
         + (
             ""
             if _ARCHIVE else
-            '<h2>The archive</h2>\n<p class="prose">The game this site shows is played by the'
-            " engine, season by season. The playthrough that came before it — written turn by"
-            " turn by the director between 2026 and the migration, and reconstructed from"
-            " transcripts after the workbook was lost — is kept frozen and readable in full:"
-            f' <a href="{ARCHIVE_DIRNAME}/index.html">the 2026 playthrough</a>.</p>\n'
+            '<h2>The archive</h2>\n<p class="prose">Every game that has finished is kept frozen'
+            " and readable in full — its map, houses, ridings, chronicle and climate — and never"
+            " written to again: the engine-played games, and the playthrough written turn by turn"
+            " by the director between 2026 and the migration, reconstructed from transcripts after"
+            f' the workbook was lost. <a href="{ARCHIVE_DIRNAME}/index.html">Browse the'
+            " archive</a>.</p>\n"
         )
         + _rules_versions_section(conn)
         + f'<h3>Holders whose name was never recovered <span class="count">{len(unnamed)}</span></h3>\n'
@@ -1517,6 +1584,14 @@ def _about_page(conn, slugs):
         f"{house_list(no_secondary)}\n"
     )
     return page("About", body, depth=0)
+
+
+def _director_written(conn):
+    """Whether the game in this database was written by the director rather than
+    played by the engine — the only kind with a reconstruction behind it. Read
+    from the database, not from a scenario's name: the database is what is being
+    rendered."""
+    return not _is_autoplay(conn)
 
 
 def _rules_versions_section(conn):
@@ -1803,6 +1878,11 @@ CONSOLE_JS = """(function () {
   var POLL_MS = 10000;
   var NARRATE_TEMPLATE = __NARRATE_TEMPLATE__;
   var TONES = __TONES__;
+  // The game this console was built for. A frozen one is never written to; the
+  // engine workflow refuses it as well (scripts/engine_command.py), so this is
+  // the page saying so rather than the only thing saying so.
+  var SCENARIO = __SCENARIO__;
+  var WRITES = ['run', 'intervene'];
 
   function token() {
     try { return localStorage.getItem('hoc-token') || ''; } catch (e) { return ''; }
@@ -1872,6 +1952,10 @@ CONSOLE_JS = """(function () {
   // -------------------------------------------------------------- dispatch --
 
   function dispatch(inputs, box) {
+    if (SCENARIO.status !== 'live' && WRITES.indexOf(inputs.command) !== -1) {
+      say(box, SCENARIO.title + ' is frozen and cannot be written to. Nothing was dispatched.', 'bad');
+      return Promise.resolve();
+    }
     say(box, 'Dispatching…');
     var started = new Date().toISOString();
     return api('/actions/workflows/' + WORKFLOW + '/dispatches', {
@@ -2179,6 +2263,8 @@ CONSOLE_JS = """(function () {
       function pad(n) { return String(n).padStart(4, '0'); }
 
       var block = NARRATE_TEMPLATE
+        .replace(/\{scenario_title\}/g, SCENARIO.title)
+        .replace(/\{scenario\}/g, SCENARIO.name)
         .replace(/\{season_from:04d\}/g, pad(from))
         .replace(/\{season_to:04d\}/g, pad(to))
         .replace(/\{season_from\}/g, from)
@@ -2468,6 +2554,9 @@ pre { background: #fff; border: 1px solid var(--rule); padding: 0.6rem; overflow
 .runs { list-style: none; padding: 0; }
 .runs li { padding: 0.3rem 0; border-bottom: 1px solid var(--rule); font-size: 0.88rem; }
 
+.archive-games { list-style: none; padding: 0; }
+.archive-game { border-top: 1px solid var(--rule); padding-top: 0.4rem; margin-top: 1.2rem; }
+.archive-game h2 { border-top: 0; margin: 0.2rem 0; padding-top: 0; }
 .banner { font-family: var(--serif); font-size: 0.85rem; color: var(--muted); background: #f2eee4;
           border: 1px solid var(--rule); border-left: 3px solid var(--accent);
           padding: 0.5rem 0.7rem; margin: 0 0 0.8rem; }
@@ -2573,19 +2662,73 @@ def _slugs(conn):
     return slugs
 
 
-def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False):
+def write_archive_index(out_dir, entries):
+    """archive/index.html: the frozen games, one card each.
+
+    `entries` come from scripts/build_archive.py, each read from the game's own
+    database. The page is rendered in the live site's shell, one directory down —
+    it is the way into the archive, not part of any game in it.
+    """
+    global _GENERATED_FROM
+    archive_dir = Path(out_dir) / SITE_DIRNAME / ARCHIVE_DIRNAME
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    _GENERATED_FROM = ""
+
+    def progress(entry):
+        if entry["seasons"]:
+            return f"{entry['seasons']} seasons"
+        if entry["turns"]:
+            return f"{entry['turns']} turns"
+        return "not played"
+
+    cards = []
+    for entry in entries:
+        name = esc(entry["name"])
+        seed = f" &middot; seed {esc(entry['seed'])}" if entry["seed"] is not None else ""
+        kind = "played by the engine" if entry["kind"] == "autoplay" else "written by the director"
+        cards.append(
+            '<li class="archive-game">'
+            f'<h2><a href="{name}/index.html">{esc(entry["title"])}</a></h2>'
+            f'<p class="meta">{esc(kind)}{seed} &middot; {esc(progress(entry))}'
+            f' &middot; {entry["active"]} active houses, {entry["removed"]} removed'
+            f' &middot; {entry["held"]} ridings held</p>'
+            f'<p><a href="{name}/index.html">Map</a> &middot;'
+            f' <a href="{name}/chronicle.html">Chronicle</a> &middot;'
+            f' <a href="{name}/ridings.html">Ridings</a> &middot;'
+            f' <a href="{name}/climate.html">Climate</a> &middot;'
+            f' <a href="{name}/about.html">About</a></p>'
+            "</li>"
+        )
+    body = (
+        '<p class="lede prose">Every game that has finished. Each is frozen: the record is closed,'
+        " the map and the houses are exactly as they ended, and nothing here can be played or"
+        " saved. Each is rebuilt from its own record on every export.</p>\n"
+        f'<ul class="archive-games">{"".join(cards) or "<li>No game has been archived.</li>"}</ul>\n'
+    )
+    path = archive_dir / "index.html"
+    path.write_text(page("Archive", body, depth=1), encoding="utf-8")
+    return path
+
+
+def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False,
+               archive_name=None):
     """Write a site. Returns the paths written.
 
     `subdir` and `archive` are how the Archive is built: the same exporter, the
-    same pages, a different scenario's database, rendered one directory deeper
-    with a banner and the nav pointing back out.
+    same pages, a frozen scenario's database (`archive_name`), rendered two
+    directories deeper with a banner and the nav pointing back out.
     """
     site_dir = Path(out_dir) / subdir
     houses_dir = site_dir / "houses"
     houses_dir.mkdir(parents=True, exist_ok=True)
 
-    global _GENERATED_FROM, _ARCHIVE
+    global _GENERATED_FROM, _ARCHIVE, _ARCHIVE_NAME, _ARCHIVE_TITLE
     _ARCHIVE = archive
+    if archive:
+        if archive_name is None:
+            raise ValueError("an archive is rendered for a named scenario")
+        _ARCHIVE_NAME = archive_name
+        _ARCHIVE_TITLE = scenario.title(archive_name)
     turn = _latest_turn(conn)
     season = _latest_season(conn)
     if season:
@@ -2618,9 +2761,18 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
             f" {timeline_export.SIZE_BUDGET:,} budget — snapshot less often"
         )
     write(site_dir / "index.html", _index(conn, index_features, index_borders, slugs))
-    if not archive:
-        # The play page runs the engine in the browser against the live world;
-        # the archive is a frozen game, so there is nothing there to play.
+    # The play page and the console write to the live scenario, and only to it.
+    # With no live scenario — or a live one that hoc.db does not hold, which the
+    # page could not play — they are notices that say so, and none of the
+    # engine, rules, reference map or world snapshot is shipped for them.
+    live = None if archive else scenario.live_name()
+    playable = live is not None and live == scenario.current_name()
+    if not archive and not playable:
+        _sweep_play_assets(site_dir)
+        write(site_dir / "play.html", _no_live_page("Play", live, conn))
+        write(site_dir / "console.html", _no_live_page("Console", live, conn))
+    if playable:
+        scenario_json = json.dumps(_scenario_for_browser(live))
         write(site_dir / "play.html", _play_page(conn, index_features, index_borders, slugs))
         write(
             site_dir / "play.js",
@@ -2630,14 +2782,7 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
             .replace("__UNCLAIMED_FILL__", map_export.UNCLAIMED_FILL)
             .replace("__DEFAULT_SPEED__", str(PLAY_SPEEDS[0]))
             .replace("__REPO__", REPO_SLUG)
-            .replace(
-                "__SEASONS_PATH__",
-                scenario.seasons_dir().relative_to(scenario.REPO_ROOT).as_posix(),
-            )
-            .replace(
-                "__INTERVENTIONS_PATH__",
-                scenario.interventions_dir().relative_to(scenario.REPO_ROOT).as_posix(),
-            ),
+            .replace("__SCENARIO__", scenario_json),
         )
         assets, asset_bytes = play_export.write_play_assets(
             conn, site_dir, scenario.REPO_ROOT
@@ -2654,14 +2799,13 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
     write(site_dir / "climate.html", _climate_page(conn))
     write(site_dir / "chronicle.html", _chronicle_page(conn, slugs))
     write(site_dir / "about.html", _about_page(conn, slugs))
-    if not archive:
-        # The archive is a frozen game; a console over it would offer controls
-        # that cannot do anything.
+    if playable:
         write(site_dir / "console.html", _console_page(conn, slugs))
         write(
             site_dir / "console.js",
             CONSOLE_JS
             .replace("__REPO__", REPO_SLUG)
+            .replace("__SCENARIO__", json.dumps(_scenario_for_browser(live)))
             .replace("__NARRATE_TEMPLATE__", json.dumps(NARRATE_TEMPLATE))
             .replace("__TONES__", json.dumps(TONES, ensure_ascii=False)),
         )
@@ -2680,4 +2824,5 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
     # GitHub Pages would otherwise run the output through Jekyll.
     write(site_dir / ".nojekyll", "")
     _ARCHIVE = False
+    _ARCHIVE_NAME = _ARCHIVE_TITLE = None
     return written

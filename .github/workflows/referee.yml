@@ -19,8 +19,11 @@ on:
   push:
     branches: [main]
     paths:
-      - "scenarios/new/seasons/**"
-      - "scenarios/new/interventions/**"
+      # Every scenario's record, not one named here: which game is live is in the
+      # manifests (scenarios/*/scenario.json), not in this file. A push to a
+      # frozen scenario's record is refused by the step below.
+      - "scenarios/*/seasons/**"
+      - "scenarios/*/interventions/**"
 
 # The same group as engine.yml: the referee rebuilds hoc.db and the engine
 # writes it, so the two must never run at once. Never cancel one in flight —
@@ -78,6 +81,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Refuse a push that writes to a frozen scenario
+        # A frozen game's record is closed. This runs before anything is
+        # replayed or published, so a push to one changes nothing on the site.
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            BEFORE="${AFTER}~1"
+          fi
+          git diff --name-only "$BEFORE" "$AFTER" \
+            | python scripts/referee.py --refuse-frozen --summary "$GITHUB_STEP_SUMMARY"
 
       # The suite this runs includes tests/test_js_syntax.py and the JS engine
       # parity tests, which shell out to node.

@@ -105,7 +105,7 @@ def run_python(seed, seasons, out_dir, seat=None, phases=None, script=(), resume
     from hoc import scenario, sim
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    conn = load_seed.build(out_dir.parent / "python.db", seed=scenario.seed_dir("new"))
+    conn = load_seed.build(out_dir.parent / "python.db", seed=scenario.blank_seed_dir())
     world = sim.World(
         conn, world_seed=seed, seasons_dir=out_dir, phases=phases,
         rules_version=rules_version,
@@ -223,7 +223,7 @@ def crosscheck_resume(seed, snapshot_at, seasons, keep=None, script=()):
     try:
         # Play to the snapshot point writing nothing, snapshot, then keep going
         # and write only the seasons the resumed world should reproduce.
-        conn = load_seed.build(workspace / "python.db", seed=scenario.seed_dir("new"))
+        conn = load_seed.build(workspace / "python.db", seed=scenario.blank_seed_dir())
         world = sim.World(conn, world_seed=seed, seasons_dir=None)
         with conn:
             world.initialise(seed)

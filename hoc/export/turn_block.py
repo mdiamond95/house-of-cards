@@ -32,13 +32,13 @@ TONES = {
     ),
 }
 
-TEMPLATE = """Follow CLAUDE.md. Narrate seasons {season_from}–{season_to} of the live \
-(new) scenario.{focus}
+TEMPLATE = """Follow CLAUDE.md. Narrate seasons {season_from}–{season_to} of the \
+`{scenario}` scenario ({scenario_title}).{focus}
 
 Tone: {tone_description}.
 
 Sources, and nothing else:
-- `scenarios/new/seasons/{season_from:04d}.json` through `{season_to:04d}.json` — every roll, \
+- `scenarios/{scenario}/seasons/{season_from:04d}.json` through `{season_to:04d}.json` — every roll, \
 draw and outcome, with the purpose each was drawn for.
 - The chronicle lines already in `hoc.db` for those seasons (`events.narrative` \
 where the event's `mechanical_delta` names one of them).
@@ -64,8 +64,15 @@ narrative and `outputs/` together, push, open a PR and merge it.
 Length: about {words} words. Canadian spelling throughout."""
 
 
-def narrate_block(season_from, season_to, houses=(), tone="chronicle"):
-    """The block, ready to paste into a Claude Code session."""
+def narrate_block(season_from, season_to, houses=(), tone="chronicle", scenario_name=None):
+    """The block, ready to paste into a Claude Code session.
+
+    Narrating is writing prose about a record, not writing the record, so a
+    frozen game can be narrated like a live one; `scenario_name` says which.
+    """
+    from hoc import scenario
+
+    scenario_name = scenario_name or scenario.current_name()
     if tone not in TONES:
         raise ValueError(f"unknown tone {tone!r}; choose one of {', '.join(sorted(TONES))}")
     if season_to < season_from:
@@ -86,6 +93,8 @@ def narrate_block(season_from, season_to, houses=(), tone="chronicle"):
     words = max(300, min(1200, span * 120))
 
     return TEMPLATE.format(
+        scenario=scenario_name,
+        scenario_title=scenario.title(scenario_name),
         season_from=season_from,
         season_to=season_to,
         focus=focus,

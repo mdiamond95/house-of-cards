@@ -15,6 +15,10 @@ from hoc import scenario
 
 from hoc.export import site
 
+# The machinery under test plays and saves a game, which only a live scenario allows.
+# See tests/conftest.py; the refusal itself is tested in tests/test_frozen.py.
+pytestmark = pytest.mark.usefixtures("live_game")
+
 ROOT = Path(__file__).resolve().parent.parent
 
 TOP_LEVEL_PAGES = ("index.html", "ridings.html", "chronicle.html", "climate.html", "about.html")
@@ -208,7 +212,7 @@ def test_every_page_of_a_played_world_has_unique_element_ids(tmp_path):
     produces need auditing too."""
     from hoc import sim
 
-    conn = _load_seed_module().build(tmp_path / "played.db", seed=scenario.seed_dir("new"))
+    conn = _load_seed_module().build(tmp_path / "played.db", seed=scenario.blank_seed_dir())
     world = sim.World(conn, world_seed=1867)
     world.initialise(1867)
     for _ in range(9):
@@ -239,7 +243,7 @@ def test_the_archive_pages_have_unique_element_ids(tmp_path):
     archive = tmp_path / site.SITE_DIRNAME / site.ARCHIVE_DIRNAME
 
     pages = html_files(archive)
-    assert pages
+    assert len(pages) > 30, "the frozen games should be archived"
     offenders = {
         str(path.relative_to(archive)): duplicate_ids(path)
         for path in pages
@@ -290,7 +294,7 @@ def played_site(tmp_path_factory):
     from hoc import sim
 
     tmp = tmp_path_factory.mktemp("playsite")
-    conn = _load_seed_module().build(tmp / "played.db", seed=scenario.seed_dir("new"))
+    conn = _load_seed_module().build(tmp / "played.db", seed=scenario.blank_seed_dir())
     world = sim.World(conn, world_seed=1867)
     world.initialise(1867)
     for _ in range(9):
@@ -318,9 +322,12 @@ def test_the_archive_has_no_play_page(tmp_path):
 
     build_archive.build_archive(out_dir=tmp_path)
     archive = tmp_path / site.SITE_DIRNAME / site.ARCHIVE_DIRNAME
-    assert not (archive / "play.html").exists()
-    for path in archive.rglob("*.html"):
-        assert 'href="play.html"' not in path.read_text(encoding="utf-8"), path.name
+    games = [path for path in archive.iterdir() if path.is_dir()]
+    assert games
+    for game in games:
+        assert not (game / "play.html").exists()
+        for path in game.rglob("*.html"):
+            assert 'href="play.html"' not in path.read_text(encoding="utf-8"), path.name
 
 
 def test_the_engine_and_its_tables_are_copied_into_the_site(played_site):
@@ -459,7 +466,7 @@ def test_the_play_pages_own_path_through_the_engine_matches_python(played_site, 
     assert report["snapshot_round_trips"] is True
 
     # The same seasons in Python, from the same starting point.
-    conn = _load_seed_module().build(tmp_path / "py.db", seed=scenario.seed_dir("new"))
+    conn = _load_seed_module().build(tmp_path / "py.db", seed=scenario.blank_seed_dir())
     python_dir = tmp_path / "python"
     python_dir.mkdir()
     world = sim.World(conn, world_seed=1867, seasons_dir=python_dir)
