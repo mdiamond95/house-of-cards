@@ -7,6 +7,7 @@
       versions/0.7/            one version's tables, frozen once published
         actions.csv ... features.json
       versions/0.8/
+      versions/0.9/
       CHANGELOG.md             one entry per version, with the metric that motivated it
       README.md
 
@@ -23,10 +24,14 @@ A flag added with a `true` default would change the past, which is the one thing
 
 ## features.json
 
-Named booleans, one per behaviour change. As of 0.8:
+Named booleans, one per behaviour change. As of 0.9:
 
 - `local_designations` — a house's territorial designation is drawn from places inside its seat riding, then the seat's own name tokens, then places in land-adjacent ridings, before falling back to the province bank. False in 0.7, which drew from the province bank alone.
 - `quiet_season_line` — a season with no chronicle at all says so, and a house that has taken no notable action for ten consecutive seasons is noticed once. False in 0.7, which left both silent.
+- `atlas_jurisdiction` — a house reads the map at its own personal year. A riding whose `opens_year` (the reference set's `riding_stats.csv`) is later than the house's personal year is closed to it: the Crown seats no new house there (a new house's clock reads 1867, so only `opens_year` 1867 is foundable), the region weights and `p_found` count only unclaimed *foundable* ridings, and Expand never offers it, filtered before any draw. Cadet foundings by partition, transfers and shared events are not gated. `grant_house` and a forced Expand are refused on a closed riding by name. Founding and expansion records name the riding's jurisdiction at that year (`riding_jurisdictions.csv`), for display only. False in 0.7 and 0.8, which opened every riding.
+- `riding_endowments` — founding capital adds `2*(wealth_tier − 3)` of the seat, and a successful Expand costs `15 + (wealth_tier − 3)` of the target instead of 15. False in 0.7 and 0.8, where every riding was worth the same.
+
+Both 0.9 flags read `riding_stats.csv`; on a reference set without it (`ne-2026`) every riding is open at 1867 and every `wealth_tier` reads 3, so turning them on changes nothing there.
 
 ## The tables
 

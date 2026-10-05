@@ -178,3 +178,67 @@ and a house that has taken no notable action for **ten consecutive seasons** is 
 
 Neither change touches a stat, a weight, a probability or an action, so no retune was expected and none was made. The §17 smoke run and Phase 9d's conflict bounds pass under 0.8 unchanged, and the cross-check agrees on seeds 1867, 2 and 3 at 120 seasons under **both** versions.
 
+
+## 0.9 — the atlas a house reads, and what its ground is worth
+
+The first version written for the `meridian-v1.0.3` reference set, and the version The Dominion begins under. `rules/versions/0.9/` is a byte-for-byte copy of 0.8 apart from `features.json`. **No number in any table changed.** Both changes are changes in algorithm, behind flags that are false in 0.7 and 0.8, so The First Dominion still replays exactly as it was played.
+
+### `atlas_jurisdiction: true`
+
+A house reads the map at its own personal year. `riding_stats.csv` gives every riding an `opens_year` — 1867 for 269 ridings, 1870 for the 74 that lay in Rupert's Land, the North-Western Territory and the Arctic islands — and a riding is **closed** to a house while the house's personal year is before it.
+
+- **Crown foundings** (season 1 and the founding roll) seat a house only where `opens_year` is 1867, because a new house's clock reads 1867. In `founding.json`'s `p_found` and in the region weights and their drift, "unclaimed" means unclaimed *and foundable*: a region with no foundable seat left has weight 0, and `p_found` reaches zero when the foundable map is full. The formula still divides by 343.
+- **Expansion** never offers a closed riding. It is filtered out before any draw, exactly as land adjacency is, and Expand is legal only when an unclaimed land-adjacent riding is *open* to the house. Enclosure (§7b) is unchanged: a house bordering only closed ridings is not enclosed, it simply cannot Expand until its clock reaches the year.
+- **Cadet foundings** by partition are not Crown grants and are not gated. Transfers, compacts, disputes, challenges and every other shared event are unaffected, and nothing a house holds is ever lost or penalised when a succession or founding resets its clock to 1867.
+- **Director interventions** are refused on a closed riding, by name: `grant_house` on a riding that opens after 1867, and a forced Expand when every unclaimed neighbour is closed at the personal year the house will act in (next season's).
+- **Display only:** founding and expansion records carry the jurisdiction the riding lay under at that house's personal year (`riding_jurisdictions.csv`), and a chronicle line names it when it differs from today's — "takes Avalon (Newfoundland)". The engine still keys on `ridings.csv`'s province code.
+
+### `riding_endowments: true`
+
+- Founding capital is `30 + 5*rank_index + d20 + 2*(wealth_tier − 3)` of the seat: −4 to +4.
+- A successful Expand costs `15 + (wealth_tier − 3)` of the target, 13 to 17. The failure cost and the capital ≥ 40 precondition are unchanged.
+- `resource_tier` is exported and shown on the riding page, and used nowhere else yet.
+
+`wealth_tier` is Meridian's GDP allocation (provincial GDP by industry shared over ridings by census labour force), carried only as a quintile — an allocation, not a measurement.
+
+On a reference set without `riding_stats.csv` (`ne-2026`) every riding is open at 1867 and every tier reads 3, so both flags change nothing there.
+
+### The trial
+
+Before the flags were turned on, 300 seasons were played on scratch copies of the Meridian world for seeds 1867, 1868 and 1869, with the engine's own draw for the first seat, under four settings. Each cell is the mean over the three seeds with the range. "1870 ridings" are the 74 with `opens_year` 1870. "Wanted Expand, no open target" counts house-seasons that met every other Expand precondition and had unclaimed land neighbours, all closed; with the atlas off nothing is blocked, so the starred figures say how often the gate *would* have bitten.
+
+| season 300 | both on (0.9) | atlas only | endowments only | both off (0.8 on Meridian) |
+|---|---|---|---|---|
+| houses active | 68 (65–70) | 70 (69–72) | 75 (72–79) | 78 (71–83) |
+| houses removed | 22 (18–27) | 17 (16–18) | 22 (20–25) | 20 (19–21) |
+| ridings held | 323 (313–335) | 332 (312–343) | 343 (343–343) | 342 (342–343) |
+| 1870 ridings held | 56 (46–69) | 63 (43–74) | 74 (74–74) | 74 (74–74) |
+| houses holding any of them | 13 (10–19) | 18 (10–24) | 19 (17–20) | 21 (18–25) |
+| largest house's share of them | 18% (13–25) | 16% (9–23) | 14% (11–20) | 13% (9–18) |
+| median capital | 34 (31–36) | 34.5 (33–36.5) | 33 (30–36) | 35 (34–36) |
+| wanted Expand, no open target (cumulative) | 14 (10–17) | 25 (24–26) | 42* (34–54) | 31* (26–37) |
+| Crown foundings Mar/Qué/Ont/Prairie/BC/North | 9/12/28.3/0/7.7/0 | 6.7/13.7/25/0/6/0 | 5.7/11.7/26/12/6.3/0.7 | 8/12.3/26/10/6.3/0 |
+
+| season 150 | both on | atlas only | endowments only | both off |
+|---|---|---|---|---|
+| houses active | 55 (51–61) | 52 (47–54) | 63 (60–67) | 60 (54–63) |
+| ridings held | 254 (246–260) | 273 (257–282) | 325 (315–335) | 322 (320–323) |
+| 1870 ridings held | 13 (9–20) | 15 (10–22) | 67 (57–74) | 71 (67–74) |
+| houses holding any of them | 5 (3–7) | 5 (3–6) | 16 (14–17) | 16 (13–17) |
+| largest house's share of them | 40% (35–44) | 42% (32–60) | 14% (12–15) | 18% (10–25) |
+| median capital | 38.5 (38–39) | 37 (35–38) | 38 (36–39) | 39 (37–41) |
+
+| season 50 | both on | atlas only | endowments only | both off |
+|---|---|---|---|---|
+| houses active | 22 (21–24) | 21 (19–23) | 24 (20–27) | 25 (23–27) |
+| ridings held | 84 (81–87) | 73 (66–82) | 91 (77–102) | 87 (76–96) |
+| 1870 ridings held | 2 (0–4) | 1.3 (0–3) | 18 (12–30) | 14 (8–18) |
+| median capital | 39 (38–41.5) | 37 (31–41) | 41 (38.5–44) | 40 (39–40) |
+
+With the atlas on, the first of the 74 fell at seasons 35–73 (both on) and 9–61 (atlas only), always by expansion onto the fringe — Labrador from St. John's East, Abitibi—Baie-James—Nunavik—Eeyou from the Saguenay and Mauricie, Kapuskasing—Timmins—Mushkegowuk from the Ottawa valley — and the first Prairie riding at seasons 78–145, by houses seated in Ontario, British Columbia and once St. John's East. With the atlas off the West was taken at seasons 9–35, almost always by a Crown founding seated on the spot.
+
+### The slow West is the intended result
+
+The West stays nearly empty for about a century of seasons, is then entered from the East and from British Columbia by a handful of houses, and fills slowly — still not full at season 300 in four of six atlas-on runs — without ending in a monopoly. Almost all of that comes from the Crown never granting there, not from blocked expansion: a clock is past 1870 three seasons after any founding or accession. The director considered and declined a "frontier grant" flag to let the Crown seat houses on the 1870 ridings: the West being opened from the East, rather than granted outright, is the game this version is meant to play. Endowments move median capital by at most two points and nothing else measurably; they are kept for what they mean, not for what they tune.
+
+The cross-check agrees byte for byte on seeds 1867, 1868 and 1869 at 300 seasons on `meridian-v1.0.3`, under both 0.9 and 0.8.
