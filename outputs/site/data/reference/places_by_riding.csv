@@ -1,0 +1,4831 @@
+fed_id,place,population,spans_ridings,designation_ok
+10001,St. John's,110525,1,0
+10001,Conception Bay South,27168,0,1
+10001,Bay Roberts,5974,0,1
+10001,Carbonear,4696,0,1
+10001,Harbour Grace,2796,0,1
+10001,Spaniard's Bay,2630,0,1
+10001,Holyrood,2471,0,1
+10001,Victoria,1658,0,1
+10001,Witless Bay,1640,0,1
+10001,Bay Bulls,1566,0,1
+10001,Upper Island Cove,1401,0,1
+10001,Clarke's Beach,1400,0,1
+10001,"Division No.  1, Subd. U",1373,0,0
+10001,"Division No.  1, Subd. M",1145,0,0
+10001,Harbour Main-Chapel's Cove-Lakeview,1065,0,1
+10001,"Division No.  1, Subd. L",874,0,0
+10001,"Division No.  1, Subd. O",829,0,0
+10001,Salmon Cove,764,0,1
+10001,Cupids,699,0,1
+10001,Brigus,699,0,1
+10001,South River,674,0,1
+10001,Conception Harbour,624,0,1
+10001,Colliers,613,0,1
+10001,Avondale,584,0,1
+10001,North River,579,0,1
+10001,"Division No.  1, Subd. X",541,0,0
+10001,Cape Broyle,499,0,1
+10001,"Division No.  1, Subd. W",469,0,0
+10001,Trepassey,405,0,1
+10001,Mount Carmel-Mitchells Brook-St. Catherine's,382,0,1
+10001,Ferryland,371,0,1
+10001,"Division No.  1, Subd. N",356,0,0
+10001,Bryant's Cove,343,0,1
+10001,"Division No.  1, Subd. I",320,0,0
+10001,St. Mary's,313,0,1
+10001,Renews-Cappahayden,280,0,1
+10001,Fermeuse,266,0,1
+10001,St. Vincent's-St. Stephen's-Peter's River,263,0,1
+10001,Bishop's Cove,252,0,1
+10001,Gaskiers-Point La Haye,189,0,1
+10001,Riverhead,165,0,1
+10001,"Division No.  1, Subd. D",119,0,0
+10001,Colinet,103,0,1
+10001,Admirals Beach,97,0,1
+10001,Portugal Cove South,86,0,1
+10001,St. Joseph's,86,0,1
+10001,Aquaforte,74,0,1
+10001,"Division No.  1, Subd. V",55,0,0
+10001,St. Shott's,55,0,1
+10001,Port Kirwan,49,0,1
+10001,"Division No.  1, Subd. K",35,0,0
+10002,Paradise,22957,0,1
+10002,Mount Pearl,22477,0,1
+10002,Petty Harbour-Maddox Cove,947,0,1
+10003,Grand Falls-Windsor,13853,0,1
+10003,Gander,11880,0,1
+10003,Lewisporte,3288,0,1
+10003,Bishop's Falls,3082,0,1
+10003,Springdale,2965,0,1
+10003,Botwood,2778,0,1
+10003,"Division No.  8, Subd. L",2772,0,0
+10003,Twillingate,2121,0,1
+10003,Fogo Island,2117,0,1
+10003,"Division No.  8, Subd. H",1788,0,0
+10003,Harbour Breton,1477,0,1
+10003,Baie Verte,1311,0,1
+10003,St. Alban's,1189,0,1
+10003,Samiajij Miawpukek,953,0,1
+10003,Triton,896,0,1
+10003,"Division No.  8, Subd. F",867,0,0
+10003,LaScie,820,0,1
+10003,Summerford,805,0,1
+10003,Glenwood,739,0,1
+10003,Peterview,723,0,1
+10003,Robert's Arm,722,0,1
+10003,Norris Arm,708,0,1
+10003,Badger,682,0,1
+10003,Embree,679,0,1
+10003,Milltown-Head of Bay d'Espoir,669,0,1
+10003,King's Point,653,0,1
+10003,Appleton,620,0,1
+10003,"Division No.  6, Subd. D",596,0,0
+10003,Buchans,590,0,1
+10003,Point Leamington,574,0,1
+10003,"Division No.  8, Subd. C",563,0,0
+10003,St. Jacques-Coomb's Cove,546,0,1
+10003,Birchy Bay,511,0,1
+10003,"Division No.  8, Subd. E",496,0,0
+10003,Campbellton,459,0,1
+10003,Middle Arm,443,0,1
+10003,South Brook,420,0,1
+10003,"Division No.  8, Subd. G",409,0,0
+10003,Hermitage-Sandyville,404,0,1
+10003,"Division No.  8, Subd. A",386,0,0
+10003,Northern Arm,371,0,1
+10003,"Division No.  6, Subd. C",354,0,0
+10003,Belleoram,348,0,1
+10003,Comfort Cove-Newstead,345,0,1
+10003,Burlington,304,0,1
+10003,Ming's Bight,298,0,1
+10003,"Division No.  8, Subd. P",297,0,0
+10003,Leading Tickles,296,0,1
+10003,Pilley's Island,286,0,1
+10003,Seal Cove (White Bay),281,0,0
+10003,"Division No.  8, Subd. O",275,0,0
+10003,Baytona,251,0,1
+10003,Cottlesville,244,0,1
+10003,Little Burnt Bay,238,0,1
+10003,Fleur de Lys,207,0,1
+10003,Woodstock,195,0,1
+10003,"Division No.  3, Subd. D",188,0,0
+10003,Westport,185,0,1
+10003,Change Islands,184,0,1
+10003,"Division No.  6, Subd. E",175,0,0
+10003,Lushes Bight-Beaumont-Beaumont North,169,0,1
+10003,"Division No.  8, Subd. I",163,0,0
+10003,Brighton,163,0,1
+10003,Crow Head,156,0,1
+10003,"Division No.  3, Subd. C",146,0,0
+10003,Pacquet,145,0,1
+10003,Pool's Cove,143,0,1
+10003,Point of Bay,137,0,1
+10003,Brent's Cove,119,0,1
+10003,Rencontre East,115,0,1
+10003,"Division No.  3, Subd. F",115,0,0
+10003,Coachman's Cove,111,0,1
+10003,"Division No.  6, Subd. A",101,0,0
+10003,Seal Cove (Fortune Bay),100,0,0
+10003,Gaultois,100,0,1
+10003,Little Bay,100,0,1
+10003,Beachside,97,0,1
+10003,Miles Cove,97,0,1
+10003,Morrisville,93,0,1
+10003,Millertown,87,0,1
+10003,"Division No.  3, Subd. E",74,0,0
+10003,Nippers Harbour,74,0,1
+10003,"Division No.  7, Subd. N",55,0,0
+10003,"Division No.  3, Subd. A",45,0,0
+10003,Port Anson,42,0,1
+10003,"Division No.  8, Subd. D",5,0,0
+10003,Tilt Cove,5,0,1
+10004,Happy Valley-Goose Bay,8040,0,1
+10004,Labrador City,7412,0,1
+10004,Wabush,1964,0,1
+10004,Sheshatshiu 3,1225,0,0
+10004,Natuashish 2,856,0,0
+10004,Nain,847,0,1
+10004,"Division No. 10, Subd. D",732,0,0
+10004,L'Anse au Loup,692,0,1
+10004,Hopedale,596,0,1
+10004,North West River,560,0,1
+10004,"Cartwright, Labrador",439,0,0
+10004,Port Hope Simpson,403,0,1
+10004,Forteau,377,0,1
+10004,Makkovik,365,0,1
+10004,Rigolet,327,0,1
+10004,Mary's Harbour,312,0,1
+10004,Charlottetown (Labrador),292,0,0
+10004,L'Anse-au-Clair,219,0,1
+10004,"Division No. 10, Subd. B",211,0,0
+10004,Postville,188,0,1
+10004,St. Lewis,181,0,1
+10004,Red Bay,142,0,1
+10004,West St. Modeste,102,0,1
+10004,Pinware,64,0,1
+10004,"Division No. 10, Subd. A",55,0,0
+10004,"Division No. 10, Subd. C",54,0,0
+10005,Corner Brook,19333,0,1
+10005,Stephenville,6540,0,1
+10005,Deer Lake,4864,0,1
+10005,Channel-Port aux Basques,3547,0,1
+10005,Pasadena,3524,0,1
+10005,"Division No.  9, Subd. C",2220,0,0
+10005,St. Anthony,2180,0,1
+10005,Kippens,1842,0,1
+10005,Stephenville Crossing,1634,0,1
+10005,Massey Drive,1606,0,1
+10005,Humber Arm South,1537,0,1
+10005,"Division No.  4, Subd. A",1530,0,0
+10005,"Division No.  4, Subd. E",1467,0,0
+10005,Irishtown-Summerside,1260,0,1
+10005,"Division No.  4, Subd. D",1212,0,0
+10005,Burgeo,1176,0,1
+10005,"Division No.  4, Subd. B",1140,0,0
+10005,St. George's,1139,0,1
+10005,Rocky Harbour,937,0,1
+10005,Roddickton-Bide Arm,928,0,1
+10005,Cape St. George,809,0,1
+10005,"Division No.  5, Subd. F",746,0,0
+10005,Port au Choix,742,0,1
+10005,Mount Moriah,700,0,1
+10005,Port Saunders,678,0,1
+10005,Cox's Cove,664,0,1
+10005,St. Lunaire-Griquet,603,0,1
+10005,Norris Point,602,0,1
+10005,"Division No.  4, Subd. C",591,0,0
+10005,McIvers,575,0,1
+10005,"Division No.  3, Subd. H",562,0,0
+10005,Isle aux Morts,559,0,1
+10005,Reidville,550,0,1
+10005,Burnt Islands,540,0,1
+10005,"Division No.  9, Subd. D",534,0,0
+10005,Lark Harbour,508,0,1
+10005,Trout River,508,0,1
+10005,Gillams,506,0,1
+10005,Lourdes,502,0,1
+10005,Cormack,492,0,1
+10005,Englee,489,0,1
+10005,Hampden,439,0,1
+10005,Steady Brook,416,0,1
+10005,"Division No.  5, Subd. G",414,0,0
+10005,Port au Port East,413,0,1
+10005,Meadows,404,0,1
+10005,Cow Head,398,0,1
+10005,Ramea,388,0,1
+10005,Port au Port West-Aguathuna-Felix Cove,384,0,0
+10005,York Harbour,372,0,1
+10005,Parson's Pond,368,0,1
+10005,Rose Blanche-Harbour le Cou,344,0,1
+10005,Anchor Point,305,0,1
+10005,Hawke's Bay,297,0,1
+10005,"Division No.  5, Subd. A",291,0,0
+10005,"Division No.  5, Subd. C",285,0,0
+10005,Jackson's Arm,277,0,1
+10005,Flower's Cove,272,0,1
+10005,Main Brook,246,0,1
+10005,"Woody Point, Bonne Bay",244,0,0
+10005,Glenburnie-Birchy Head-Shoal Brook,241,0,1
+10005,Hughes Brook,236,0,1
+10005,Daniel's Harbour,220,0,1
+10005,St. Pauls,202,0,1
+10005,"Division No.  5, Subd. E",188,0,0
+10005,"Division No.  9, Subd. A",183,0,0
+10005,Howley,179,0,1
+10005,Bird Cove,175,0,1
+10005,River of Ponds,173,0,1
+10005,Goose Cove East,172,0,1
+10005,"Division No.  9, Subd. H",155,0,0
+10005,Raleigh,150,0,1
+10005,Conche,149,0,1
+10005,Cook's Harbour,118,0,1
+10005,"Division No.  9, Subd. G",96,0,0
+10005,"Division No.  9, Subd. F",81,0,0
+10005,"Division No.  3, Subd. I",61,0,0
+10005,Bellburns,52,0,1
+10005,Gallants,50,0,1
+10005,"Division No.  3, Subd. J",38,0,0
+10005,"Division No.  5, Subd. D",30,0,0
+10005,Sally's Cove,15,0,1
+10006,Portugal Cove-St. Philip's,8415,0,1
+10006,Torbay,7852,0,1
+10006,Logy Bay-Middle Cove-Outer Cove,2364,0,1
+10006,Pouch Cove,2063,0,1
+10006,Wabana,1815,0,1
+10006,Flatrock,1722,0,1
+10006,Bauline,412,0,1
+10006,"Division No.  1, Subd. R",264,0,0
+10007,Clarenville,6704,0,1
+10007,Marystown,5204,0,1
+10007,Placentia,3289,0,1
+10007,Bonavista,3190,0,1
+10007,"Division No.  1, Subd. E",2835,0,0
+10007,"Division No.  7, Subd. E",2573,0,0
+10007,Burin,2237,0,1
+10007,Grand Bank,2152,0,1
+10007,New-Wes-Valley,2044,0,1
+10007,Glovertown,1948,0,1
+10007,"Division No.  7, Subd. M",1856,0,0
+10007,Gambo,1816,0,1
+10007,"Division No.  1, Subd. G",1673,0,0
+10007,Trinity Bay North,1649,0,1
+10007,Fortune,1285,0,1
+10007,"Division No.  1, Subd. Y",1211,0,0
+10007,"Division No.  7, Subd. L",1183,0,0
+10007,"Division No.  7, Subd. K",1153,0,0
+10007,Centreville-Wareham-Trinity,1116,0,1
+10007,St. Lawrence,1115,0,1
+10007,Arnold's Cove,964,0,1
+10007,Whitbourne,955,0,1
+10007,Musgrave Harbour,946,0,1
+10007,Hare Bay,925,0,1
+10007,"Division No.  7, Subd. F",831,0,0
+10007,Carmanville,784,0,1
+10007,"Division No.  1, Subd. A",653,0,0
+10007,Norman's Cove-Long Cove,647,0,1
+10007,Heart's Delight-Islington,646,0,1
+10007,Old Perlican,608,0,1
+10007,Lawn,583,0,1
+10007,Dover,579,0,1
+10007,"Division No.  7, Subd. J",577,0,0
+10007,Musgravetown,561,0,1
+10007,Lewin's Cove,546,0,1
+10007,Garnish,542,0,1
+10007,"Division No.  1, Subd. F",539,0,0
+10007,"Division No.  2, Subd. C",538,0,0
+10007,Lumsden,535,0,1
+10007,Eastport,527,0,1
+10007,Port Blandford,513,0,1
+10007,"Division No.  2, Subd. K",502,0,0
+10007,Chapel Arm,446,0,1
+10007,Terrenceville,446,0,1
+10007,Winterton,436,0,1
+10007,St. Bernard's-Jacques Fontaine,433,0,1
+10007,Small Point-Adam's Cove-Blackhead-Broad Cove,414,0,1
+10007,Sunnyside,407,0,1
+10007,Winterland,398,0,1
+10007,Port Rexton,361,0,1
+10007,"Division No.  1, Subd. B",356,0,0
+10007,Whiteway,351,0,1
+10007,Bay de Verde,347,0,1
+10007,Heart's Content,330,0,1
+10007,"Division No.  1, Subd. H",328,0,0
+10007,St. Bride's,318,0,1
+10007,Hant's Harbour,318,0,1
+10007,"Division No.  7, Subd. G",316,0,0
+10007,Elliston,315,0,1
+10007,Southern Harbour,313,0,1
+10007,Traytown,279,0,1
+10007,"Division No.  7, Subd. D",259,0,0
+10007,Greenspond,257,0,1
+10007,Point May,254,0,1
+10007,Fox Cove-Mortier,252,0,1
+10007,"Division No.  2, Subd. E",251,0,0
+10007,Bay L'Argent,234,0,1
+10007,Parkers Cove,233,0,1
+10007,Rushoon,229,0,1
+10007,Fox Harbour,226,0,1
+10007,Lamaline,218,0,1
+10007,Chance Cove,213,0,1
+10007,Come By Chance,208,0,1
+10007,Sandringham,205,0,1
+10007,"Division No.  2, Subd. D",204,0,0
+10007,New Perlican,200,0,1
+10007,"Division No.  2, Subd. H",196,0,0
+10007,Long Harbour-Mount Arlington Heights,185,0,1
+10007,Heart's Desire,184,0,1
+10007,Branch,177,0,1
+10007,Red Harbour,177,0,1
+10007,Grand Le Pierre,176,0,1
+10007,Indian Bay,172,0,1
+10007,Frenchman's Cove,159,0,1
+10007,Lord's Cove,155,0,1
+10007,"Division No.  8, Subd. M",141,0,0
+10007,"Division No.  7, Subd. A",140,0,0
+10007,Baine Harbour,126,0,1
+10007,St. Brendan's,125,0,1
+10007,"Division No.  2, Subd. I",123,0,0
+10007,Sandy Cove,120,0,1
+10007,Happy Adventure,118,0,1
+10007,English Harbour East,117,0,1
+10007,Salvage,108,0,1
+10007,"Division No.  1, Subd. C",106,0,0
+10007,"Division No.  2, Subd. F",99,0,0
+10007,Terra Nova,99,0,1
+10007,Point Lance,87,0,1
+10007,Little Bay East,84,0,1
+10007,"Division No.  7, Subd. I",80,0,0
+10007,Trinity (Trinity Bay),76,0,0
+10007,King's Cove,75,0,1
+10007,Point au Gaul,67,0,1
+10007,"Division No.  7, Subd. B",57,0,0
+10007,Keels,46,0,1
+10007,Duntara,36,0,1
+10007,"Division No.  2, Subd. L",32,0,0
+10007,"Division No.  2, Subd. G",25,0,0
+11001,Stratford,10927,0,1
+11001,Three Rivers,7883,0,1
+11001,Vernon River,2499,0,1
+11001,"East River, Part 1",2307,0,0
+11001,Crossroads,1859,0,1
+11001,Souris,1766,0,1
+11001,Belfast,1687,0,1
+11001,"Murray River, Part 1",1422,0,0
+11001,Morell,1209,0,1
+11001,Souris,1079,0,1
+11001,Eastern Kings,687,0,1
+11001,St. Peters,686,0,1
+11001,Murray Harbour,628,0,1
+11001,"East River, Part 2",575,0,0
+11001,Central Kings,386,0,1
+11001,Souris West,379,0,1
+11001,Johnstons River,371,0,1
+11001,"Murray River, Part 2",346,0,0
+11001,Murray River,337,0,1
+11001,Murray Harbour,282,0,1
+11001,Morell,269,0,1
+11001,Alexandra,252,0,1
+11001,St. Peters Bay,231,0,1
+11001,Scotchfort 4,230,0,0
+11001,Mount Stewart,226,0,1
+11001,Annandale - Little Pond - Howe Bay,223,0,0
+11001,Hazelbrook,220,0,1
+11001,Central Kings,135,0,1
+11001,Cardigan,125,0,1
+11001,Montague,74,0,1
+11001,Morell 2,25,0,0
+11002,Charlottetown,38809,0,1
+11003,Summerside,16001,0,1
+11003,O'Leary,2566,0,1
+11003,Alberton,2230,0,1
+11003,Wellington,1811,0,1
+11003,Tignish,1800,0,1
+11003,Alberton,1301,0,1
+11003,Central Prince,1129,0,1
+11003,Miminegash,1089,0,1
+11003,Miscouche,992,0,1
+11003,O'Leary,876,0,1
+11003,Miscouche,849,0,1
+11003,Tignish,744,0,1
+11003,Tyne Valley,669,0,1
+11003,Lot 11 and Area,617,0,0
+11003,Wellington,414,0,1
+11003,Abram-Village,340,0,1
+11003,Linkletter,315,0,1
+11003,St. Felix,314,0,1
+11003,Bedeque and Area,311,0,0
+11003,Lennox Island 1,308,0,0
+11003,Greenmount-Montrose,262,0,1
+11003,West Point,235,0,1
+11003,Tyne Valley,229,0,1
+11003,St. Nicholas,218,0,1
+11003,Sherbrooke,178,0,1
+11003,Northport,157,0,1
+11003,Miminegash,148,0,1
+11003,St. Louis,69,0,1
+11003,Tignish Shore,64,0,1
+11004,Cornwall,6574,0,1
+11004,New Glasgow,4277,0,1
+11004,West River,3473,0,1
+11004,"Kensington, Part 1",3090,0,0
+11004,North Shore,2500,0,1
+11004,Kensington,1812,0,1
+11004,"Crapaud, Part 1",1564,0,0
+11004,New London,1521,0,1
+11004,North Shore,1475,0,1
+11004,Kinkora,1285,0,1
+11004,Miltonvale Park,1196,0,1
+11004,Malpeque Bay,1191,0,1
+11004,Kingston,1111,0,1
+11004,Borden,809,0,1
+11004,Borden-Carleton,788,0,1
+11004,North Rustico,648,0,1
+11004,Clyde River,614,0,1
+11004,Brackley,586,0,1
+11004,"Kensington, Part 2",549,0,0
+11004,"Crapaud, Part 2",548,0,0
+11004,Hunter River,390,0,1
+11004,Kinkora,388,0,1
+11004,York,387,0,1
+11004,Warren Grove,374,0,1
+11004,Crapaud,361,0,1
+11004,"Stanley Bridge, Hope River, Bayview, Cavendish and North Rustico",359,0,0
+11004,Hampshire,339,0,1
+11004,Winsloe North,337,0,1
+11004,North Rustico,327,0,1
+11004,Union Road,213,0,1
+11004,North Wiltshire,176,0,1
+11004,Breadalbane,170,0,1
+11004,North River,157,0,1
+11004,Victoria,139,0,1
+11004,Darlington,99,0,1
+11004,Victoria,87,0,1
+11004,Rocky Point 3,47,0,0
+12001,"Kings, Subd. A",22355,0,0
+12001,Yarmouth,10067,0,1
+12001,Argyle,7870,0,1
+12001,Clare,7678,0,1
+12001,Digby,7242,0,1
+12001,Yarmouth,6829,0,1
+12001,"Annapolis, Subd. A",5980,0,0
+12001,"Annapolis, Subd. C",5218,0,0
+12001,"Annapolis, Subd. B",4587,0,0
+12001,"Annapolis, Subd. D",3049,0,0
+12001,Digby,2001,0,1
+12001,Middleton,1873,0,1
+12001,Annapolis Royal,530,0,1
+12001,Yarmouth 33,181,0,0
+12001,Bear River (Part) 6,141,0,0
+12001,Bear River 6B,15,0,0
+12002,Cape Breton,93694,1,0
+12002,"Antigonish, Subd. A",8963,0,0
+12002,"Antigonish, Subd. B",6138,0,0
+12002,"Inverness, Subd. A",5207,0,0
+12002,"Inverness, Subd. B",4865,0,0
+12002,Antigonish,4656,0,1
+12002,Guysborough,4585,0,1
+12002,"Victoria, Subd. B",4077,0,0
+12002,"Richmond, Subd. A",3763,0,0
+12002,Eskasoni 3,3521,0,0
+12002,Port Hawkesbury,3210,0,1
+12002,"Inverness, Subd. C",3167,0,0
+12002,"Richmond, Subd. C",3136,0,0
+12002,"Victoria, Subd. A",2673,0,0
+12002,"Richmond, Subd. B",1610,0,0
+12002,Whycocomagh 2,877,0,0
+12002,Wagmatcook 1,691,0,0
+12002,Mulgrave,627,0,1
+12002,Chapel Island 5,405,0,0
+12002,Paqtnkek-Niktuek No. 23,372,0,0
+12002,Malagawatch 4,20,0,0
+12003,Halifax,439819,1,0
+12003,New Glasgow,9471,0,1
+12003,"Pictou, Subd. C",8386,0,0
+12003,"Pictou, Subd. A",6153,0,0
+12003,"Pictou, Subd. B",6137,0,0
+12003,Stellarton,4007,0,1
+12003,Westville,3540,0,1
+12003,Pictou,3107,0,1
+12003,Trenton,2407,0,1
+12003,St. Mary's,2161,0,1
+12003,Fisher's Grant 24,449,0,0
+12003,Beaver Lake 17,20,0,0
+12003,Sheet Harbour 36,10,0,0
+12004,"Colchester, Subd. B",19806,0,0
+12004,Truro,12954,0,1
+12004,"Colchester, Subd. C",12476,0,0
+12004,Amherst,9404,0,1
+12004,"Cumberland, Subd. B",6786,0,0
+12004,"Cumberland, Subd. C",5694,0,0
+12004,"Cumberland, Subd. D",4283,0,0
+12004,"Colchester, Subd. A",3762,0,0
+12004,"Cumberland, Subd. A",3201,0,0
+12004,Stewiacke,1557,0,1
+12004,Oxford,1170,0,1
+12004,Millbrook 27,921,0,0
+12005,Cole Harbour 30,208,0,0
+12007,Wallace Hills 14A,15,0,0
+12008,East Hants,22892,0,1
+12008,West Hants,19509,0,1
+12008,"Kings, Subd. B",11951,0,0
+12008,"Kings, Subd. C",8348,0,0
+12008,Kentville,6630,0,1
+12008,"Kings, Subd. D",5264,0,0
+12008,Wolfville,5057,0,1
+12008,Indian Brook 14,2739,0,0
+12008,Berwick,2455,0,1
+12008,Annapolis Valley First Nation,743,0,0
+12008,Glooscap 35,111,0,0
+12010,Lunenburg,25545,0,1
+12010,Chester,10693,0,1
+12010,Queens,10422,0,1
+12010,Bridgewater,8790,0,1
+12010,Barrington,6523,0,1
+12010,Shelburne,4336,0,1
+12010,Lunenburg,2396,0,1
+12010,Shelburne,1644,0,1
+12010,Mahone Bay,1064,0,1
+12010,Clark's Harbour,725,0,1
+12010,Lockeport,476,0,1
+12010,Gold River 21,81,0,0
+12010,Wildcat 12,49,0,0
+12010,Pennal 19,30,0,0
+12010,Medway River 11,15,0,0
+12010,Ponhook Lake 10,15,0,0
+12011,Membertou 28B,1103,0,0
+13001,Tracadie,16043,0,1
+13001,Bathurst,12157,0,1
+13001,Beresford,6226,0,1
+13001,Shippagan,4781,0,1
+13001,Bathurst,4761,0,1
+13001,Beresford,4294,0,1
+13001,Caraquet,4285,0,1
+13001,Shippagan,2672,0,1
+13001,Inkerman,2373,0,1
+13001,Paquetville,2250,0,1
+13001,Petit-Rocher,1954,0,1
+13001,Allardville,1949,0,1
+13001,Belledune,1325,0,1
+13001,Saint-Isidore,1312,0,1
+13001,Bas-Caraquet,1311,0,1
+13001,Lamèque,1301,0,1
+13001,Caraquet,1261,0,1
+13001,New Bandon,1200,0,1
+13001,Bertrand,1153,0,1
+13001,Nigadoo,997,0,1
+13001,Durham,950,0,1
+13001,Pointe-Verte,865,0,1
+13001,Sainte-Marie-Saint-Raphaël,820,0,1
+13001,Saint-Isidore,810,0,1
+13001,Le Goulet,749,0,1
+13001,Grande-Anse,731,0,1
+13001,Paquetville,718,0,1
+13001,Saint-Léolin,615,0,1
+13001,Maisonnette,535,0,1
+13001,Pabineau 11,133,0,0
+13002,Dieppe,28114,0,1
+13002,Shediac,7535,0,1
+13002,Beaubassin East / Beaubassin-est,6718,0,0
+13002,Sackville,6099,0,1
+13002,Shediac,5144,0,1
+13002,Memramcook,5029,0,1
+13002,Dundas,4332,0,1
+13002,Wellington,3292,0,1
+13002,Cocagne,2757,0,1
+13002,Bouctouche,2513,0,1
+13002,Cap-Pelé,2441,0,1
+13002,Richibucto,2085,0,1
+13002,Saint-Charles,2024,0,1
+13002,Saint Mary,1991,0,1
+13002,Saint-Antoine,1791,0,1
+13002,Saint-Louis,1760,0,1
+13002,Richibucto,1411,0,1
+13002,Sackville,1204,0,1
+13002,Botsford,1120,0,1
+13002,Westmorland,997,0,1
+13002,Saint-Louis de Kent,981,0,1
+13002,Dorchester,906,0,1
+13002,Saint-Paul,877,0,1
+13002,Rexton,874,0,1
+13002,Dorchester,438,0,1
+13002,Port Elgin,381,0,1
+13002,Indian Island 28,116,0,0
+13002,Buctouche 16,101,0,0
+13002,Fort Folly 1,36,0,0
+13003,Fredericton,63116,0,1
+13003,Oromocto,9045,0,1
+13003,New Maryland,4153,0,1
+13003,Devon 30,1070,0,0
+13003,Oromocto 26,295,0,0
+13004,Riverview,20584,0,1
+13004,Moncton,10704,0,1
+13004,Coverdale,4766,0,1
+13004,Sussex,4440,0,1
+13004,Hampton,4395,0,1
+13004,Simonds,3913,0,1
+13004,Salisbury,3377,0,1
+13004,Kingston,3202,0,1
+13004,Hampton,2969,0,1
+13004,Sussex,2579,0,1
+13004,Salisbury,2387,0,1
+13004,Petitcodiac,1476,0,1
+13004,Sussex Corner,1458,0,1
+13004,Norton,1410,0,1
+13004,Cardwell,1401,0,1
+13004,Hillsborough,1397,0,1
+13004,Upham,1357,0,1
+13004,Hillsborough,1348,0,1
+13004,Norton,1325,0,1
+13004,Saint Martins,1177,0,1
+13004,Elgin,1064,0,1
+13004,Havelock,1042,0,1
+13004,Hopewell,597,0,1
+13004,Waterford,491,0,1
+13004,Harvey,358,0,1
+13004,Riverside-Albert,348,0,1
+13004,Rothesay,342,0,1
+13004,St. Martins,320,0,1
+13004,Alma,282,0,1
+13004,Hammond,276,0,1
+13004,Brunswick,224,0,1
+13004,Alma,5,0,1
+13005,Edmundston,16437,0,1
+13005,Campbellton,7047,0,1
+13005,Grand Falls / Grand-Sault,5220,0,0
+13005,Haut-Madawaska,3720,0,1
+13005,Atholville,3290,0,1
+13005,Dalhousie,3223,0,1
+13005,Saint-Quentin,2141,0,1
+13005,Drummond,2095,0,1
+13005,Kedgwick,1986,0,1
+13005,Eel River Crossing,1844,0,1
+13005,Saint-André,1794,0,1
+13005,Saint-Jacques,1652,0,1
+13005,Balmoral,1603,0,1
+13005,Saint-Joseph,1549,0,1
+13005,Saint-Quentin,1504,0,1
+13005,Charlo,1323,0,1
+13005,Saint-Léonard,1322,0,1
+13005,Dalhousie,1090,0,1
+13005,Tide Head,951,0,1
+13005,Sainte-Anne,936,0,1
+13005,Sainte-Anne-de-Madawaska,891,0,1
+13005,Saint-Léonard,858,0,1
+13005,Rivière-Verte,744,0,1
+13005,Saint-Basile,736,0,1
+13005,Drummond,729,0,1
+13005,Addington,698,0,1
+13005,Lac Baker,685,0,1
+13005,Eldon,674,0,1
+13005,Rivière-Verte,657,0,1
+13005,St. Basile 10,369,0,0
+13005,Eel River 3,342,0,0
+13005,Balmoral,309,0,1
+13005,Colborne,266,0,1
+13005,Notre-Dame-de-Lourdes,253,0,1
+13005,Indian Ranch,134,0,1
+13006,Miramichi,17692,0,1
+13006,Alnwick,3615,0,1
+13006,Minto,2234,0,1
+13006,Hardwicke,2203,0,1
+13006,Upper Miramichi,2175,0,1
+13006,Northesk,2169,0,1
+13006,Richibucto 15,2062,0,0
+13006,Blackville,1996,0,1
+13006,Maugerville,1772,0,1
+13006,Neguac,1692,0,1
+13006,Southesk,1666,0,1
+13006,Glenelg,1532,0,1
+13006,Weldford,1335,0,1
+13006,Esgenoôpetitj 14,1223,0,0
+13006,Chipman,1201,0,1
+13006,Rogersville,1193,0,1
+13006,Newcastle,1149,0,1
+13006,Rogersville,1072,0,1
+13006,Canning,1028,0,1
+13006,Derby,938,0,1
+13006,Nelson,929,0,1
+13006,Blackville,914,0,1
+13006,Waterborough,903,0,1
+13006,Sheffield,888,0,1
+13006,Chipman,853,0,1
+13006,Doaktown,808,0,1
+13006,Carleton,764,0,1
+13006,Acadieville,752,0,1
+13006,Northfield,577,0,1
+13006,Eel Ground 2,545,0,0
+13006,Chatham,527,0,1
+13006,Blissfield,491,0,1
+13006,Red Bank 4,400,0,0
+13006,Harcourt,346,0,1
+13006,Big Hole Tract 8 (North Half),30,0,0
+13006,Tabusintac 9,20,0,0
+13006,Big Hole Tract 8 (South Half),16,0,0
+13006,Renous 12,10,0,0
+13006,Huskisson,5,0,1
+13007,Moncton,79470,0,1
+13008,Quispamsis,18768,0,1
+13008,Rothesay,11977,0,1
+13009,Saint John,69895,0,1
+13009,Lincoln,7519,0,1
+13009,Burton,5176,0,1
+13009,Grand Bay-Westfield,4967,0,1
+13009,St. Stephen,4510,0,1
+13009,Studholm,3527,0,1
+13009,New Maryland,2806,0,1
+13009,Grand Manan,2595,0,1
+13009,Saint George,2495,0,1
+13009,Pennfield,2222,0,1
+13009,Westfield,2114,0,1
+13009,Saint Andrews,2048,0,1
+13009,Saint Stephen,1671,0,1
+13009,Springfield,1641,0,1
+13009,St. George,1579,0,1
+13009,Saint David,1470,0,1
+13009,Musquash,1253,0,1
+13009,McAdam,1173,0,1
+13009,Greenwich,1126,0,1
+13009,Saint James,1024,0,1
+13009,Campobello Island,949,0,1
+13009,Blacks Harbour,907,0,1
+13009,Lepreau,803,0,1
+13009,Gagetown,787,0,1
+13009,Blissville,777,0,1
+13009,Fredericton Junction,719,0,1
+13009,West Isles,718,0,1
+13009,Cambridge-Narrows,715,0,1
+13009,Saint Patrick,710,0,1
+13009,Petersville,710,0,1
+13009,Cambridge,684,0,1
+13009,Saint Croix,648,0,1
+13009,Johnston,638,0,1
+13009,Tracy,610,0,1
+13009,Dufferin,565,0,1
+13009,Saint Andrews,550,0,1
+13009,Gladstone,486,0,1
+13009,Wickham,409,0,1
+13009,Kars,377,0,1
+13009,Dumbarton,346,0,1
+13009,Gagetown,324,0,1
+13009,Hampstead,288,0,1
+13009,Grand Manan,139,0,1
+13009,Clarendon,66,0,1
+13009,McAdam,61,0,1
+13010,Douglas,5935,0,1
+13010,Woodstock,5553,0,1
+13010,Saint Marys,5084,0,1
+13010,Hanwell,4743,0,1
+13010,Bright,3317,0,1
+13010,Kingsclear,2839,0,1
+13010,Wakefield,2722,0,1
+13010,Woodstock,2219,0,1
+13010,Kent,1966,0,1
+13010,Manners Sutton,1920,0,1
+13010,Northampton,1875,0,1
+13010,Brighton,1596,0,1
+13010,Wicklow,1591,0,1
+13010,Perth-Andover,1574,0,1
+13010,Florenceville-Bristol,1573,0,1
+13010,Gordon,1559,0,1
+13010,Southampton,1497,0,1
+13010,Richmond,1456,0,1
+13010,Denmark,1424,0,1
+13010,Queensbury,1237,0,1
+13010,Peel,1198,0,1
+13010,Prince William,1083,0,1
+13010,Tobique 20,1080,0,0
+13010,Grand Falls,1077,0,1
+13010,Perth,1047,0,1
+13010,Plaster Rock,1002,0,1
+13010,Wilmot,969,0,1
+13010,Nackawic,962,0,1
+13010,Hartland,933,0,1
+13010,Stanley,920,0,1
+13010,Andover,879,0,1
+13010,Aberdeen,812,0,1
+13010,Canterbury,552,0,1
+13010,Kingsclear 6,518,0,0
+13010,Simonds,514,0,1
+13010,Centreville,508,0,1
+13010,Bath,440,0,1
+13010,Woodstock 23,435,0,0
+13010,Dumfries,420,0,1
+13010,Harvey,402,0,1
+13010,Stanley,397,0,1
+13010,Canterbury,320,0,1
+13010,Aroostook,313,0,1
+13010,Lorne,313,0,1
+13010,North Lake,282,0,1
+13010,Millville,274,0,1
+13010,Meductic,180,0,1
+24001,Val-d'Or,32752,0,1
+24001,Chibougamau,7233,0,1
+24001,Chisasibi,4985,0,1
+24001,Mistissini,3731,0,1
+24001,Malartic,3355,0,1
+24001,Senneterre,2782,0,1
+24001,Kuujjuaq,2668,0,1
+24001,Eeyou Istchee Baie-James,2638,0,1
+24001,Waskaganish,2536,0,1
+24001,Puvirnituq,2129,0,1
+24001,Lebel-sur-Quévillon,2091,0,1
+24001,Inukjuak,1821,0,1
+24001,Salluit,1580,0,1
+24001,Wemindji,1562,0,1
+24001,Rivière-Héva,1495,0,1
+24001,Chapais,1468,0,1
+24001,Matagami,1402,0,1
+24001,Lac Simon,1285,0,1
+24001,Senneterre,1202,0,1
+24001,Whapmagoostui,1022,0,1
+24001,Kangiqsualujjuaq,956,0,1
+24001,Eastmain,924,0,1
+24001,Kangiqsujuaq,837,0,1
+24001,Nemaska,832,0,1
+24001,Oujé-Bougoumou,797,0,1
+24001,Kuujjuarapik,792,0,1
+24001,Akulivik,642,0,1
+24001,Kangirsuk,561,0,1
+24001,Umiujaq,541,0,1
+24001,Waswanipi,459,0,1
+24001,Quaqtaq,453,0,1
+24001,Tasiujaq,420,0,1
+24001,Ivujivik,412,0,1
+24001,Kitcisakik,257,0,1
+24001,Aupaluk,233,0,1
+24001,Belcourt,219,0,1
+24001,Mistissini,10,0,1
+24001,Baie-d'Hudson,5,0,1
+24002,Rouyn-Noranda,42313,0,1
+24002,Amos,12675,0,1
+24002,La Sarre,7358,0,1
+24002,Macamic,2744,0,1
+24002,Ville-Marie,2464,0,1
+24002,Témiscaming,2368,0,1
+24002,Barraute,1986,0,1
+24002,Palmarolle,1386,0,1
+24002,Lorrainville,1286,0,1
+24002,Trécesson,1232,0,1
+24002,Saint-Bruno-de-Guigues,1185,0,1
+24002,Notre-Dame-du-Nord,1090,0,1
+24002,Saint-Félix-de-Dalquier,1026,0,1
+24002,Laverlochère-Angliers,947,0,1
+24002,Duhamel-Ouest,945,0,1
+24002,Sainte-Germaine-Boulé,941,0,1
+24002,Dupuy,940,0,1
+24002,Preissac,914,0,1
+24002,Taschereau,898,0,1
+24002,Landrienne,897,0,1
+24002,Saint-Marc-de-Figuery,868,0,1
+24002,Sainte-Gertrude-Manneville,793,0,1
+24002,Normétal,778,0,1
+24002,La Corne,778,0,1
+24002,Saint-Mathieu-d'Harricana,770,0,1
+24002,Duparquet,716,0,1
+24002,Béarn,708,0,1
+24002,Saint-Édouard-de-Fabre,671,0,1
+24002,Poularies,662,0,1
+24002,Timiskaming,541,0,1
+24002,Pikogan,540,0,1
+24002,Berry,535,0,1
+24002,Gallichan,488,0,1
+24002,Clermont,484,0,1
+24002,La Motte,478,0,1
+24002,Saint-Eugène-de-Guigues,458,0,1
+24002,Kipawa,446,0,1
+24002,Saint-Dominique-du-Rosaire,434,0,1
+24002,Sainte-Hélène-de-Mancebourg,410,0,1
+24002,Roquemaure,409,0,1
+24002,Rapide-Danseur,380,0,1
+24002,Clerval,373,0,1
+24002,Nédélec,340,0,1
+24002,Guérin,333,0,1
+24002,Fugèreville,326,0,1
+24002,Kebaowek,326,0,1
+24002,Latulipe-et-Gaboury,320,0,1
+24002,Laforce,320,0,1
+24002,La Reine,307,0,1
+24002,Authier,290,0,1
+24002,Authier-Nord,288,0,1
+24002,Rémigny,287,0,1
+24002,Belleterre,285,0,1
+24002,Chazel,254,0,1
+24002,Launay,211,0,1
+24002,Moffet,206,0,1
+24002,La Morandière,205,0,1
+24002,Saint-Lambert,191,0,1
+24002,Winneway,176,0,1
+24002,Val-Saint-Gilles,169,0,1
+24002,Lac-Chicobi,161,0,1
+24002,Rochebaucourt,146,0,1
+24002,Champneuf,94,0,1
+24002,Laniel,89,0,1
+24002,Rivière-Ojima,60,0,1
+24002,Lac-Despinassy,21,0,1
+24002,Les Lacs-du-Témiscamingue,10,0,1
+24002,Hunter's Point,5,0,1
+24004,Laval,438366,1,0
+24005,Lachute,14100,0,1
+24005,Val-des-Monts,13328,0,1
+24005,Brownsburg-Chatham,7247,0,1
+24005,L'Ange-Gardien,6102,0,1
+24005,Saint-André-Avellin,3562,0,1
+24005,Thurso,3084,0,1
+24005,Saint-André-d'Argenteuil,3053,0,1
+24005,Grenville-sur-la-Rouge,2883,0,1
+24005,Papineauville,2153,0,1
+24005,Grenville,1816,0,1
+24005,Ripon,1735,0,1
+24005,Plaisance,1129,0,1
+24005,Montpellier,1112,0,1
+24005,Lac-Simon,1057,0,1
+24005,Harrington,967,0,1
+24005,Montebello,934,0,1
+24005,Lochaber-Partie-Ouest,926,0,0
+24005,Val-des-Bois,920,0,1
+24005,Chénéville,848,0,1
+24005,Notre-Dame-de-la-Salette,841,0,1
+24005,Mayo,704,0,1
+24005,Notre-Dame-de-la-Paix,675,0,1
+24005,Bowman,667,0,1
+24005,Namur,633,0,1
+24005,Duhamel,569,0,1
+24005,Lac-des-Plages,548,0,1
+24005,Saint-Émile-de-Suffolk,512,0,1
+24005,Saint-Sixte,490,0,1
+24005,Mulgrave-et-Derry,461,0,1
+24005,Fassett,453,0,1
+24005,Lochaber,446,0,1
+24005,Boileau,405,0,1
+24005,Notre-Dame-de-Bonsecours,285,0,1
+24006,Saint-Georges,32935,0,1
+24006,Sainte-Marie,13134,0,1
+24006,Beauceville,6185,0,1
+24006,Saint-Joseph-de-Beauce,5014,0,1
+24006,Saint-Prosper,3596,0,1
+24006,Saint-Isidore,3286,0,1
+24006,Saint-Côme--Linière,3278,0,1
+24006,Saint-Elzéar,2623,0,1
+24006,Saint-Martin,2588,0,1
+24006,Scott,2566,0,1
+24006,Saint-Bernard,2535,0,1
+24006,Saint-Éphrem-de-Beauce,2323,0,1
+24006,Saint-Victor,2313,0,1
+24006,Saint-Gédéon-de-Beauce,2093,0,1
+24006,Vallée-Jonction,1864,0,1
+24006,Notre-Dame-des-Pins,1812,0,1
+24006,La Guadeloupe,1805,0,1
+24006,Saint-Zacharie,1684,0,1
+24006,Saint-Benoît-Labre,1617,0,1
+24006,Saint-Honoré-de-Shenley,1555,0,1
+24006,Tring-Jonction,1526,0,1
+24006,Sainte-Hénédine,1440,0,1
+24006,Saint-Odilon-de-Cranbourne,1407,0,1
+24006,Frampton,1309,0,1
+24006,Saints-Anges,1239,0,1
+24006,Sainte-Marguerite,1175,0,1
+24006,Saint-Benjamin,1090,0,1
+24006,Saint-Frédéric,1065,0,1
+24006,Saint-René,946,0,1
+24006,Sainte-Aurélie,856,0,1
+24006,Saint-Théophile,702,0,1
+24006,Saint-Simon-les-Mines,573,0,1
+24006,Saint-Jules,547,0,1
+24006,Saint-Alfred,519,0,1
+24006,Saint-Évariste-de-Forsyth,511,0,1
+24006,Saint-Philibert,379,0,1
+24006,Saint-Joseph-des-Érables,377,0,1
+24006,Saint-Séverin,300,0,1
+24006,Lac-Poulin,171,0,1
+24006,Saint-Hilaire-de-Dorset,96,0,1
+24007,Salaberry-de-Valleyfield,42787,0,1
+24007,Beauharnois,13638,0,1
+24007,Saint-Zotique,9618,0,1
+24007,Coteau-du-Lac,7473,0,1
+24007,Les Cèdres,7184,0,1
+24007,Les Coteaux,5643,0,1
+24007,Ormstown,3917,0,1
+24007,Saint-Anicet,2754,0,1
+24007,Huntingdon,2556,0,1
+24007,Rivière-Beaudette,2489,0,1
+24007,Saint-Polycarpe,2372,0,1
+24007,Hinchinbrooke,2187,0,1
+24007,Saint-Louis-de-Gonzague,1950,0,1
+24007,Saint-Stanislas-de-Kostka,1852,0,1
+24007,Pointe-des-Cascades,1775,0,1
+24007,Saint-Clet,1700,0,1
+24007,Sainte-Barbe,1609,0,1
+24007,Godmanchester,1403,0,1
+24007,Saint-Étienne-de-Beauharnois,1099,0,1
+24007,Sainte-Marthe,1014,0,1
+24007,Très-Saint-Rédempteur,978,0,1
+24007,Sainte-Justine-de-Newton,947,0,1
+24007,Saint-Télesphore,754,0,1
+24007,Elgin,389,0,1
+24007,Dundee,386,0,1
+24009,Sorel-Tracy,35165,0,1
+24009,Bécancour,13561,0,1
+24009,Nicolet,8620,0,1
+24009,Sainte-Anne-de-Sorel,2731,0,1
+24009,Saint-Roch-de-Richelieu,2573,0,1
+24009,Saint-Léonard-d'Aston,2530,0,1
+24009,Sainte-Victoire-de-Sorel,2457,0,1
+24009,Pierreville,2104,0,1
+24009,Saint-François-du-Lac,1898,0,1
+24009,Saint-Robert,1813,0,1
+24009,Yamaska,1736,0,1
+24009,Saint-Ours,1723,0,1
+24009,Saint-Joseph-de-Sorel,1581,0,1
+24009,Saint-Pierre-les-Becquets,1183,0,1
+24009,Saint-Wenceslas,1167,0,1
+24009,Sainte-Eulalie,984,0,1
+24009,Baie-du-Febvre,961,0,1
+24009,Sainte-Perpétue,916,0,1
+24009,Deschaillons-sur-Saint-Laurent,906,0,1
+24009,Saint-Célestin,892,0,1
+24009,Saint-David,872,0,1
+24009,Manseau,807,0,1
+24009,Saint-Sylvère,786,0,1
+24009,Saint-Zéphirin-de-Courval,707,0,1
+24009,Sainte-Sophie-de-Lévrard,704,0,1
+24009,Fortierville,660,0,1
+24009,Saint-Célestin,594,0,1
+24009,Massueville,547,0,1
+24009,Sainte-Monique,519,0,1
+24009,Grand-Saint-Esprit,488,0,1
+24009,Odanak,481,0,1
+24009,Sainte-Françoise,467,0,1
+24009,Sainte-Marie-de-Blandford,443,0,1
+24009,Aston-Jonction,441,0,1
+24009,Saint-Aimé,405,0,1
+24009,Parisville,396,0,1
+24009,Sainte-Cécile-de-Lévrard,349,0,1
+24009,La Visitation-de-Yamaska,295,0,1
+24009,Lemieux,292,0,1
+24009,Saint-Elphège,251,0,1
+24009,Saint-Gérard-Majella,240,0,1
+24009,Wôlinak,194,0,1
+24010,Saint-Henri,5813,0,1
+24010,Saint-Anselme,4047,0,1
+24010,Lac-Etchemin,4028,0,1
+24010,Sainte-Claire,3526,0,1
+24010,Beaumont,2968,0,1
+24010,Saint-Charles-de-Bellechasse,2583,0,1
+24010,Saint-Raphaël,2458,0,1
+24010,Saint-Gervais,2138,0,1
+24010,Saint-Damien-de-Buckland,1893,0,1
+24010,Saint-Michel-de-Bellechasse,1871,0,1
+24010,Sainte-Justine,1828,0,1
+24010,Saint-Malachie,1667,0,1
+24010,Armagh,1439,0,1
+24010,Saint-Lazare-de-Bellechasse,1332,0,1
+24010,Saint-Léon-de-Standon,1042,0,1
+24010,Saint-Vallier,1031,0,1
+24010,Honfleur,881,0,1
+24010,La Durantaye,782,0,1
+24010,Notre-Dame-Auxiliatrice-de-Buckland,767,0,1
+24010,Saint-Nérée-de-Bellechasse,744,0,1
+24010,Sainte-Rose-de-Watford,740,0,1
+24010,Saint-Camille-de-Lellis,737,0,1
+24010,Saint-Magloire,712,0,1
+24010,Saint-Philémon,680,0,1
+24010,Saint-Cyprien,474,0,1
+24010,Saint-Luc-de-Bellechasse,449,0,1
+24010,Saint-Louis-de-Gonzague,390,0,1
+24010,Sainte-Sabine,343,0,1
+24010,Saint-Nazaire-de-Dorchester,338,0,1
+24011,Chambly,31444,0,1
+24011,Beloeil,24104,0,1
+24011,Mont-Saint-Hilaire,18859,0,1
+24011,Marieville,11332,0,1
+24011,Otterburn Park,8479,0,1
+24011,McMasterville,5936,0,1
+24011,Richelieu,5742,0,1
+24011,Saint-Mathias-sur-Richelieu,4544,0,1
+24011,Saint-Jean-Baptiste,3179,0,1
+24012,Lavaltrie,14425,0,1
+24012,Louiseville,7340,0,1
+24012,Saint-Félix-de-Valois,6975,0,1
+24012,Saint-Boniface,5156,0,1
+24012,Lanoraie,5134,0,1
+24012,Saint-Jean-de-Matha,4838,0,1
+24012,Saint-Étienne-des-Grès,4539,0,1
+24012,Berthierville,4386,0,1
+24012,Saint-Sulpice,3360,0,1
+24012,Saint-Alexis-des-Monts,2999,0,1
+24012,Yamachiche,2813,0,1
+24012,Saint-Gabriel,2803,0,1
+24012,Saint-Gabriel-de-Brandon,2684,0,1
+24012,Saint-Damien,2393,0,1
+24012,Mandeville,2363,0,1
+24012,Maskinongé,2323,0,1
+24012,Sainte-Geneviève-de-Berthier,2253,0,1
+24012,Saint-Barthélemy,2087,0,1
+24012,Saint-Ignace-de-Loyola,2048,0,1
+24012,Saint-Élie-de-Caxton,1934,0,1
+24012,Saint-Cuthbert,1821,0,1
+24012,Saint-Paulin,1541,0,1
+24012,Saint-Mathieu-du-Parc,1482,0,1
+24012,Sainte-Élisabeth,1390,0,1
+24012,Sainte-Ursule,1355,0,1
+24012,Saint-Barnabé,1186,0,1
+24012,Saint-Norbert,1060,0,1
+24012,Charette,1034,0,1
+24012,Saint-Justin,961,0,1
+24012,Saint-Léon-le-Grand,863,0,1
+24012,Saint-Édouard-de-Maskinongé,798,0,1
+24012,Saint-Didace,688,0,1
+24012,La Visitation-de-l'Île-Dupas,684,0,1
+24012,Sainte-Angèle-de-Prémont,631,0,1
+24012,Saint-Sévère,337,0,1
+24012,Saint-Cléophas-de-Brandon,254,0,1
+24014,Magog,28312,0,1
+24014,Cowansville,15234,0,1
+24014,Bromont,11357,0,1
+24014,Farnham,10149,0,1
+24014,Lac-Brome,5923,0,1
+24014,Orford,5007,0,1
+24014,Sutton,4548,0,1
+24014,Dunham,3599,0,1
+24014,Bedford,2558,0,1
+24014,Brigham,2282,0,1
+24014,Eastman,2279,0,1
+24014,Potton,2012,0,1
+24014,Venise-en-Québec,1899,0,1
+24014,Austin,1748,0,1
+24014,Henryville,1497,0,1
+24014,Noyan,1418,0,1
+24014,Saint-Armand,1228,0,1
+24014,Saint-Georges-de-Clarenceville,1154,0,1
+24014,Stukely-Sud,1142,0,1
+24014,Frelighsburg,1123,0,1
+24014,Bolton-Est,1108,0,1
+24014,Sainte-Sabine,1105,0,1
+24014,Stanbridge East,834,0,1
+24014,Saint-Étienne-de-Bolton,816,0,1
+24014,Bolton-Ouest,732,0,1
+24014,Saint-Sébastien,692,0,1
+24014,Notre-Dame-de-Stanbridge,691,0,1
+24014,Saint-Ignace-de-Stanbridge,677,0,1
+24014,Bedford,658,0,1
+24014,East Farnham,612,0,1
+24014,Pike River,503,0,1
+24014,Abercorn,341,0,1
+24014,Brome,341,0,1
+24014,Stanbridge Station,291,0,1
+24014,Saint-Benoît-du-Lac,43,0,1
+24015,Brossard,91525,0,1
+24015,Saint-Lambert,22761,0,1
+24016,Québec,549459,1,0
+24017,Châteauguay,50815,0,1
+24017,Mercier,14626,0,1
+24017,Saint-Rémi,8957,0,1
+24017,Sainte-Martine,5664,0,1
+24017,Napierville,4020,0,1
+24017,Saint-Michel,3521,0,1
+24017,Saint-Isidore,2769,0,1
+24017,Sainte-Clotilde,2646,0,1
+24017,Saint-Chrysostome,2582,0,1
+24017,Léry,2390,0,1
+24017,Hemmingford,1995,0,1
+24017,Saint-Patrice-de-Sherrington,1963,0,1
+24017,Saint-Jacques-le-Mineur,1766,0,1
+24017,Saint-Cyprien-de-Napierville,1735,0,1
+24017,Franklin,1635,0,1
+24017,Saint-Bernard-de-Lacolle,1542,0,1
+24017,Saint-Édouard,1365,0,1
+24017,Saint-Urbain-Premier,1332,0,1
+24017,Très-Saint-Sacrement,1189,0,1
+24017,Howick,850,0,1
+24017,Hemmingford,829,0,1
+24017,Havelock,756,0,1
+24018,Saint-Honoré,6376,0,1
+24018,Saint-David-de-Falardeau,2996,0,1
+24018,Saint-Fulgence,2061,0,1
+24018,L'Anse-Saint-Jean,1301,0,1
+24018,Saint-Félix-d'Otis,1109,0,1
+24018,Ferland-et-Boilleau,632,0,1
+24018,Petit-Saguenay,600,0,1
+24018,Sainte-Rose-du-Nord,434,0,1
+24018,Rivière-Éternité,414,0,1
+24019,Coaticook,8867,0,1
+24019,Cookshire-Eaton,5344,0,1
+24019,East Angus,3840,0,1
+24019,Ascot Corner,3368,0,1
+24019,Compton,3270,0,1
+24019,Stoke,3014,0,1
+24019,Stanstead,2824,0,1
+24019,Sainte-Catherine-de-Hatley,2741,0,1
+24019,Weedon,2667,0,1
+24019,Waterville,2307,0,1
+24019,Hatley,2230,0,1
+24019,Dudswell,1755,0,1
+24019,Bury,1252,0,1
+24019,Ayer's Cliff,1180,0,1
+24019,Stanstead,1148,0,1
+24019,Westbury,1097,0,1
+24019,La Patrie,805,0,1
+24019,Hatley,771,0,1
+24019,Ogden,761,0,1
+24019,Dixville,732,0,1
+24019,Newport,698,0,1
+24019,Saint-Herménégilde,690,0,1
+24019,North Hatley,675,0,1
+24019,Saint-Isidore-de-Clifton,673,0,1
+24019,Stanstead-Est,642,0,1
+24019,Barnston-Ouest,546,0,1
+24019,Sainte-Edwidge-de-Clifton,546,0,1
+24019,Saint-Malo,514,0,1
+24019,Scotstown,459,0,1
+24019,Lingwick,456,0,1
+24019,Martinville,441,0,1
+24019,Chartierville,319,0,1
+24019,East Hereford,282,0,1
+24019,Hampden,193,0,1
+24019,Saint-Venant-de-Paquette,69,0,1
+24020,Rivière-du-Loup,20118,0,1
+24020,Montmagny,10999,0,1
+24020,Témiscouata-sur-le-Lac,5054,0,1
+24020,Saint-Antonin,4338,0,1
+24020,La Pocatière,4078,0,1
+24020,L'Islet,3803,0,1
+24020,Saint-Pascal,3530,0,1
+24020,Saint-Jean-Port-Joli,3329,0,1
+24020,Cap-Saint-Ignace,3099,0,1
+24020,Dégelis,2884,0,1
+24020,Pohénégamook,2481,0,1
+24020,Saint-Pamphile,2274,0,1
+24020,Saint-Alexandre-de-Kamouraska,2255,0,1
+24020,Cacouna,1848,0,1
+24020,Saint-Pacôme,1806,0,1
+24020,Berthier-sur-Mer,1744,0,1
+24020,Sainte-Perpétue,1715,0,1
+24020,Sainte-Anne-de-la-Pocatière,1597,0,1
+24020,Saint-François-de-la-Rivière-du-Sud,1580,0,1
+24020,Saint-Aubert,1441,0,1
+24020,Saint-Hubert-de-Rivière-du-Loup,1412,0,1
+24020,L'Isle-Verte,1356,0,1
+24020,Saint-Louis-du-Ha! Ha!,1311,0,0
+24020,Notre-Dame-du-Portage,1296,0,1
+24020,Rivière-Bleue,1261,0,1
+24020,Saint-Arsène,1245,0,1
+24020,Saint-Modeste,1180,0,1
+24020,Mont-Carmel,1160,0,1
+24020,Saint-Cyprien,1078,0,1
+24020,Saint-Michel-du-Squatec,1076,0,1
+24020,Rivière-Ouelle,995,0,1
+24020,Saint-Roch-des-Aulnaies,955,0,1
+24020,Saint-Fabien-de-Panet,945,0,1
+24020,Sainte-Hélène-de-Kamouraska,891,0,1
+24020,Saint-Paul-de-Montminy,849,0,1
+24020,Saint-Pierre-de-la-Rivière-du-Sud,840,0,1
+24020,Saint-Épiphane,836,0,1
+24020,Saint-Philippe-de-Néri,818,0,1
+24020,Saint-Honoré-de-Témiscouata,763,0,1
+24020,Saint-Cyrille-de-Lessard,742,0,1
+24020,Sainte-Louise,674,0,1
+24020,Saint-Gabriel-Lalemant,660,0,1
+24020,Saint-André-de-Kamouraska,658,0,1
+24020,Saint-Just-de-Bretenières,639,0,1
+24020,Kamouraska,607,0,1
+24020,Saint-Eusèbe,587,0,1
+24020,Packington,578,0,1
+24020,Tourville,576,0,1
+24020,Saint-Damase-de-L'Islet,563,0,1
+24020,Saint-Juste-du-Lac,543,0,1
+24020,Saint-Onésime-d'Ixworth,522,0,1
+24020,Saint-Denis-De La Bouteillerie,518,0,1
+24020,Saint-Bruno-de-Kamouraska,515,0,1
+24020,Sainte-Apolline-de-Patton,505,0,1
+24020,Lac-des-Aigles,495,0,1
+24020,Saint-Adalbert,460,0,1
+24020,Auclair,447,0,1
+24020,Biencourt,433,0,1
+24020,Saint-Marcel,422,0,1
+24020,Saint-Joseph-de-Kamouraska,398,0,1
+24020,Notre-Dame-du-Rosaire,371,0,1
+24020,Saint-Marc-du-Lac-Long,365,0,1
+24020,Sainte-Félicité,350,0,1
+24020,Sainte-Euphémie-sur-Rivière-du-Sud,338,0,1
+24020,Saint-Paul-de-la-Croix,313,0,1
+24020,Saint-Elzéar-de-Témiscouata,311,0,1
+24020,Saint-Athanase,303,0,1
+24020,Saint-Germain,294,0,1
+24020,Saint-Omer,294,0,1
+24020,Sainte-Lucie-de-Beauregard,275,0,1
+24020,Saint-François-Xavier-de-Viger,247,0,1
+24020,Lejeune,246,0,1
+24020,Saint-Jean-de-la-Lande,232,0,1
+24020,Lac-Frontière,175,0,1
+24020,Saint-Pierre-de-Lamy,122,0,1
+24020,Saint-Antoine-de-l'Isle-aux-Grues,122,0,1
+24020,Notre-Dame-des-Sept-Douleurs,71,0,1
+24020,Picard,5,0,1
+24021,Sept-Îles,24569,0,1
+24021,Baie-Comeau,20687,0,1
+24021,Port-Cartier,6516,0,1
+24021,Havre-Saint-Pierre,3337,0,1
+24021,Forestville,2892,0,1
+24021,Pessamit,2428,0,1
+24021,Fermont,2256,0,1
+24021,Pointe-Lebel,1817,0,1
+24021,Les Escoumins,1794,0,1
+24021,Sacré-Coeur,1684,0,1
+24021,Maliotenam,1610,0,1
+24021,Uashat 27,1550,0,0
+24021,Pointe-aux-Outardes,1434,0,1
+24021,Chute-aux-Outardes,1391,0,1
+24021,Ragueneau,1314,0,1
+24021,Blanc-Sablon,1122,0,1
+24021,Longue-Rive,918,0,1
+24021,Nutashkuan,915,0,1
+24021,Tadoussac,814,0,1
+24021,Côte-Nord-du-Golfe-du-Saint-Laurent,787,0,1
+24021,Bonne-Espérance,692,0,1
+24021,Matimekosh,661,0,1
+24021,Kawawachikamach,641,0,1
+24021,Colombier,635,0,1
+24021,Les Bergeronnes,619,0,1
+24021,Portneuf-sur-Mer,612,0,1
+24021,Mingan,552,0,1
+24021,Baie-Trinité,438,0,1
+24021,Saint-Augustin,425,0,1
+24021,Longue-Pointe-de-Mingan,408,0,1
+24021,Gros-Mécatina,356,0,1
+24021,Essipit,310,0,1
+24021,Franquelin,285,0,1
+24021,Rivière-au-Tonnerre,281,0,1
+24021,Godbout,272,0,1
+24021,Natashquan,262,0,1
+24021,Schefferville,244,0,1
+24021,Rivière-Saint-Jean,227,0,1
+24021,Aguanish,224,0,1
+24021,L'Île-d'Anticosti,177,0,1
+24021,Lac-Walker,113,0,1
+24021,Rivière-aux-Outardes,92,0,1
+24021,Baie-Johan-Beetz,84,0,1
+24021,Lac-Vacher,44,0,1
+24021,Lac-John,21,0,1
+24021,Rivière-Mouchalagane,15,0,1
+24022,Dorval,19302,0,1
+24022,L'Île-Dorval,30,0,1
+24023,Drummondville,79258,0,1
+24023,Saint-Germain-de-Grantham,4922,0,1
+24023,Saint-Cyrille-de-Wendover,4920,0,1
+24023,Wickham,2587,0,1
+24023,Saint-Lucien,1801,0,1
+24023,Notre-Dame-du-Bon-Conseil,1708,0,1
+24023,Saint-Félix-de-Kingsey,1493,0,1
+24023,Saint-Guillaume,1491,0,1
+24023,Saint-Majorique-de-Grantham,1384,0,1
+24023,L'Avenir,1350,0,1
+24023,Saint-Eugène,1139,0,1
+24023,Saint-Bonaventure,1066,0,1
+24023,Durham-Sud,1051,0,1
+24023,Lefebvre,925,0,1
+24023,Notre-Dame-du-Bon-Conseil,885,0,1
+24023,Saint-Edmond-de-Grantham,804,0,1
+24023,Sainte-Brigitte-des-Saults,737,0,1
+24023,Saint-Pie-de-Guire,446,0,1
+24024,Gaspé,15063,0,1
+24024,Matane,13987,0,1
+24024,Les Îles-de-la-Madeleine,12190,0,1
+24024,Chandler,7490,0,1
+24024,Sainte-Anne-des-Monts,6121,0,1
+24024,Carleton-sur-Mer,4081,0,1
+24024,New Richmond,3683,0,1
+24024,Grande-Rivière,3384,0,1
+24024,Percé,3095,0,1
+24024,Paspébiac,3033,0,1
+24024,Maria,2760,0,1
+24024,Bonaventure,2733,0,1
+24024,Cap-Chat,2516,0,1
+24024,Port-Daniel--Gascons,2271,0,1
+24024,Caplan,1966,0,1
+24024,Nouvelle,1782,0,1
+24024,Saint-Ulric,1567,0,1
+24024,Pointe-à-la-Croix,1344,0,1
+24024,New Carlisle,1336,0,1
+24024,Saint-Siméon,1207,0,1
+24024,Sainte-Félicité,1100,0,1
+24024,Grande-Vallée,1077,0,1
+24024,Saint-Maxime-du-Mont-Louis,1047,0,1
+24024,Les Méchins,995,0,1
+24024,Sainte-Thérèse-de-Gaspé,979,0,1
+24024,Saint-René-de-Matane,961,0,1
+24024,Cascapédia--Saint-Jules,764,0,1
+24024,Saint-Alphonse,711,0,1
+24024,Saint-François-d'Assise,679,0,1
+24024,Murdochville,643,0,1
+24024,Gesgapegiag,637,0,1
+24024,Baie-des-Sables,613,0,1
+24024,Cloridorme,607,0,1
+24024,Hope,584,0,1
+24024,Escuminac,575,0,1
+24024,Matapédia,566,0,1
+24024,Saint-Alexis-de-Matapédia,519,0,1
+24024,Saint-Adelme,484,0,1
+24024,Grosse-Île,464,0,1
+24024,Saint-Elzéar,464,0,1
+24024,Grosses-Roches,375,0,1
+24024,Saint-Léandre,375,0,1
+24024,Saint-Godefroi,350,0,1
+24024,Hope Town,334,0,1
+24024,Shigawake,333,0,1
+24024,Sainte-Madeleine-de-la-Rivière-Madeleine,289,0,1
+24024,Marsoui,289,0,1
+24024,Sainte-Paule,247,0,1
+24024,La Martre,194,0,1
+24024,Mont-Saint-Pierre,186,0,1
+24024,Ristigouche-Partie-Sud-Est,170,0,0
+24024,Mont-Albert,167,0,1
+24024,Saint-Jean-de-Cherbourg,163,0,1
+24024,Petite-Vallée,157,0,1
+24024,Saint-André-de-Restigouche,154,0,1
+24024,L'Ascension-de-Patapédia,148,0,1
+24024,Rivière-à-Claude,141,0,1
+24024,Rivière-Bonaventure,59,0,1
+24024,Rivière-Bonjour,16,0,1
+24025,Gatineau,291041,1,0
+24029,Joliette,21384,0,1
+24029,Saint-Charles-Borromée,15285,0,1
+24029,Rawdon,11719,0,1
+24029,Notre-Dame-des-Prairies,9471,0,1
+24029,Saint-Paul,6566,0,1
+24029,Crabtree,4155,0,1
+24029,Saint-Ambroise-de-Kildare,4090,0,1
+24029,Saint-Thomas,3496,0,1
+24029,Saint-Alphonse-Rodriguez,3339,0,1
+24029,Sainte-Mélanie,3250,0,1
+24029,Notre-Dame-de-Lourdes,3141,0,1
+24029,Saint-Côme,2583,0,1
+24029,Saint-Michel-des-Saints,2496,0,1
+24029,Sainte-Béatrix,2170,0,1
+24029,Communauté Atikamekw de Manawan,2000,0,0
+24029,Sainte-Marcelline-de-Kildare,1795,0,1
+24029,Sainte-Émélie-de-l'Énergie,1741,0,1
+24029,Saint-Zénon,1317,0,1
+24029,Saint-Pierre,286,0,1
+24029,Saint-Guillaume-Nord,102,0,1
+24029,Baie-de-la-Bouteille,10,0,1
+24029,Lac-Matawin,10,0,1
+24029,Lac-Devenyns,5,0,1
+24030,Saguenay,144723,1,0
+24030,Saint-Ambroise,3883,0,1
+24030,Saint-Bruno,2902,0,1
+24030,Hébertville,2500,0,1
+24030,L'Ascension-de-Notre-Seigneur,2079,0,1
+24030,Saint-Nazaire,2029,0,1
+24030,Larouche,1601,0,1
+24030,Labrecque,1328,0,1
+24030,Hébertville-Station,1229,0,1
+24030,Sainte-Jeanne-d'Arc,1101,0,1
+24030,Bégin,851,0,1
+24030,Saint-Charles-de-Bourget,784,0,1
+24030,Saint-Ludger-de-Milot,637,0,1
+24030,Saint-Eugène-d'Argentenay,487,0,1
+24030,Lamarche,476,0,1
+24030,Saint-Stanislas,376,0,1
+24030,Saint-Augustin,334,0,1
+24030,Passes-Dangereuses,210,0,1
+24030,Lac-Ministuk,58,0,1
+24030,Mont-Valin,10,0,1
+24031,Montréal-Est,4394,0,1
+24032,Saint-Constant,29954,0,1
+24032,La Prairie,26406,0,1
+24032,Candiac,22997,0,1
+24032,Sainte-Catherine,17347,0,1
+24032,Delson,8328,0,1
+24032,Saint-Philippe,7597,0,1
+24032,Saint-Mathieu,2339,0,1
+24033,Alma,30331,0,1
+24033,Dolbeau-Mistassini,13718,0,1
+24033,Saint-Félicien,10089,0,1
+24033,Roberval,9840,0,1
+24033,Métabetchouan--Lac-à-la-Croix,4121,0,1
+24033,Normandin,2991,0,1
+24033,Saint-Prime,2760,0,1
+24033,Albanel,2181,0,1
+24033,Saint-Gédéon,2177,0,1
+24033,Mashteuiatsh,2010,0,1
+24033,Chambord,1748,0,1
+24033,La Doré,1359,0,1
+24033,Lac-Bouchette,1183,0,1
+24033,Girardville,1018,0,1
+24033,Desbiens,995,0,1
+24033,Sainte-Hedwidge,870,0,1
+24033,Sainte-Monique,858,0,1
+24033,Saint-Henri-de-Taillon,803,0,1
+24033,Saint-Thomas-Didyme,703,0,1
+24033,Saint-François-de-Sales,643,0,1
+24033,Péribonka,489,0,1
+24033,Saint-André-du-Lac-Saint-Jean,453,0,1
+24033,Saint-Edmond-les-Plaines,355,0,1
+24033,Notre-Dame-de-Lorette,159,0,1
+24033,Lac-Ashuapmushuan,140,0,1
+24033,Rivière-Mistassini,27,0,1
+24033,Belle-Rivière,10,0,1
+24034,Pointe-Claire,33488,0,1
+24034,Kirkland,19413,0,1
+24034,Beaconsfield,19277,0,1
+24034,Sainte-Anne-de-Bellevue,5027,0,1
+24034,Baie-D'Urfé,3764,0,1
+24034,Senneville,951,0,1
+24036,Mont-Laurier,14180,0,1
+24036,Sainte-Agathe-des-Monts,11211,0,1
+24036,Mont-Tremblant,10992,0,1
+24036,Val-David,5558,0,1
+24036,Rivière-Rouge,4631,0,1
+24036,Saint-Donat,4561,0,1
+24036,Saint-Faustin--Lac-Carré,3780,0,1
+24036,Val-Morin,3123,0,1
+24036,Lac-des-Écorces,2885,0,1
+24036,Labelle,2765,0,1
+24036,Ferme-Neuve,2716,0,1
+24036,Nominingue,2255,0,1
+24036,Lac-Supérieur,1972,0,1
+24036,Notre-Dame-du-Laus,1730,0,1
+24036,Amherst,1728,0,1
+24036,La Conception,1527,0,1
+24036,Sainte-Lucie-des-Laurentides,1445,0,1
+24036,La Minerve,1421,0,1
+24036,Notre-Dame-de-la-Merci,1097,0,1
+24036,La Macaza,1094,0,1
+24036,Chute-Saint-Philippe,1039,0,1
+24036,Brébeuf,1009,0,1
+24036,L'Ascension,899,0,1
+24036,Lantier,891,0,1
+24036,Huberdeau,863,0,1
+24036,Saint-Aimé-du-Lac-des-Îles,815,0,1
+24036,Notre-Dame-de-Pontmain,790,0,1
+24036,Kiamika,790,0,1
+24036,Val-des-Lacs,750,0,1
+24036,Montcalm,632,0,1
+24036,Mont-Saint-Michel,581,0,1
+24036,Arundel,578,0,1
+24036,Sainte-Anne-du-Lac,556,0,1
+24036,Lac-Saguay,526,0,1
+24036,Lac-Saint-Paul,525,0,1
+24036,Lac-du-Cerf,445,0,1
+24036,Ivry-sur-le-Lac,391,0,1
+24036,Barkmere,81,0,1
+24036,Lac-Tremblant-Nord,60,0,1
+24036,Lac-Douaire,5,0,1
+24039,Saint-Colomban,17740,0,1
+24039,Sainte-Adèle,14010,0,1
+24039,Prévost,13692,0,1
+24039,Saint-Sauveur,11580,0,1
+24039,Saint-Hippolyte,10669,0,1
+24039,Saint-Calixte,6792,0,1
+24039,Chertsey,5295,0,1
+24039,Morin-Heights,4678,0,1
+24039,Sainte-Anne-des-Lacs,3862,0,1
+24039,Saint-Adolphe-d'Howard,3824,0,1
+24039,Piedmont,3476,0,1
+24039,Sainte-Marguerite-du-Lac-Masson,3367,0,1
+24039,Gore,2283,0,1
+24039,Mille-Isles,1721,0,1
+24039,Wentworth-Nord,1672,0,1
+24039,Entrelacs,1054,0,1
+24039,Wentworth,682,0,1
+24039,Estérel,262,0,1
+24039,Lac-des-Seize-Îles,175,0,1
+24040,Lévis,149683,1,0
+24040,Saint-Apollinaire,7968,0,1
+24040,Saint-Lambert-de-Lauzon,6817,0,1
+24040,Saint-Agapit,4526,0,1
+24040,Saint-Gilles,2910,0,1
+24040,Saint-Antoine-de-Tilly,1682,0,1
+24040,Saint-Narcisse-de-Beaurivage,1152,0,1
+24040,Saint-Patrice-de-Beaurivage,1109,0,1
+24040,Saint-Sylvestre,1019,0,1
+24041,Longueuil,254483,1,0
+24044,L'Ancienne-Lorette,16970,0,1
+24044,Wendake,2200,0,1
+24046,Thetford Mines,26072,0,1
+24046,Plessisville,6414,0,1
+24046,Princeville,6218,0,1
+24046,Lac-Mégantic,5747,0,1
+24046,Adstock,2903,0,1
+24046,Plessisville,2655,0,1
+24046,Laurier-Station,2570,0,1
+24046,Sainte-Croix,2529,0,1
+24046,Disraeli,2360,0,1
+24046,East Broughton,2248,0,1
+24046,Saint-Ferdinand,2007,0,1
+24046,Saint-Joseph-de-Coleraine,1820,0,1
+24046,Frontenac,1811,0,1
+24046,Lambton,1630,0,1
+24046,Saint-Flavien,1619,0,1
+24046,Lyster,1587,0,1
+24046,Nantes,1388,0,1
+24046,Laurierville,1313,0,1
+24046,Saint-Édouard-de-Lotbinière,1240,0,1
+24046,Disraeli,1163,0,1
+24046,Saint-Janvier-de-Joly,1079,0,1
+24046,Saint-Ludger,1074,0,1
+24046,Lac-Drolet,1067,0,1
+24046,Sainte-Agathe-de-Lotbinière,1049,0,1
+24046,Stratford,1036,0,1
+24046,Notre-Dame-des-Bois,1028,0,1
+24046,Val-Alain,986,0,1
+24046,Dosquet,935,0,1
+24046,Beaulac-Garthby,931,0,1
+24046,Inverness,910,0,1
+24046,Irlande,897,0,1
+24046,Saint-Pierre-de-Broughton,889,0,1
+24046,Notre-Dame-du-Sacré-Coeur-d'Issoudun,867,0,1
+24046,Lotbinière,855,0,1
+24046,Sainte-Cécile-de-Whitton,853,0,1
+24046,Courcelles,814,0,1
+24046,Notre-Dame-de-Lourdes,787,0,1
+24046,Marston,777,0,1
+24046,Saint-Romain,711,0,1
+24046,Saint-Jacques-de-Leeds,711,0,1
+24046,Audet,708,0,1
+24046,Saint-Sébastien,674,0,1
+24046,Saint-Augustin-de-Woburn,667,0,1
+24046,Sainte-Sophie-d'Halifax,595,0,1
+24046,Sainte-Clotilde-de-Beauce,569,0,1
+24046,Saint-Pierre-Baptiste,560,0,1
+24046,Sacré-Coeur-de-Jésus,536,0,1
+24046,Stornoway,535,0,1
+24046,Saint-Robert-Bellarmin,529,0,1
+24046,Leclercville,491,0,1
+24046,Villeroy,488,0,1
+24046,Piopolis,398,0,1
+24046,Kinnear's Mills,397,0,1
+24046,Saint-Adrien-d'Irlande,395,0,1
+24046,Saint-Julien,378,0,1
+24046,Sainte-Praxède,351,0,1
+24046,Saint-Jean-de-Brébeuf,351,0,1
+24046,Milan,318,0,1
+24046,Saint-Fortunat,255,0,1
+24046,Saint-Jacques-le-Majeur-de-Wolfestown,186,0,1
+24046,Val-Racine,183,0,1
+24047,Mirabel,61108,0,1
+24047,Sainte-Marthe-sur-le-Lac,19797,0,1
+24047,Saint-Joseph-du-Lac,7031,0,1
+24047,Pointe-Calumet,6281,0,1
+24047,Oka,3968,0,1
+24047,Saint-Placide,1784,0,1
+24048,Côte-Saint-Luc,34504,0,1
+24048,Mont-Royal,20953,0,1
+24048,Hampstead,7037,0,1
+24049,Sainte-Julie,30045,0,1
+24049,Saint-Bruno-de-Montarville,26273,0,1
+24049,Saint-Basile-le-Grand,17053,0,1
+24049,Carignan,11740,0,1
+24050,Mascouche,51183,0,1
+24050,Saint-Lin--Laurentides,24030,0,1
+24050,Sainte-Julienne,11173,0,1
+24050,L'Épiphanie,8883,0,1
+24050,Saint-Roch-de-l'Achigan,5453,0,1
+24050,Saint-Jacques,4302,0,1
+24050,Saint-Liguori,2066,0,1
+24050,Saint-Esprit,2011,0,1
+24050,Saint-Alexis,1370,0,1
+24050,Sainte-Marie-Salomé,1221,0,1
+24050,Saint-Roch-Ouest,262,0,1
+24051,Sainte-Brigitte-de-Laval,8468,0,1
+24051,La Malbaie,8235,0,1
+24051,Boischatel,8231,0,1
+24051,Lac-Beauport,8164,0,1
+24051,Baie-Saint-Paul,7371,0,1
+24051,Château-Richer,4425,0,1
+24051,Beaupré,4117,0,1
+24051,L'Ange-Gardien,3842,0,1
+24051,Saint-Ferréol-les-Neiges,3806,0,1
+24051,Clermont,3065,0,1
+24051,Sainte-Anne-de-Beaupré,2888,0,1
+24051,Saint-Pierre-de-l'Île-d'Orléans,1743,0,1
+24051,Saint-Laurent-de-l'Île-d'Orléans,1607,0,1
+24051,Saint-Tite-des-Caps,1504,0,1
+24051,Les Éboulements,1465,0,1
+24051,Saint-Joachim,1427,0,1
+24051,Saint-Urbain,1320,0,1
+24051,Saint-Aimé-des-Lacs,1158,0,1
+24051,Saint-Hilarion,1146,0,1
+24051,Saint-Siméon,1139,0,1
+24051,L'Isle-aux-Coudres,1116,0,1
+24051,Sainte-Pétronille,1055,0,1
+24051,Saint-Jean-de-l'Île-d'Orléans,1026,0,1
+24051,Petite-Rivière-Saint-François,953,0,1
+24051,Sainte-Famille-de-l'Île-d'Orléans,850,0,1
+24051,Notre-Dame-des-Monts,789,0,1
+24051,Saint-Irénée,678,0,1
+24051,Saint-François-de-l'Île-d'Orléans,536,0,1
+24051,Baie-Sainte-Catherine,184,0,1
+24051,Sagard,110,0,1
+24051,Mont-Élie,51,0,1
+24052,Westmount,19658,0,1
+24052,Montréal-Ouest,5115,0,1
+24054,Montréal,1762949,1,0
+24055,Boucherville,41743,0,1
+24055,Varennes,21198,0,1
+24055,Saint-Amable,13322,0,1
+24055,Contrecoeur,9480,0,1
+24055,Verchères,5759,0,1
+24055,Saint-Mathieu-de-Beloeil,2952,0,1
+24055,Saint-Denis-sur-Richelieu,2339,0,1
+24055,Saint-Marc-sur-Richelieu,2245,0,1
+24055,Saint-Antoine-sur-Richelieu,1738,0,1
+24055,Saint-Charles-sur-Richelieu,1735,0,1
+24055,Calixa-Lavallée,509,0,1
+24056,Dollard-Des Ormeaux,48403,0,1
+24057,Cantley,11449,0,1
+24057,La Pêche,8636,0,1
+24057,Chelsea,8000,0,1
+24057,Pontiac,6142,0,1
+24057,Maniwaki,3757,0,1
+24057,Gracefield,2376,0,1
+24057,Mansfield-et-Pontefract,2250,0,1
+24057,Déléage,1916,0,1
+24057,Shawville,1668,0,1
+24057,Messines,1655,0,1
+24057,Clarendon,1392,0,1
+24057,L'Isle-aux-Allumettes,1382,0,1
+24057,Fort-Coulonge,1312,0,1
+24057,Kitigan Zibi,1204,0,1
+24057,Bristol,1199,0,1
+24057,Grand-Remous,1159,0,1
+24057,Otter Lake,1041,0,1
+24057,Kazabazua,1037,0,1
+24057,Low,1020,0,1
+24057,Cayamant,895,0,1
+24057,Aumond,754,0,1
+24057,Campbell's Bay,705,0,1
+24057,Blue Sea,696,0,1
+24057,Bouchette,695,0,1
+24057,Lac-Sainte-Marie,677,0,1
+24057,Montcerf-Lytton,653,0,1
+24057,L'Île-du-Grand-Calumet,648,0,1
+24057,Bryson,646,0,1
+24057,Sainte-Thérèse-de-la-Gatineau,588,0,1
+24057,Denholm,546,0,1
+24057,Thorne,528,0,1
+24057,Egan-Sud,508,0,1
+24057,Litchfield,500,0,1
+24057,Bois-Franc,411,0,1
+24057,Waltham,387,0,1
+24057,Chichester,350,0,1
+24057,Portage-du-Fort,232,0,1
+24057,Alleyn-et-Cawood,229,0,1
+24057,Sheenboro,149,0,1
+24057,Rapides-des-Joachims,141,0,1
+24057,Lac-Nilgaut,5,0,1
+24058,Saint-Augustin-de-Desmaures,19907,0,1
+24058,Saint-Raymond,11108,0,1
+24058,Pont-Rouge,10121,0,1
+24058,Stoneham-et-Tewkesbury,9682,0,1
+24058,Sainte-Catherine-de-la-Jacques-Cartier,8442,0,1
+24058,Donnacona,7436,0,1
+24058,Shannon,6432,0,1
+24058,Neuville,4475,0,1
+24058,Cap-Santé,3594,0,1
+24058,Portneuf,3329,0,1
+24058,Saint-Gabriel-de-Valcartier,3223,0,1
+24058,Saint-Marc-des-Carrières,2901,0,1
+24058,Saint-Basile,2709,0,1
+24058,Fossambault-sur-le-Lac,2327,0,1
+24058,Deschambault-Grondines,2235,0,1
+24058,Saint-Ubalde,1456,0,1
+24058,Saint-Casimir,1449,0,1
+24058,Saint-Alban,1196,0,1
+24058,Saint-Léonard-de-Portneuf,1140,0,1
+24058,Lac-Delage,771,0,1
+24058,Rivière-à-Pierre,625,0,1
+24058,Sainte-Christine-d'Auvergne,617,0,1
+24058,Lac-Sergent,541,0,1
+24058,Lac-Saint-Joseph,304,0,1
+24058,Saint-Thuribe,298,0,1
+24058,Saint-Gilbert,283,0,1
+24058,Linton,10,0,1
+24059,Notre-Dame-des-Anges,241,0,1
+24060,Repentigny,86100,0,1
+24060,L'Assomption,23442,0,1
+24060,Charlemagne,6302,0,1
+24061,Victoriaville,47760,0,1
+24061,Val-des-Sources,7088,0,1
+24061,Windsor,5294,0,1
+24061,Warwick,4729,0,1
+24061,Saint-Denis-de-Brompton,4594,0,1
+24061,Danville,3888,0,1
+24061,Richmond,3259,0,1
+24061,Saint-Christophe-d'Arthabaska,3111,0,1
+24061,Saint-François-Xavier-de-Brompton,2469,0,1
+24061,Daveluyville,2360,0,1
+24061,Kingsey Falls,1986,0,1
+24061,Val-Joli,1671,0,1
+24061,Saint-Albert,1640,0,1
+24061,Cleveland,1581,0,1
+24061,Sainte-Clotilde-de-Horton,1563,0,1
+24061,Tingwick,1484,0,1
+24061,Wotton,1402,0,1
+24061,Saint-Norbert-d'Arthabaska,1247,0,1
+24061,Saint-Valère,1188,0,1
+24061,Saint-Claude,1141,0,1
+24061,Melbourne,1096,0,1
+24061,Saint-Louis-de-Blandford,1076,0,1
+24061,Saint-Georges-de-Windsor,958,0,1
+24061,Saint-Rosaire,932,0,1
+24061,Chesterville,877,0,1
+24061,Ham-Nord,857,0,1
+24061,Saint-Samuel,765,0,1
+24061,Saint-Camille,551,0,1
+24061,Saint-Adrien,522,0,1
+24061,Saint-Rémi-de-Tingwick,446,0,1
+24061,Sainte-Séraphine,441,0,1
+24061,Ulverton,433,0,1
+24061,Maddington Falls,428,0,1
+24061,Notre-Dame-de-Ham,414,0,1
+24061,Sainte-Hélène-de-Chester,384,0,1
+24061,Sainte-Élizabeth-de-Warwick,383,0,1
+24061,Saints-Martyrs-Canadiens,277,0,1
+24061,Ham-Sud,214,0,1
+24061,Kingsbury,142,0,1
+24062,Rimouski,48935,0,1
+24062,Mont-Joli,6384,0,1
+24062,Amqui,5999,0,1
+24062,Trois-Pistoles,3115,0,1
+24062,Saint-Anaclet-de-Lessard,3019,0,1
+24062,Sainte-Luce,2845,0,1
+24062,Causapscal,2147,0,1
+24062,Saint-Fabien,1834,0,1
+24062,Price,1729,0,1
+24062,Sayabec,1706,0,1
+24062,Saint-Jean-de-Dieu,1651,0,1
+24062,Lac-au-Saumon,1488,0,1
+24062,Notre-Dame-des-Neiges,1194,0,1
+24062,Saint-Gabriel-de-Rimouski,1177,0,1
+24062,Saint-Narcisse-de-Rimouski,1084,0,1
+24062,Sainte-Angèle-de-Mérici,989,0,1
+24062,Saint-Léon-le-Grand,968,0,1
+24062,Saint-Valérien,906,0,1
+24062,Sainte-Flavie,904,0,1
+24062,Val-Brillant,899,0,1
+24062,Saint-Donat,835,0,1
+24062,Saint-Mathieu-de-Rioux,691,0,1
+24062,Métis-sur-Mer,594,0,1
+24062,Saint-Joseph-de-Lepage,590,0,1
+24062,Saint-Moïse,542,0,1
+24062,Saint-Octave-de-Métis,493,0,1
+24062,Les Hauteurs,485,0,1
+24062,Saint-Clément,479,0,1
+24062,Saint-Simon-de-Rimouski,455,0,1
+24062,Saint-Vianney,446,0,1
+24062,Saint-Eugène-de-Ladrière,413,0,1
+24062,Saint-Tharcisius,411,0,1
+24062,Saint-Marcellin,397,0,1
+24062,Saint-Noël,392,0,1
+24062,La Rédemption,384,0,1
+24062,Sainte-Françoise,383,0,1
+24062,Saint-Damase,382,0,1
+24062,Saint-Zénon-du-Lac-Humqui,370,0,1
+24062,Sainte-Irène,369,0,1
+24062,Sainte-Florence,367,0,1
+24062,Esprit-Saint,340,0,1
+24062,Saint-Cléophas,321,0,1
+24062,Saint-Éloi,310,0,1
+24062,Sainte-Rita,303,0,1
+24062,Saint-Alexandre-des-Lacs,298,0,1
+24062,Padoue,250,0,1
+24062,Albertville,239,0,1
+24062,La Trinité-des-Monts,233,0,1
+24062,Saint-Charles-Garnier,222,0,1
+24062,Grand-Métis,218,0,1
+24062,Sainte-Jeanne-d'Arc,217,0,1
+24062,Saint-Médard,216,0,1
+24062,Sainte-Marguerite-Marie,183,0,1
+24062,Saint-Guy,76,0,1
+24062,Lac-des-Eaux-Mortes,47,0,1
+24062,Lac-Casault,30,0,1
+24062,Lac-Huron,30,0,1
+24062,Routhierville,20,0,1
+24062,Lac-Matapédia,10,0,1
+24062,Ruisseau-des-Mineurs,5,0,1
+24063,Saint-Eustache,45276,0,1
+24063,Boisbriand,28308,0,1
+24063,Deux-Montagnes,17915,0,1
+24063,Rosemère,14090,0,1
+24064,Saint-Jérôme,80213,0,1
+24064,Sainte-Sophie,18080,0,1
+24064,Sainte-Anne-des-Plaines,15221,0,1
+24066,Saint-Hyacinthe,57239,0,1
+24066,Acton Vale,7605,0,1
+24066,Saint-Pie,5847,0,1
+24066,Saint-Liboire,3036,0,1
+24066,Sainte-Marie-Madeleine,2876,0,1
+24066,Saint-Dominique,2741,0,1
+24066,La Présentation,2638,0,1
+24066,Saint-Damase,2447,0,1
+24066,Sainte-Madeleine,2268,0,1
+24066,Upton,2046,0,1
+24066,Saint-Valérien-de-Milton,1767,0,1
+24066,Sainte-Hélène-de-Bagot,1696,0,1
+24066,Saint-Théodore-d'Acton,1564,0,1
+24066,Saint-Simon,1386,0,1
+24066,Saint-Hugues,1340,0,1
+24066,Saint-Jude,1326,0,1
+24066,Roxton Falls,1322,0,1
+24066,Roxton,1115,0,1
+24066,Saint-Barnabé-Sud,962,0,1
+24066,Saint-Nazaire-d'Acton,880,0,1
+24066,Sainte-Christine,772,0,1
+24066,Saint-Louis,740,0,1
+24066,Saint-Bernard-de-Michaudville,616,0,1
+24066,Saint-Marcel-de-Richelieu,507,0,1
+24066,Béthanie,350,0,1
+24067,Saint-Jean-sur-Richelieu,97873,0,1
+24067,Mont-Saint-Grégoire,3136,0,1
+24067,Lacolle,2708,0,1
+24067,Saint-Alexandre,2678,0,1
+24067,Sainte-Anne-de-Sabrevois,2143,0,1
+24067,Saint-Paul-de-l'Île-aux-Noix,2141,0,1
+24067,Saint-Blaise-sur-Richelieu,2092,0,1
+24067,Sainte-Brigide-d'Iberville,1428,0,1
+24067,Saint-Valentin,418,0,1
+24070,Shawinigan,49620,0,1
+24070,La Tuque,11129,0,1
+24070,Notre-Dame-du-Mont-Carmel,6121,0,1
+24070,Saint-Tite,3672,0,1
+24070,Saint-Maurice,3432,0,1
+24070,Sainte-Thècle,2415,0,1
+24070,Sainte-Anne-de-la-Pérade,2031,0,1
+24070,Obedjiwan 28,1991,0,0
+24070,Champlain,1807,0,1
+24070,Saint-Narcisse,1801,0,1
+24070,Lac-aux-Sables,1380,0,1
+24070,Hérouxville,1367,0,1
+24070,Communauté de Wemotaci,1142,0,0
+24070,Sainte-Geneviève-de-Batiscan,1028,0,1
+24070,Saint-Stanislas,1001,0,1
+24070,Batiscan,958,0,1
+24070,Saint-Adelphe,922,0,1
+24070,Notre-Dame-de-Montauban,815,0,1
+24070,Saint-Séverin,812,0,1
+24070,La Bostonnais,556,0,1
+24070,Saint-Luc-de-Vincennes,519,0,1
+24070,Trois-Rives,512,0,1
+24070,Grandes-Piles,493,0,1
+24070,Saint-Prosper-de-Champlain,482,0,1
+24070,Saint-Roch-de-Mékinac,304,0,1
+24070,Lac-Édouard,220,0,1
+24070,Rivière-de-la-Savane,41,0,1
+24070,Lac-Normand,29,0,1
+24071,Granby,69025,0,1
+24071,Shefford,7253,0,1
+24071,Saint-Césaire,5972,0,1
+24071,Waterloo,4920,0,1
+24071,Roxton Pond,4224,0,1
+24071,Saint-Alphonse-de-Granby,3341,0,1
+24071,Ange-Gardien,2889,0,1
+24071,Saint-Paul-d'Abbotsford,2886,0,1
+24071,Rougemont,2696,0,1
+24071,Sainte-Cécile-de-Milton,2195,0,1
+24071,Valcourt,2139,0,1
+24071,Sainte-Angèle-de-Monnoir,1828,0,1
+24071,Saint-Joachim-de-Shefford,1476,0,1
+24071,Racine,1340,0,1
+24071,Valcourt,1029,0,1
+24071,Bonsecours,650,0,1
+24071,Sainte-Anne-de-la-Rochelle,625,0,1
+24071,Lawrenceville,618,0,1
+24071,Maricourt,456,0,1
+24071,Warden,362,0,1
+24072,Sherbrooke,172950,1,0
+24073,Terrebonne,119944,1,0
+24074,Blainville,59819,0,1
+24074,Sainte-Thérèse,26533,0,1
+24074,Bois-des-Filion,10159,0,1
+24074,Lorraine,9502,0,1
+24075,Trois-Rivières,139163,1,0
+24076,Vaudreuil-Dorion,43268,0,1
+24076,Saint-Lazare,22354,0,1
+24076,Pincourt,14751,0,1
+24076,L'Île-Perrot,11638,0,1
+24076,Notre-Dame-de-l'Île-Perrot,11427,0,1
+24076,Rigaud,7854,0,1
+24076,Hudson,5411,0,1
+24076,Terrasse-Vaudreuil,1887,0,1
+24076,Vaudreuil-sur-le-Lac,1361,0,1
+24076,Pointe-Fortune,582,0,1
+24076,L'Île-Cadieux,120,0,1
+35001,Ajax,126666,0,1
+35002,Petawawa,18160,0,1
+35002,Pembroke,14364,0,1
+35002,Arnprior,9629,0,1
+35002,Laurentian Valley,9450,0,1
+35002,Renfrew,8190,0,1
+35002,McNab/Braeside,7591,0,0
+35002,Whitewater Region,7225,0,0
+35002,Deep River,4175,0,1
+35002,Madawaska Valley,3927,0,1
+35002,Bonnechere Valley,3898,0,1
+35002,Horton,3182,0,1
+35002,North Algona Wilberforce,3111,0,1
+35002,Admaston/Bromley,2995,0,0
+35002,Laurentian Hills,2885,0,1
+35002,Greater Madawaska,2864,0,1
+35002,"Killaloe, Hagarty and Richards",2410,0,0
+35002,"Brudenell, Lyndoch and Raglan",1552,0,0
+35002,South Algonquin,1055,0,1
+35002,Pikwakanagan (Golden Lake 39),490,0,0
+35002,"Head, Clara and Maria",267,0,0
+35003,Aurora,62057,0,1
+35004,Barrie,147829,1,0
+35004,Innisfil,43326,0,1
+35005,Oro-Medonte,23017,0,1
+35005,Springwater,21701,0,1
+35006,Prince Edward County,25704,0,0
+35008,Oshawa,175383,1,0
+35010,Brampton,656480,1,0
+35015,Brantford,104688,0,1
+35015,New Credit (Part) 40A,609,0,0
+35015,New Credit (Part) 40A,166,0,0
+35016,Owen Sound,21612,0,1
+35016,West Grey,13131,0,1
+35016,Meaford,11485,0,1
+35016,Georgian Bluffs,11100,0,1
+35016,Grey Highlands,10424,0,1
+35016,South Bruce Peninsula,9137,0,1
+35016,Southgate,8716,0,1
+35016,Hanover,7967,0,1
+35016,Chatsworth,7080,0,1
+35016,Arran-Elderslie,6913,0,1
+35016,Northern Bruce Peninsula,4404,0,1
+35016,Saugeen 29,784,0,0
+35016,Neyaashiinigmiing 27,580,0,0
+35016,Chief's Point No. 28,15,0,0
+35018,Burlington,186948,1,0
+35018,Milton,132979,1,0
+35019,Cambridge,138479,1,0
+35019,North Dumfries,10619,0,1
+35021,Chatham-Kent,103988,0,1
+35021,Leamington,29680,0,1
+35021,Moravian 47,328,0,0
+35021,Pelee,230,0,1
+35025,Caledon,76581,0,1
+35025,Orangeville,30167,0,1
+35025,Mono,9421,0,1
+35025,Shelburne,8994,0,1
+35025,Amaranth,4327,0,1
+35025,Grand Valley,3851,0,1
+35025,Mulmur,3571,0,1
+35025,Melancthon,3132,0,1
+35025,East Garafraxa,2794,0,1
+35026,Toronto,2794356,1,0
+35027,St. Thomas,42840,0,1
+35027,Central Elgin,13746,0,1
+35027,Malahide,9308,0,1
+35027,Aylmer,7699,0,1
+35027,Bayham,7096,0,1
+35027,West Elgin,5060,0,1
+35027,Southwold,4851,0,1
+35027,Dutton/Dunwich,4152,0,0
+35028,Lakeshore,40410,0,1
+35028,LaSalle,32721,0,1
+35028,Amherstburg,23524,0,1
+35028,Kingsville,22119,0,1
+35028,Essex,21216,0,1
+35032,Brant,39474,0,1
+35033,Guelph,143740,1,0
+35034,Norfolk County,67490,0,0
+35034,Haldimand County,49216,0,0
+35035,Kawartha Lakes,79247,0,1
+35035,Cavan Monaghan,10016,0,1
+35035,Dysart et al,7182,0,1
+35035,Minden Hills,6971,0,1
+35035,Trent Lakes,6439,0,1
+35035,Highlands East,3830,0,1
+35035,North Kawartha,2877,0,1
+35035,Algonquin Highlands,2588,0,1
+35039,Hamilton,569353,1,0
+35040,Belleville,55071,0,1
+35040,Quinte West,46560,0,1
+35040,Loyalist,17943,0,1
+35040,Greater Napanee,16879,0,1
+35040,Stone Mills,7826,0,1
+35040,Tweed,6067,0,1
+35040,Stirling-Rawdon,5015,0,1
+35040,Centre Hastings,4801,0,1
+35040,Tyendinaga,4538,0,1
+35040,Hastings Highlands,4385,0,1
+35040,Marmora and Lake,4267,0,1
+35040,Bancroft,4065,0,1
+35040,Tyendinaga Mohawk Territory,2535,0,1
+35040,Addington Highlands,2534,0,1
+35040,Madoc,2233,0,1
+35040,Deseronto,1747,0,1
+35040,Faraday,1612,0,1
+35040,Carlow/Mayo,953,0,0
+35040,Tudor and Cashel,740,0,1
+35040,Wollaston,721,0,1
+35040,Limerick,436,0,1
+35042,Saugeen Shores,15908,0,1
+35042,Kincardine,12268,0,1
+35042,South Huron,10063,0,1
+35042,Brockton,9784,0,1
+35042,Huron East,9512,0,1
+35042,Goderich,7881,0,1
+35042,Central Huron,7799,0,1
+35042,Huron-Kinloss,7723,0,1
+35042,Bluewater,7540,0,1
+35042,Ashfield-Colborne-Wawanosh,5884,0,1
+35042,South Bruce,5880,0,1
+35042,North Huron,5052,0,1
+35042,Howick,4045,0,1
+35042,Morris-Turnberry,3590,0,1
+35043,Ottawa,1017449,1,0
+35044,Timmins,41145,0,1
+35044,Kapuskasing,8057,0,1
+35044,Kirkland Lake,7750,0,1
+35044,"Kenora, Unorganized",7475,0,0
+35044,Cochrane,5390,0,1
+35044,Hearst,4794,0,1
+35044,Iroquois Falls,4418,0,1
+35044,Black River-Matheson,2572,0,1
+35044,"Cochrane, Unorganized, North Part",2546,0,0
+35044,Chapleau,1942,0,1
+35044,Attawapiskat 91A,1586,0,0
+35044,Moosonee,1512,0,1
+35044,Factory Island 1,1376,0,0
+35044,Smooth Rock Falls,1200,0,1
+35044,Moonbeam,1157,0,1
+35044,Fort Albany (Part) 67,775,0,0
+35044,Val Rita-Harty,757,0,1
+35044,Larder Lake,745,0,1
+35044,Constance Lake 92,741,0,0
+35044,McGarry,579,0,1
+35044,Mattice-Val Côté,542,0,1
+35044,Fauquier-Strickland,467,0,1
+35044,Matachewan,268,0,1
+35044,Peawanuck,247,0,1
+35044,Opasatika,200,0,1
+35044,Abitibi 70,156,0,0
+35044,Duck Lake 76B,154,0,0
+35044,Gauthier,151,0,1
+35044,New Post 69A,128,0,0
+35044,Matachewan 72,66,0,0
+35044,Chapleau Cree Fox Lake,62,0,1
+35044,"Cochrane, Unorganized, South East Part",25,0,0
+35044,Chapleau 74A,17,0,0
+35044,"Timiskaming, Unorganized, East Part",5,0,0
+35044,"Cochrane, Unorganized, South West Part",5,0,0
+35045,Kenora,14967,0,1
+35045,Dryden,7388,0,1
+35045,Sioux Lookout,5839,0,1
+35045,Red Lake,4094,0,1
+35045,Sandy Lake 88,2100,0,0
+35045,Ignace,1206,0,1
+35045,Deer Lake,1087,0,1
+35045,Kasabonika Lake,1060,0,1
+35045,Kitchenuhmaykoosib Aaki 84,1029,0,0
+35045,Lac Seul 28,1022,0,0
+35045,Machin,1012,0,1
+35045,Ear Falls,924,0,1
+35045,Weagamow Lake 87,921,0,0
+35045,Wabaseemoong,815,0,1
+35045,Sioux Narrows-Nestor Falls,727,0,1
+35045,Poplar Hill,663,0,1
+35045,Cat Lake 63C,651,0,0
+35045,Whitefish Bay 32A,610,0,0
+35045,Sachigo Lake 1,608,0,0
+35045,Wunnumin 1,587,0,0
+35045,English River 21,584,0,0
+35045,Osnaburgh 63B,524,0,0
+35045,Kingfisher Lake 1,511,0,0
+35045,Wapekeka 2,456,0,0
+35045,Bearskin Lake,447,0,1
+35045,Shoal Lake 39A,445,0,0
+35045,Kee-Way-Win,409,0,1
+35045,Kenora 38B,402,0,0
+35045,Pickle Lake,398,0,1
+35045,Sabaskong Bay 35D,383,0,0
+35045,Fort Severn 89,364,0,0
+35045,Slate Falls,299,0,1
+35045,North Spirit Lake,265,0,1
+35045,Eagle Lake 27,257,0,0
+35045,Osnaburgh 63A,233,0,0
+35045,The Dalles 38C,180,0,0
+35045,Wabigoon Lake 27,175,0,0
+35045,Rat Portage 38A,171,0,0
+35045,Whitefish Bay 34A,125,0,0
+35045,Shoal Lake (Part) 40,96,0,0
+35045,Whitefish Bay 33A,94,0,0
+35045,Ojibway Nation of Saugeen (Savant Lake),88,0,0
+35045,Shoal Lake 34B2,81,0,0
+35045,Wabauskang 21,57,0,0
+35045,Northwest Angle 33B,52,0,0
+35045,Lake of the Woods 37,49,0,0
+35045,Wawakapewin,16,0,1
+35046,Kingston,132485,0,1
+35046,Frontenac Islands,1930,0,1
+35047,King,27333,0,1
+35049,Woolwich,26999,0,1
+35049,Wilmot,21429,0,1
+35049,Wellesley,11318,0,1
+35050,Kitchener,256885,1,0
+35051,South Frontenac,20188,0,1
+35051,Mississippi Mills,14740,0,1
+35051,Carleton Place,12517,0,1
+35051,Smiths Falls,9254,0,1
+35051,Beckwith,9021,0,1
+35051,Drummond/North Elmsley,8183,0,0
+35051,Perth,6469,0,1
+35051,Tay Valley,5925,0,1
+35051,Lanark Highlands,5737,0,1
+35051,Central Frontenac,4892,0,1
+35051,Montague,3914,0,1
+35051,North Frontenac,2285,0,1
+35052,Brockville,22116,0,1
+35052,North Grenville,17964,0,1
+35052,Rideau Lakes,10883,0,1
+35052,Leeds and the Thousand Islands,9804,0,0
+35052,Elizabethtown-Kitley,9545,0,1
+35052,Edwardsburgh/Cardinal,7505,0,0
+35052,Augusta,7386,0,1
+35052,Gananoque,5383,0,1
+35052,Prescott,4078,0,1
+35052,Merrickville-Wolford,3135,0,1
+35052,Athens,3042,0,1
+35052,Front of Yonge,2595,0,1
+35052,Westport,634,0,1
+35054,London,422324,1,0
+35056,Markham,338503,1,0
+35059,Strathroy-Caradoc,23871,0,1
+35059,Middlesex Centre,18928,0,1
+35059,Thames Centre,13980,0,1
+35059,North Middlesex,6307,0,1
+35059,Southwest Middlesex,5893,0,1
+35059,Lucan Biddulph,5680,0,1
+35059,Adelaide-Metcalfe,3011,0,1
+35059,Newbury,440,0,1
+35059,Munsee-Delaware Nation 1,129,0,0
+35060,Halton Hills,62951,0,1
+35065,Mississauga,717961,1,0
+35068,Newmarket,87942,0,1
+35069,New Tecumseth,43948,0,1
+35069,Bradford West Gwillimbury,42880,0,1
+35069,East Gwillimbury,34637,0,1
+35070,Niagara Falls,94415,0,1
+35070,Niagara-on-the-Lake,19088,0,1
+35071,Welland,55750,0,1
+35071,Fort Erie,32901,0,1
+35071,Thorold,23816,0,1
+35071,Port Colborne,20033,0,1
+35072,Grimsby,28883,0,1
+35072,Lincoln,25719,0,1
+35072,Pelham,18192,0,1
+35072,West Lincoln,15454,0,1
+35072,Wainfleet,6887,0,1
+35073,North Bay,52662,0,1
+35073,Temiskaming Shores,9634,0,1
+35073,East Ferris,4946,0,1
+35073,Callander,3964,0,1
+35073,Powassan,3346,0,1
+35073,"Timiskaming, Unorganized, West Part",3210,0,0
+35073,Bonfield,2146,0,1
+35073,Mattawa,1881,0,1
+35073,Nipissing,1769,0,1
+35073,Nipissing 10,1640,0,0
+35073,"Nipissing, Unorganized, North Part",1591,0,0
+35073,Englehart,1442,0,1
+35073,Chisholm,1312,0,1
+35073,Armstrong,1199,0,1
+35073,Cobalt,989,0,1
+35073,Papineau-Cameron,982,0,1
+35073,Temagami,862,0,1
+35073,Charlton and Dack,686,0,1
+35073,Calvin,557,0,1
+35073,Harris,530,0,1
+35073,Hudson,530,0,1
+35073,Harley,524,0,1
+35073,Coleman,517,0,1
+35073,Evanturel,502,0,1
+35073,Latchford,355,0,1
+35073,James,348,0,1
+35073,Casey,341,0,1
+35073,Kerns,330,0,1
+35073,Chamberlain,311,0,1
+35073,Bear Island 1,244,0,0
+35073,Hilliard,215,0,1
+35073,Mattawan,153,0,1
+35073,Brethour,105,0,1
+35073,"Nipissing, Unorganized, South Part",102,0,0
+35073,Thornloe,92,0,1
+35074,Clarington,101427,0,1
+35074,Cobourg,20519,0,1
+35074,Port Hope,17294,0,1
+35074,Trent Hills,13861,0,1
+35074,Brighton,12108,0,1
+35074,Hamilton,11059,0,1
+35074,Alnwick/Haldimand,7473,0,0
+35074,Cramahe,6509,0,1
+35074,Alderville First Nation,542,0,0
+35076,Oakville,213759,1,0
+35083,Woodstock,46705,0,1
+35083,Tillsonburg,18615,0,1
+35083,Ingersoll,13693,0,1
+35083,Norwich,11151,0,1
+35083,Zorra,8628,0,1
+35083,East Zorra-Tavistock,7841,0,1
+35083,South-West Oxford,7583,0,1
+35083,Blandford-Blenheim,7565,0,1
+35084,Huntsville,21147,0,1
+35084,Bracebridge,17305,0,1
+35084,Gravenhurst,13157,0,1
+35084,Muskoka Lakes,7652,0,1
+35084,Parry Sound,6879,0,1
+35084,Seguin,5280,0,1
+35084,Lake of Bays,3759,0,1
+35084,Georgian Bay,3441,0,1
+35084,McDougall,2744,0,1
+35084,Perry,2650,0,1
+35084,"Parry Sound, Unorganized, Centre Part",2495,0,0
+35084,Magnetawan,1753,0,1
+35084,Strong,1566,0,1
+35084,Carling,1491,0,1
+35084,Armour,1459,0,1
+35084,McKellar,1419,0,1
+35084,South River,1101,0,1
+35084,Whitestone,1075,0,1
+35084,The Archipelago,979,0,1
+35084,Kearney,974,0,1
+35084,Machar,969,0,1
+35084,Burk's Falls,957,0,1
+35084,Sundridge,938,0,1
+35084,McMurrich/Monteith,907,0,0
+35084,Ryerson,745,0,1
+35084,Parry Island First Nation,367,0,0
+35084,Joly,293,0,1
+35084,Moose Point 79,213,0,0
+35084,Dokis 9,201,0,0
+35084,"Parry Sound, Unorganized, North East Part",179,0,0
+35084,Shawanaga 17,155,0,0
+35084,French River 13,137,0,0
+35084,Magnetewan 1,102,0,0
+35084,Henvey Inlet 2,15,0,0
+35085,Stratford,33232,0,1
+35085,North Perth,15538,0,1
+35085,Perth East,12595,0,1
+35085,Wellington North,12431,0,1
+35085,Mapleton,10839,0,1
+35085,Minto,9094,0,1
+35085,West Perth,9038,0,1
+35085,St. Marys,7386,0,1
+35085,Perth South,3776,0,1
+35086,Peterborough,83651,0,1
+35086,Selwyn,18653,0,1
+35086,Douro-Dummer,7632,0,1
+35086,Otonabee-South Monaghan,7087,0,1
+35086,Havelock-Belmont-Methuen,5083,0,1
+35086,Asphodel-Norwood,4658,0,1
+35086,Curve Lake First Nation 35,1244,0,0
+35086,Hiawatha First Nation,341,0,0
+35087,Pickering,99186,0,1
+35088,Clarence-Rockland,26505,0,1
+35088,Russell,19598,0,1
+35088,The Nation / La Nation,13350,0,0
+35088,Hawkesbury,10194,0,1
+35088,Alfred and Plantagenet,9949,0,1
+35088,Champlain,8665,0,1
+35088,Casselman,3960,0,1
+35088,East Hawkesbury,3418,0,1
+35089,Richmond Hill,202022,1,0
+35090,Sarnia,72047,0,1
+35090,St. Clair,14659,0,1
+35090,Lambton Shores,11876,0,1
+35090,Plympton-Wyoming,8308,0,1
+35090,Petrolia,6013,0,1
+35090,Warwick,3641,0,1
+35090,Enniskillen,2825,0,1
+35090,Brooke-Alvinston,2359,0,1
+35090,Dawn-Euphemia,1968,0,1
+35090,Point Edward,1930,0,1
+35090,Kettle Point 44,1233,0,0
+35090,Sarnia 45,648,0,0
+35090,Oil Springs,647,0,1
+35091,Sault Ste. Marie,72051,0,1
+35091,Elliot Lake,11372,0,1
+35091,"Algoma, Unorganized, North Part",6050,0,0
+35091,Blind River,3422,0,1
+35091,Wawa,2705,0,1
+35091,Huron Shores,1860,0,1
+35091,"Macdonald, Meredith and Aberdeen Additional",1513,0,0
+35091,St. Joseph,1426,0,1
+35091,Thessalon,1260,0,1
+35091,Laird,1121,0,1
+35091,Sagamok,1110,0,1
+35091,Garden River 14,1071,0,0
+35091,Prince,975,0,1
+35091,Hornepayne,968,0,1
+35091,Plummer Additional,757,0,1
+35091,Johnson,749,0,1
+35091,Spanish,670,0,1
+35091,Bruce Mines,582,0,1
+35091,Dubreuilville,576,0,1
+35091,Tarbutt and Tarbutt Additional,573,0,1
+35091,White River,557,0,1
+35091,The North Shore,531,0,1
+35091,Mississagi River 8,414,0,0
+35091,Hilton,382,0,1
+35091,Serpent River 7,351,0,0
+35091,Jocelyn,314,0,1
+35091,Hilton Beach,198,0,1
+35091,Thessalon 12,151,0,0
+35091,Gros Cap 49,63,0,0
+35091,"Algoma, Unorganized, South East Part",5,0,0
+35098,Wasaga Beach,24862,0,1
+35098,Collingwood,24811,0,1
+35098,Essa,22970,0,1
+35098,Clearview,14814,0,1
+35098,Adjala-Tosorontio,10989,0,1
+35098,The Blue Mountains,9390,0,1
+35099,Orillia,33411,0,1
+35099,Midland,17817,0,1
+35099,Severn,14576,0,1
+35099,Tiny,12966,0,1
+35099,Tay,11091,0,1
+35099,Ramara,10377,0,1
+35099,Penetanguishene,10077,0,1
+35099,Chippewas of Rama First Nation,998,0,0
+35099,Christian Island 30,679,0,0
+35099,Christian Island 30A,30,0,0
+35101,St. Catharines,136803,1,0
+35102,Cornwall,47845,0,1
+35102,South Stormont,13570,0,1
+35102,South Glengarry,13330,0,1
+35102,North Dundas,11304,0,1
+35102,South Dundas,11044,0,1
+35102,North Glengarry,10144,0,1
+35102,North Stormont,7400,0,1
+35104,Greater Sudbury / Grand Sudbury,166004,1,0
+35104,West Nipissing / Nipissing Ouest,14583,0,0
+35104,Espanola,5185,0,1
+35104,Sables-Spanish Rivers,3237,0,1
+35104,"Sudbury, Unorganized, North Part",2902,0,0
+35104,French River / Rivière des Français,2828,0,0
+35104,Wikwemikong Unceded,2728,0,1
+35104,Markstay-Warren,2708,0,1
+35104,Northeastern Manitoulin and the Islands,2641,0,0
+35104,Central Manitoulin,2235,0,1
+35104,St.-Charles,1357,0,1
+35104,Assiginack,1008,0,1
+35104,M'Chigeeng 22,926,0,0
+35104,Gore Bay,808,0,1
+35104,Billings,753,0,1
+35104,Gordon/Barrie Island,613,0,0
+35104,Baldwin,579,0,1
+35104,Whitefish River 4,457,0,0
+35104,Tehkummah,450,0,1
+35104,Whitefish Lake 6,412,0,0
+35104,Killarney,397,0,1
+35104,Burpee and Mills,382,0,1
+35104,Sucker Creek 23,373,0,0
+35104,Nairn and Hyman,373,0,1
+35104,"Manitoulin, Unorganized, West Part",219,0,0
+35104,Mattagami 71,210,0,0
+35104,Sheguiandah 24,158,0,0
+35104,Sheshegwaning 20,127,0,0
+35104,Wahnapitei 11,124,0,0
+35104,Zhiibaahaasing 19A,41,0,0
+35104,Cockburn Island,16,0,1
+35104,Point Grondine 3,5,0,0
+35107,Thunder Bay,108843,1,0
+35107,Fort Frances,7466,0,1
+35107,"Thunder Bay, Unorganized",6221,0,0
+35107,Oliver Paipoonge,6035,0,1
+35107,Atikokan,2642,0,1
+35107,Neebing,2241,0,1
+35107,"Rainy River, Unorganized",1423,0,0
+35107,Emo,1204,0,1
+35107,Fort William 52,964,0,0
+35107,Alberton,954,0,1
+35107,Conmee,798,0,1
+35107,La Vallee,788,0,1
+35107,Chapple,763,0,1
+35107,Rainy River,752,0,1
+35107,O'Connor,689,0,1
+35107,Couchiching 16A,633,0,0
+35107,Morley,493,0,1
+35107,Gillies,441,0,1
+35107,Dawson,399,0,1
+35107,Lake of the Woods,308,0,1
+35107,Manitou Rapids 11,300,0,0
+35107,Seine River 23A,270,0,0
+35107,Big Grassy River 35G,251,0,0
+35107,Rainy Lake 17A,234,0,0
+35107,Rainy Lake 26A,158,0,0
+35107,Saug-A-Gaw-Sing 1,136,0,0
+35107,Rainy Lake 18C,125,0,0
+35107,Neguaguon Lake 25D,118,0,0
+35107,Sturgeon Falls 23,10,0,0
+35107,Big Island Mainland 93,5,0,0
+35107,Rainy Lake 17B,5,0,0
+35108,Greenstone,4309,0,1
+35108,Shuniah,3247,0,1
+35108,Marathon,3138,0,1
+35108,Manitouwadge,1974,0,1
+35108,Terrace Bay,1528,0,1
+35108,Nipigon,1473,0,1
+35108,Schreiber,1039,0,1
+35108,Fort Hope 64,977,0,0
+35108,Red Rock,895,0,1
+35108,Webequie,723,0,1
+35108,Long Lake 58,410,0,0
+35108,Dorion,375,0,1
+35108,Pic River 50,372,0,0
+35108,Summer Beaver,355,0,1
+35108,Whitesand,297,0,1
+35108,Neskantaga,244,0,1
+35108,Marten Falls 65,243,0,0
+35108,Lake Helen 53A,240,0,0
+35108,Ginoogaming First Nation,200,0,0
+35108,Aroland,178,0,1
+35108,Rocky Bay 1,154,0,0
+35108,Pic Mobert North,138,0,1
+35108,Pic Mobert South,127,0,1
+35108,Gull River 55,110,0,0
+35108,Pays Plat 51,100,0,0
+35108,Sand Point First Nation,5,0,0
+35113,Vaughan,323103,1,0
+35114,Waterloo,121436,0,1
+35115,Centre Wellington,31093,0,1
+35115,Guelph/Eramosa,13904,0,0
+35115,Erin,11981,0,1
+35115,Puslinch,7944,0,1
+35116,Whitby,138501,1,0
+35118,Tecumseh,23300,0,1
+35119,Windsor,229660,1,0
+35121,Whitchurch-Stouffville,49864,0,1
+35121,Georgina,47642,0,1
+35121,Scugog,21581,0,1
+35121,Uxbridge,21556,0,1
+35121,Brock,12567,0,1
+35121,Chippewas of Georgina Island First Nation,231,0,0
+35121,Mississaugas of Scugog Island,125,0,1
+46001,Brandon,51313,0,1
+46001,Cornwallis,4568,0,1
+46001,Killarney - Turtle Mountain,3520,0,1
+46001,Virden,3118,0,1
+46001,Wallace-Woodworth,2748,0,1
+46001,Souris-Glenwood,2547,0,1
+46001,Pembina,2406,0,1
+46001,Boissevain-Morton,2309,0,1
+46001,Louise,2025,0,1
+46001,Oakland-Wawanesa,1758,0,1
+46001,Whitehead,1679,0,1
+46001,Prairie Lakes,1625,0,1
+46001,Grassland,1583,0,1
+46001,Deloraine-Winchester,1478,0,1
+46001,Pipestone,1422,0,1
+46001,Cartwright-Roblin,1336,0,1
+46001,Sifton,1239,0,1
+46001,Victoria,1188,0,1
+46001,Glenboro-South Cypress,1123,0,1
+46001,Two Borders,1120,0,1
+46001,Sioux Valley Dakota Nation,1057,0,0
+46001,Melita,1041,0,1
+46001,Argyle,994,0,1
+46001,Brenda-Waskada,650,0,1
+46001,Canupawakpa Dakota First Nation (Oak Lake 59),322,0,0
+46002,Thompson,13035,0,1
+46002,The Pas,5639,0,1
+46002,Norway House 17,5390,0,0
+46002,Flin Flon (Part),4940,0,0
+46002,St. Theresa Point,3417,0,1
+46002,Garden Hill First Nation,3054,0,0
+46002,Peguis 1B,3053,0,0
+46002,"Division No. 19, Unorganized",2839,0,0
+46002,Nelson House 170,2397,0,0
+46002,Split Lake 171,2232,0,0
+46002,Opaskwayak Cree Nation 21E,2210,0,0
+46002,Kelsey,2181,0,1
+46002,"Division No. 22, Unorganized",2162,0,0
+46002,Fort Alexander 3,2127,0,0
+46002,Wasagamack,2088,0,1
+46002,Cross Lake 19A,2045,0,0
+46002,Cross Lake 19,1865,0,0
+46002,"Division No. 21, Unorganized",1712,0,0
+46002,God's Lake 23,1520,0,0
+46002,Fisher River 44,1449,0,0
+46002,Chemawawin 2,1264,0,0
+46002,Berens River 13,1161,0,0
+46002,Fairford 50,1144,0,0
+46002,Snow Lake,1088,0,1
+46002,Gillam,1007,0,1
+46002,Obushkudayang,957,0,1
+46002,Grand Rapids 33,947,0,0
+46002,Churchill,870,0,1
+46002,Moose Lake 31A,837,0,0
+46002,God's River 86A,809,0,0
+46002,Cross Lake 19E,763,0,0
+46002,Red Sucker Lake 1976,725,0,0
+46002,Lac Brochet 197A,641,0,0
+46002,Bloodvein 12,640,0,0
+46002,Little Saskatchewan 48,627,0,0
+46002,Lynn Lake,579,0,1
+46002,South Indian Lake,578,0,1
+46002,Hole or Hollow Water 10,530,0,0
+46002,Black River 9,498,0,0
+46002,York Landing,455,0,1
+46002,Leaf Rapids,351,0,1
+46002,Opaskwayak Cree Nation 21B,278,0,0
+46002,Jackhead 43,267,0,0
+46002,O-Pipon-Na-Piwin Cree Nation 1,257,0,0
+46002,Opaskwayak Cree Nation 21A,243,0,0
+46002,Dauphin River 48A,213,0,0
+46002,Grand Rapids,213,0,1
+46002,Moose Lake 31D,155,0,0
+46002,Black Sturgeon,149,0,1
+46002,Red Sucker Lake 1976A,147,0,0
+46002,Fox Lake 2,126,0,0
+46002,Opaskwayak Cree Nation 21I,119,0,0
+46002,"Division No. 23, Unorganized",74,0,0
+46002,Ilford,62,0,1
+46002,Mooseocoot,60,0,1
+46002,A Kwis Ki Mahka,58,0,1
+46002,The Narrows 49,55,0,0
+46002,Fisher River 44A,44,0,0
+46002,Opaskwayak Cree Nation 21C,40,0,0
+46002,Chemawawin 3,27,0,0
+46002,Opaskwayak Cree Nation 21N,5,0,0
+46004,East St. Paul,9725,0,1
+46004,West St. Paul,6682,0,1
+46005,Winkler,13745,0,1
+46005,Portage la Prairie,13270,0,1
+46005,Morden,9929,0,1
+46005,Stanley,8981,0,1
+46005,Macdonald,8120,0,1
+46005,Portage la Prairie,6888,0,1
+46005,Rhineland,5819,0,1
+46005,Altona,4267,0,1
+46005,Cartier,3344,0,1
+46005,Carman,3114,0,1
+46005,Morris,3049,0,1
+46005,Lorne,2904,0,1
+46005,Dufferin,2543,0,1
+46005,Grey,2517,0,1
+46005,Morris,1975,0,1
+46005,Thompson,1518,0,1
+46005,St. François Xavier,1449,0,1
+46005,Roland,1145,0,1
+46005,Dakota Tipi 1,226,0,0
+46006,Steinbach,17806,0,1
+46006,Hanover,17216,0,1
+46006,Springfield,16142,0,1
+46006,Taché,11916,0,1
+46006,Ritchot,7469,0,1
+46006,La Broquerie,6725,0,1
+46006,Niverville,5947,0,1
+46006,Ste. Anne,5584,0,1
+46006,De Salaberry,3918,0,1
+46006,Ste. Anne,2891,0,1
+46006,Emerson-Franklin,2437,0,1
+46006,Piney,1843,0,1
+46006,Stuartburn,1731,0,1
+46006,Whitemouth,1630,0,1
+46006,"Division No.  1, Unorganized",1380,0,0
+46006,Reynolds,1344,0,1
+46006,St-Pierre-Jolys,1305,0,1
+46006,Montcalm,1278,0,1
+46006,Roseau River 2,564,0,0
+46006,Buffalo Point 36,219,0,0
+46006,Roseau Rapids 2A,100,0,0
+46007,Dauphin,8368,0,1
+46007,Neepawa,5685,0,1
+46007,Swan River,4049,0,1
+46007,North Norfolk,3915,0,1
+46007,WestLake-Gladstone,3273,0,1
+46007,Hillsburg-Roblin-Shell River,3089,0,1
+46007,North Cypress-Langford,3011,0,1
+46007,Swan Valley West,2759,0,1
+46007,Minnedosa,2741,0,1
+46007,Sandy Bay 5,2598,0,0
+46007,Russell-Binscarth,2596,0,1
+46007,Prairie View,2161,0,1
+46007,Dauphin,2136,0,1
+46007,Oakview,1928,0,1
+46007,Harrison Park,1852,0,1
+46007,Yellowhead,1841,0,1
+46007,Carberry,1818,0,1
+46007,Riverdale,1803,0,1
+46007,Norfolk-Treherne,1770,0,1
+46007,Ebb and Flow 52,1608,0,0
+46007,Ste. Rose,1591,0,1
+46007,Minitonas-Bowsman,1587,0,1
+46007,Rosedale,1524,0,1
+46007,Mossey River,1450,0,1
+46007,Riding Mountain West,1442,0,1
+46007,Gilbert Plains,1420,0,1
+46007,Grandview,1419,0,1
+46007,Waywayseecappo First Nation,1409,0,0
+46007,Long Plain 6,1335,0,0
+46007,Elton,1276,0,1
+46007,Hamiota,1234,0,1
+46007,Alonsa,1210,0,1
+46007,Lakeshore,1186,0,1
+46007,Glenella-Lansdowne,1133,0,1
+46007,Minto-Odanah,1121,0,1
+46007,Clanwilliam-Erickson,1012,0,1
+46007,Rossburn,973,0,1
+46007,Ellice-Archie,831,0,1
+46007,Shoal River Indian Reserve 65A,759,0,0
+46007,McCreary,748,0,1
+46007,Pine Creek 66A,700,0,0
+46007,Ethelbert,648,0,1
+46007,Mountain (North),537,0,0
+46007,Waterhen 45,476,0,0
+46007,Keeseekoowenin 61,472,0,0
+46007,Birdtail Creek 57,452,0,0
+46007,Mountain (South),443,0,0
+46007,Crane River 51,438,0,0
+46007,Rolling River 67,379,0,0
+46007,Valley River 63A,360,0,0
+46007,"Division No. 17, Unorganized",212,0,0
+46007,Wuskwi Sipihk First Nation 2,139,0,0
+46007,Dakota Plains 6A,98,0,0
+46007,Shoal River 65B,95,0,0
+46007,"Division No. 20, Unorganized, South Part",95,0,0
+46007,Gambler 63 (Part),76,0,0
+46007,Rolling River 67B,56,0,0
+46007,"Division No. 20, Unorganized, North Part",25,0,0
+46007,Gambler 63 (Part),15,0,0
+46007,Swan Lake 65C,10,0,0
+46007,Long Plain,5,0,1
+46009,St. Andrews,11723,0,1
+46009,St. Clements,11586,0,1
+46009,Selkirk,10504,0,1
+46009,Rockwood,8440,0,1
+46009,Gimli,6569,0,1
+46009,Brokenhead,5414,0,1
+46009,Stonewall,5046,0,1
+46009,Alexander,3854,0,1
+46009,Woodlands,3797,0,1
+46009,Lac du Bonnet,3563,0,1
+46009,Bifrost-Riverton,3320,0,1
+46009,Beausejour,3307,0,1
+46009,West Interlake,2228,0,1
+46009,Armstrong,1967,0,1
+46009,Fisher,1845,0,1
+46009,Pinawa,1558,0,1
+46009,St. Laurent,1542,0,1
+46009,Winnipeg Beach,1439,0,1
+46009,Coldwell,1313,0,1
+46009,Arborg,1279,0,1
+46009,Grahamdale,1278,0,1
+46009,Powerview-Pine Falls,1239,0,1
+46009,Teulon,1196,0,1
+46009,Lac du Bonnet,1064,0,1
+46009,Dunnottar,989,0,1
+46009,Dog Creek 46,899,0,0
+46009,Victoria Beach,689,0,1
+46009,Brokenhead 4,434,0,0
+46009,"Division No. 18, Unorganized, East Part",229,0,0
+46013,Winnipeg,749607,1,0
+46014,Headingley,4331,0,1
+46014,Rosser,1270,0,1
+47001,North Battleford,13836,0,1
+47001,Lloydminster (Part),11843,0,0
+47001,Meadow Lake,5322,0,1
+47001,Battleford,4400,0,1
+47001,Meadow Lake No. 588,2553,0,0
+47001,Unity,2496,0,1
+47001,Seekaskootch 119,2191,0,0
+47001,Britannia No. 502,2061,0,0
+47001,Mervin No. 499,1711,0,0
+47001,Wilton No. 472,1473,0,0
+47001,Beaver River No. 622,1277,0,0
+47001,Frenchman Butte No. 501,1250,0,0
+47001,Spiritwood No. 496,1245,0,0
+47001,Maidstone,1209,0,1
+47001,Wilkie,1195,0,1
+47001,Meota No. 468,1110,0,0
+47001,Makwa Lake 129B,1109,0,0
+47001,Battle River No. 438,1029,0,0
+47001,Spiritwood,966,0,1
+47001,Lashburn,870,0,1
+47001,Loon Lake No. 561,836,0,0
+47001,Big Island Lake Cree Territory,759,0,0
+47001,Waterhen 130,728,0,0
+47001,Parkdale No. 498,725,0,0
+47001,Moosomin 112B,715,0,0
+47001,Thunderchild First Nation 115B,706,0,0
+47001,Chitek Lake 191,705,0,0
+47001,Eldon No. 471,700,0,0
+47001,North Battleford No. 437,687,0,0
+47001,Flying Dust First Nation 105,679,0,0
+47001,Sweet Grass 113,623,0,0
+47001,Little Pine 116,622,0,0
+47001,Pierceland,605,0,1
+47001,Makaoo (Part) 120,593,0,0
+47001,St. Walburg,591,0,1
+47001,Ministikwan 161,549,0,0
+47001,Cut Knife,547,0,1
+47001,Hillsdale No. 440,528,0,0
+47001,Marshall,522,0,1
+47001,Manitou Lake No. 442,505,0,0
+47001,Turtleford,503,0,1
+47001,Medstead No. 497,489,0,0
+47001,Edam,476,0,1
+47001,Poundmaker 114,471,0,0
+47001,Paradise Hill,471,0,1
+47001,Red Pheasant 108,442,0,0
+47001,Buffalo No. 409,420,0,0
+47001,Cut Knife No. 439,415,0,0
+47001,Round Hill No. 467,394,0,0
+47001,Round Valley No. 410,384,0,0
+47001,Neilburg,371,0,1
+47001,Witchekan Lake 117,369,0,0
+47001,Leoville,364,0,1
+47001,Glaslyn,353,0,1
+47001,Meota,325,0,1
+47001,Saulteaux 159,312,0,0
+47001,Turtle River No. 469,307,0,0
+47001,Goodsoil,301,0,1
+47001,Chitek Lake,300,0,1
+47001,Marsden,281,0,1
+47001,Loon Lake,281,0,1
+47001,Paynton No. 470,238,0,0
+47001,Cochin,219,0,1
+47001,Aquadeo,203,0,1
+47001,Senlac No. 411,198,0,0
+47001,Shell Lake,189,0,1
+47001,Mervin,159,0,1
+47001,Ministikwan 161A,156,0,0
+47001,Kivimaa-Moonlight Bay,137,0,1
+47001,Grizzly Bear's Head 110 and Lean Man 111,134,0,0
+47001,Mosquito 109,127,0,0
+47001,Medstead,121,0,1
+47001,Paynton,120,0,1
+47001,Eagles Lake 165C,115,0,0
+47001,Waseca,113,0,1
+47001,Dorintosh,107,0,1
+47001,North Battleford,104,0,1
+47001,Metinota,86,0,1
+47001,Makwa,78,0,1
+47001,Denholm,75,0,1
+47001,Pelican Lake 191B,75,0,0
+47001,Echo Bay,68,0,1
+47001,Big Shell,64,0,1
+47001,Senlac,36,0,1
+47001,Thunderchild First Nation 115C,26,0,0
+47001,Greig Lake,24,0,1
+47001,Makwa Lake 129C,22,0,0
+47001,Saulteaux 159A,10,0,0
+47001,Witchekan Lake 117D,10,0,0
+47001,Meadow Lake 105A,10,0,0
+47001,Sweet Grass 113-M16,5,0,0
+47001,Makwa Lake 129,5,0,0
+47002,Warman,12419,0,1
+47002,Martensville,10549,0,1
+47002,Corman Park No. 344,8909,0,0
+47002,Humboldt,6033,0,1
+47002,Vanscoy No. 345,2799,0,0
+47002,Rosthern No. 403,2473,0,0
+47002,Blucher No. 343,1984,0,0
+47002,Dalmeny,1766,0,1
+47002,Rosthern,1602,0,1
+47002,Langham,1518,0,1
+47002,Aberdeen No. 373,1461,0,0
+47002,Laird No. 404,1304,0,0
+47002,Osler,1251,0,1
+47002,Beardy's 97 and Okemasis 96,1249,0,0
+47002,Waldheim,1237,0,1
+47002,St. Louis No. 431,1029,0,0
+47002,Delisle,1024,0,1
+47002,Duck Lake No. 463,1010,0,0
+47002,Wakaw,978,0,1
+47002,Humboldt No. 370,961,0,0
+47002,Hague,889,0,1
+47002,Leask No. 464,857,0,0
+47002,Hoodoo No. 401,802,0,0
+47002,Hepburn,784,0,1
+47002,Cudworth,772,0,1
+47002,Three Lakes No. 400,725,0,0
+47002,St. Peter No. 369,723,0,0
+47002,Aberdeen,716,0,1
+47002,One Arrow 95,671,0,0
+47002,Flett's Springs No. 429,656,0,0
+47002,Eagle Creek No. 376,643,0,0
+47002,St. Brieux,638,0,1
+47002,Allan,625,0,1
+47002,Asquith,624,0,1
+47002,Bruno,604,0,1
+47002,Duck Lake,579,0,1
+47002,Invergordon No. 430,563,0,0
+47002,Grant No. 372,525,0,0
+47002,Blaine Lake,509,0,1
+47002,Lake Lenore No. 399,506,0,0
+47002,Vanscoy,477,0,1
+47002,Radisson,466,0,1
+47002,Bayne No. 371,461,0,0
+47002,Clavet,450,0,1
+47002,St. Louis,432,0,1
+47002,Hafford,414,0,1
+47002,Muenster,403,0,1
+47002,Mayfield No. 406,391,0,0
+47002,Vonda,384,0,1
+47002,Great Bend No. 405,381,0,0
+47002,Leask,379,0,1
+47002,Redberry No. 435,372,0,0
+47002,Fish Creek No. 402,364,0,0
+47002,Douglas No. 436,342,0,0
+47002,Meeting Lake No. 466,335,0,0
+47002,Blaine Lake No. 434,301,0,0
+47002,Lake Lenore,289,0,1
+47002,Borden,281,0,1
+47002,Muskeg Lake Cree Nation 102,271,0,0
+47002,Laird,265,0,1
+47002,Englefeld,259,0,1
+47002,Glenside No. 377,206,0,0
+47002,Annaheim,206,0,1
+47002,Middle Lake,188,0,1
+47002,Prud'homme,177,0,1
+47002,Bradwell,164,0,1
+47002,Maymont,163,0,1
+47002,Marcelin,142,0,1
+47002,Parkside,132,0,1
+47002,St. Gregor,104,0,1
+47002,St. Benedict,80,0,1
+47002,Alvena,75,0,1
+47002,Speers,72,0,1
+47002,Pebble Baye,69,0,1
+47002,Wakaw Lake,66,0,1
+47002,Pilger,65,0,1
+47002,Beatty,65,0,1
+47002,Beardy's and Okemasis 96 and 97B,32,0,0
+47002,Richard,25,0,1
+47002,Ruddell,20,0,1
+47002,Krydor,15,0,1
+47002,Beardy's and Okemasis 96 & 97C,15,0,0
+47002,One Arrow 95-1A,5,0,0
+47003,La Ronge,2521,0,1
+47003,La Loche,2514,0,1
+47003,Stanley 157,1883,0,0
+47003,"Division No. 18, Unorganized",1871,0,0
+47003,Pelican Narrows 184B,1837,0,0
+47003,Île-à-la-Crosse,1425,0,1
+47003,Air Ronge,1365,0,1
+47003,Lac La Ronge 156,1349,0,0
+47003,Lac La Hache 220,1279,0,0
+47003,Creighton,1203,0,1
+47003,Chicken 224,1152,0,0
+47003,Hudson Bay No. 394,1145,0,0
+47003,Montreal Lake 106,1015,0,0
+47003,Buffalo Narrows,1014,0,1
+47003,Pinehouse,1013,0,1
+47003,Canoe Lake 165,950,0,0
+47003,Fond du Lac 227,926,0,0
+47003,Southend 200,913,0,0
+47003,Kimosom Pwatinahk 203,875,0,0
+47003,Buffalo River Dene Nation,842,0,0
+47003,Clearwater River Dene 222,831,0,0
+47003,Carrot River 29A,756,0,0
+47003,Cumberland House Cree Nation 20,748,0,0
+47003,Denare Beach,699,0,1
+47003,Beauval,685,0,1
+47003,Sandy Bay,671,0,1
+47003,Shoal Lake 28A,613,0,0
+47003,Morin Lake 217,575,0,0
+47003,Wapachewunak 192D,572,0,0
+47003,Cumberland House,540,0,1
+47003,Kitsakie 156B,531,0,0
+47003,Red Earth 29,490,0,0
+47003,Wapaskokimaw 202,481,0,0
+47003,Turnor Lake 193B,428,0,0
+47003,Green Lake,411,0,1
+47003,Sucker River 156C (Nemebien River 156C),384,0,0
+47003,Grandmother's Bay 219,344,0,0
+47003,Pelican Narrows 206,336,0,0
+47003,Stony Rapids,219,0,1
+47003,Cole Bay,194,0,1
+47003,Flin Flon (Part),159,0,0
+47003,Turnor Lake,154,0,1
+47003,La Plonge 192,144,0,0
+47003,Southend No. 200A,139,0,0
+47003,Pelican Narrows,123,0,1
+47003,Jans Bay,116,0,1
+47003,Weyakwin,100,0,1
+47003,Timber Bay,81,0,1
+47003,St. George's Hill,77,0,1
+47003,Sturgeon Weir 205,69,0,0
+47003,Patuanak,63,0,1
+47003,Black Point,39,0,1
+47003,Dore Lake,37,0,1
+47003,Michel Village,37,0,1
+47003,Brabant Lake,27,0,1
+47003,Amiskosakahikan 210,20,0,0
+47003,Clearwater River Dene Band 223,5,0,0
+47004,Moose Jaw,33665,0,1
+47004,Outlook,2336,0,1
+47004,Dundurn No. 314,2101,0,0
+47004,Lumsden No. 189,1968,0,0
+47004,Watrous,1842,0,1
+47004,Lumsden,1800,0,1
+47004,Lanigan,1433,0,1
+47004,Regina Beach,1292,0,1
+47004,Sherwood No. 159,1219,0,0
+47004,Moose Jaw No. 161,1207,0,0
+47004,Longlaketon No. 219,1096,0,0
+47004,Davidson,1044,0,1
+47004,Caronport,1033,0,1
+47004,Gravelbourg,986,0,1
+47004,McKillop No. 220,897,0,0
+47004,Strasbourg,788,0,1
+47004,Milestone,682,0,1
+47004,Dundurn,675,0,1
+47004,Buena Vista,646,0,1
+47004,Grand Coulee,606,0,1
+47004,Pense,603,0,1
+47004,Caron No. 162,603,0,0
+47004,Baildon No. 131,583,0,0
+47004,Bethune,560,0,1
+47004,Rosedale No. 283,542,0,0
+47004,Hanley,540,0,1
+47004,Mount Hope No. 279,531,0,0
+47004,Usborne No. 310,511,0,0
+47004,Wolverine No. 340,511,0,0
+47004,Whitecap,511,0,1
+47004,Leroy,510,0,1
+47004,Rouleau,505,0,1
+47004,Rudy No. 284,475,0,0
+47004,Leroy No. 339,457,0,0
+47004,Dufferin No. 190,454,0,0
+47004,Colonsay,446,0,1
+47004,Pense No. 160,441,0,0
+47004,Central Butte,416,0,1
+47004,Nokomis,414,0,1
+47004,Avonlea,411,0,1
+47004,Craik,405,0,1
+47004,Loreburn No. 254,380,0,0
+47004,Imperial,372,0,1
+47004,Mossbank,368,0,1
+47004,Manitou Beach,364,0,1
+47004,Shields,351,0,1
+47004,Elbow,341,0,1
+47004,Last Mountain Valley No. 250,339,0,0
+47004,Bratt's Lake No. 129,328,0,0
+47004,Sarnia No. 221,326,0,0
+47004,Saskatchewan Beach,322,0,1
+47004,Viscount No. 341,320,0,0
+47004,Gravelbourg No. 104,317,0,0
+47004,Marquis No. 191,303,0,0
+47004,Willner No. 253,293,0,0
+47004,Kenaston,292,0,1
+47004,Viscount,282,0,1
+47004,McCraney No. 282,280,0,0
+47004,Mortlach,274,0,1
+47004,Craik No. 222,272,0,0
+47004,Enfield No. 194,268,0,0
+47004,Craven,266,0,1
+47004,Morris No. 312,263,0,0
+47004,Wilcox,261,0,1
+47004,Colonsay No. 342,260,0,0
+47004,Arm River No. 252,258,0,0
+47004,Redburn No. 130,253,0,0
+47004,Young,253,0,1
+47004,Lost River No. 313,252,0,0
+47004,Sutton No. 103,230,0,0
+47004,Earl Grey,229,0,1
+47004,South Lake,226,0,1
+47004,Caledonia No. 99,225,0,0
+47004,Chaplin,222,0,1
+47004,Eyebrow No. 193,220,0,0
+47004,Maple Bush No. 224,213,0,0
+47004,Terrell No. 101,210,0,0
+47004,Huron No. 223,205,0,0
+47004,Wood Creek No. 281,205,0,0
+47004,Govan,200,0,1
+47004,Drake,197,0,1
+47004,Elmsthorpe No. 100,195,0,0
+47004,Prairie Rose No. 309,195,0,0
+47004,Shamrock No. 134,194,0,0
+47004,Big Arm No. 251,184,0,0
+47004,Semans,180,0,1
+47004,North Grove,175,0,1
+47004,Holdfast,173,0,1
+47004,Thode,163,0,1
+47004,Wheatlands No. 163,157,0,0
+47004,Briercrest,155,0,1
+47004,Sun Valley,154,0,1
+47004,Riverhurst,152,0,1
+47004,Lake Johnston No. 102,140,0,0
+47004,Wreford No. 280,140,0,0
+47004,Island View,134,0,1
+47004,Simpson,131,0,1
+47004,Eyebrow,130,0,1
+47004,Chaplin No. 164,127,0,0
+47004,Kannata Valley,126,0,1
+47004,Bulyea,121,0,1
+47004,Grandview Beach,118,0,1
+47004,Mistusinne,118,0,1
+47004,Jansen,111,0,1
+47004,Rodgers No. 133,105,0,0
+47004,Tuxford,103,0,1
+47004,Loreburn,100,0,1
+47004,Hillsborough No. 132,97,0,0
+47004,Chamberlain,96,0,1
+47004,Broderick,96,0,1
+47004,Meacham,96,0,1
+47004,Silton,95,0,1
+47004,Duval,95,0,1
+47004,Glen Harbour,91,0,1
+47004,Marquis,90,0,1
+47004,Alice Beach,82,0,1
+47004,Belle Plaine,79,0,1
+47004,Tugaske,79,0,1
+47004,Wee Too Beach,75,0,1
+47004,Drinkwater,74,0,1
+47004,Glenside,73,0,1
+47004,Bladworth,71,0,1
+47004,Liberty,68,0,1
+47004,Aylesbury,67,0,1
+47004,Findlater,60,0,1
+47004,Dilke,60,0,1
+47004,Plunkett,60,0,1
+47004,Disley,58,0,1
+47004,Brownlee,55,0,1
+47004,Strongfield,55,0,1
+47004,Hawarden,50,0,1
+47004,Lumsden Beach,45,0,1
+47004,Etters Beach,40,0,1
+47004,Pelican Pointe,38,0,1
+47004,Coderre,30,0,1
+47004,Zelma,28,0,1
+47004,Sunset Cove,21,0,1
+47004,Shamrock,20,0,1
+47005,Prince Albert,37756,0,1
+47005,Melfort,5955,0,1
+47005,Nipawin,4570,0,1
+47005,Prince Albert No. 461,3438,0,0
+47005,Buckland No. 491,3277,0,0
+47005,Tisdale,2962,0,1
+47005,Shellbrook No. 493,1581,0,0
+47005,Big River 118,1535,0,0
+47005,Shellbrook,1510,0,1
+47005,Ahtahkakoop 104,1402,0,0
+47005,Canwood No. 494,1351,0,0
+47005,Lakeland No. 521,1300,0,0
+47005,Sturgeon Lake 101,1224,0,0
+47005,Torch River No. 488,1219,0,0
+47005,Candle Lake,1160,0,1
+47005,Paddockwood No. 520,1071,0,0
+47005,Birch Hills,1066,0,1
+47005,Big River No. 555,994,0,0
+47005,Nipawin No. 487,958,0,0
+47005,Tisdale No. 427,885,0,0
+47005,James Smith 100,850,0,0
+47005,Star City No. 428,811,0,0
+47005,Mistawasis 103,741,0,0
+47005,Muskoday First Nation,700,0,0
+47005,Willow Creek No. 458,683,0,0
+47005,Kinistino,671,0,1
+47005,Big River,666,0,1
+47005,Birch Hills No. 460,658,0,0
+47005,Garden River No. 490,647,0,0
+47005,Kinistino No. 459,604,0,0
+47005,Connaught No. 457,491,0,0
+47005,Montreal Lake 106B,423,0,0
+47005,Star City,374,0,1
+47005,Little Red River 106C,367,0,0
+47005,White Fox,343,0,1
+47005,Choiceland,342,0,1
+47005,Debden,327,0,1
+47005,Prince Albert National Park,325,0,1
+47005,Canwood,314,0,1
+47005,Wahpaton 94A,310,0,0
+47005,Christopher Lake,302,0,1
+47005,Cumberland 100A,266,0,0
+47005,Codette,180,0,1
+47005,Zenon Park,176,0,1
+47005,Meath Park,169,0,1
+47005,Smeaton,163,0,1
+47005,Weldon,160,0,1
+47005,Albertville,121,0,1
+47005,Paddockwood,118,0,1
+47005,Kiskaciwan No. 208,89,0,0
+47005,Aylsham,82,0,1
+47005,Ridgedale,65,0,1
+47005,Weirdale,55,0,1
+47005,Love,50,0,1
+47005,Valparaiso,25,0,1
+47007,Regina,226404,1,0
+47007,Edenwold No. 158,4466,0,0
+47007,White City,3702,0,1
+47007,Pilot Butte,2638,0,1
+47007,Fort Qu'Appelle,1972,0,1
+47007,Indian Head,1902,0,1
+47007,Balgonie,1756,0,1
+47007,Wynyard,1724,0,1
+47007,South Qu'Appelle No. 157,1231,0,0
+47007,North Qu'Appelle No. 187,918,0,0
+47007,Wolseley,852,0,1
+47007,Southey,832,0,1
+47007,Gordon 86,763,0,0
+47007,Ituna,726,0,1
+47007,Piapot 75,677,0,0
+47007,Poorman 88,676,0,0
+47007,Pasqua 79,638,0,0
+47007,Qu'Appelle,625,0,1
+47007,Balcarres,616,0,1
+47007,Cupar,598,0,1
+47007,Standing Buffalo 78,586,0,0
+47007,Katepwa,539,0,1
+47007,Big Quill No. 308,520,0,0
+47007,Cupar No. 218,516,0,0
+47007,Peepeekisis 81,510,0,0
+47007,Stanley No. 215,508,0,0
+47007,Raymore,507,0,1
+47007,Muskowekwan 85,494,0,0
+47007,Kellross No. 247,396,0,0
+47007,McLean,392,0,1
+47007,Lipton No. 217,388,0,0
+47007,Touchwood No. 248,373,0,0
+47007,Emerald No. 277,370,0,0
+47007,Indian Head No. 156,362,0,0
+47007,Abernethy No. 186,337,0,0
+47007,Ituna Bon Accord No. 246,327,0,0
+47007,Lipton,284,0,1
+47007,Muscowpetung 80,277,0,0
+47007,Kelliher,244,0,1
+47007,Edenwold,243,0,1
+47007,Fort San,233,0,1
+47007,Lebret,226,0,1
+47007,Okanese 82,213,0,0
+47007,Punnichy,212,0,1
+47007,Abernethy,190,0,1
+47007,Dysart,188,0,1
+47007,Tullymet No. 216,183,0,0
+47007,B-Say-Tah,177,0,1
+47007,Little Black Bear 84,173,0,0
+47007,Star Blanket 83,165,0,0
+47007,Day Star 87,145,0,0
+47007,Sintaluta,124,0,1
+47007,Quinton,89,0,1
+47007,Wa-Pii Moos-Toosis (White Calf) 83A,79,0,0
+47007,Markinch,55,0,1
+47007,Hubbard,45,0,1
+47007,Leross,40,0,1
+47007,Treaty Four Reserve Grounds 77,10,0,0
+47007,Muskowekwan 85-29,5,0,0
+47007,Muskowekwan 85-12,5,0,0
+47011,Saskatoon,266141,1,0
+47012,Weyburn,11019,0,1
+47012,Estevan,10851,0,1
+47012,Moosomin,2657,0,1
+47012,Assiniboia,2333,0,1
+47012,Carlyle,1524,0,1
+47012,Oxbow,1286,0,1
+47012,Estevan No. 5,1279,0,0
+47012,Carnduff,1150,0,1
+47012,Weyburn No. 67,1103,0,0
+47012,Kipling,1076,0,1
+47012,Grenfell,1059,0,1
+47012,Redvers,1008,0,1
+47012,Lajord No. 128,985,0,0
+47012,Whitewood,944,0,1
+47012,Rocanville,889,0,1
+47012,Radville,778,0,1
+47012,White Bear 70,722,0,0
+47012,Assiniboine 76,703,0,0
+47012,Francis No. 127,701,0,0
+47012,Lampman,673,0,1
+47012,Bienfait,668,0,1
+47012,Stoughton,652,0,1
+47012,Cowessess 73,645,0,0
+47012,Arcola,636,0,1
+47012,Kahkewistahaw 72,627,0,0
+47012,Wawken No. 93,614,0,0
+47012,Coronach,612,0,1
+47012,Cymri No. 36,568,0,0
+47012,Wawota,555,0,1
+47012,Rocanville No. 151,544,0,0
+47012,Moosomin No. 121,541,0,0
+47012,Broadview,541,0,1
+47012,Midale,510,0,1
+47012,Ochapowace 71,501,0,0
+47012,Moose Mountain No. 63,489,0,0
+47012,Yellow Grass,483,0,1
+47012,Antler No. 61,451,0,0
+47012,Benson No. 35,450,0,0
+47012,Montmartre,450,0,1
+47012,Griffin No. 66,430,0,0
+47012,Enniskillen No. 3,422,0,0
+47012,Mount Pleasant No. 2,419,0,0
+47012,Excel No. 71,411,0,0
+47012,Rockglen,399,0,1
+47012,Kingsley No. 124,396,0,0
+47012,Elcapo No. 154,392,0,0
+47012,Vibank,386,0,1
+47012,Stonehenge No. 73,385,0,0
+47012,Ogema,383,0,1
+47012,Sedley,367,0,1
+47012,Wolseley No. 155,366,0,0
+47012,Browning No. 34,355,0,0
+47012,Silverwood No. 123,355,0,0
+47012,Old Post No. 43,352,0,0
+47012,Reciprocity No. 32,351,0,0
+47012,Montmartre No. 126,350,0,0
+47012,Alameda,345,0,1
+47012,Chester No. 125,333,0,0
+47012,Bengough,332,0,1
+47012,Argyle No. 1,331,0,0
+47012,Coalfields No. 4,330,0,0
+47012,Maryfield,311,0,1
+47012,Brokenshell No. 68,307,0,0
+47012,Moose Creek No. 33,306,0,0
+47012,Storthoaks No. 31,306,0,0
+47012,Manor,305,0,1
+47012,Bengough No. 40,305,0,0
+47012,Willow Bunch,299,0,1
+47012,Walpole No. 92,292,0,0
+47012,Golden West No. 95,289,0,0
+47012,Willow Bunch No. 42,285,0,0
+47012,Fillmore,282,0,1
+47012,Wapella,278,0,1
+47012,Cambria No. 6,277,0,0
+47012,Lomond No. 37,275,0,0
+47012,Wellington No. 97,274,0,0
+47012,Macoun,272,0,1
+47012,Lake Alma No. 8,269,0,0
+47012,Hart Butte No. 11,263,0,0
+47012,Maryfield No. 91,258,0,0
+47012,Tecumseh No. 65,255,0,0
+47012,Martin No. 122,254,0,0
+47012,Laurier No. 38,253,0,0
+47012,Brock No. 64,252,0,0
+47012,Lake of the Rivers No. 72,252,0,0
+47012,Key West No. 70,251,0,0
+47012,Sakimay 74,250,0,0
+47012,Willowdale No. 153,248,0,0
+47012,Hazelwood No. 94,244,0,0
+47012,Pangman,238,0,1
+47012,Kenosee Lake,236,0,1
+47012,Norton No. 69,233,0,0
+47012,Kennedy,232,0,1
+47012,Gainsborough,227,0,1
+47012,Fillmore No. 96,224,0,0
+47012,Souris Valley No. 7,220,0,0
+47012,Odessa,220,0,1
+47012,Torquay,215,0,1
+47012,Scott No. 98,215,0,0
+47012,Surprise Valley No. 9,211,0,0
+47012,Windthorst,194,0,1
+47012,Poplar Valley No. 12,190,0,0
+47012,Francis,182,0,1
+47012,The Gap No. 39,181,0,0
+47012,Glenavon,179,0,1
+47012,Lang,176,0,1
+47012,Ocean Man 69,164,0,0
+47012,Glen Ewen,159,0,1
+47012,Kisbey,158,0,1
+47012,Frobisher,127,0,1
+47012,Happy Valley No. 10,125,0,0
+47012,McTaggart,125,0,1
+47012,Limerick,114,0,1
+47012,North Portal,113,0,1
+47012,Halbrite,110,0,1
+47012,Alida,103,0,1
+47012,Creelman,103,0,1
+47012,Shesheep 74A,98,0,0
+47012,Ceylon,97,0,1
+47012,Storthoaks,86,0,1
+47012,Carievale,85,0,1
+47012,Roche Percée,75,0,1
+47012,Pheasant Rump Nakota 68,72,0,0
+47012,Fleming,70,0,1
+47012,Kendal,59,0,1
+47012,Minton,50,0,1
+47012,Goodwater,40,0,1
+47012,Forget,35,0,1
+47012,Heward,30,0,1
+47012,Fairlight,25,0,1
+47012,Tribune,25,0,1
+47012,Osage,25,0,1
+47012,Wood Mountain,20,0,1
+47012,Ocean Man 69C,15,0,0
+47012,Ocean Man 69E,10,0,0
+47012,Ocean Man 69A,5,0,0
+47012,Ocean Man 69F,5,0,0
+47012,Ocean Man 69I,5,0,0
+47012,Ocean Man 69H,5,0,0
+47012,Ochapowace 71-10,5,0,0
+47013,Swift Current,16750,0,1
+47013,Kindersley,4567,0,1
+47013,Rosetown,2507,0,1
+47013,Maple Creek,2176,0,1
+47013,Biggar,2133,0,1
+47013,Swift Current No. 137,1995,0,0
+47013,Shaunavon,1784,0,1
+47013,Macklin,1247,0,1
+47013,Maple Creek No. 111,1167,0,0
+47013,Kindersley No. 290,1003,0,0
+47013,Eston,972,0,1
+47013,Kerrobert,970,0,1
+47013,Gull Lake,908,0,1
+47013,Leader,881,0,1
+47013,Excelsior No. 166,808,0,0
+47013,Biggar No. 347,805,0,0
+47013,Lacadena No. 228,787,0,0
+47013,Herbert,770,0,1
+47013,Coulee No. 136,669,0,0
+47013,Montrose No. 315,647,0,0
+47013,Eastend,607,0,1
+47013,Fertile Valley No. 285,604,0,0
+47013,Ponteix,577,0,1
+47013,Webb No. 138,567,0,0
+47013,Lac Pelletier No. 107,563,0,0
+47013,Luseland,559,0,1
+47013,Eye Hill No. 382,552,0,0
+47013,Whiska Creek No. 106,512,0,0
+47013,Eatonia,498,0,1
+47013,Perdue No. 346,471,0,0
+47013,Elrose,470,0,1
+47013,Wood River No. 74,466,0,0
+47013,Carmichael No. 109,462,0,0
+47013,St. Andrews No. 287,461,0,0
+47013,Riverside No. 168,436,0,0
+47013,Victory No. 226,434,0,0
+47013,Saskatchewan Landing No. 167,434,0,0
+47013,Monet No. 257,432,0,0
+47013,Val Marie No. 17,425,0,0
+47013,Chesterfield No. 261,419,0,0
+47013,Cabri,413,0,1
+47013,Kyle,413,0,1
+47013,Snipe Lake No. 259,410,0,0
+47013,Tramping Lake No. 380,402,0,0
+47013,Coteau No. 255,401,0,0
+47013,Morse No. 165,396,0,0
+47013,Grass Lake No. 381,389,0,0
+47013,Auvergne No. 76,381,0,0
+47013,Miry Creek No. 229,378,0,0
+47013,Lafleche,373,0,1
+47013,Frontier,364,0,1
+47013,Bone Creek No. 108,362,0,0
+47013,Arlington No. 79,359,0,0
+47013,Mountain View No. 318,358,0,0
+47013,Lawtonia No. 135,356,0,0
+47013,Newcombe No. 260,356,0,0
+47013,White Valley No. 49,352,0,0
+47013,Marriott No. 317,349,0,0
+47013,Frontier No. 19,347,0,0
+47013,Fox Valley No. 171,344,0,0
+47013,Winslow No. 319,344,0,0
+47013,Reno No. 51,343,0,0
+47013,Grassy Creek No. 78,341,0,0
+47013,Perdue,313,0,1
+47013,Burstall,302,0,1
+47013,Pleasant Valley No. 288,301,0,0
+47013,Waverley No. 44,295,0,0
+47013,Waldeck,294,0,1
+47013,Mariposa No. 350,291,0,0
+47013,Mankota No. 45,289,0,0
+47013,Happyland No. 231,285,0,0
+47013,Piapot No. 110,280,0,0
+47013,Milden No. 286,280,0,0
+47013,Coleville,280,0,1
+47013,Lucky Lake,270,0,1
+47013,Dinsmore,267,0,1
+47013,Progress No. 351,265,0,0
+47013,Fox Valley,259,0,1
+47013,Pinto Creek No. 75,251,0,0
+47013,Milton No. 292,249,0,0
+47013,Prairiedale No. 321,246,0,0
+47013,Heart's Hill No. 352,234,0,0
+47013,Grandview No. 349,230,0,0
+47013,Reford No. 379,222,0,0
+47013,Morse,216,0,1
+47013,Oakdale No. 320,216,0,0
+47013,Dodsland,215,0,1
+47013,Beechy,209,0,1
+47013,Deer Forks No. 232,208,0,0
+47013,Harris No. 316,205,0,0
+47013,Pittville No. 169,201,0,0
+47013,Mankota,198,0,1
+47013,Glen Bain No. 105,195,0,0
+47013,Harris,190,0,1
+47013,Wise Creek No. 77,188,0,0
+47013,Gull Lake No. 139,185,0,0
+47013,Vanguard,184,0,1
+47013,King George No. 256,178,0,0
+47013,Rosemount No. 378,175,0,0
+47013,Coteau Beach,170,0,1
+47013,Nekaneet Cree Nation,169,0,0
+47013,Clinworth No. 230,168,0,0
+47013,Conquest,167,0,1
+47013,Tompkins,153,0,1
+47013,Milden,153,0,1
+47013,Big Stick No. 141,148,0,0
+47013,Hodgeville,147,0,1
+47013,Canaan No. 225,145,0,0
+47013,Lone Tree No. 18,140,0,0
+47013,Denzil,140,0,1
+47013,Climax,137,0,1
+47013,Brock,134,0,1
+47013,Flaxcombe,134,0,1
+47013,Landis,133,0,1
+47013,Plenty,128,0,1
+47013,Antelope Park No. 322,124,0,0
+47013,Kincaid,120,0,1
+47013,Val Marie,120,0,1
+47013,Pennant,120,0,1
+47013,Richmound,118,0,1
+47013,Cadillac,116,0,1
+47013,Prelate,116,0,1
+47013,Enterprise No. 142,110,0,0
+47013,Stewart Valley,107,0,1
+47013,Abbey,100,0,1
+47013,Hazlet,90,0,1
+47013,Neville,88,0,1
+47013,Beaver Flat,82,0,1
+47013,Sceptre,78,0,1
+47013,Glen McPherson No. 46,76,0,0
+47013,Hazenmore,75,0,1
+47013,Zealandia,75,0,1
+47013,Marengo,75,0,1
+47013,Scott,74,0,1
+47013,Webb,71,0,1
+47013,Macrorie,65,0,1
+47013,Wiseton,64,0,1
+47013,Kinley,60,0,1
+47013,Lancer,58,0,1
+47013,Rush Lake,55,0,1
+47013,Consul,50,0,1
+47013,Success,45,0,1
+47013,Major,35,0,1
+47013,Tramping Lake,35,0,1
+47013,Primate,35,0,1
+47013,Golden Prairie,30,0,1
+47013,Mendham,25,0,1
+47013,Tessier,25,0,1
+47013,Netherhill,25,0,1
+47013,Smiley,25,0,1
+47013,Bracken,20,0,1
+47013,Ernfold,20,0,1
+47013,Wood Mountain 160,16,0,0
+47014,Yorkton,16280,0,1
+47014,Melville,4493,0,1
+47014,Esterhazy,2345,0,1
+47014,Canora,2092,0,1
+47014,Orkney No. 244,1883,0,0
+47014,Kamsack,1779,0,1
+47014,Hudson Bay,1403,0,1
+47014,Wadena,1269,0,1
+47014,Langenburg,1228,0,1
+47014,Foam Lake,1183,0,1
+47014,Preeceville,1062,0,1
+47014,Preeceville No. 334,966,0,0
+47014,Carrot River,946,0,1
+47014,Moose Range No. 486,942,0,0
+47014,Good Lake No. 274,930,0,0
+47014,Bjorkdale No. 426,906,0,0
+47014,Cana No. 214,904,0,0
+47014,Wallace No. 243,881,0,0
+47014,Churchbridge,866,0,1
+47014,Kelvington,827,0,1
+47014,Porcupine Plain,817,0,1
+47014,Sasman No. 336,813,0,0
+47014,Cote 64,799,0,0
+47014,Saltcoats No. 213,743,0,0
+47014,Porcupine No. 395,736,0,0
+47014,Fertile Belt No. 183,727,0,0
+47014,Watson,707,0,1
+47014,Naicam,651,0,1
+47014,Sturgis,646,0,1
+47014,Clayton No. 333,631,0,0
+47014,Cote No. 271,616,0,0
+47014,Keeseekoose 66,599,0,0
+47014,Pleasantdale No. 398,599,0,0
+47014,Churchbridge No. 211,584,0,0
+47014,Langenburg No. 181,561,0,0
+47014,Keys No. 303,548,0,0
+47014,Grayson No. 184,547,0,0
+47014,Foam Lake No. 276,532,0,0
+47014,Hazel Dell No. 335,511,0,0
+47014,Fishing Lake 89,506,0,0
+47014,Barrier Valley No. 397,485,0,0
+47014,Springside,478,0,1
+47014,Yellowquill 90,475,0,0
+47014,Saltcoats,473,0,1
+47014,Sliding Hills No. 273,438,0,0
+47014,Norquay,420,0,1
+47014,Spalding No. 368,420,0,0
+47014,Ponass Lake No. 367,416,0,0
+47014,McLeod No. 185,401,0,0
+47014,Lakeside No. 338,396,0,0
+47014,Bredenbury,386,0,1
+47014,Spy Hill No. 152,383,0,0
+47014,Quill Lake,377,0,1
+47014,Elfros No. 307,373,0,0
+47014,Garry No. 245,370,0,0
+47014,Lakeview No. 337,366,0,0
+47014,Kelvington No. 366,366,0,0
+47014,Calder No. 241,344,0,0
+47014,Arborfield No. 456,338,0,0
+47014,Buchanan No. 304,330,0,0
+47014,Stockholm,329,0,1
+47014,Theodore,315,0,1
+47014,Insinger No. 275,305,0,0
+47014,Kinistin 91,304,0,0
+47014,Arborfield,285,0,1
+47014,Livingston No. 331,281,0,0
+47014,Neudorf,272,0,1
+47014,Invermay,272,0,1
+47014,Invermay No. 305,269,0,0
+47014,Lemberg,266,0,1
+47014,Rose Valley,256,0,1
+47014,Pelly,255,0,1
+47014,Buchanan,237,0,1
+47014,Spalding,213,0,1
+47014,St. Philips No. 301,200,0,0
+47014,Ebenezer,188,0,1
+47014,Grayson,185,0,1
+47014,Spy Hill,173,0,1
+47014,Archerwill,153,0,1
+47014,Bird's Point,150,0,1
+47014,Lintlaw,150,0,1
+47014,Rhein,149,0,1
+47014,Bjorkdale,147,0,1
+47014,The Key 65,144,0,0
+47014,Tobin Lake,139,0,1
+47014,Gerald,129,0,1
+47014,Sheho,122,0,1
+47014,Leslie Beach,110,0,1
+47014,Elfros,90,0,1
+47014,Stenen,89,0,1
+47014,Hyas,89,0,1
+47014,Tantallon,84,0,1
+47014,Togo,83,0,1
+47014,Calder,81,0,1
+47014,Pleasantdale,80,0,1
+47014,Endeavour,75,0,1
+47014,Dubuc,71,0,1
+47014,Rama,70,0,1
+47014,Yellow Quill 90-9,66,0,0
+47014,Margo,65,0,1
+47014,Killaly,58,0,1
+47014,Melville Beach,54,0,1
+47014,Chorney Beach,51,0,1
+47014,MacNutt,50,0,1
+47014,Weekes,50,0,1
+47014,Yarbo,48,0,1
+47014,Fenwood,42,0,1
+47014,West End,41,0,1
+47014,Little Bone 74B,41,0,0
+47014,Bangor,40,0,1
+47014,Goodeve,40,0,1
+47014,Fosston,40,0,1
+47014,Mistatim,30,0,1
+47014,Atwater,27,0,1
+47014,Duff,25,0,1
+47014,Keeseekoose 66A,25,0,0
+47014,Arran,20,0,1
+47014,Keeseekoose 66-KE-05,20,0,0
+47014,Waldron,15,0,1
+47014,Keeseekoose 66-CA-05,5,0,0
+48001,Airdrie,74100,0,1
+48001,Cochrane,32199,0,1
+48002,Camrose,18772,0,1
+48002,Camrose County,8504,0,0
+48002,Drumheller,7909,0,1
+48002,Wainwright,6606,0,1
+48002,Beaver County,5868,0,0
+48002,Stettler,5695,0,1
+48002,Stettler County No. 6,5666,0,0
+48002,Kneehill County,4992,0,0
+48002,Wainwright No. 61,4276,0,0
+48002,Flagstaff County,3694,0,0
+48002,Three Hills,3042,0,1
+48002,Hanna,2394,0,1
+48002,Provost No. 52,2071,0,0
+48002,Tofield,2045,0,1
+48002,Paintearth County No. 18,1990,0,0
+48002,Provost,1900,0,1
+48002,Special Area No. 2,1860,0,0
+48002,Starland County,1821,0,0
+48002,Special Area No. 4,1236,0,0
+48002,Special Area No. 3,1142,0,0
+48002,Trochu,998,0,1
+48002,Viking,986,0,1
+48002,Killam,918,0,1
+48002,Oyen,917,0,1
+48002,Coronation,868,0,1
+48002,Bashaw,848,0,1
+48002,Forestburg,807,0,1
+48002,Castor,803,0,1
+48002,Daysland,789,0,1
+48002,Sedgewick,761,0,1
+48002,Linden,704,0,1
+48002,Consort,644,0,1
+48002,Acme,606,0,1
+48002,Hardisty,548,0,1
+48002,Acadia No. 34,494,0,0
+48002,Carbon,492,0,1
+48002,Ryley,484,0,1
+48002,Irma,477,0,1
+48002,Hay Lakes,456,0,1
+48002,Bawlf,412,0,1
+48002,Edgerton,385,0,1
+48002,Holden,338,0,1
+48002,Big Valley,331,0,1
+48002,Chauvin,304,0,1
+48002,Czar,248,0,1
+48002,Donalda,226,0,1
+48002,Lougheed,225,0,1
+48002,Amisk,219,0,1
+48002,Bittern Lake,216,0,1
+48002,Veteran,214,0,1
+48002,Hughenden,213,0,1
+48002,Morrin,205,0,1
+48002,White Sands,174,0,1
+48002,Youngstown,171,0,1
+48002,Munson,170,0,1
+48002,Alliance,166,0,1
+48002,Rosalind,162,0,1
+48002,Delia,152,0,1
+48002,Empress,148,0,1
+48002,Heisler,135,0,1
+48002,Edberg,126,0,1
+48002,Rochon Sands,97,0,1
+48002,Halkirk,92,0,1
+48003,Rocky View County,41028,0,0
+48003,Chestermere,22163,0,1
+48003,Brooks,14924,0,1
+48003,Strathmore,14339,0,1
+48003,Taber,8862,0,1
+48003,Wheatland County,8738,0,0
+48003,Newell County,7465,0,0
+48003,Taber,7447,0,1
+48003,Vulcan County,4237,0,0
+48003,Siksika 146,3576,0,0
+48003,Vauxhall,1286,0,1
+48003,Bassano,1216,0,1
+48003,Irricana,1179,0,1
+48003,Duchess,1053,0,1
+48003,Barnwell,978,0,1
+48003,Beiseker,754,0,1
+48003,Rockyford,395,0,1
+48003,Rosemary,370,0,1
+48003,Standard,353,0,1
+48003,Champion,351,0,1
+48003,Carmangay,269,0,1
+48003,Arrowwood,188,0,1
+48003,Lomond,178,0,1
+48003,Hussar,164,0,1
+48003,Milo,136,0,1
+48004,Calgary,1306784,1,0
+48022,Edmonton,1010899,1,0
+48024,Okotoks,30405,0,1
+48024,Foothills County,23199,0,0
+48024,High River,14324,0,1
+48024,Willow Creek No. 26,6081,0,0
+48024,Crowsnest Pass,5695,0,1
+48024,Blood 148,4572,0,0
+48024,Claresholm,3804,0,1
+48024,Pincher Creek,3622,0,1
+48024,Fort Macleod,3297,0,1
+48024,Pincher Creek No. 9,3240,0,0
+48024,Black Diamond,2730,0,1
+48024,Turner Valley,2611,0,1
+48024,Nanton,2167,0,1
+48024,Vulcan,1769,0,1
+48024,Piikani 147,1550,0,0
+48024,Stavely,544,0,1
+48024,Longview,297,0,1
+48024,Glenwood,272,0,1
+48024,Cowley,216,0,1
+48024,Hill Spring,168,0,1
+48024,Improvement District No. 4 Waterton,158,0,0
+48024,Ranchland No. 66,110,0,0
+48024,"Peigan Timber Limit ""B""",16,0,0
+48025,Wood Buffalo,72326,0,1
+48025,Cold Lake,15661,0,1
+48025,Lac la Biche County,7673,0,0
+48025,Opportunity No. 17,3382,0,0
+48025,Improvement District No. 24 Wood Buffalo,706,0,0
+48025,Cold Lake 149,671,0,0
+48025,Wabasca 166D,640,0,0
+48025,Fort Mckay 174,621,0,0
+48025,Wabasca 166A,559,0,0
+48025,Beaver Lake 131,401,0,0
+48025,Janvier 194,360,0,0
+48025,Heart Lake 167,211,0,0
+48025,Jean Baptiste Gambler 183,210,0,0
+48025,Gregoire Lake 176,203,0,0
+48025,Cold Lake 149B,181,0,0
+48025,Wabasca 166C,179,0,0
+48025,Wabasca 166,158,0,0
+48025,Gregoire Lake 176A,129,0,0
+48025,Desmarais,116,0,1
+48025,Allison Bay 219,113,0,0
+48025,Wabasca 166B,89,0,0
+48025,Dog Head 218,85,0,0
+48025,Cold Lake 149A,68,0,0
+48025,Improvement District No. 349,15,0,0
+48026,Grande Prairie,64141,0,1
+48026,Grande Prairie County No. 1,23769,0,0
+48026,Northern Lights County,4152,0,0
+48026,Clear Hills,3006,0,1
+48026,Sexsmith,2427,0,1
+48026,Saddle Hills County,2338,0,0
+48026,Beaverlodge,2271,0,1
+48026,Wembley,1432,0,1
+48026,Sturgeon Lake 154,1291,0,0
+48026,Manning,1126,0,1
+48026,Hythe,854,0,1
+48026,Spirit River,849,0,1
+48026,Spirit River No. 133,649,0,0
+48026,Rycroft,550,0,1
+48026,Horse Lakes 152B,489,0,0
+48026,Hines Creek,335,0,1
+48026,Sturgeon Lake 154A,39,0,0
+48027,Lloydminster (Part),19739,0,0
+48027,Bonnyville No. 87,12897,0,0
+48027,Vermilion River County,7994,0,0
+48027,Athabasca County,6959,0,0
+48027,Bonnyville,6404,0,1
+48027,St. Paul County No. 19,6306,0,0
+48027,St. Paul,5863,0,1
+48027,Vegreville,5689,0,1
+48027,Vermilion,3948,0,1
+48027,Smoky Lake County,3874,0,0
+48027,Lamont County,3754,0,0
+48027,Two Hills County No. 21,3412,0,0
+48027,Thorhild County,3042,0,0
+48027,Minburn County No. 27,3014,0,0
+48027,Athabasca,2759,0,1
+48027,Lamont,1744,0,1
+48027,Two Hills,1416,0,1
+48027,Elk Point,1399,0,1
+48027,Bruderheim,1329,0,1
+48027,Smoky Lake,1127,0,1
+48027,White Fish Lake 128,1093,0,0
+48027,Kehewin 123,1038,0,0
+48027,Unipouheos 121,875,0,0
+48027,Kitscoty,852,0,1
+48027,Boyle,825,0,1
+48027,Mannville,765,0,1
+48027,Mundare,689,0,1
+48027,Puskiakiwenin 122,564,0,0
+48027,Marwayne,543,0,1
+48027,Andrew,366,0,1
+48027,Glendon,338,0,1
+48027,Vilna,268,0,1
+48027,Myrnam,257,0,1
+48027,Waskatenau,247,0,1
+48027,Chipman,246,0,1
+48027,Innisfree,187,0,1
+48027,Island Lake,174,0,1
+48027,Pelican Narrows,158,0,1
+48027,Paradise Valley,153,0,1
+48027,Makaoo (Part) 120,141,0,0
+48027,Whispering Hills,128,0,1
+48027,Bondiss,124,0,1
+48027,Mewatha Beach,103,0,1
+48027,Horseshoe Bay,81,0,1
+48027,Island Lake South,81,0,1
+48027,Bonnyville Beach,70,0,1
+48027,South Baptiste,70,0,1
+48027,Sunset Beach,55,0,1
+48027,West Baptiste,46,0,1
+48028,Leduc,34094,0,1
+48028,Beaumont,20888,0,1
+48028,Leduc County,14416,0,0
+48028,Wetaskiwin,12594,0,1
+48028,Wetaskiwin County No. 10,11212,0,0
+48028,Devon,6545,0,1
+48028,Samson 137,3252,0,0
+48028,Ermineskin 138,2256,0,0
+48028,Calmar,2183,0,1
+48028,Millet,1890,0,1
+48028,Louis Bull 138B,1321,0,0
+48028,Thorsby,967,0,1
+48028,Warburg,676,0,1
+48028,Montana 139,598,0,0
+48028,Pigeon Lake 138A,285,0,0
+48028,Golden Days,248,0,1
+48028,Ma-Me-O Beach,162,0,1
+48028,Grandview,143,0,1
+48028,Poplar Bay,113,0,1
+48028,Crystal Springs,74,0,1
+48028,Norris Beach,71,0,1
+48028,Silver Beach,55,0,1
+48028,Sundance Beach,42,0,1
+48028,Argentia Beach,39,0,1
+48028,Itaska Beach,30,0,1
+48028,Samson 137A,19,0,0
+48029,Lethbridge,98406,0,1
+48029,Lethbridge County,10120,0,0
+48029,Coaldale,8771,0,1
+48029,Coalhurst,2869,0,1
+48029,Picture Butte,1930,0,1
+48029,Nobleford,1438,0,1
+48029,Barons,313,0,1
+48030,Medicine Hat,63271,0,1
+48030,Cypress County,7524,0,0
+48030,Redcliff,5581,0,1
+48030,Cardston County,4856,0,0
+48030,Warner County No. 5,4290,0,0
+48030,Raymond,4199,0,1
+48030,Cardston,3724,0,1
+48030,Forty Mile County No. 8,3471,0,0
+48030,Magrath,2481,0,1
+48030,Bow Island,2036,0,1
+48030,Stirling,1164,0,1
+48030,Milk River,824,0,1
+48030,Foremost,630,0,1
+48030,Warner,364,0,1
+48030,Coutts,224,0,1
+48031,Spruce Grove,37645,0,1
+48031,Parkland County,32205,0,0
+48031,Stony Plain,17993,0,1
+48031,Drayton Valley,7291,0,1
+48031,Brazeau County,7179,0,0
+48031,Enoch Cree Nation,1825,0,0
+48031,Mayerthorpe,1259,0,1
+48031,Wabamun 133A,981,0,0
+48031,Spring Lake,711,0,1
+48031,Breton,567,0,1
+48031,Seba Beach,229,0,1
+48031,Lakeview,29,0,1
+48031,Betula Beach,27,0,1
+48031,Kapasiwin,24,0,1
+48031,Wabamun 133B,20,0,0
+48031,Point Alison,18,0,1
+48032,Mackenzie County,12804,0,0
+48032,Whitecourt,9927,0,1
+48032,Westlock County,7186,0,0
+48032,Slave Lake,6836,0,1
+48032,Peace River,6619,0,1
+48032,Barrhead County No. 11,5877,0,0
+48032,Big Lakes County,4986,0,0
+48032,Westlock,4921,0,1
+48032,Woodlands County,4558,0,0
+48032,Barrhead,4320,0,1
+48032,High Level,3922,0,1
+48032,Lesser Slave River No. 124,2861,0,0
+48032,Fairview,2817,0,1
+48032,Grimshaw,2601,0,1
+48032,Fox Lake 162,2488,0,0
+48032,High Prairie,2380,0,1
+48032,Northern Sunrise County,1711,0,0
+48032,Smoky River No. 130,1684,0,0
+48032,Valleyview,1673,0,1
+48032,Fox Creek,1639,0,1
+48032,Peace No. 135,1581,0,0
+48032,Fairview No. 136,1580,0,0
+48032,Birch Hills County,1516,0,0
+48032,Swan Hills,1201,0,1
+48032,Falher,1001,0,1
+48032,Hay Lake 209,957,0,0
+48032,Drift Pile River 150,775,0,0
+48032,Utikoomak Lake 155,734,0,0
+48032,Sucker Creek 150A,703,0,0
+48032,John D'Or Prairie 215,702,0,0
+48032,McLennan,695,0,1
+48032,Woodland Cree 226,655,0,0
+48032,Berwyn,577,0,1
+48032,Rainbow Lake,495,0,1
+48032,Bushe River 207,492,0,0
+48032,Loon Lake 235,487,0,0
+48032,Little Buffalo,441,0,1
+48032,Clyde,415,0,1
+48032,Swan River 150E,400,0,0
+48032,Upper Hay River 212,381,0,0
+48032,Nampa,367,0,1
+48032,Donnelly,338,0,1
+48032,Tall Cree 173,282,0,0
+48032,Girouxville,278,0,1
+48032,Tall Cree 173A,201,0,0
+48032,Child Lake 164A,172,0,0
+48032,Woodland Cree 228,161,0,0
+48032,Utikoomak Lake 155A,145,0,0
+48032,Boyer 164,123,0,0
+48032,Duncan's 151A,111,0,0
+48032,Kapawe'no First Nation 229,97,0,0
+48032,Fort Vermilion 173B,73,0,0
+48032,Larkspur,53,0,1
+48032,Kapawe'no First Nation 150B,42,0,0
+48032,Sawridge 150G,41,0,0
+48032,Woodland Cree 227,30,0,0
+48032,Beaver Ranch 163,15,0,0
+48032,Sawridge 150H,10,0,0
+48032,Alexander 134B,5,0,0
+48032,Kapawe'no First Nation 231,5,0,0
+48032,Kapawe'no First Nation 150D,5,0,0
+48033,Sylvan Lake,15995,0,1
+48033,Lacombe,13396,0,1
+48033,Mountain View County,12981,0,0
+48033,Blackfalds,10470,0,1
+48033,Lacombe County,10283,0,0
+48033,Ponoka County,9998,0,0
+48033,Olds,9209,0,1
+48033,Innisfail,7985,0,1
+48033,Ponoka,7331,0,1
+48033,Didsbury,5070,0,1
+48033,Rimbey,2470,0,1
+48033,Bowden,1280,0,1
+48033,Bentley,1042,0,1
+48033,Eckville,1014,0,1
+48033,Clive,775,0,1
+48033,Alix,774,0,1
+48033,Norglenwold,306,0,1
+48033,Gull Lake,226,0,1
+48033,Jarvis Bay,213,0,1
+48033,Birchcliff,211,0,1
+48033,Parkland Beach,168,0,1
+48033,Sunbreaker Cove,131,0,1
+48033,Half Moon Bay,65,0,1
+48034,Red Deer,100844,0,1
+48034,Red Deer County,19933,0,0
+48034,Penhold,3484,0,1
+48034,Delburne,919,0,1
+48034,Elnora,288,0,1
+48035,Strathcona County,99225,0,0
+48035,Fort Saskatchewan,27088,0,1
+48036,St. Albert,68232,0,1
+48036,Sturgeon County,20061,0,0
+48036,Lac Ste. Anne County,10832,0,0
+48036,Morinville,10385,0,1
+48036,Gibbons,3218,0,1
+48036,Redwater,2115,0,1
+48036,Bon Accord,1461,0,1
+48036,Legal,1232,0,1
+48036,Alexander 134,1077,0,0
+48036,Onoway,966,0,1
+48036,Alberta Beach,864,0,1
+48036,Alexis 133,770,0,0
+48036,Sandy Beach,278,0,1
+48036,Sunset Point,257,0,1
+48036,West Cove,222,0,1
+48036,Silver Sands,214,0,1
+48036,Val Quentin,158,0,1
+48036,Sunrise Beach,153,0,1
+48036,Ross Haven,126,0,1
+48036,Yellowstone,117,0,1
+48036,Nakamun Park,78,0,1
+48036,South View,72,0,1
+48036,Birch Cove,67,0,1
+48036,Castle Island,15,0,1
+48037,Canmore,15990,0,1
+48037,Clearwater County,11865,0,0
+48037,Yellowhead County,10426,0,0
+48037,Hinton,9817,0,1
+48037,Greenview No. 16,8584,0,0
+48037,Edson,8374,0,1
+48037,Banff,8305,0,1
+48037,Rocky Mountain House,6765,0,1
+48037,Carstairs,4898,0,1
+48037,Jasper,4738,0,1
+48037,Crossfield,3599,0,1
+48037,Sundre,2672,0,1
+48037,Bighorn No. 8,1598,0,0
+48037,Improvement District No. 9 Banff,1004,0,0
+48037,O'Chiese 203,804,0,0
+48037,Sunchild 202,644,0,0
+48037,Caroline,470,0,1
+48037,Cremona,437,0,1
+48037,Kananaskis,156,0,1
+48037,Ghost Lake,82,0,1
+48037,Waiparous,57,0,1
+48037,Burnstick Lake,21,0,1
+59001,Matsqui 4,456,0,0
+59002,Burnaby,249125,1,0
+59003,North Vancouver,88168,0,1
+59003,Burrard Inlet 3,2373,0,0
+59003,Seymour Creek 2,105,0,0
+59004,Prince George,76708,0,1
+59004,Williams Lake,10947,0,1
+59004,Quesnel,9889,0,1
+59004,Cariboo A,6169,0,0
+59004,Cariboo G,5312,0,0
+59004,Cariboo F,4792,0,0
+59004,Cariboo L,4769,0,0
+59004,Vanderhoof,4346,0,1
+59004,Cariboo E,4112,0,0
+59004,Cariboo B,3864,0,0
+59004,Fraser-Fort George C,3603,0,0
+59004,Bulkley-Nechako F,3517,0,0
+59004,Cariboo D,2870,0,0
+59004,One Hundred Mile House,1928,0,1
+59004,Cariboo H,1884,0,0
+59004,Cariboo I,1485,0,0
+59004,Cariboo C,1239,0,0
+59004,Cariboo J,616,0,0
+59004,Fraser-Fort George E,533,0,0
+59004,Cariboo K,447,0,0
+59004,Anahim's Flat 1,437,0,0
+59004,Alkali Lake 1,358,0,0
+59004,Stony Creek 1,323,0,0
+59004,Williams Lake 1,248,0,0
+59004,Stone 1,219,0,0
+59004,Wells,218,0,1
+59004,Redstone Flat 1,181,0,0
+59004,Squinas 2,137,0,0
+59004,Ulkatcho 14A,116,0,0
+59004,Deep Creek 2,111,0,0
+59004,Quesnel 1,110,0,0
+59004,Toosey 1,104,0,0
+59004,Dog Creek 1,88,0,0
+59004,Nazco 20,81,0,0
+59004,Kluskus 1,38,0,0
+59004,Soda Creek 1,30,0,0
+59004,Little Springs,20,0,1
+59004,Dog Creek 2,17,0,0
+59004,Laketown 3,16,0,0
+59004,Towdystan Lake 3,15,0,0
+59004,Dragon Lake 3,15,0,0
+59004,Johny Sticks 2,10,0,0
+59004,Fishtrap 19,10,0,0
+59004,Anahim's Meadow,10,0,1
+59004,Alexis Creek 14,5,0,0
+59004,Puntzi Lake 2,5,0,0
+59004,Thomas Squinas Ranch 2A,5,0,0
+59004,Windy Mouth 7,5,0,0
+59004,Euchinico Creek 17,5,0,0
+59004,Alkali Lake 4A,5,0,0
+59004,Michel Gardens 36,5,0,0
+59005,Chilliwack,93203,0,1
+59005,Hope,6686,0,1
+59005,Tzeachten 13,3089,0,0
+59005,Fraser Valley H,2459,0,0
+59005,Fraser Valley D,2092,0,0
+59005,Fraser Valley E,1568,0,0
+59005,Skowkale,983,0,1
+59005,Fraser Valley B,869,0,0
+59005,Seabird Island,800,0,1
+59005,Fraser Valley A,495,0,0
+59005,Kwawkwawapilt 6,295,0,0
+59005,Soowahlie 14,255,0,0
+59005,Skwah 4,245,0,0
+59005,Cheam 1,207,0,0
+59005,Chawathil 4,182,0,0
+59005,Squiaala,158,0,1
+59005,Ohamil 1,150,0,0
+59005,Skway 5,89,0,0
+59005,Stullawheets 8,76,0,0
+59005,Schkam 2,62,0,0
+59005,Spuzzum 1,55,0,0
+59005,Lukseetsissum 9,52,0,0
+59005,Yakweakwioose 12,49,0,0
+59005,Aitchelitch 9,45,0,0
+59005,Kopchitchin 2,41,0,0
+59005,Albert Flat 5,41,0,0
+59005,Tuckkwiowhum 1,31,0,0
+59005,Ruby Creek 2,19,0,0
+59005,Tseatah 2,15,0,0
+59005,Puckatholetchin 11,10,0,0
+59005,Skawahlook 1,10,0,0
+59005,Yale Town 1,5,0,0
+59005,Kahmoose 4,5,0,0
+59005,Schelowat 1,5,0,0
+59005,Bucktum 4,5,0,0
+59006,Surrey,568322,1,0
+59006,Langley,28963,0,1
+59007,Cranbrook,20499,0,1
+59007,Nelson,11106,0,1
+59007,Kimberley,8115,0,1
+59007,Trail,7920,0,1
+59007,East Kootenay C,6536,0,0
+59007,Fernie,6320,0,1
+59007,Creston,5583,0,1
+59007,Central Kootenay B,4802,0,0
+59007,Sparwood,4148,0,1
+59007,Central Kootenay F,4116,0,0
+59007,Invermere,3917,0,1
+59007,Central Kootenay E,3897,0,0
+59007,East Kootenay F,3521,0,0
+59007,Elkford,2749,0,1
+59007,Central Kootenay A,2241,0,0
+59007,East Kootenay B,2011,0,0
+59007,Fruitvale,1958,0,1
+59007,East Kootenay A,1875,0,0
+59007,East Kootenay E,1686,0,0
+59007,East Kootenay G,1654,0,0
+59007,Central Kootenay G,1650,0,0
+59007,Kootenay Boundary A,1624,0,0
+59007,Central Kootenay C,1475,0,0
+59007,Central Kootenay D,1462,0,0
+59007,Radium Hot Springs,1339,0,1
+59007,Salmo,1140,0,1
+59007,Kaslo,1049,0,1
+59007,Montrose,1013,0,1
+59007,Canal Flats,802,0,1
+59007,Shuswap,319,0,1
+59007,Columbia Lake 3,149,0,0
+59007,Kootenay 1,145,0,0
+59007,Tobacco Plains 2,96,0,0
+59007,Creston 1,93,0,0
+59007,St. Mary's,10,0,1
+59007,Cassimayooks (Mayook) 5,5,0,0
+59008,Coquitlam,148625,1,0
+59008,Port Coquitlam,61498,0,1
+59008,Metro Vancouver A,18612,0,0
+59009,Courtenay,28420,0,1
+59009,Port Alberni,18259,0,1
+59009,Parksville,13642,0,1
+59009,Qualicum Beach,9303,0,1
+59009,Nanaimo F,8216,0,0
+59009,Nanaimo G,8109,0,0
+59009,Comox Valley A,7926,0,0
+59009,Nanaimo E,6765,0,0
+59009,Cumberland,4447,0,1
+59009,Nanaimo H,4291,0,0
+59009,Lantzville,3817,0,1
+59009,Alberni-Clayoquot E,2946,0,0
+59009,Tofino,2516,0,1
+59009,Ucluelet,2066,0,1
+59009,Alberni-Clayoquot F,1977,0,0
+59009,Alberni-Clayoquot D,1843,0,0
+59009,Alberni-Clayoquot C,875,0,0
+59009,Marktosis 15,760,0,0
+59009,Tsahaheh 1,596,0,0
+59009,Alberni-Clayoquot B,531,0,0
+59009,qathet E,498,0,0
+59009,Ittatsoo 1,321,0,0
+59009,Alberni-Clayoquot A,256,0,0
+59009,Nanoose,245,0,1
+59009,Opitsat 1,153,0,0
+59009,Ahahswinis 1,150,0,0
+59009,Anacla 12,104,0,0
+59009,Esowista 3,90,0,0
+59009,Qualicum,82,0,1
+59009,Macoah 1,27,0,0
+59009,Tin Wis 11,26,0,0
+59009,Klehkoot 2,15,0,0
+59009,Elhlateese 2,10,0,0
+59010,Langford,46584,0,1
+59010,North Cowichan,31990,0,1
+59010,Cowichan Valley B,8994,0,0
+59010,Juan de Fuca (Part 1),5132,0,0
+59010,Duncan,5047,0,1
+59010,Cowichan Valley C,5046,0,0
+59010,Cowichan Valley A,4949,0,0
+59010,Cowichan Valley E,4253,0,0
+59010,Cowichan Valley D,3530,0,0
+59010,Lake Cowichan,3325,0,1
+59010,Highlands,2482,0,1
+59010,Cowichan,2420,0,1
+59010,Cowichan Valley F,1804,0,0
+59010,Cowichan Valley I,1423,0,0
+59010,Penelakut Island 7,513,0,0
+59010,Juan de Fuca (Part 2),399,0,0
+59010,Malachan 11,178,0,0
+59010,Malahat 11,165,0,0
+59010,Halalt 2,156,0,0
+59010,Tsussie 6,82,0,0
+59010,Gordon River 2,79,0,0
+59010,Theik 2,48,0,0
+59010,Squaw-Hay-One 11,29,0,0
+59010,Tzart-Lam 5,27,0,0
+59010,Est-Patrolas 4,26,0,0
+59010,Cowichan Lake,20,0,1
+59011,Delta,108455,0,1
+59011,Tsawwassen,2256,0,1
+59011,Musqueam 4,10,0,0
+59012,Saanich,117735,0,1
+59012,Colwood,18961,0,1
+59012,Esquimalt,17533,0,1
+59012,Sooke,15086,0,1
+59012,View Royal,11575,0,1
+59012,Metchosin,5067,0,1
+59012,New Songhees 1A,1839,0,0
+59012,T'Sou-ke,230,0,1
+59012,Becher Bay 1,221,0,0
+59012,Esquimalt,120,0,1
+59014,Salmon Arm,19432,0,1
+59014,Columbia-Shuswap C,8919,0,0
+59014,Revelstoke,8275,0,1
+59014,Armstrong,5323,0,1
+59014,Spallumcheen,5307,0,1
+59014,Columbia-Shuswap D,4400,0,0
+59014,North Okanagan F,4362,0,0
+59014,Golden,3986,0,1
+59014,Columbia-Shuswap A,3325,0,0
+59014,Thompson-Nicola L (Grasslands),3321,0,0
+59014,Columbia-Shuswap F,3200,0,0
+59014,Enderby,3028,0,1
+59014,Sicamous,2613,0,1
+59014,Chase,2399,0,1
+59014,Columbia-Shuswap E,1388,0,0
+59014,Columbia-Shuswap B,663,0,0
+59014,Enderby 2,440,0,0
+59014,Sahhaltkum 4,316,0,0
+59014,Quaaout 1,284,0,0
+59014,Neskonlith,279,0,1
+59014,Switsemalph,209,0,1
+59014,Switsemalph 3,64,0,0
+59014,Chum Creek 2,53,0,0
+59014,North Bay 5,45,0,0
+59014,Hustalen 1,44,0,0
+59014,Scotch Creek 4,30,0,0
+59014,Stequmwhulpa 5,26,0,0
+59015,Kamloops,97902,0,1
+59015,Merritt,7051,0,1
+59015,Thompson-Nicola P (Rivers and the Peaks),4098,0,0
+59015,Kamloops 1,3915,0,0
+59015,Clearwater,2388,0,1
+59015,Lillooet,2302,0,1
+59015,Logan Lake,2255,0,1
+59015,Thompson-Nicola J (Copper Desert Country),1796,0,0
+59015,Barriere,1765,0,1
+59015,Ashcroft,1670,0,1
+59015,Thompson-Nicola M (Beautiful Nicola Valley - North),1637,0,0
+59015,Thompson-Nicola A (Wells Gray Country),1573,0,0
+59015,Thompson-Nicola O (Lower North Thompson),1523,0,0
+59015,Sun Peaks Mountain,1404,0,1
+59015,Thompson-Nicola E (Bonaparte Plateau),1162,0,0
+59015,Thompson-Nicola I (Blue Sky Country),1038,0,0
+59015,Cache Creek,969,0,1
+59015,Thompson-Nicola N (Beautiful Nicola Valley - South),717,0,0
+59015,Clinton,568,0,1
+59015,Nicola Mameet 1,513,0,0
+59015,Squamish-Lillooet B,373,0,0
+59015,Coldwater 1,350,0,0
+59015,Squamish-Lillooet A,305,0,0
+59015,Lillooet 1,285,0,0
+59015,Bridge River 1,242,0,0
+59015,Skeetchestn,242,0,1
+59015,Thompson-Nicola B (Thompson Headwaters),230,0,0
+59015,Slosh 1,215,0,0
+59015,Lytton,210,0,1
+59015,Inkluckcheen,190,0,1
+59015,Douglas Lake 3,188,0,0
+59015,North Thompson 1,181,0,0
+59015,Nooaitch 10,170,0,0
+59015,Bonaparte 3,159,0,0
+59015,Nicola Lake 1,148,0,0
+59015,Canoe Creek 2,104,0,0
+59015,Siska Flat,101,0,1
+59015,Nuuautin 2,101,0,0
+59015,Marble Canyon 3,97,0,0
+59015,Fountain 1,93,0,0
+59015,Klickkumcheen 18,82,0,0
+59015,Cayoosh Creek 1,66,0,0
+59015,Nekliptum 1,66,0,0
+59015,Chilhil 6,63,0,0
+59015,Fountain 1B,63,0,0
+59015,Lower Hat Creek 2,61,0,0
+59015,Joeyaska 2,58,0,0
+59015,Pashilqua 2,57,0,0
+59015,Stryen 9,57,0,0
+59015,Whispering Pines 4,57,0,0
+59015,Canoe Creek 1,56,0,0
+59015,Shackan 11,50,0,0
+59015,Pavilion 1,48,0,0
+59015,Ashcroft 4,42,0,0
+59015,Nicomen 1,41,0,0
+59015,Paul's Basin 2,35,0,0
+59015,Papyum 27,35,0,0
+59015,Nickeyeah 25,34,0,0
+59015,Klahkamich 17,33,0,0
+59015,Inklyuhkinatko 2,26,0,0
+59015,Fountain 1D,25,0,0
+59015,McCartney's Flat 4,24,0,0
+59015,Kitzowit 20,21,0,0
+59015,Zoht 4,20,0,0
+59015,Mission 5,19,0,0
+59015,Towinock 2,16,0,0
+59015,Kleetlekut 22,15,0,0
+59015,Upper Hat Creek 1,15,0,0
+59015,Upper Nepa 6,15,0,0
+59015,Louis Creek 4,15,0,0
+59015,Fountain 3,10,0,0
+59015,Fountain 12,10,0,0
+59015,Halhalaeden,10,0,1
+59015,Lytton 9A,10,0,0
+59015,Seah 5,10,0,0
+59015,Skuppah 4,10,0,0
+59015,Fountain 10,5,0,0
+59015,Necait 6,5,0,0
+59015,Nesikep 6,5,0,0
+59015,Lytton 4E,5,0,0
+59015,105 Mile Post 2,5,0,0
+59015,Nickel Palm 4,5,0,0
+59015,Nohomeen 23,5,0,0
+59015,Skwayaynope 26,5,0,0
+59015,Spintlum Flat 3,5,0,0
+59015,Nkaih 10,5,0,0
+59015,Yawaucht 11,5,0,0
+59015,Zacht 5,5,0,0
+59015,Entlqwekkinh 19,5,0,0
+59016,Kelowna,144576,1,0
+59016,Kootenay Boundary E / West Boundary,3004,0,0
+59017,Langley,132603,1,0
+59017,McMillan Island 6,96,0,0
+59017,Katzie 2,26,0,0
+59018,Abbotsford,153524,1,0
+59018,Kent,6300,0,1
+59018,Harrison Hot Springs,1905,0,1
+59018,Fraser Valley G,1692,0,0
+59018,Fraser Valley C,1133,0,0
+59018,Chehalis 5,500,0,0
+59018,Holachten 8,330,0,0
+59018,Upper Sumas 6,232,0,0
+59018,Skweahm 10,228,0,0
+59018,Lakahahmen 11,170,0,0
+59018,Squawkum Creek 3,130,0,0
+59018,Matsqui Main 2,119,0,0
+59018,Douglas 8,66,0,0
+59018,Q'alatkú7em,50,0,0
+59018,Skookumchuck 4,30,0,0
+59018,Scowlitz 1,5,0,0
+59018,Sachteen,5,0,1
+59019,Nanaimo,99863,0,1
+59019,Ladysmith,8990,0,1
+59019,Nanaimo A,7481,0,0
+59019,Nanaimo B,4500,0,0
+59019,Nanaimo C,3344,0,0
+59019,Cowichan Valley H,2603,0,0
+59019,Cowichan Valley G,2442,0,0
+59019,Chemainus 13,818,0,0
+59019,Nanaimo Town 1,386,0,0
+59019,Nanaimo River,323,0,1
+59019,Oyster Bay 12,105,0,0
+59019,Lyacksun 3,30,0,0
+59020,New Westminster,78916,0,1
+59021,Campbell River,35519,0,1
+59021,Comox,14806,0,1
+59021,Powell River,13943,0,1
+59021,Comox Valley C (Puntledge - Black Creek),9158,0,0
+59021,Comox Valley B (Lazo North),7392,0,0
+59021,Strathcona D (Oyster Bay - Buttle Lake),4153,0,0
+59021,Port Hardy,3902,0,1
+59021,Strathcona C,2737,0,0
+59021,Port McNeill,2356,0,1
+59021,qathet C,2197,0,0
+59021,qathet B,1664,0,0
+59021,qathet A,1250,0,0
+59021,Gold River,1246,0,1
+59021,qathet D,1126,0,0
+59021,Strathcona B,1059,0,0
+59021,Strathcona A,864,0,0
+59021,Sliammon 1,797,0,0
+59021,Mount Waddington C,764,0,0
+59021,Port Alice,739,0,1
+59021,Mount Waddington A,695,0,0
+59021,Campbell River 11,506,0,0
+59021,Tsulquate 4,451,0,0
+59021,Alert Bay,449,0,1
+59021,Tahsis,393,0,1
+59021,Alert Bay,382,0,1
+59021,Mount Waddington D,371,0,0
+59021,Sayward,334,0,1
+59021,Quinsam 12,312,0,0
+59021,Comox 1,291,0,0
+59021,Quatsino Subdivision 18,246,0,0
+59021,Kippase 2,220,0,0
+59021,Homalco 9,214,0,0
+59021,Tsa Xana 18,205,0,0
+59021,Houpsitas 6,157,0,0
+59021,Cape Mudge 10,145,0,0
+59021,Zeballos,126,0,1
+59021,Quaee 7,111,0,0
+59021,Ehatis 11,91,0,0
+59021,Katit 1,77,0,0
+59021,Tork 7,60,0,0
+59021,Fort Rupert 1,58,0,0
+59021,Gwayasdums 1,38,0,0
+59021,Mount Waddington B,35,0,0
+59021,Oclucje 7,29,0,0
+59021,Dead Point 5,22,0,0
+59021,Sechelt (Part),21,0,0
+59021,Pentledge 2,5,0,0
+59022,North Vancouver,58120,0,1
+59022,Capilano 5,2899,0,0
+59022,Mission 1,570,0,0
+59023,West Kelowna,36078,0,1
+59023,Summerland,12042,0,1
+59023,Tsinstikeptum 9,9134,0,0
+59023,Peachland,5789,0,1
+59023,Central Okanagan West,2897,0,1
+59023,Okanagan-Similkameen F,2092,0,0
+59023,Tsinstikeptum 10,1766,0,0
+59024,Maple Ridge,90990,0,1
+59024,Mission,41519,0,1
+59024,Pitt Meadows,19146,0,1
+59024,Fraser Valley F,1384,0,0
+59024,Langley 2,332,0,0
+59024,Katzie 1,244,0,0
+59024,Whonnock 1,5,0,0
+59025,Port Moody,33535,0,1
+59025,Anmore,2356,0,1
+59025,Belcarra,687,0,1
+59025,Coquitlam 1,55,0,0
+59026,Fort St. John,21465,0,1
+59026,Dawson Creek,12323,0,1
+59026,Peace River C,5947,0,0
+59026,Peace River B,5379,0,0
+59026,Peace River D,4793,0,0
+59026,Fraser-Fort George D,4375,0,0
+59026,Northern Rockies,3947,0,1
+59026,Fraser-Fort George A,3471,0,0
+59026,Mackenzie,3281,0,1
+59026,Peace River E,2660,0,0
+59026,Tumbler Ridge,2399,0,1
+59026,Chetwynd,2302,0,1
+59026,Fraser-Fort George H,1589,0,0
+59026,Taylor,1317,0,1
+59026,Fraser-Fort George F,1249,0,0
+59026,Valemount,1052,0,1
+59026,Hudson's Hope,841,0,1
+59026,Pouce Coupe,762,0,1
+59026,McBride,588,0,1
+59026,Fort Nelson 2,419,0,0
+59026,Fraser-Fort George G,365,0,0
+59026,East Moberly Lake 169,297,0,0
+59026,Halfway River 168,247,0,0
+59026,Fort Ware 1,242,0,0
+59026,Finlay River 6,229,0,0
+59026,Blueberry River 205,145,0,0
+59026,Prophet River 4,107,0,0
+59026,West Moberly Lake 168A,99,0,0
+59026,Doig River 206,85,0,0
+59026,Fort George 2,84,0,0
+59026,McLeod Lake 1,81,0,0
+59026,Fontas 1,5,0,0
+59028,Richmond,209937,1,0
+59029,Central Saanich,17385,0,1
+59029,Sidney,12318,0,1
+59029,North Saanich,12235,0,1
+59029,Saltspring Island,11635,0,1
+59029,Southern Gulf Islands,6101,0,1
+59029,East Saanich 2,1790,0,0
+59029,South Saanich 1,712,0,0
+59029,Cole Bay 3,266,0,0
+59029,Union Bay 4,109,0,0
+59030,Penticton,36885,0,1
+59030,Castlegar,8338,0,1
+59030,Osoyoos,5556,0,1
+59030,Oliver,5094,0,1
+59030,Rossland,4140,0,1
+59030,Grand Forks,4112,0,1
+59030,Okanagan-Similkameen D,4016,0,0
+59030,Okanagan-Similkameen C,3986,0,0
+59030,Central Kootenay J,3517,0,0
+59030,Kootenay Boundary D / Rural Grand Forks,3226,0,0
+59030,Princeton,2894,0,1
+59030,Central Kootenay I,2607,0,0
+59030,Okanagan-Similkameen I,2307,0,0
+59030,Okanagan-Similkameen G,2298,0,0
+59030,Okanagan-Similkameen H,2232,0,0
+59030,Okanagan-Similkameen A,2139,0,0
+59030,Penticton 1,2080,0,0
+59030,Okanagan-Similkameen E,2015,0,0
+59030,Warfield,1753,0,1
+59030,Kootenay Boundary C / Christina Lake,1627,0,0
+59030,Keremeos,1608,0,1
+59030,Osoyoos 1,1426,0,0
+59030,Kootenay Boundary B / Lower Columbia-Old-Glory,1422,0,0
+59030,Okanagan-Similkameen B,1151,0,0
+59030,Greenwood,702,0,1
+59030,Midway,651,0,1
+59030,Chopaka 7 & 8,86,0,0
+59030,Chuchuwayha 2,86,0,0
+59030,Lower Similkameen 2,76,0,0
+59030,Ashnola 10,58,0,0
+59030,Blind Creek 6,26,0,0
+59030,Lulu 5,15,0,0
+59030,Alexis 9,10,0,0
+59031,Prince Rupert,12300,0,1
+59031,Terrace,12017,0,1
+59031,Kitimat,8236,0,1
+59031,Bulkley-Nechako A,5587,0,0
+59031,Smithers,5378,0,1
+59031,Kitimat-Stikine E,3932,0,0
+59031,Houston,3052,0,1
+59031,Kitimat-Stikine C (Part 1),2978,0,0
+59031,Nisga'a,1794,0,1
+59031,Bulkley-Nechako B,1706,0,0
+59031,Burns Lake,1659,0,1
+59031,Bulkley-Nechako D,1607,0,0
+59031,Bulkley-Nechako E,1512,0,0
+59031,Telkwa,1474,0,1
+59031,Kitimat-Stikine B,1455,0,0
+59031,Fort St. James,1386,0,1
+59031,Bulkley-Nechako C,1266,0,0
+59031,Bella Bella 1,1193,0,0
+59031,Fraser Lake,965,0,1
+59031,Queen Charlotte,964,0,1
+59031,Bella Coola 1,937,0,0
+59031,Masset,838,0,1
+59031,Bulkley-Nechako G,836,0,0
+59031,Skidegate 1,697,0,0
+59031,Central Coast C,661,0,0
+59031,Lax Kw'alaams 1,627,0,0
+59031,New Hazelton,602,0,1
+59031,North Coast D,580,0,0
+59031,Kispiox 1,578,0,0
+59031,Gitanmaax 1,560,0,0
+59031,Woyenne 27,548,0,0
+59031,Nak'azdli,528,0,1
+59031,Stewart,517,0,1
+59031,Kitamaat 2,507,0,0
+59031,Iskut 6,478,0,0
+59031,Masset 1,475,0,0
+59031,Port Edward,470,0,1
+59031,Gitwangak 1,450,0,0
+59031,Gitsegukla 1,444,0,0
+59031,Stikine Region,424,0,0
+59031,Gitanyow 1,408,0,0
+59031,Central Coast D,403,0,0
+59031,Tache 1,400,0,0
+59031,Port Clements,340,0,1
+59031,Granisle,337,0,1
+59031,Kitimat-Stikine F,326,0,0
+59031,North Coast E,325,0,0
+59031,Kitsumkaylum 1,315,0,0
+59031,Dolphin Island 1,295,0,0
+59031,Kitselas 1,291,0,0
+59031,Hazelton,257,0,1
+59031,Moricetown 1,253,0,0
+59031,North Tacla Lake,243,0,1
+59031,Nautley (Fort Fraser) 1,227,0,0
+59031,Kitasoo 1,217,0,0
+59031,Sik-e-dakh 2,209,0,0
+59031,Stellaquo (Stella) 1,189,0,0
+59031,Hagwilget 1,183,0,0
+59031,Bulkley River 19,174,0,0
+59031,Central Coast E,162,0,0
+59031,Central Coast A,149,0,0
+59031,Guhthe Tah 12,142,0,0
+59031,Binche 2,118,0,0
+59031,Liard River 3,114,0,0
+59031,Palling 1,92,0,0
+59031,Ye Koo Che 3,90,0,0
+59031,Babine 17,87,0,0
+59031,Babine 25,83,0,0
+59031,Five Mile Point 3,83,0,0
+59031,Coryatsaqua (Moricetown) 2,80,0,0
+59031,Babine 6,75,0,0
+59031,Kitimat-Stikine D,74,0,0
+59031,Kulspai 6,73,0,0
+59031,Tlaa Gaa Aawtlaas 28,70,0,0
+59031,Kulkayu (Hartley Bay) 4A,66,0,0
+59031,Kulkayu (Hartley Bay) 4,58,0,0
+59031,Dease Lake 9,54,0,0
+59031,Telegraph Creek,51,0,1
+59031,Cheslatta 1,49,0,0
+59031,Kitimat-Stikine A,48,0,0
+59031,North Coast A,45,0,0
+59031,Dease River 1,39,0,0
+59031,Burns Lake 18,33,0,0
+59031,North Coast C,31,0,0
+59031,Williams Prairie Meadow 1A,20,0,0
+59031,Unnamed 10,18,0,0
+59031,Tacla Lake (Ferry Landing) 9,15,0,0
+59031,Dzitline Lee 9,15,0,0
+59031,Seaspunkut 4,10,0,0
+59031,Skins Lake 16A,10,0,0
+59031,Poison Creek 17A,10,0,0
+59031,Sowchea 3,5,0,0
+59031,Duncan Lake 2,5,0,0
+59031,Jean Baptiste 28,5,0,0
+59031,Lower Post,5,0,1
+59032,White Rock,21939,0,1
+59032,Semiahmoo,71,0,1
+59038,Vancouver,662248,1,0
+59040,Musqueam 2,1646,0,0
+59041,Vernon,44519,0,1
+59041,Lake Country,15817,0,1
+59041,Coldstream,11171,0,1
+59041,Central Kootenay H,5045,0,0
+59041,North Okanagan C,4511,0,0
+59041,Central Okanagan,4258,0,1
+59041,North Okanagan B,3274,0,0
+59041,Okanagan (Part) 1,3244,0,0
+59041,North Okanagan D,2909,0,0
+59041,Lumby,2063,0,1
+59041,Duck Lake 7,1847,0,0
+59041,Central Kootenay K,1784,0,0
+59041,Nakusp,1589,0,1
+59041,North Okanagan E,1092,0,0
+59041,New Denver,487,0,1
+59041,Slocan,379,0,1
+59041,Priest's Valley 6,367,0,0
+59041,Silverton,149,0,1
+59041,Okanagan (Part) 1,91,0,0
+59042,Victoria,91867,0,1
+59042,Oak Bay,17990,0,1
+59043,West Vancouver,44122,0,1
+59043,Squamish,23819,0,1
+59043,Whistler,13982,0,1
+59043,Sechelt,10847,0,1
+59043,Gibsons,4758,0,1
+59043,Bowen Island,4256,0,1
+59043,Sunshine Coast E,3883,0,0
+59043,Sunshine Coast D,3523,0,0
+59043,Pemberton,3407,0,1
+59043,Sunshine Coast A,3039,0,0
+59043,Sunshine Coast B,2969,0,0
+59043,Sunshine Coast F,2407,0,0
+59043,Squamish-Lillooet C,2000,0,0
+59043,Lions Bay,1390,0,1
+59043,Mount Currie,1242,0,1
+59043,Squamish-Lillooet D,1057,0,0
+59043,Sechelt (Part),744,0,0
+59043,Waiwakum 14,224,0,0
+59043,Nequatque,155,0,1
+59043,Stawamus 24,98,0,0
+59043,Cheakamus 11,95,0,0
+59043,Nesuch 3,95,0,0
+59043,Kowtain 17,59,0,0
+59043,Yekwaupsum 18,17,0,0
+59043,Seaichem 16,15,0,0
+60001,Whitehorse,28201,0,1
+60001,Dawson,1577,0,1
+60001,Macpherson-Grizzly Valley,1540,0,1
+60001,"Yukon, Unorganized",1496,0,0
+60001,Watson Lake,1133,0,1
+60001,Marsh Lake,746,0,1
+60001,Haines Junction,688,0,1
+60001,Carmacks,588,0,1
+60001,Ibex Valley,523,0,1
+60001,Mt. Lorne,468,0,1
+60001,Faro,440,0,1
+60001,"Whitehorse, Unorganized",411,0,0
+60001,Ross River,355,0,1
+60001,Carcross,317,0,1
+60001,Pelly Crossing,316,0,1
+60001,Tagish,311,0,1
+60001,Teslin,239,0,1
+60001,Old Crow,236,0,1
+60001,Mayo,188,0,1
+60001,Upper Liard,130,0,1
+60001,Beaver Creek,78,0,1
+60001,Burwash Landing,64,0,1
+60001,Destruction Bay,40,0,1
+60001,Carcross 4,37,0,0
+60001,Lake Laberge 1,24,0,0
+60001,Champagne Landing 10,22,0,0
+60001,Keno Hill,20,0,1
+60001,Teslin Post 13,19,0,0
+60001,Johnsons Crossing,10,0,1
+60001,Stewart Crossing,10,0,1
+60001,Swift River,5,0,1
+61001,Yellowknife,20340,0,1
+61001,Hay River,3169,0,1
+61001,Inuvik,3137,0,1
+61001,Fort Smith,2248,0,1
+61001,Behchokò,1746,0,1
+61001,Fort Simpson,1100,0,1
+61001,Tuktoyaktuk,937,0,1
+61001,Norman Wells,673,0,1
+61001,Fort McPherson,647,0,1
+61001,Fort Providence,618,0,1
+61001,Déline,573,0,1
+61001,Whatì,543,0,1
+61001,Aklavik,536,0,1
+61001,Fort Good Hope,507,0,1
+61001,Fort Liard,468,0,1
+61001,Fort Resolution,412,0,1
+61001,Ulukhaktok,408,0,1
+61001,Tulita,396,0,1
+61001,Lutselk'e,333,0,1
+61001,Paulatuk,298,0,1
+61001,"Region 6, Unorganized",273,0,0
+61001,Hay River Dene 1,259,0,0
+61001,Gamètì,252,0,1
+61001,Dettah,192,0,1
+61001,Tsiigehtchic,138,0,1
+61001,Wrigley,117,0,1
+61001,Colville Lake,110,0,1
+61001,Wekweètì,109,0,1
+61001,Sachs Harbour,104,0,1
+61001,Sambaa K’e,97,0,1
+61001,Nahanni Butte,81,0,1
+61001,Enterprise,75,0,1
+61001,Jean Marie River,63,0,1
+61001,Kakisa,39,0,1
+61001,"Region 5, Unorganized",37,0,0
+61001,"Region 4, Unorganized",30,0,0
+61001,Salt Plains 195,5,0,0
+62001,Iqaluit,7429,0,1
+62001,Rankin Inlet,2975,0,1
+62001,Arviat,2864,0,1
+62001,Baker Lake,2061,0,1
+62001,Igloolik,2049,0,1
+62001,Cambridge Bay,1760,0,1
+62001,Pond Inlet,1555,0,1
+62001,Pangnirtung,1504,0,1
+62001,Cape Dorset,1396,0,1
+62001,Kugluktuk,1382,0,1
+62001,Gjoa Haven,1349,0,1
+62001,Naujaat,1225,0,1
+62001,Clyde River,1181,0,1
+62001,Coral Harbour,1035,0,1
+62001,Kugaaruk,1033,0,1
+62001,Sanikiluaq,1010,0,1
+62001,Arctic Bay,994,0,1
+62001,Taloyoak,934,0,1
+62001,Hall Beach,891,0,1
+62001,Qikiqtarjuaq,593,0,1
+62001,Whale Cove,470,0,1
+62001,Kimmirut,426,0,1
+62001,Chesterfield Inlet,397,0,1
+62001,Resolute,183,0,1
+62001,Grise Fiord,144,0,1
+62001,"Kivalliq, Unorganized",18,0,0

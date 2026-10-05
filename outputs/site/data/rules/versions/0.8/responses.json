@@ -1,0 +1,30 @@
+{
+  "roll": "d6 + tag modifier",
+  "tag_modifier": {
+    "matching_tag": 1,
+    "opposing_tag": -1,
+    "other": 0,
+    "note": "docs/ENGINE_DESIGN.md §8 specifies the roll as 'd6 + tag modifier' but leaves the modifier's magnitude unstated, asking Phase 9b to choose +1 / -1 / 0 and record it. Recorded as rules version 0.1 in rules/CHANGELOG.md."
+  },
+  "options": {
+    "Lead": {
+      "influence_delta": 5,
+      "climate_delta": 1,
+      "climate_direction": "toward the event's tag"
+    },
+    "Resist": {
+      "cohesion_delta": 5,
+      "climate_delta": -1,
+      "climate_direction": "against the event's tag"
+    },
+    "Exploit": {
+      "capital_delta": 10,
+      "influence_delta": -5
+    },
+    "Neutral": {}
+  },
+  "major_event_direct_effect_examples": {
+    "Contraction": "capital -15 for all houses in the affected band",
+    "Flu": "an extra mortality roll"
+  }
+}
