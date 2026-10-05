@@ -1,4 +1,4 @@
-"""Rebuild hoc.db from scratch out of data/reference + the active scenario's seed.
+"""Rebuild hoc.db from scratch out of the scenario's reference data + its seed.
 
 The database is a derived artefact: this script deletes and rebuilds it on every
 run, so the audited inputs stay the CSVs. Nothing is invented here — an empty
@@ -6,6 +6,9 @@ CSV cell becomes NULL, never a placeholder.
 
 The scenario is the one named in scenarios/current.txt (hoc/scenario.py), so
 the same script builds the reconstructed legacy game or an empty autoplay one.
+The reference tables are the set the scenario's manifest names
+(`reference_data`, resolved by scenario.reference_dir()), and the database
+records which set that was in its `reference_data` table.
 
 Usage: python scripts/load_seed.py [db_path]
 """
@@ -21,9 +24,8 @@ sys.path.insert(0, str(ROOT))
 from hoc import db, scenario  # noqa: E402  (after sys.path setup)
 from hoc.names import name_key  # noqa: E402
 
-REFERENCE = ROOT / "data" / "reference"
-
 TABLES_IN_REPORT_ORDER = [
+    "reference_data",
     "ridings",
     "adjacency",
     "houses",
@@ -71,8 +73,15 @@ CLOCK_RESUME_BASIS = (
 )
 
 
-def load_ridings(conn):
-    rows = read_csv(REFERENCE / "ridings.csv")
+def load_reference_data(conn, key):
+    conn.execute(
+        "INSERT INTO reference_data (key, path) VALUES (?, ?)",
+        (key, scenario.reference_set_dir(key).as_posix()),
+    )
+
+
+def load_ridings(conn, reference):
+    rows = read_csv(reference / "ridings.csv")
     conn.executemany(
         "INSERT INTO ridings (fed_id, name_en, name_fr, province, name_key)"
         " VALUES (:fed_id, :name_en, :name_fr, :province, :name_key)",
@@ -80,8 +89,8 @@ def load_ridings(conn):
     )
 
 
-def load_adjacency(conn):
-    rows = read_csv(REFERENCE / "adjacency.csv")
+def load_adjacency(conn, reference):
+    rows = read_csv(reference / "adjacency.csv")
     conn.executemany(
         "INSERT INTO adjacency (fed_id_a, fed_id_b, adjacency_type)"
         " VALUES (:fed_id_a, :fed_id_b, :adjacency_type)",
@@ -106,7 +115,7 @@ def load_houses(conn, seed):
         )
 
 
-def load_holdings(conn, seed):
+def load_holdings(conn, seed, reference_key=scenario.DEFAULT_REFERENCE_DATA):
     """Resolve each seed riding name to a fed_id via name_key. Hard-fail on any
     name that does not resolve — a silently dropped holding would be worse than
     a failed load."""
@@ -129,8 +138,8 @@ def load_holdings(conn, seed):
 
     if unresolved:
         raise SystemExit(
-            f"Riding names in {seed}/holdings.csv did not resolve against "
-            f"data/reference/ridings.csv: {unresolved}"
+            f"Riding names in {seed}/holdings.csv did not resolve against the"
+            f" ridings of reference data {reference_key!r}: {unresolved}"
         )
 
 
@@ -241,10 +250,22 @@ def load_relations(conn, seed, created_at):
         )
 
 
-def build(db_path, seed=None):
+def _seed_reference_data(seed):
+    """The reference data a seed directory belongs with: its own scenario's, when
+    it is a scenario's `seed/`, else the active scenario's."""
+    seed = Path(seed).resolve()
+    if seed.name == "seed" and seed.parent.parent == scenario.SCENARIOS_DIR.resolve():
+        return scenario.reference_data(seed.parent.name)
+    return scenario.reference_data()
+
+
+def build(db_path, seed=None, reference_data=None):
     """Build the database from the given seed directory (default: the active
-    scenario's). Returns the open connection."""
+    scenario's) on the given reference-data set (default: the one the active
+    scenario's manifest names). Returns the open connection."""
     seed = Path(seed) if seed is not None else scenario.seed_dir()
+    key = reference_data or _seed_reference_data(seed)
+    reference = ROOT / scenario.reference_set_dir(key)
     db_path = Path(db_path)
     if db_path.exists():
         db_path.unlink()
@@ -254,10 +275,11 @@ def build(db_path, seed=None):
     conn = db.connect(db_path)
     db.init_schema(conn)
     with conn:
-        load_ridings(conn)
-        load_adjacency(conn)
+        load_reference_data(conn, key)
+        load_ridings(conn, reference)
+        load_adjacency(conn, reference)
         load_houses(conn, seed)
-        load_holdings(conn, seed)
+        load_holdings(conn, seed, key)
         load_holders_and_clocks(conn, seed)
         load_house_blocks(conn, seed)
         load_successions(conn, seed)

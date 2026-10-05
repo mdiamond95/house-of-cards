@@ -318,8 +318,22 @@ class World:
     """
 
     def __init__(self, conn, rules=None, world_seed=None, seasons_dir=None, phases=None,
-                 rules_version=None):
+                 rules_version=None, reference_dir=None):
         self.conn = conn
+        # The reference-data set this world's map came from, and so the one its
+        # designation tables must come from too: the database records it
+        # (scripts/load_seed.py), so a World never infers it from a scenario.
+        self.reference_dir = (
+            Path(reference_dir) if reference_dir is not None
+            else places.reference_dir_for(conn)
+        )
+        # Per-riding statistics and jurisdictions by year, where the set has
+        # them (meridian-v1.0.3). Held so both engines load them — the
+        # JavaScript engine's are web/engine/adjacency.js's ReferenceMap
+        # ridingStats and ridingJurisdictions — and nothing in the season loop
+        # reads them yet.
+        self.riding_stats = places.riding_stats(self.reference_dir)
+        self.riding_jurisdictions = places.riding_jurisdictions(self.reference_dir)
         # A world plays under one version of the rules. `rules_version` names it
         # when replaying a season that recorded one; otherwise it is whatever
         # rules/current.txt says now. `use_rules_version` switches mid-replay,
@@ -586,8 +600,8 @@ class World:
         ridings across a strait are not neighbours in any sense a peerage would
         recognise.
         """
-        by_riding = places.places_by_riding()
-        by_tokens = places.tokens_by_riding()
+        by_riding = places.places_by_riding(self.reference_dir)
+        by_tokens = places.tokens_by_riding(self.reference_dir)
 
         neighbours = [
             row["fed_id"] for row in self.conn.execute(

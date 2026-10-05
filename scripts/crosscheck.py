@@ -93,7 +93,7 @@ def _apply_script(conn, world, script, after_season):
 
 
 def run_python(seed, seasons, out_dir, seat=None, phases=None, script=(), resume_from=None,
-               rules_version=None):
+               rules_version=None, reference_data=None):
     """Play `seasons` seasons with the Python engine, writing season files.
 
     `resume_from` is a season count to play *first* without writing anything —
@@ -105,7 +105,10 @@ def run_python(seed, seasons, out_dir, seat=None, phases=None, script=(), resume
     from hoc import scenario, sim
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    conn = load_seed.build(out_dir.parent / "python.db", seed=scenario.blank_seed_dir())
+    conn = load_seed.build(
+        out_dir.parent / "python.db", seed=scenario.blank_seed_dir(),
+        reference_data=reference_data or scenario.DEFAULT_REFERENCE_DATA,
+    )
     world = sim.World(
         conn, world_seed=seed, seasons_dir=out_dir, phases=phases,
         rules_version=rules_version,
@@ -120,7 +123,7 @@ def run_python(seed, seasons, out_dir, seat=None, phases=None, script=(), resume
 
 
 def run_js(seed, seasons, out_dir, seat=None, phases=None, resume=None, interventions=None,
-           rules_version=None):
+           rules_version=None, reference_data=None):
     """Play the same seasons with the JavaScript engine."""
     if not JS_CLI.exists():
         raise CrosscheckUnavailable(
@@ -142,6 +145,10 @@ def run_js(seed, seasons, out_dir, seat=None, phases=None, resume=None, interven
         command += ["--interventions", str(interventions)]
     if rules_version is not None:
         command += ["--rules-version", str(rules_version)]
+    if reference_data is not None:
+        from hoc import scenario
+
+        command += ["--reference", scenario.reference_set_dir(reference_data).as_posix()]
     if seat:
         command += ["--seat", seat]
     if phases:
@@ -281,7 +288,8 @@ def _compare_range(python_dir, js_dir, first, last):
     return differences
 
 
-def crosscheck(seed, seasons, seat=None, keep=None, phases=None, script=(), rules_version=None):
+def crosscheck(seed, seasons, seat=None, keep=None, phases=None, script=(), rules_version=None,
+               reference_data=None):
     """Run both engines and compare. Returns the list of differences.
 
     Raises CrosscheckUnavailable when the comparison cannot be made at all.
@@ -296,9 +304,9 @@ def crosscheck(seed, seasons, seat=None, keep=None, phases=None, script=(), rule
             script_path = workspace / "interventions.json"
             script_path.write_text(json.dumps(list(script), ensure_ascii=False), encoding="utf-8")
         run_python(seed, seasons, python_dir, seat=seat, phases=phases, script=script,
-                   rules_version=rules_version)
+                   rules_version=rules_version, reference_data=reference_data)
         run_js(seed, seasons, js_dir, seat=seat, phases=phases, interventions=script_path,
-               rules_version=rules_version)
+               rules_version=rules_version, reference_data=reference_data)
         return compare(python_dir, js_dir, seasons)
     finally:
         if keep is None:
@@ -312,6 +320,10 @@ def main(argv=None):
     parser.add_argument(
         "--rules-version", default=None,
         help="the rules version to play under (default: rules/current.txt)",
+    )
+    parser.add_argument(
+        "--reference-data", default=None,
+        help="the reference-data set both engines play on (default: ne-2026)",
     )
     parser.add_argument("--seat", default=None, help="riding for the first house")
     parser.add_argument(
@@ -336,7 +348,7 @@ def main(argv=None):
         phases = [p.strip() for p in args.phases.split(",")] if args.phases else None
         differences = crosscheck(
             args.seed, args.seasons, seat=args.seat, keep=args.keep, phases=phases,
-            rules_version=args.rules_version,
+            rules_version=args.rules_version, reference_data=args.reference_data,
         )
     except CrosscheckUnavailable as exc:
         print(f"cross-check unavailable: {exc}", file=sys.stderr)
@@ -344,9 +356,10 @@ def main(argv=None):
 
     if not differences:
         version = args.rules_version or "current"
+        reference = args.reference_data or "ne-2026"
         print(
             f"seed {args.seed}: the two engines agree on all {args.seasons} seasons"
-            f" (rules {version})."
+            f" (rules {version}, reference data {reference})."
         )
         return 0
 

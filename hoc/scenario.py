@@ -52,6 +52,10 @@ __all__ = [
     "title",
     "reference_data",
     "reference_dir",
+    "reference_path",
+    "reference_set_dir",
+    "REFERENCE_SETS",
+    "DEFAULT_REFERENCE_DATA",
     "is_live",
     "live_name",
     "frozen_names",
@@ -70,10 +74,30 @@ DEFAULT_SCENARIO = "legacy"
 STATUS_LIVE = "live"
 STATUS_FROZEN = "frozen"
 
-# The one reference-data set that exists: the 2023 Representation Order tables in
-# data/reference/. A scenario names the set its seed was built against so that a
-# game on different ground could say so; no other set has been built yet.
-REFERENCE_SETS = {"ne-2026": Path("data") / "reference"}
+# The reference-data sets: the ground a game is played on. A scenario names the
+# set its seed was built against in its manifest's `reference_data`, and every
+# reader — the database loader, the engine's designation tables, the site map,
+# the play page's assets — goes through reference_dir() rather than naming a
+# directory.
+#
+#   ne-2026          the 2023 Representation Order tables built from Elections
+#                    Canada's boundary file and Natural Earth (data/reference/).
+#                    Both frozen games were played on it.
+#   meridian-v1.0.3  the same 343 ridings and 894 land pairs, built from
+#                    Meridian's riding unit table at tag v1.0.3, with census
+#                    places, riding statistics and jurisdictions by year
+#                    (scripts/build_world_meridian.py; CLAUDE.md, "World data").
+#
+# A set is never edited once a game has been played on it: moving to newer data
+# is a new key and a new directory.
+REFERENCE_SETS = {
+    "ne-2026": Path("data") / "reference",
+    "meridian-v1.0.3": Path("data") / "reference" / "meridian" / "v1.0.3",
+}
+
+# What a manifest with no `reference_data` was built against: the one set that
+# existed before the key did.
+DEFAULT_REFERENCE_DATA = "ne-2026"
 
 
 class ScenarioError(Exception):
@@ -193,7 +217,18 @@ def title(name=None, root=None):
 
 
 def reference_data(name=None, root=None):
-    return read_manifest(name, root).get("reference_data")
+    """The scenario's reference-data key. A manifest without one was built
+    before the key existed, on the one set there was then."""
+    return read_manifest(name, root).get("reference_data") or DEFAULT_REFERENCE_DATA
+
+
+def reference_set_dir(key):
+    """Where a reference-data set's tables are, relative to the repository."""
+    if key not in REFERENCE_SETS:
+        raise ScenarioError(
+            f"unknown reference data {key!r}; known: {', '.join(sorted(REFERENCE_SETS))}"
+        )
+    return REFERENCE_SETS[key]
 
 
 def reference_dir(name=None, root=None):
@@ -205,6 +240,11 @@ def reference_dir(name=None, root=None):
             f" known: {', '.join(sorted(REFERENCE_SETS))}"
         )
     return REFERENCE_SETS[key]
+
+
+def reference_path(name=None, root=None):
+    """reference_dir(), as an absolute path in this checkout."""
+    return REPO_ROOT / reference_dir(name, root)
 
 
 def is_live(name=None, root=None):

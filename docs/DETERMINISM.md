@@ -167,6 +167,54 @@ Converting a v1 hex colour to integer HSL loses up to one point of saturation an
 since the generator only ever draws whole per cent. Stored colours are never rewritten —
 they are only read, to place new hues away from them — so the loss does not accumulate.
 
+## Reference data from Meridian
+
+The `meridian-v1.0.3` reference-data version (`data/reference/meridian/v1.0.3/`) is built
+from Meridian's riding unit table, which is JSON full of decimal fractions — shares,
+indices, areas. **Neither engine ever sees one of them.** `scripts/build_world_meridian.py`
+converts every value a table carries into an integer, once, when the tables are built, by
+this rule:
+
+1. The table is parsed with every number as a `decimal.Decimal` (`parse_float=Decimal`):
+   exactly the digits Meridian wrote, never a binary float.
+2. A share in 0–1 becomes an **integer per mille**: `value × 1000`, rounded **half up**
+   (`ROUND_HALF_UP`) to a whole number, in exact decimal arithmetic. `0.0237` is `24`;
+   `0.0025` is `3`. A share outside 0–1 is refused.
+3. Any other quantity carried as an integer (`land_area_km2`) is rounded half up to a
+   whole number in the same exact arithmetic.
+4. A **tier** (`wealth_tier`, `resource_tier`) is a quintile: the 343 ridings are ranked
+   ascending by `(value, fed_id)` — `value` an exact `Decimal` or integer, so ties are
+   broken by fed id and nothing else — and the riding at 0-based rank `r` is in tier
+   `1 + (5 × r) // 343`. Tier 5 is the top fifth. Integer arithmetic only.
+5. A date becomes a **year**: `from_year` is the year of the span's `from`; `to_year` is
+   the next span's `from_year − 1`, empty for the span still in force. A span left empty
+   by this (two changes in one year) is dropped and the later one kept.
+6. A value nothing in the game reads (`jurisdictions[].share`, `score.exposure`) is not
+   carried at all, rather than converted for no one.
+
+7. A place's **`designation_ok`** (`places_by_riding.csv`) is decided by text tests on
+   the name exactly as Meridian wrote it, never on a rewritten one. It is 1 only when all
+   of these hold, else 0:
+   - `spans_ridings` is 0 (the place's population does not exceed its riding's);
+   - every character is a letter (Unicode `isalpha`, accented letters included), a space,
+     a hyphen, an apostrophe (`'` or `’`) or a period — so no digit, comma, parenthesis
+     or slash;
+   - none of `Subd`, `Unorganized`, `Division`, `Part`, `Partie`, `Area`, `No`, `District`,
+     `Region`, `Regional`, `Improvement`, `Special`, `County`, `Municipality`, `Municipal`,
+     `Rural`, `Reserve`, `Settlement`, `Nation`, `Communauté` appears as a whole word
+     (not preceded or followed by a word character; case as written);
+   - the name does not end in a space and a single capital letter (`Cariboo I`);
+   - splitting the name on the space character gives at most four parts.
+
+   Both engines keep a place as a designation candidate only when it is 1, in the seat's
+   own tier and its neighbours' tier alike; a set without the column (`ne-2026`) keeps every
+   place. At v1.0.3 it is 1 for 3,353 of 4,830 places, in 194 ridings.
+
+The CSVs are committed, so the rule runs once per reference-data version and both engines
+read identical integers in identical row order. Map geometry stays in decimal degrees,
+because a map is drawn in them; it is computed in the same exact decimal arithmetic
+(rounded half up to six places) and is read only by the site's map, never by an engine.
+
 ## Worked examples
 
 All values below are produced by both engines. `tests/test_prng.py` pins them as literals.

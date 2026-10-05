@@ -17,6 +17,15 @@ PRAGMA foreign_keys = ON;
 
 -- ---------------------------------------------------------------- reference --
 
+-- Which reference-data set the ridings, adjacency and every reference table the
+-- engine reads came from (hoc/scenario.py REFERENCE_SETS). One row, written by
+-- scripts/load_seed.py, so that a World reads its places and tokens from the
+-- same set as its map without inferring a scenario from scenarios/current.txt.
+CREATE TABLE reference_data (
+    key  TEXT PRIMARY KEY,
+    path TEXT NOT NULL
+);
+
 CREATE TABLE ridings (
     fed_id   TEXT PRIMARY KEY,
     name_en  TEXT NOT NULL,

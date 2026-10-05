@@ -1,11 +1,12 @@
 // The reference map: 343 ridings and which of them touch.
 //
 // This is the one part of the engine's data that never changes during a game.
-// It is loaded from the same two CSVs the Python engine reads
-// (`data/reference/ridings.csv` and `data/reference/adjacency.csv`), which are
-// built from Elections Canada's 2023 Representation Order by
-// `scripts/build_ridings.py` and `scripts/build_adjacency.py` — never authored
-// by hand, in either engine.
+// It is loaded from the same CSVs the Python engine reads, from the
+// reference-data set the scenario names: `ne-2026` (data/reference/, built from
+// Elections Canada's 2023 Representation Order by `scripts/build_ridings.py`
+// and `scripts/build_adjacency.py`) or `meridian-v1.0.3`
+// (data/reference/meridian/v1.0.3/, built from Meridian's riding table by
+// `scripts/build_world_meridian.py`) — never authored by hand, in either engine.
 
 import { parseCsvDicts } from './csv.js';
 
@@ -29,7 +30,8 @@ export function compareStrings(a, b) {
 }
 
 export class ReferenceMap {
-  constructor(ridingRows, adjacencyRows, placeRows = [], tokenRows = []) {
+  constructor(ridingRows, adjacencyRows, placeRows = [], tokenRows = [],
+    statsRows = [], jurisdictionRows = []) {
     // Ridings in fed_id order, which is what every "ORDER BY r.fed_id" in the
     // Python engine produces. fed_ids are fixed-width digit strings, so this
     // ordering is both lexicographic and numeric.
@@ -62,9 +64,16 @@ export class ReferenceMap {
 
     // Rules 0.8's designation tiers, in the CSVs' own row order — the order
     // the draws depend on, and the reason both engines read the same two files
-    // rather than each deriving them (hoc/places.py says why).
+    // rather than each deriving them (hoc/places.py says why). A place marked
+    // spans_ridings = 1 is bigger than the riding it is filed under and is
+    // never a designation for it; where the set has a designation_ok column,
+    // only a place marked 1 is a candidate at all, in the seat's own tier and
+    // its neighbours' alike. Both dropped here, as hoc/places.py drops them; a
+    // set without the columns (ne-2026) loses nothing.
     this.placesByRiding = new Map();
     for (const row of placeRows) {
+      if (row.spans_ridings === '1') continue;
+      if (row.designation_ok !== undefined && row.designation_ok !== '1') continue;
       if (!this.placesByRiding.has(row.fed_id)) this.placesByRiding.set(row.fed_id, []);
       this.placesByRiding.get(row.fed_id).push(row.place);
     }
@@ -72,6 +81,31 @@ export class ReferenceMap {
     for (const row of tokenRows) {
       if (!this.tokensByRiding.has(row.fed_id)) this.tokensByRiding.set(row.fed_id, []);
       this.tokensByRiding.get(row.fed_id).push(row.token);
+    }
+
+    // Per-riding integers and jurisdictions by year, where the reference set
+    // has them (meridian-v1.0.3). Held so both engines load them, in the same
+    // shapes as hoc/places.py's riding_stats() and riding_jurisdictions();
+    // nothing in the season loop reads them yet.
+    this.ridingStats = new Map();
+    for (const row of statsRows) {
+      const values = {};
+      for (const [key, value] of Object.entries(row)) {
+        if (key !== 'fed_id') values[key] = parseIntStrict(value, `riding_stats ${key}`);
+      }
+      this.ridingStats.set(row.fed_id, values);
+    }
+    this.ridingJurisdictions = new Map();
+    for (const row of jurisdictionRows) {
+      if (!this.ridingJurisdictions.has(row.fed_id)) this.ridingJurisdictions.set(row.fed_id, []);
+      this.ridingJurisdictions.get(row.fed_id).push({
+        from_year: parseIntStrict(row.from_year, 'from_year'),
+        to_year: row.to_year === '' ? null : parseIntStrict(row.to_year, 'to_year'),
+        unit: row.unit,
+        name: row.name,
+        status: row.status,
+        sovereign: row.sovereign,
+      });
     }
 
     // Every riding that has at least one land neighbour — the denominator of
@@ -115,12 +149,31 @@ export class ReferenceMap {
   }
 }
 
+function parseIntStrict(text, what) {
+  if (!/^-?[0-9]+$/.test(text)) throw new Error(`${what}: ${JSON.stringify(text)} is not an integer`);
+  return parseInt(text, 10);
+}
+
+// The tables every reference-data set has, and the two only some have. Which
+// set, and so which directory, is the caller's to say: a scenario's manifest
+// names it (hoc/scenario.py REFERENCE_SETS), and the site ships the live
+// scenario's set under data/reference/ whichever it is.
+export const REFERENCE_TABLES = [
+  'ridings.csv', 'adjacency.csv', 'places_by_riding.csv', 'riding_tokens.csv',
+];
+export const WORLD_TABLES = ['riding_stats.csv', 'riding_jurisdictions.csv'];
+
 // `read(relativePath)` returns file text, exactly as web/engine/rules.js takes it.
-export function loadReferenceMap(read) {
+// `tables` lists the files the set has; a WORLD_TABLES file not in it is not read.
+export function loadReferenceMap(read, dir = 'data/reference', tables = REFERENCE_TABLES) {
+  const table = (name) => parseCsvDicts(read(`${dir}/${name}`));
+  const optional = (name) => (tables.includes(name) ? table(name) : []);
   return new ReferenceMap(
-    parseCsvDicts(read('data/reference/ridings.csv')),
-    parseCsvDicts(read('data/reference/adjacency.csv')),
-    parseCsvDicts(read('data/reference/places_by_riding.csv')),
-    parseCsvDicts(read('data/reference/riding_tokens.csv')),
+    table('ridings.csv'),
+    table('adjacency.csv'),
+    table('places_by_riding.csv'),
+    table('riding_tokens.csv'),
+    optional('riding_stats.csv'),
+    optional('riding_jurisdictions.csv'),
   );
 }

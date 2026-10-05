@@ -76,6 +76,16 @@ def _last_season_sha(conn, season):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _reference_data(conn):
+    """The reference-data key the database records, or the default for one
+    built before it recorded any."""
+    try:
+        row = conn.execute("SELECT key FROM reference_data").fetchone()
+    except Exception:  # sqlite3.OperationalError: no such table
+        row = None
+    return scenario.DEFAULT_REFERENCE_DATA if row is None else row["key"]
+
+
 def world_snapshot(conn):
     """The world as a plain dict, in the shape `web/engine/state.js` loads."""
     season_row = conn.execute("SELECT MAX(season_no) AS n FROM seasons").fetchone()
@@ -277,6 +287,10 @@ def world_snapshot(conn):
         ),
         "current_rules_version": RULES_VERSION,
         "scenario": scenario.current_name(),
+        # Which reference-data set the world's map is (hoc/scenario.py
+        # REFERENCE_SETS): the one the database was built on, and the one the
+        # exporter ships under data/reference/ beside this file.
+        "reference_data": _reference_data(conn),
         "world_seed": None if seed_row is None else seed_row["seed"],
         "season": season,
         "last_season_sha256": _last_season_sha(conn, season),
