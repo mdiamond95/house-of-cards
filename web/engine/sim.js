@@ -656,9 +656,7 @@ export class World {
       if (fedId === null) throw new SimError(`unknown riding '${seat}'`);
       if (this.state.holderOfRiding(fedId) !== null) throw new SimError(`riding '${seat}' is already held`);
       if (!this.foundable(fedId)) {
-        throw new SimError(
-          `cannot found a house at ${this.closedMessage(fedId, 'a new house', FOUNDING_YEAR)}`,
-        );
+        throw new SimError(this.closedMessage(fedId, 'a new house', FOUNDING_YEAR));
       }
       province = this.state.map.province(fedId);
       region = PROVINCE_REGION[province] ?? 'north';

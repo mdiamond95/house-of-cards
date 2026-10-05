@@ -8,7 +8,7 @@ import csv
 import json
 from pathlib import Path
 
-from hoc import db
+from hoc import db, places
 
 DEFAULT_OUT_DIR = Path(__file__).resolve().parent.parent.parent / "outputs"
 
@@ -68,21 +68,32 @@ def _state(conn):
     for entries in blocks_by_house.values():
         entries.sort(key=lambda entry: _block_sort_key(entry["field"]))
 
+    # Rules 0.9, display only: the reference set's per-riding tables, where it
+    # has them (meridian-v1.0.3). Both are {} on ne-2026, so its dump is as it was.
+    directory = places.reference_dir_for(conn)
+    stats = places.riding_stats(directory)
+    jurisdictions = places.riding_jurisdictions(directory)
+
     holdings_by_house = {}
     for row in conn.execute(
         "SELECT h.house, h.seat_order, h.hex, h.fed_id, r.name_en, r.province"
         " FROM holdings h JOIN ridings r ON r.fed_id = h.fed_id"
         " WHERE h.released_event_id IS NULL ORDER BY h.house, h.seat_order"
     ):
-        holdings_by_house.setdefault(row["house"], []).append(
-            {
-                "seat_order": row["seat_order"],
-                "fed_id": row["fed_id"],
-                "riding": row["name_en"],
-                "province": row["province"],
-                "hex": row["hex"],
-            }
-        )
+        entry = {
+            "seat_order": row["seat_order"],
+            "fed_id": row["fed_id"],
+            "riding": row["name_en"],
+            "province": row["province"],
+            "hex": row["hex"],
+        }
+        clock = clocks.get(row["house"])
+        if jurisdictions and clock is not None and clock["personal_year"] is not None:
+            # The jurisdiction the riding lay under at this house's own year.
+            entry["jurisdiction"] = places.jurisdiction_at(
+                jurisdictions.get(row["fed_id"]), clock["personal_year"]
+            )
+        holdings_by_house.setdefault(row["house"], []).append(entry)
 
     holders_by_house = {}
     for row in conn.execute(
@@ -164,7 +175,7 @@ def _state(conn):
             }
         )
 
-    return {
+    out = {
         "houses": houses,
         "climate": {"ledgers": climate, "current": current_climate},
         "events": events,
@@ -180,6 +191,20 @@ def _state(conn):
             ).fetchone()[0],
         },
     }
+    if stats:
+        # resource_tier is exported and read by nothing in the game yet;
+        # opens_year is what atlas_jurisdiction reads. wealth_tier is left out:
+        # it is Meridian's GDP allocation, not a measurement, and is shown
+        # nowhere it could be taken for one.
+        out["ridings"] = [
+            {
+                "fed_id": fed_id,
+                "opens_year": stats[fed_id].get("opens_year"),
+                "resource_tier": stats[fed_id].get("resource_tier"),
+            }
+            for fed_id in sorted(stats)
+        ]
+    return out
 
 
 def write_dump(conn, out_dir=DEFAULT_OUT_DIR):

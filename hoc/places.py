@@ -47,6 +47,7 @@ from pathlib import Path
 __all__ = [
     "places_by_riding", "tokens_by_riding", "riding_stats", "riding_jurisdictions",
     "reference_dir_for", "DEFAULT_REFERENCE_DIR", "PLACES_PATH", "TOKENS_PATH",
+    "jurisdiction_at", "jurisdiction_label",
 ]
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -152,3 +153,21 @@ def riding_jurisdictions(reference_dir=None):
             })
         return out
     return _cached("jurisdictions", reference_dir, build)
+
+
+def jurisdiction_at(spans, year):
+    """The name of the jurisdiction in force in `year`, from one riding's spans
+    (riding_jurisdictions()), or None. hoc/sim.py's jurisdiction_name, for the
+    exporters, which read a riding's jurisdiction for display and nothing else."""
+    for span in spans or ():
+        if span["from_year"] <= year and (span["to_year"] is None or year <= span["to_year"]):
+            return span["name"]
+    return None
+
+
+def jurisdiction_label(spans, year):
+    """jurisdiction_at, but only when it is named differently from the
+    jurisdiction in force today — "Rupert's Land", not "Ontario" again."""
+    then = jurisdiction_at(spans, year)
+    now = spans[-1]["name"] if spans else None
+    return then if then is not None and then != now else None

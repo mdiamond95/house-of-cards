@@ -12,7 +12,7 @@ and so the same block can be produced from a Code session with
 `python -m hoc narrate 40 60`.
 """
 
-__all__ = ["TONES", "narrate_block", "TEMPLATE"]
+__all__ = ["TONES", "narrate_block", "TEMPLATE", "JURISDICTION_NOTE", "jurisdiction_note"]
 
 # What kind of prose the director wants. The tone is a real instruction, not a
 # label: each names a voice the record can actually support.
@@ -32,6 +32,34 @@ TONES = {
     ),
 }
 
+# Rules 0.9: on a reference set that records jurisdictions by year
+# (meridian-v1.0.3), a riding is named by the jurisdiction it lay under at the
+# house's own personal year. Blank on a set without them, so a block for a game
+# played on ne-2026 reads exactly as it always did.
+JURISDICTION_NOTE = """
+
+Name a riding's jurisdiction as it stood at the house's own personal year, using \
+the name in `{reference_dir}/riding_jurisdictions.csv` (the `jurisdiction` the \
+season files record for a founding or an expansion): Rupert's Land, the \
+North-Western Territory, the colony of British Columbia — never the province it \
+lies in today. The province code in `ridings.csv` is bookkeeping, not a name."""
+
+
+def jurisdiction_note(scenario_name):
+    """JURISDICTION_NOTE for a scenario whose reference set has jurisdictions,
+    else the empty string."""
+    from hoc import scenario
+
+    directory = scenario.reference_dir(scenario_name)
+    if not (directory / "riding_jurisdictions.csv").exists():
+        return ""
+    try:
+        relative = directory.relative_to(scenario.REPO_ROOT).as_posix()
+    except ValueError:
+        relative = directory.as_posix()
+    return JURISDICTION_NOTE.format(reference_dir=relative)
+
+
 TEMPLATE = """Follow CLAUDE.md. Narrate seasons {season_from}–{season_to} of the \
 `{scenario}` scenario ({scenario_title}).{focus}
 
@@ -49,7 +77,7 @@ database, it does not go in the prose.
 Do not invent settlers, dates, relations, colours or events. Do not give a house \
 a personal year it did not reach. There is no universal calendar: each house's \
 dates are its own clock's, and two houses share a year only where the record says \
-they met.
+they met.{jurisdiction}
 
 Write it to `narratives/{season_from:04d}-{season_to:04d}.md` with this front matter:
 
@@ -101,4 +129,5 @@ def narrate_block(season_from, season_to, houses=(), tone="chronicle", scenario_
         tone=tone,
         tone_description=TONES[tone],
         words=words,
+        jurisdiction=jurisdiction_note(scenario_name),
     )

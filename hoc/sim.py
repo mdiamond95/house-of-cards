@@ -931,10 +931,7 @@ class World:
             if mechanics._holder_of(self.conn, fed_id) is not None:
                 raise SimError(f"riding {seat!r} is already held")
             if not self.foundable(fed_id):
-                raise SimError(
-                    "cannot found a house at "
-                    + self.closed_message(fed_id, "a new house", FOUNDING_YEAR)
-                )
+                raise SimError(self.closed_message(fed_id, "a new house", FOUNDING_YEAR))
             province = self.conn.execute(
                 "SELECT province FROM ridings WHERE fed_id = ?", (fed_id,)
             ).fetchone()["province"]
