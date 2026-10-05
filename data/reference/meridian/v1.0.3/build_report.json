@@ -1,0 +1,23 @@
+{
+  "source": "meridian v1.0.3",
+  "ridings": 343,
+  "adjacency_pairs": 894,
+  "places": 4830,
+  "places_spanning_ridings": 48,
+  "ridings_without_places": 108,
+  "ridings_whose_first_place_spans": 47,
+  "ridings_with_a_usable_place": 203,
+  "jurisdiction_spans": 607,
+  "jurisdiction_spans_dropped": [],
+  "opens_year_counts": {
+    "1867": 269,
+    "1870": 74
+  },
+  "border_arcs": 915,
+  "not_carried": {
+    "score.cohesion": "absent from Meridian unit tables by design; not invented",
+    "score.exposure": "not read by the game",
+    "jurisdictions[].share": "a float area overlap; not read by the game",
+    "score.gdp": "carried only as wealth_tier; an allocation, not a measurement"
+  }
+}
