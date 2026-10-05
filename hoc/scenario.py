@@ -9,14 +9,21 @@ than hard-coding a path.
     scenarios/
       current.txt          the active scenario's name, one line
       legacy/              the reconstructed 2026 playthrough, frozen
-        scenario.json      name, seed, started_season
+        scenario.json      name, title, status, reference_data, seed, started_season
         seed/*.csv         the audited reconstruction (CLAUDE.md hard rule: never edited outside a reconstruction commit)
         turns/NNNN_*.json  director-written turns
         RECONSTRUCTION.md  where the seed came from
-      new/                 the live autoplay game
+      new/                 The First Dominion: an autoplay game, frozen at season 150
         scenario.json
         seed/*.csv         header rows only: the engine generates everything
         seasons/NNNN.json  one file per played season
+
+`current.txt` says which scenario `hoc.db` holds. Whether a scenario may still be
+written to is a different question, answered by its manifest's `status`: "live"
+or "frozen" (a missing status reads as frozen). At most one scenario is live.
+Every writer — the engine workflow, the play page, the console, `hoc sim` — asks
+`live_name()` rather than naming a scenario, and `require_live` refuses a frozen
+one.
 
 Nothing here reads or writes the database; it only resolves paths and the small
 scenario.json manifest.
@@ -38,6 +45,19 @@ __all__ = [
     "seasons_dir",
     "read_manifest",
     "write_manifest",
+    "FrozenScenarioError",
+    "STATUS_LIVE",
+    "STATUS_FROZEN",
+    "status",
+    "title",
+    "reference_data",
+    "reference_dir",
+    "is_live",
+    "live_name",
+    "frozen_names",
+    "require_live",
+    "blank_seed_dir",
+    "frozen_paths",
 ]
 
 PACKAGE_ROOT = Path(__file__).resolve().parent
@@ -47,9 +67,21 @@ CURRENT_FILE = SCENARIOS_DIR / "current.txt"
 
 DEFAULT_SCENARIO = "legacy"
 
+STATUS_LIVE = "live"
+STATUS_FROZEN = "frozen"
+
+# The one reference-data set that exists: the 2023 Representation Order tables in
+# data/reference/. A scenario names the set its seed was built against so that a
+# game on different ground could say so; no other set has been built yet.
+REFERENCE_SETS = {"ne-2026": Path("data") / "reference"}
+
 
 class ScenarioError(Exception):
     """A scenario was named that does not exist, or is missing its parts."""
+
+
+class FrozenScenarioError(ScenarioError):
+    """A write was attempted on a scenario that is not live."""
 
 
 def _scenarios_root(root=None):
@@ -137,3 +169,108 @@ def write_manifest(manifest, name=None, root=None):
     path = scenario_dir(name, root) / "scenario.json"
     path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     return path
+
+
+# ------------------------------------------------------------------ status --
+
+
+def status(name=None, root=None):
+    """"live" or "frozen". A manifest with no status reads as frozen: a game
+    must be declared live to be written to, never the other way round."""
+    value = read_manifest(name, root).get("status", STATUS_FROZEN)
+    if value not in (STATUS_LIVE, STATUS_FROZEN):
+        raise ScenarioError(
+            f"scenario {name or current_name(root)!r} has status {value!r};"
+            f" expected {STATUS_LIVE!r} or {STATUS_FROZEN!r}"
+        )
+    return value
+
+
+def title(name=None, root=None):
+    """The scenario's display title, or its directory name if it has none."""
+    manifest = read_manifest(name, root)
+    return manifest.get("title") or manifest.get("name") or name or current_name(root)
+
+
+def reference_data(name=None, root=None):
+    return read_manifest(name, root).get("reference_data")
+
+
+def reference_dir(name=None, root=None):
+    """Where the scenario's reference tables are, relative to the repository."""
+    key = reference_data(name, root)
+    if key not in REFERENCE_SETS:
+        raise ScenarioError(
+            f"scenario {name or current_name(root)!r} names reference data {key!r};"
+            f" known: {', '.join(sorted(REFERENCE_SETS))}"
+        )
+    return REFERENCE_SETS[key]
+
+
+def is_live(name=None, root=None):
+    return status(name, root) == STATUS_LIVE
+
+
+def live_name(root=None):
+    """The scenario that may be played, or None when every game is frozen.
+    More than one live scenario is a configuration error: two games cannot both
+    own the console, the play page and the referee."""
+    live = [n for n in scenario_names(root) if is_live(n, root)]
+    if len(live) > 1:
+        raise ScenarioError(f"more than one live scenario: {', '.join(live)}")
+    return live[0] if live else None
+
+
+def frozen_names(root=None):
+    return [n for n in scenario_names(root) if not is_live(n, root)]
+
+
+def require_live(name=None, root=None):
+    """The name of the scenario a writer may write to, or raise.
+
+    With no `name` the writer wants whichever game is live; with one, it wants
+    that game and is refused if it is frozen. Either way a writer also needs
+    `hoc.db` to hold the game, since every writer plays on the database.
+    """
+    live = live_name(root)
+    if name is None:
+        if live is None:
+            raise FrozenScenarioError(
+                "there is no live scenario: every game is frozen."
+                " Nothing can be played, applied or saved until one is made live."
+            )
+        name = live
+    elif not is_live(name, root):
+        raise FrozenScenarioError(
+            f"scenario {name!r} ({title(name, root)}) is frozen and cannot be written to."
+        )
+    if current_name(root) != name:
+        raise ScenarioError(
+            f"scenario {name!r} is live but hoc.db holds {current_name(root)!r};"
+            f" run `python -m hoc scenario use {name}` and rebuild first"
+        )
+    return name
+
+
+def blank_seed_dir(root=None):
+    """The seed directory of an autoplay scenario — header rows only, the engine
+    generates everything — for tools that need an empty world and no particular game."""
+    for name in scenario_names(root):
+        if read_manifest(name, root).get("kind") == "autoplay":
+            return seed_dir(name, root)
+    raise ScenarioError("no autoplay scenario to take an empty seed from")
+
+
+def frozen_paths(paths, root=None):
+    """Of repository-relative `paths`, those that write to a frozen scenario's
+    record or seed. Used by the referee to refuse a push that does."""
+    frozen = set(frozen_names(root))
+    out = []
+    for path in paths:
+        parts = Path(path).parts
+        if (
+            len(parts) >= 3 and parts[0] == "scenarios" and parts[1] in frozen
+            and parts[2] in ("seasons", "interventions", "turns", "seed")
+        ):
+            out.append(path)
+    return out

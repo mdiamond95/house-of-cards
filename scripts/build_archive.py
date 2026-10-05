@@ -1,17 +1,25 @@
-"""Render the frozen legacy playthrough into outputs/site/archive/.
+"""Render every frozen scenario into outputs/site/archive/.
 
     python scripts/build_archive.py [out_dir]
 
-The archive is not a copy of anything: it is the legacy scenario built fresh
-into a temporary database and rendered by the same exporter that renders the
-live game, one directory deeper and in archive mode. Doing it that way means the
-two can never drift — a change to the site is a change to both, and the archive
-is rebuilt on every export rather than kept as a stale artefact.
+    outputs/site/archive/index.html       lists the frozen games
+    outputs/site/archive/<name>/...       one full site per frozen scenario
 
-The temporary database is thrown away afterwards. `hoc.db` holds the live game
-and is never touched here.
+The archive is not a copy of anything: each frozen scenario is built fresh into
+a temporary database from its seed and its record — `turns/` for a
+director-written game, `seasons/` (and `interventions/`) for an engine-played
+one — and rendered by the same exporter that renders the live game, two
+directories deeper and in archive mode. Doing it that way means the two can
+never drift: a change to the site is a change to both, and the archive is
+rebuilt on every export rather than kept as a stale artefact.
+
+Which scenarios are archived is read from the manifests (`status`), never named
+here. The temporary databases are thrown away afterwards, and the season files
+a replay writes go to the scratch directory, never over the committed record.
+`hoc.db` holds the current game and is never touched here.
 """
 
+import shutil
 import sys
 import tempfile
 from pathlib import Path
@@ -22,43 +30,79 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from hoc import scenario  # noqa: E402  (after sys.path setup)
 from hoc.export import site  # noqa: E402
-from hoc.turn import TurnError, apply_turn  # noqa: E402
-
-import load_seed  # noqa: E402
-
-ARCHIVE_SCENARIO = "legacy"
 
 
-def build_archive(out_dir=site.DEFAULT_OUT_DIR, name=ARCHIVE_SCENARIO, verbose=False):
-    """Build `name` into a temporary database and render it as the archive.
+def _summary(conn, name):
+    """What the archive's index says about a game, read from its own database."""
+    season = conn.execute("SELECT MAX(season_no) AS n FROM seasons").fetchone()["n"]
+    turns = conn.execute("SELECT COUNT(*) AS n FROM turns").fetchone()["n"]
+    return {
+        "name": name,
+        "title": scenario.title(name),
+        "kind": scenario.read_manifest(name).get("kind"),
+        "seed": scenario.read_manifest(name).get("seed"),
+        "seasons": season,
+        "turns": turns,
+        "active": conn.execute(
+            "SELECT COUNT(*) AS n FROM houses WHERE status = 'active'"
+        ).fetchone()["n"],
+        "removed": conn.execute(
+            "SELECT COUNT(*) AS n FROM houses WHERE status != 'active'"
+        ).fetchone()["n"],
+        "held": conn.execute(
+            "SELECT COUNT(*) AS n FROM holdings WHERE released_event_id IS NULL"
+        ).fetchone()["n"],
+    }
 
-    Returns the paths written.
+
+def build_archive(out_dir=site.DEFAULT_OUT_DIR, name=None, verbose=False):
+    """Render `name` (default: every frozen scenario) and the archive's index.
+
+    Returns the paths written. Refuses a scenario that is live: a game still
+    being played is not an archive.
     """
-    with tempfile.TemporaryDirectory(prefix="hoc-archive-") as workspace:
-        db_path = Path(workspace) / "archive.db"
-        conn = load_seed.build(db_path, seed=scenario.seed_dir(name))
+    import rebuild  # here, not at the top: rebuild.py imports this module for its export
 
-        turns_dir = scenario.turns_dir(name)
-        if turns_dir.is_dir():
-            for path in sorted(turns_dir.glob("[0-9][0-9][0-9][0-9]_*.json")):
-                try:
-                    apply_turn(conn, path)
-                except TurnError as exc:
-                    where = "" if exc.operation_index is None else f" (operation {exc.operation_index})"
-                    raise SystemExit(
-                        f"archive build failed at {path.name}{where}: {exc.reason}"
-                    ) from exc
+    names = [name] if name else scenario.frozen_names()
+    for each in names:
+        if scenario.is_live(each):
+            raise SystemExit(f"scenario {each!r} is live; only a frozen game is archived")
 
-        written = site.write_site(
-            conn,
-            out_dir=out_dir,
-            subdir=f"{site.SITE_DIRNAME}/{site.ARCHIVE_DIRNAME}",
-            archive=True,
-        )
-        conn.close()
+    archive_dir = Path(out_dir) / site.SITE_DIRNAME / site.ARCHIVE_DIRNAME
+    if name is None:
+        # The whole archive is generated; clearing it is what keeps a layout
+        # from an earlier export (or a game since made live) from lingering.
+        shutil.rmtree(archive_dir, ignore_errors=True)
 
+    written = []
+    entries = []
+    for each in names:
+        with tempfile.TemporaryDirectory(prefix="hoc-archive-") as workspace:
+            workspace = Path(workspace)
+            (workspace / "seasons").mkdir()
+            # The seasons a replay writes go to the scratch directory: the
+            # committed record is what the replay is checked against, and must
+            # never be overwritten by it.
+            conn = rebuild.rebuild(
+                workspace / "archive.db", export=False, name=each, verbose=False,
+                seasons_out=workspace / "seasons",
+            )
+            written.extend(site.write_site(
+                conn,
+                out_dir=out_dir,
+                subdir=f"{site.SITE_DIRNAME}/{site.ARCHIVE_DIRNAME}/{each}",
+                archive=True,
+                archive_name=each,
+            ))
+            entries.append(_summary(conn, each))
+            conn.close()
+        if verbose:
+            print(f"archive: {each!r} rendered")
+
+    if name is None:
+        written.append(site.write_archive_index(out_dir, entries))
     if verbose:
-        print(f"archive: {len(written)} files from scenario {name!r}")
+        print(f"archive: {len(written)} files from {len(names)} scenario(s)")
     return written
 
 

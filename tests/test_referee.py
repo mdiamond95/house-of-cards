@@ -25,6 +25,10 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from hoc import scenario  # noqa: E402
 
+# The machinery under test plays and saves a game, which only a live scenario allows.
+# See tests/conftest.py; the refusal itself is tested in tests/test_frozen.py.
+pytestmark = pytest.mark.usefixtures("live_game")
+
 JS_CLI = ROOT / "web" / "engine" / "cli.js"
 SEED = 1867
 SEAT = "Kingston and the Islands"
@@ -60,7 +64,11 @@ def repo(tmp_path, monkeypatch):
     root = tmp_path / "scenarios"
     (root / "new").mkdir(parents=True)
     shutil.copytree(scenario.SCENARIOS_DIR / "new" / "seed", root / "new" / "seed")
-    shutil.copy(scenario.SCENARIOS_DIR / "new" / "scenario.json", root / "new")
+    # The copy is a live game: the referee verifies only a live scenario, and the
+    # real one is frozen.
+    manifest = json.loads((scenario.SCENARIOS_DIR / "new" / "scenario.json").read_text(encoding="utf-8"))
+    manifest["status"] = "live"
+    (root / "new" / "scenario.json").write_text(json.dumps(manifest), encoding="utf-8")
     (root / "current.txt").write_text("new\n", encoding="utf-8")
 
     monkeypatch.setattr(scenario, "SCENARIOS_DIR", root)

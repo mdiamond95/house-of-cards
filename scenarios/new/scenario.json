@@ -1,5 +1,8 @@
 {
   "name": "new",
+  "title": "The First Dominion",
+  "status": "frozen",
+  "reference_data": "ne-2026",
   "seed": 1867,
   "started_season": 1,
   "kind": "autoplay",

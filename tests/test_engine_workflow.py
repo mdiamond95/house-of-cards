@@ -24,6 +24,10 @@ from hoc.export import site  # noqa: E402
 from hoc.turn import apply_turn  # noqa: E402
 from hoc.turnfile import TurnFileError, validate  # noqa: E402
 
+# The machinery under test plays and saves a game, which only a live scenario allows.
+# See tests/conftest.py; the refusal itself is tested in tests/test_frozen.py.
+pytestmark = pytest.mark.usefixtures("live_game")
+
 WORKFLOW = ROOT / ".github" / "workflows" / "engine.yml"
 REFEREE = ROOT / ".github" / "workflows" / "referee.yml"
 DIRECTOR = "mdiamond95"
@@ -156,7 +160,7 @@ def test_no_model_is_called_anywhere_in_the_workflow():
 
 @pytest.fixture
 def world(tmp_path):
-    conn = load_seed.build(tmp_path / "w.db", seed=scenario.seed_dir("new"))
+    conn = load_seed.build(tmp_path / "w.db", seed=scenario.blank_seed_dir())
     engine = sim.World(conn, world_seed=1867)
     engine.initialise(1867)
     return engine
@@ -364,7 +368,7 @@ def test_the_run_summary_says_what_changed(world):
 @pytest.fixture(scope="module")
 def console(tmp_path_factory):
     tmp = tmp_path_factory.mktemp("console")
-    conn = load_seed.build(tmp / "c.db", seed=scenario.seed_dir("new"))
+    conn = load_seed.build(tmp / "c.db", seed=scenario.blank_seed_dir())
     world = sim.World(conn, world_seed=1867)
     world.initialise(1867)
     site.write_site(conn, out_dir=tmp)
@@ -458,9 +462,14 @@ def test_the_archive_has_no_console(tmp_path):
 
     build_archive.build_archive(out_dir=tmp_path)
     archive = tmp_path / site.SITE_DIRNAME / site.ARCHIVE_DIRNAME
-    assert not (archive / "console.html").exists()
-    for path in archive.rglob("*.html"):
-        assert "console.html" not in path.read_text(encoding="utf-8"), path.name
+    # archive/index.html is the way in, rendered in the live site's shell; each
+    # frozen game beneath it is the part that has no console.
+    games = [path for path in archive.iterdir() if path.is_dir()]
+    assert games
+    for game in games:
+        assert not (game / "console.html").exists()
+        for path in game.rglob("*.html"):
+            assert "console.html" not in path.read_text(encoding="utf-8"), path.name
 
 
 # ------------------------------------------------------------- the referee --
@@ -484,14 +493,25 @@ def test_the_referee_workflow_parses(referee_workflow):
 def test_the_referee_runs_on_a_committed_season(referee_workflow):
     """It must fire on exactly the two paths the browser writes, and on nothing
     else — a push of hoc.db or outputs/ is the referee's own commit coming back
-    round, and re-verifying it would be an endless loop."""
+    round, and re-verifying it would be an endless loop. Which scenario is live
+    is in the manifests, not in the workflow, so the paths cover every scenario."""
     on = referee_workflow[True]  # PyYAML reads the `on:` key as the boolean True.
     assert list(on) == ["push"]
     assert on["push"]["branches"] == ["main"]
     assert set(on["push"]["paths"]) == {
-        "scenarios/new/seasons/**",
-        "scenarios/new/interventions/**",
+        "scenarios/*/seasons/**",
+        "scenarios/*/interventions/**",
     }
+    assert "scenarios/new" not in REFEREE.read_text(encoding="utf-8")
+
+
+def test_the_referee_refuses_a_push_to_a_frozen_scenario(referee_workflow):
+    steps = referee_workflow["jobs"]["referee"]["steps"]
+    refusal = next(step for step in steps if "frozen" in step.get("name", "").lower())
+    assert "--refuse-frozen" in refusal["run"]
+    # before anything is replayed or published
+    names = [step.get("name", "") for step in steps]
+    assert names.index(refusal["name"]) < names.index("Verify the committed seasons against the Python engine")
 
 
 def test_the_referee_and_the_engine_never_run_together(referee_workflow, workflow):
@@ -578,18 +598,18 @@ def test_the_save_writes_only_the_record(site_pages):
     """The browser commits what it played and nothing else. hoc.db, outputs/ and
     the world snapshot are the referee's to write, from its own replay."""
     js = (site_pages / "play.js").read_text(encoding="utf-8")
-    assert "const SEASONS_PATH = 'scenarios/new/seasons';" in js
-    assert "const INTERVENTIONS_PATH = 'scenarios/new/interventions';" in js
-
+    # The page is told which game it writes to; the paths are derived from the
+    # name in record.js, so no scenario is spelled out in the page.
+    assert re.search(r'const SCENARIO = \{"name": "[a-z0-9-]+", "title": "[^"]+", "status": "live"\};', js)
+    assert "scenarios/new" not in js
+    assert "SCENARIO.status !== 'live'" in js
     # The paths a save writes are built in one place, and it builds only these.
     record = (site_pages / "engine" / "record.js").read_text(encoding="utf-8")
     paths = set(re.findall(r"path: `\$\{(\w+)\}/", record))
     assert paths == {"seasonsPath", "interventionsPath"}
-    defaults = dict(re.findall(r"export const DEFAULT_(\w+) = '([^']+)';", record))
-    assert defaults == {
-        "SEASONS_PATH": "scenarios/new/seasons",
-        "INTERVENTIONS_PATH": "scenarios/new/interventions",
-    }
+    assert "scenarios/${name}/seasons" in record
+    assert "scenarios/${name}/interventions" in record
+    assert "scenarios/new" not in record
     # One commit, fast-forward only: never a force.
     assert "force: false" in record
     assert "force: true" not in record

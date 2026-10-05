@@ -48,7 +48,7 @@ RESUME_SEASONS = 30
 
 def _world(tmp_path, seed, seasons):
     """A Python world played `seasons` seasons, writing no season files."""
-    conn = load_seed.build(tmp_path / f"w{seed}.db", seed=scenario.seed_dir("new"))
+    conn = load_seed.build(tmp_path / f"w{seed}.db", seed=scenario.blank_seed_dir())
     world = sim.World(conn, world_seed=seed, seasons_dir=None)
     world.initialise(seed)
     if seasons > 1:
@@ -111,7 +111,7 @@ def test_the_snapshot_round_trips_through_python(tmp_path):
     before = world.counts()
     conn.close()
 
-    restored = load_seed.build(tmp_path / "restored.db", seed=scenario.seed_dir("new"))
+    restored = load_seed.build(tmp_path / "restored.db", seed=scenario.blank_seed_dir())
     with restored:
         world_export.load_snapshot(restored, snapshot)
     rebuilt = sim.World(restored, world_seed=snapshot["world_seed"], seasons_dir=None)
@@ -151,7 +151,7 @@ def test_a_world_resumed_in_python_plays_on_identically(tmp_path):
         world.run(RESUME_SEASONS)
     conn.close()
 
-    restored = load_seed.build(tmp_path / "resume.db", seed=scenario.seed_dir("new"))
+    restored = load_seed.build(tmp_path / "resume.db", seed=scenario.blank_seed_dir())
     with restored:
         world_export.load_snapshot(restored, snapshot)
     resumed = sim.World(restored, world_seed=snapshot["world_seed"], seasons_dir=resumed_dir)
@@ -207,7 +207,7 @@ def _scripted_interventions(seed=1867, at=29):
     """
     workspace = Path(tempfile.mkdtemp(prefix="hoc-script-"))
     try:
-        conn = load_seed.build(workspace / "peek.db", seed=scenario.seed_dir("new"))
+        conn = load_seed.build(workspace / "peek.db", seed=scenario.blank_seed_dir())
         world = sim.World(conn, world_seed=seed, seasons_dir=None)
         world.initialise(seed)
         world.run(at)

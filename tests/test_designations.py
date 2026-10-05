@@ -95,7 +95,7 @@ def test_the_place_data_is_as_thin_as_the_tiers_assume():
 def world(tmp_path):
     import load_seed
 
-    conn = load_seed.build(tmp_path / "d.db", seed=scenario.seed_dir("new"))
+    conn = load_seed.build(tmp_path / "d.db", seed=scenario.blank_seed_dir())
     world = sim.World(conn, world_seed=SEED, rules_version="0.8")
     yield world
     conn.close()
@@ -239,7 +239,7 @@ def test_rules_07_still_draws_from_the_province_bank(tmp_path):
     played under 0.7 knows nothing about tiers."""
     import load_seed
 
-    conn = load_seed.build(tmp_path / "old.db", seed=scenario.seed_dir("new"))
+    conn = load_seed.build(tmp_path / "old.db", seed=scenario.blank_seed_dir())
     world = sim.World(conn, world_seed=SEED, rules_version="0.7")
     assert world.feature("local_designations") is False
     with conn:

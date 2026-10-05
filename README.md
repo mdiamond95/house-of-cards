@@ -62,7 +62,7 @@ The page and everything it fetches weigh about 630 KB (184 KB over the wire, gzi
 
 ### Saving your game
 
-**Save** commits the seasons this browser played, and only those: `scenarios/new/seasons/NNNN.json` exactly as the engine wrote them, plus `scenarios/new/interventions/NNNN.json` for any intervention taken during them. It does not write `hoc.db`, `outputs/` or the world snapshot — those belong to the referee, which writes them from its own replay.
+**Save** commits the seasons this browser played, and only those: `scenarios/<live>/seasons/NNNN.json` exactly as the engine wrote them, plus `scenarios/<live>/interventions/NNNN.json` for any intervention taken during them. It does not write `hoc.db`, `outputs/` or the world snapshot — those belong to the referee, which writes them from its own replay.
 
 It needs the same token the console uses, pasted once on the [Console](https://mdiamond95.github.io/house-of-cards/console.html) and kept in that browser's local storage. For saving, the token needs **Contents: read and write** (to commit the season files through the Git Data API) and **Actions: read** (to watch the referee run afterwards and report its verdict). Nothing else. The play page holds no credential of its own and sends the token only to `api.github.com`.
 
@@ -112,11 +112,11 @@ The same things, without the browser:
 
     python -m hoc sim status                      # where the game stands
     python -m hoc sim run 50 --stop-on removal,major
-    python -m hoc apply scenarios/new/turns/NNNN_sSSSS-intervention.json
+    python -m hoc apply scenarios/<live>/turns/NNNN_sSSSS-intervention.json
     python -m hoc narrate 40 60 --tone intimate   # the block, printed
     python scripts/rebuild.py                     # replay from the record
 
-Every draw comes from a seed derived from the world seed and the season number alone, and each season writes `scenarios/new/seasons/NNNN.json` recording every roll with the purpose it was drawn for — so a world replays identically from its seed, and any outcome can be traced to the roll that caused it.
+Every draw comes from a seed derived from the world seed and the season number alone, and each season writes `scenarios/<live>/seasons/NNNN.json` recording every roll with the purpose it was drawn for — so a world replays identically from its seed, and any outcome can be traced to the roll that caused it.
 
 ## Versioned rules
 

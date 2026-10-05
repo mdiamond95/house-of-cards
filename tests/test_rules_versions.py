@@ -137,7 +137,7 @@ def test_a_world_replays_under_the_version_the_season_recorded(tmp_path):
     up the recorded version's tables, not whatever current.txt says today."""
     import load_seed
 
-    conn = load_seed.build(tmp_path / "r.db", seed=scenario.seed_dir("new"))
+    conn = load_seed.build(tmp_path / "r.db", seed=scenario.blank_seed_dir())
     world = sim.World(conn, world_seed=1867, rules_version="0.7")
     assert world.rules_version == "0.7"
     assert world.rules.version == "0.7"
@@ -155,7 +155,7 @@ def test_switching_version_mid_replay_reloads_the_tables(tmp_path):
     if len(versions) < 2:
         pytest.skip("only one rules version in this checkout")
 
-    conn = load_seed.build(tmp_path / "r.db", seed=scenario.seed_dir("new"))
+    conn = load_seed.build(tmp_path / "r.db", seed=scenario.blank_seed_dir())
     world = sim.World(conn, world_seed=1867, rules_version=versions[0])
     first_actions = world.actions
     world.use_rules_version(versions[-1])

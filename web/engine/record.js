@@ -1,9 +1,10 @@
 // The record a played game leaves behind, and how it is committed.
 //
 // Phase 10-3. A browser that has played seasons saves them by committing the
-// same files the Python engine would have written — `scenarios/new/seasons/
-// NNNN.json` for each season and `scenarios/new/interventions/NNNN.json` for
-// each director's intervention — and nothing else. `hoc.db`, `outputs/` and the
+// same files the Python engine would have written — `scenarios/<name>/seasons/
+// NNNN.json` for each season and `scenarios/<name>/interventions/NNNN.json` for
+// each director's intervention, where <name> is the live scenario — and
+// nothing else. `hoc.db`, `outputs/` and the
 // world snapshot are the referee's, written from its own replay.
 //
 // This module is what says so. The play page uses it, and so does
@@ -17,8 +18,40 @@
 
 import { canonicalJson, FloatValue } from './sim.js';
 
-export const DEFAULT_SEASONS_PATH = 'scenarios/new/seasons';
-export const DEFAULT_INTERVENTIONS_PATH = 'scenarios/new/interventions';
+/** A write was attempted on a scenario that is not live. */
+export class FrozenScenarioError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'FrozenScenarioError';
+  }
+}
+
+/** Throw unless `scenario` ({name, title, status}) is live.
+ *
+ * Every path that writes the record goes through here — `recordFiles` and
+ * `commitRecord` both call it — so a frozen game is refused before a single
+ * file is built or a single request is made, whichever caller asks. A scenario
+ * that is missing, or whose status is anything but "live", reads as frozen,
+ * the same way a manifest with no status does in hoc/scenario.py.
+ */
+export function assertLive(scenario) {
+  if (!scenario || typeof scenario.name !== 'string' || scenario.name === '') {
+    throw new FrozenScenarioError('There is no live scenario, so there is nothing to save.');
+  }
+  if (scenario.status !== 'live') {
+    throw new FrozenScenarioError(
+      `${scenario.title || scenario.name} is frozen and cannot be written to. Nothing was saved.`,
+    );
+  }
+}
+
+/** Where a scenario's record lives in the repository. The one place that knows. */
+export function scenarioPaths(name) {
+  return {
+    seasonsPath: `scenarios/${name}/seasons`,
+    interventionsPath: `scenarios/${name}/interventions`,
+  };
+}
 
 function padded(season) {
   return String(season).padStart(4, '0');
@@ -34,17 +67,19 @@ export function interventionJson(turnfile) {
 /** The files a save must write, in commit order.
  *
  * `records` are season records as the engine produced them; `interventions` are
- * `{after_season, turnfile}` entries. Everything at or below `committedSeason`
+ * `{after_season, turnfile}` entries, and `scenario` is `{name, title, status}`
+ * for the game they belong to: it must be live. Everything at or below `committedSeason`
  * is already in the repository and is left alone — a save adds to the record,
  * it never rewrites it.
  */
 export function recordFiles({
+  scenario,
   records = [],
   interventions = [],
   committedSeason = 0,
-  seasonsPath = DEFAULT_SEASONS_PATH,
-  interventionsPath = DEFAULT_INTERVENTIONS_PATH,
 } = {}) {
+  assertLive(scenario);
+  const { seasonsPath, interventionsPath } = scenarioPaths(scenario.name);
   const files = [];
   for (const record of records) {
     if (record.season <= committedSeason) continue;
@@ -71,8 +106,9 @@ export function recordFiles({
  * caller is expected to have refused it before reaching here.
  */
 export async function commitRecord(api, {
-  branch = 'main', baseSha, files, message, onProgress = () => {},
+  scenario, branch = 'main', baseSha, files, message, onProgress = () => {},
 }) {
+  assertLive(scenario);
   const tree = [];
   for (let i = 0; i < files.length; i += 1) {
     onProgress(i, files.length);

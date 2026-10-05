@@ -2,6 +2,8 @@
 """Verify committed seasons with the Python engine before they become the state.
 
     python scripts/referee.py [--check-only]
+    python scripts/referee.py --all [--scenario NAME]     replay a whole record, touch nothing
+    git diff --name-only A B | python scripts/referee.py --refuse-frozen
 
 Phase 10-3. The play page lets the browser commit the seasons it played straight
 to `main`. That is only safe because nothing believes them until this runs: the
@@ -25,6 +27,11 @@ What it does, in order:
 The comparison ignores exactly one field — `engine.impl`, which names the
 implementation that wrote the file — and `tests/test_referee.py` asserts that
 the ignore list has not grown. Loosening it would defeat the entire point.
+
+The referee verifies the **live** scenario (scenarios/*/scenario.json, status
+"live") and never names one. A frozen scenario's record is closed: a push that
+adds to it is refused (`--refuse-frozen`), and `--all` replays a frozen record
+from its seed to prove it still reproduces byte for byte, changing nothing.
 
 Exit status is 0 when there is agreement (or nothing to do), 1 when a season
 does not verify, and 2 when the referee could not run at all.
@@ -99,7 +106,7 @@ def first_difference(committed, produced):
     return "the files differ in whitespace or key order but not in content"
 
 
-def verify(name=None, db_path=None, verbose=True):
+def verify(name=None, db_path=None, verbose=True, full=False):
     """Replay the committed record and compare. Returns a verdict dict.
 
     The verdict carries `ok`, the range verified, and on failure the season that
@@ -114,10 +121,21 @@ def verify(name=None, db_path=None, verbose=True):
     verification then failed, which would leave the next run believing the bad
     seasons were already applied.
     """
-    name = name or scenario.current_name()
+    if name is None:
+        name = scenario.live_name()
+        if name is None:
+            raise RefereeError("there is no live scenario, so there is nothing to verify")
+    if not full and not scenario.is_live(name):
+        raise RefereeError(
+            f"scenario {name!r} ({scenario.title(name)}) is frozen; its record is closed"
+            " and nothing is published from it. `--all` replays it without changing anything."
+        )
     db_path = Path(db_path or db.DEFAULT_DB_PATH)
 
-    live = db.connect(db_path) if db_path.exists() else None
+    # `full` replays the whole record and compares every season, whatever the
+    # database holds. It is a check, never a publication: the verdict carries no
+    # database to move into place, so it cannot touch hoc.db.
+    live = db.connect(db_path) if db_path.exists() and not full else None
     from_season = database_season(live) if live is not None else 0
     if live is not None:
         live.close()
@@ -188,6 +206,11 @@ def verify(name=None, db_path=None, verbose=True):
             ).fetchone()["n"],
         )
         conn.close()
+        if full:
+            return {
+                "ok": True, "already_applied": False, "from_season": from_season,
+                "to_season": pending[-1], "verified": verified, "counts": counts,
+            }
         keep_scratch = True
         return {
             "ok": True, "already_applied": False, "from_season": from_season,
@@ -206,11 +229,35 @@ def main(argv=None):
         help="verify and report; do not keep the rebuilt database",
     )
     parser.add_argument("--summary", default=None, help="write a step summary here")
+    parser.add_argument(
+        "--all", action="store_true",
+        help="replay the scenario's whole record from its seed and compare every season;"
+             " changes nothing, and works on a frozen scenario",
+    )
+    parser.add_argument("--scenario", default=None, help="the scenario to verify (default: the live one)")
+    parser.add_argument(
+        "--refuse-frozen", action="store_true",
+        help="read changed file paths on stdin; exit 1 if any writes to a frozen scenario",
+    )
     args = parser.parse_args(argv)
 
+    if args.refuse_frozen:
+        return refuse_frozen(sys.stdin.read().split(), args.summary)
+
     lines = []
+    if args.scenario is None and not args.all and scenario.live_name() is None:
+        lines.append("## Referee — nothing to verify")
+        lines.append("")
+        lines.append("There is no live scenario; every game is frozen.")
+        _write_summary(args.summary, lines)
+        print("referee: no live scenario; nothing to verify")
+        return 0
+
     try:
-        verdict = verify(verbose=True)
+        verdict = verify(
+            name=args.scenario or (scenario.live_name() or scenario.current_name() if args.all else None),
+            verbose=True, full=args.all,
+        )
     except RefereeError as exc:
         lines.append("## Referee — could not run")
         lines.append("")
@@ -264,6 +311,10 @@ def main(argv=None):
     lines.append(f"| {counts[0]} | {counts[1]} |")
     _write_summary(args.summary, lines)
 
+    if args.all:
+        print(f"referee: seasons {first}-{last} verify (full replay; nothing changed)")
+        return 0
+
     if args.check_only:
         shutil.rmtree(verdict["scratch"], ignore_errors=True)
         print(f"referee: seasons {first}-{last} verify (check only)")
@@ -277,6 +328,21 @@ def main(argv=None):
     print(f"REFEREE_COUNTS {counts[0]} {counts[1]}")
     print(f"referee: seasons {first}-{last} verify")
     return 0
+
+
+def refuse_frozen(paths, summary_path=None):
+    """Exit status for a push whose changed `paths` may touch a frozen scenario."""
+    offending = scenario.frozen_paths(paths)
+    if not offending:
+        print("referee: no frozen scenario was written to")
+        return 0
+    lines = ["## Referee — refused", "",
+             "This push writes to a scenario that is frozen. A frozen game's record is closed:"
+             " nothing from it is verified or published.", ""]
+    lines += [f"- `{path}`" for path in offending[:20]]
+    _write_summary(summary_path, lines)
+    print("referee: refused — " + ", ".join(offending[:5]), file=sys.stderr)
+    return 1
 
 
 def _write_summary(path, lines):

@@ -54,6 +54,19 @@ class CommandError(Exception):
     """The command will not proceed. Nothing is committed."""
 
 
+def live_scenario():
+    """The scenario a command that writes may write to, or a refusal.
+
+    `run` and `intervene` append to a game's record, so they are refused when
+    there is no live game, or when `hoc.db` holds a different one. `rules` and
+    `rebuild` write no game and are not asked.
+    """
+    try:
+        return scenario.require_live()
+    except scenario.ScenarioError as exc:
+        raise CommandError(str(exc)) from exc
+
+
 # ------------------------------------------------------------------ summary --
 
 
@@ -112,6 +125,7 @@ class Summary:
 
 
 def cmd_run(args, summary):
+    name = live_scenario()  # first: a frozen game is refused before anything else is read
     seasons = int(args.seasons or 0)
     if seasons < 1:
         raise CommandError(f"seasons must be a positive number, got {args.seasons!r}")
@@ -126,7 +140,7 @@ def cmd_run(args, summary):
 
     conn = db.connect()
     try:
-        world = sim.World(conn, seasons_dir=scenario.seasons_dir())
+        world = sim.World(conn, seasons_dir=scenario.seasons_dir(name))
     except sim.SimError as exc:
         conn.close()
         raise CommandError(str(exc)) from exc
@@ -171,6 +185,7 @@ def _next_turn_id(turns_dir):
 
 
 def cmd_intervene(args, summary):
+    name = live_scenario()
     if not (args.payload or "").strip():
         raise CommandError("intervene needs a payload: the turn file, as JSON")
     try:
@@ -195,7 +210,7 @@ def cmd_intervene(args, summary):
     # played it (Phase 10-3, C1): the console writes here and so does the
     # browser when it saves, keyed by the season the intervention follows, so
     # scripts/rebuild.py puts it back exactly where it happened.
-    interventions_dir = scenario.interventions_dir()
+    interventions_dir = scenario.interventions_dir(name)
     interventions_dir.mkdir(parents=True, exist_ok=True)
     path = interventions_dir / f"{season:04d}.json"
     if path.exists():

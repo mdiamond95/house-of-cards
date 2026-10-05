@@ -75,7 +75,7 @@ def rules():
 
 def empty_world(tmp_path, seed, rules=None, name="w"):
     """A database holding the empty (autoplay) seed, and a World over it."""
-    conn = load_seed.build(tmp_path / f"{name}.db", seed=scenario.seed_dir("new"))
+    conn = load_seed.build(tmp_path / f"{name}.db", seed=scenario.blank_seed_dir())
     world = sim.World(conn, rules=rules, world_seed=seed)
     world.initialise(seed)
     return world
@@ -288,7 +288,7 @@ def test_mortality_bands_cover_the_design_document(rules):
 def test_p_found_is_zero_on_a_full_map(tmp_path, rules):
     """The formula reaches zero when no unclaimed riding has a land neighbour,
     so founding stops by itself rather than by a house cap (§10)."""
-    conn = load_seed.build(tmp_path / "full.db", seed=scenario.seed_dir("new"))
+    conn = load_seed.build(tmp_path / "full.db", seed=scenario.blank_seed_dir())
     world = sim.World(conn, rules=rules, world_seed=1)
     world.initialise(1)
 
@@ -332,7 +332,7 @@ def test_season_one_founds_exactly_one_house(tmp_path, rules):
 
 
 def test_a_named_seat_is_honoured(tmp_path, rules):
-    conn = load_seed.build(tmp_path / "seat.db", seed=scenario.seed_dir("new"))
+    conn = load_seed.build(tmp_path / "seat.db", seed=scenario.blank_seed_dir())
     world = sim.World(conn, rules=rules, world_seed=4)
     world.initialise(4, seat="Calgary Centre")
 
@@ -412,7 +412,7 @@ def test_a_world_replays_into_an_identical_database(tmp_path, rules):
     for _ in range(19):
         played.run_season()
 
-    replayed_conn = load_seed.build(tmp_path / "replayed.db", seed=scenario.seed_dir("new"))
+    replayed_conn = load_seed.build(tmp_path / "replayed.db", seed=scenario.blank_seed_dir())
     replayed = sim.World(replayed_conn, rules=rules, world_seed=88)
     replayed.initialise(88)
     for season in range(2, 21):
@@ -551,7 +551,7 @@ def test_rebuild_commits_a_replayed_autoplay_scenario(tmp_path, rules, monkeypat
     (scenarios / "solo" / "seasons").mkdir(parents=True)
     for name in ("seed",):
         (scenarios / "solo" / name).mkdir()
-    for csv_path in scenario.seed_dir("new").glob("*.csv"):
+    for csv_path in scenario.blank_seed_dir().glob("*.csv"):
         (scenarios / "solo" / "seed" / csv_path.name).write_text(
             csv_path.read_text(encoding="utf-8"), encoding="utf-8"
         )
@@ -590,7 +590,7 @@ def test_rebuild_commits_a_replayed_autoplay_scenario(tmp_path, rules, monkeypat
 def test_a_world_runs_every_phase_by_default(tmp_path, rules):
     """The default must be the whole loop. A phase quietly dropped from the
     default would be a rule silently switched off in the live game."""
-    conn = load_seed.build(tmp_path / "phases.db", seed=scenario.seed_dir("new"))
+    conn = load_seed.build(tmp_path / "phases.db", seed=scenario.blank_seed_dir())
     world = sim.World(conn, rules=rules, world_seed=5)
     assert world.phases == frozenset(sim.PHASES)
     assert set(sim.PHASES) == {
@@ -613,7 +613,7 @@ def test_the_phases_flag_is_documented_as_developer_only():
 
 
 def test_an_unknown_phase_is_refused(tmp_path, rules):
-    conn = load_seed.build(tmp_path / "badphase.db", seed=scenario.seed_dir("new"))
+    conn = load_seed.build(tmp_path / "badphase.db", seed=scenario.blank_seed_dir())
     with pytest.raises(sim.SimError) as raised:
         sim.World(conn, rules=rules, world_seed=5, phases=["clocks", "teatime"])
     assert "teatime" in str(raised.value)
@@ -623,7 +623,7 @@ def test_an_unknown_phase_is_refused(tmp_path, rules):
 def test_dropping_a_phase_actually_drops_it(tmp_path, rules):
     """The flag has to do something, or the cross-check's phase-by-phase mode
     would be comparing two full runs and calling it progress."""
-    conn = load_seed.build(tmp_path / "nofound.db", seed=scenario.seed_dir("new"))
+    conn = load_seed.build(tmp_path / "nofound.db", seed=scenario.blank_seed_dir())
     world = sim.World(conn, rules=rules, world_seed=5, phases=["clocks", "actions"])
     world.initialise(5)
     for _ in range(20):

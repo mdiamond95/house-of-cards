@@ -1,6 +1,6 @@
 """Command line entry point.
 
-    python -m hoc apply scenarios/legacy/turns/0001_slug.json
+    python -m hoc apply scenarios/<name>/turns/0001_slug.json
     python -m hoc export                       regenerate outputs/ from hoc.db
     python -m hoc status                       compact summary of the state
     python -m hoc check <house> <riding>       test an expansion, changing nothing
@@ -15,6 +15,7 @@
 import argparse
 import json
 import sys
+from pathlib import Path
 
 # The engine workflow reads the run summary off stdout rather than parsing prose.
 SUMMARY_PREFIX = "ENGINE_SUMMARY "
@@ -42,11 +43,34 @@ def _build_archive(out_dir=None):
     sys.path.insert(0, str(db.PACKAGE_ROOT.parent / "scripts"))
     import build_archive
 
-    files = build_archive.build_archive(**({} if out_dir is None else {"out_dir": out_dir}))
-    return files[0].parent
+    build_archive.build_archive(**({} if out_dir is None else {"out_dir": out_dir}))
+    return Path(out_dir or site.DEFAULT_OUT_DIR) / site.SITE_DIRNAME / site.ARCHIVE_DIRNAME
+
+
+def _refuse_unless_live():
+    """Print why and return 1 if no scenario can be written to, else None.
+
+    Every command here that changes a game goes through this: a frozen game's
+    record is closed, and `hoc.db` has to hold the live one for a writer to play
+    on it. (`--db` pointing somewhere other than hoc.db is a scratch database
+    and is the caller's business.)"""
+    try:
+        scenario_mod.require_live()
+    except scenario_mod.ScenarioError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    return None
+
+
+def _is_game_db(args):
+    return Path(args.db).resolve() == Path(db.DEFAULT_DB_PATH).resolve()
 
 
 def cmd_apply(args):
+    if _is_game_db(args):
+        refused = _refuse_unless_live()
+        if refused:
+            return refused
     conn = db.connect(args.db)
     try:
         summary = apply_turn(conn, args.turnfile)
@@ -145,16 +169,13 @@ def cmd_sim(args):
     from hoc import scenario as scen, sim
 
     active = scen.current_name()
+    if args.sim_command in ("new", "run") and _is_game_db(args):
+        refused = _refuse_unless_live()
+        if refused:
+            return refused
     conn = db.connect(args.db)
 
     if args.sim_command == "new":
-        if active != "new":
-            print(
-                f"error: the active scenario is {active!r}; run"
-                " `python -m hoc scenario use new` first",
-                file=sys.stderr,
-            )
-            return 1
         if conn.execute("SELECT COUNT(*) AS n FROM seasons").fetchone()["n"]:
             print(
                 "error: this world has already started; rebuild it from an empty"
@@ -221,7 +242,7 @@ def cmd_sim(args):
         "SELECT season_no, seed, houses_after, ridings_after, rules_version"
         " FROM seasons ORDER BY season_no DESC LIMIT 1"
     ).fetchone()
-    print(f"scenario: {active}")
+    print(f"scenario: {active} ({scen.status(active)})")
     if row is None:
         print("no seasons played")
         conn.close()
@@ -241,8 +262,8 @@ def cmd_narrate(args):
 
     houses = [h.strip() for h in (args.houses or "").split(",") if h.strip()]
     try:
-        print(narrate_block(args.season_from, args.season_to, houses, args.tone))
-    except ValueError as exc:
+        print(narrate_block(args.season_from, args.season_to, houses, args.tone, args.scenario))
+    except (ValueError, scenario_mod.ScenarioError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
     return 0
@@ -257,8 +278,14 @@ def cmd_scenario(args):
             kind = manifest.get("kind", "unknown")
             seed = manifest.get("seed")
             seed_text = "no seed yet" if seed is None else f"seed {seed}"
-            print(f" {marker} {name:<8} {kind:<9} {seed_text}")
+            status = scenario_mod.status(name)
+            print(
+                f" {marker} {name:<8} {status:<7} {kind:<9} {seed_text:<12}"
+                f" {scenario_mod.title(name)}"
+            )
+        live = scenario_mod.live_name()
         print("\n* is the scenario hoc.db is built from (scenarios/current.txt)")
+        print(f"live: {live}" if live else "live: none — every scenario is frozen")
         return 0
 
     try:
@@ -331,6 +358,9 @@ def build_parser():
     narrate_parser.add_argument(
         "--tone", default="chronicle", choices=sorted(__import__(
             "hoc.export.turn_block", fromlist=["TONES"]).TONES)
+    )
+    narrate_parser.add_argument(
+        "--scenario", help="the scenario to narrate (default: the one hoc.db holds); frozen games may be narrated"
     )
     narrate_parser.set_defaults(func=cmd_narrate)
     return parser
