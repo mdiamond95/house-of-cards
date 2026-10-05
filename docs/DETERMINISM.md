@@ -192,6 +192,24 @@ this rule:
 6. A value nothing in the game reads (`jurisdictions[].share`, `score.exposure`) is not
    carried at all, rather than converted for no one.
 
+7. A place's **`designation_ok`** (`places_by_riding.csv`) is decided by text tests on
+   the name exactly as Meridian wrote it, never on a rewritten one. It is 1 only when all
+   of these hold, else 0:
+   - `spans_ridings` is 0 (the place's population does not exceed its riding's);
+   - every character is a letter (Unicode `isalpha`, accented letters included), a space,
+     a hyphen, an apostrophe (`'` or `’`) or a period — so no digit, comma, parenthesis
+     or slash;
+   - none of `Subd`, `Unorganized`, `Division`, `Part`, `Partie`, `Area`, `No`, `District`,
+     `Region`, `Regional`, `Improvement`, `Special`, `County`, `Municipality`, `Municipal`,
+     `Rural`, `Reserve`, `Settlement`, `Nation`, `Communauté` appears as a whole word
+     (not preceded or followed by a word character; case as written);
+   - the name does not end in a space and a single capital letter (`Cariboo I`);
+   - splitting the name on the space character gives at most four parts.
+
+   Both engines keep a place as a designation candidate only when it is 1, in the seat's
+   own tier and its neighbours' tier alike; a set without the column (`ne-2026`) keeps every
+   place. At v1.0.3 it is 1 for 3,353 of 4,830 places, in 194 ridings.
+
 The CSVs are committed, so the rule runs once per reference-data version and both engines
 read identical integers in identical row order. Map geometry stays in decimal degrees,
 because a map is drawn in them; it is computed in the same exact decimal arithmetic

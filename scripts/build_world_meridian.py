@@ -10,7 +10,7 @@ and writes, beside them, the tables a scenario whose manifest says
 
     ridings.csv               the existing shape: fed_id, name_en, name_fr, province, name_key
     adjacency.csv             the existing shape, from each row's `neighbours`
-    places_by_riding.csv      the existing shape, plus spans_ridings
+    places_by_riding.csv      the existing shape, plus spans_ridings and designation_ok
     riding_tokens.csv         the existing shape, by the same rule as build_places.py
     geometry_simplified.geojson, borders_shared.geojson     the map (and the site's), from the layer
     riding_stats.csv          new: integers only, one row per riding
@@ -36,12 +36,17 @@ only as a quintile.
 point falls in — with the whole place's population, so a city larger than the
 riding it was filed under (Halifax under Central Nova, Montréal under Papineau)
 is marked `spans_ridings = 1`. Such a place is never a designation for that
-riding: `hoc/places.py` and `web/engine/adjacency.js` both drop it on load.
+riding. Many census places are administrative units, not places ("Division
+No.  1, Subd. U", "Yarmouth 33"), so `designation_ok` is 1 only for a name a
+peerage could be styled after (designation_ok() below; docs/DETERMINISM.md).
+`hoc/places.py` and `web/engine/adjacency.js` keep a place as a designation
+candidate only when it is 1.
 """
 
 import csv
 import gzip
 import json
+import re
 import sys
 from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
@@ -138,6 +143,51 @@ def adjacency_rows(table):
     ]
 
 
+# ------------------------------------------------------------ designations --
+
+# The characters a designation may contain: letters (accented included), spaces,
+# hyphens, apostrophes (straight or curly) and periods. No digit, comma,
+# parenthesis or slash — "Yarmouth 33" and "Division No.  1, Subd. U" are
+# census bookkeeping, not places a peerage could be styled after.
+DESIGNATION_PUNCTUATION = " -'\u2019."
+
+# Words that mark an administrative unit rather than a place, refused wherever
+# they appear as a whole word.
+ADMINISTRATIVE_WORDS = (
+    "Subd", "Unorganized", "Division", "Part", "Partie", "Area", "No", "District",
+    "Region", "Regional", "Improvement", "Special", "County", "Municipality",
+    "Municipal", "Rural", "Reserve", "Settlement", "Nation", "Communauté",
+)
+_ADMINISTRATIVE = re.compile(
+    r"(?<!\w)(?:%s)(?!\w)" % "|".join(re.escape(word) for word in ADMINISTRATIVE_WORDS)
+)
+
+MAX_DESIGNATION_WORDS = 4
+
+
+def designation_ok(name, spans_ridings):
+    """1 if a place may be a riding's territorial designation, else 0.
+
+    All of: it does not span its riding; it is made only of letters, spaces,
+    hyphens, apostrophes and periods; no administrative word appears in it as a
+    whole word; it does not end in a space and a single capital letter (a
+    lettered subdivision, "Cariboo I"); it has at most four words split on
+    spaces. A name that fails is marked, never rewritten into one that would
+    pass (CLAUDE.md hard rule 1): "Yarmouth 33" is not "Yarmouth".
+    """
+    if spans_ridings:
+        return 0
+    if not name or not all(ch.isalpha() or ch in DESIGNATION_PUNCTUATION for ch in name):
+        return 0
+    if _ADMINISTRATIVE.search(name):
+        return 0
+    if len(name) >= 2 and name[-2] == " " and name[-1].isupper():
+        return 0
+    if len(name.split(" ")) > MAX_DESIGNATION_WORDS:
+        return 0
+    return 1
+
+
 def places_rows(table):
     """Every place, in the table's own order: riding by riding, population
     descending, ties as Meridian listed them. That order is the order the
@@ -145,11 +195,13 @@ def places_rows(table):
     out = []
     for row in table["rows"]:
         for place in row["places"]:
+            spans = 1 if place["population"] > row["population"] else 0
             out.append({
                 "fed_id": str(row["id"]),
                 "place": place["name"],
                 "population": place["population"],
-                "spans_ridings": 1 if place["population"] > row["population"] else 0,
+                "spans_ridings": spans,
+                "designation_ok": designation_ok(place["name"], spans),
             })
     return out
 
@@ -349,7 +401,7 @@ def build(out_dir=OUT_DIR, raw_dir=RAW_DIR, verbose=True):
     write_csv(out_dir / "adjacency.csv", adjacency,
               ["fed_id_a", "fed_id_b", "adjacency_type"], "\r\n")
     write_csv(out_dir / "places_by_riding.csv", places,
-              ["fed_id", "place", "population", "spans_ridings"])
+              ["fed_id", "place", "population", "spans_ridings", "designation_ok"])
     write_csv(out_dir / "riding_tokens.csv", tokens, ["fed_id", "token", "token_order"])
     write_csv(out_dir / "riding_stats.csv", stats, [
         "fed_id", "population", "land_area_km2", "wealth_tier", "resource_tier",
@@ -365,6 +417,7 @@ def build(out_dir=OUT_DIR, raw_dir=RAW_DIR, verbose=True):
     write_geojson(out_dir / "borders_shared.geojson", borders)
 
     usable = {p["fed_id"] for p in places if not p["spans_ridings"]}
+    designations = [p for p in places if p["designation_ok"]]
     first_spans = sorted(
         int(r["fed_id"]) for r in ridings
         if any(p["fed_id"] == r["fed_id"] for p in places)
@@ -379,6 +432,8 @@ def build(out_dir=OUT_DIR, raw_dir=RAW_DIR, verbose=True):
         "ridings_without_places": len(ridings) - len({p["fed_id"] for p in places}),
         "ridings_whose_first_place_spans": len(first_spans),
         "ridings_with_a_usable_place": len(usable),
+        "places_designation_ok": len(designations),
+        "ridings_with_a_designation_place": len({p["fed_id"] for p in designations}),
         "jurisdiction_spans": len(jurisdictions),
         "jurisdiction_spans_dropped": dropped,
         "opens_year_counts": {
@@ -401,7 +456,9 @@ def build(out_dir=OUT_DIR, raw_dir=RAW_DIR, verbose=True):
         rel = out_dir.relative_to(ROOT) if out_dir.is_relative_to(ROOT) else out_dir
         print(f"{rel}: {len(ridings)} ridings, {len(adjacency)} adjacency pairs,"
               f" {len(places)} places ({report['places_spanning_ridings']} spanning their riding),"
-              f" {len(usable)} ridings with a usable place, {len(tokens)} tokens,"
+              f" {len(usable)} ridings with a usable place, {len(designations)} places fit"
+              f" for a designation in {report['ridings_with_a_designation_place']} ridings,"
+              f" {len(tokens)} tokens,"
               f" {len(jurisdictions)} jurisdiction spans, {len(borders)} border arcs")
         if dropped:
             print(f"  dropped {len(dropped)} empty span(s): {dropped}")

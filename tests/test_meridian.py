@@ -264,7 +264,7 @@ def test_places_that_span_their_riding_are_marked():
 
 def test_a_place_that_spans_its_riding_is_never_its_designation():
     by_riding = places.places_by_riding(MERIDIAN)
-    assert len(by_riding) == 203
+    assert len(by_riding) == 194
     halifax_riding = next(r["fed_id"] for r in load(MERIDIAN / "ridings.csv")
                           if r["name_en"] == "Central Nova")
     assert "Halifax" in {r["place"] for r in load(MERIDIAN / "places_by_riding.csv")
@@ -274,6 +274,66 @@ def test_a_place_that_spans_its_riding_is_never_its_designation():
     assert sum(map(len, places.places_by_riding(NE).values())) == len(
         load(NE / "places_by_riding.csv")
     )
+
+
+def test_designation_ok_counts():
+    rows = load(MERIDIAN / "places_by_riding.csv")
+    assert len(rows) == 4830
+    ok = [r for r in rows if r["designation_ok"] == "1"]
+    assert len(ok) == 3353
+    assert len({r["fed_id"] for r in ok}) == 194
+    assert all(r["spans_ridings"] == "0" for r in ok)
+    report = json.loads((MERIDIAN / "build_report.json").read_text(encoding="utf-8"))
+    assert (report["places_designation_ok"], report["ridings_with_a_designation_place"]) == (
+        3353, 194,
+    )
+
+
+@pytest.mark.parametrize("name, expected", [
+    ("Saint-Jérôme", 1),
+    ("Baie-D’Urfé", 1),
+    ("St. Mary's", 1),
+    ("Notre-Dame-de-l'Île-Perrot", 1),
+    ("Partridge Island", 1),                 # "Part" only as a whole word
+    ("Division No.  1, Subd. U", 0),          # digits, comma, Division, No, Subd
+    ("Yarmouth 33", 0),                       # a digit: refused, never trimmed to Yarmouth
+    ("Cariboo I", 0),                         # a lettered subdivision
+    ("Fraser Valley E", 0),
+    ("Kings, Subd. A", 0),
+    ("Halifax (Part)", 0),                    # parentheses
+    ("Lac-Saint-Jean-Est/Ouest", 0),          # a slash
+    ("Unorganized Thunder Bay", 0),
+    ("Rural Municipality of Corman Park", 0),
+    ("Sturgeon County", 0),
+    ("Communauté Wendake", 0),
+    ("Peguis Reserve", 0),
+    ("Smith Part", 0),
+    ("One Two Three Four", 1),
+    ("One Two Three Four Five", 0),           # more than four words
+])
+def test_the_designation_rule(name, expected):
+    assert build_world_meridian.designation_ok(name, 0) == expected
+
+
+def test_a_place_that_spans_its_riding_is_never_designation_ok():
+    assert build_world_meridian.designation_ok("Halifax", 1) == 0
+
+
+def test_no_candidate_offered_on_meridian_contains_a_digit_or_a_comma(tmp_path):
+    """Every tier of every riding's designation candidates — its own places, its
+    name's words, its neighbours' places and the province bank."""
+    conn = load_seed.build(tmp_path / "c.db", seed=scenario.blank_seed_dir(), reference_data=KEY)
+    world = sim.World(conn, world_seed=1867)
+    offered = 0
+    for row in conn.execute("SELECT fed_id, province FROM ridings ORDER BY fed_id"):
+        for tier in world._designation_tiers(row["fed_id"], row["province"]):
+            for candidate in tier:
+                offered += 1
+                assert not any(ch.isdigit() or ch == "," for ch in candidate), (
+                    row["fed_id"], candidate,
+                )
+    conn.close()
+    assert offered > 3353
 
 
 def test_tokens_are_ne_2026s():
@@ -370,7 +430,7 @@ def test_both_engines_play_the_same_game_on_meridian():
 
 def test_a_game_on_meridian_takes_its_designations_from_meridian(tmp_path):
     """Thirty seasons on the Meridian set: every seat designation is one of that
-    set's own usable places, a riding-name token, or the province bank — never
+    set's own designation_ok places, a riding-name token, or the province bank — never
     a place filed under a riding it is bigger than, unless the riding is
     named for it."""
     conn = load_seed.build(tmp_path / "m.db", seed=scenario.blank_seed_dir(), reference_data=KEY)
@@ -389,7 +449,7 @@ def test_a_game_on_meridian_takes_its_designations_from_meridian(tmp_path):
     conn.close()
     assert seats, "thirty seasons found no house"
     rows = load(MERIDIAN / "places_by_riding.csv")
-    usable = {r["place"] for r in rows if r["spans_ridings"] == "0"}
+    usable = {r["place"] for r in rows if r["designation_ok"] == "1"}
     spanning = {(r["place"], r["fed_id"]) for r in rows if r["spans_ridings"] == "1"}
     tokens = {r["token"] for r in load(MERIDIAN / "riding_tokens.csv")}
     bank = {row.place for row in sim.load_rules().places}

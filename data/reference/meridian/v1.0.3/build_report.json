@@ -7,6 +7,8 @@
   "ridings_without_places": 108,
   "ridings_whose_first_place_spans": 47,
   "ridings_with_a_usable_place": 203,
+  "places_designation_ok": 3353,
+  "ridings_with_a_designation_place": 194,
   "jurisdiction_spans": 607,
   "jurisdiction_spans_dropped": [],
   "opens_year_counts": {

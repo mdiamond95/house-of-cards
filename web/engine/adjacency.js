@@ -66,10 +66,14 @@ export class ReferenceMap {
     // the draws depend on, and the reason both engines read the same two files
     // rather than each deriving them (hoc/places.py says why). A place marked
     // spans_ridings = 1 is bigger than the riding it is filed under and is
-    // never a designation for it: dropped here, as hoc/places.py drops it.
+    // never a designation for it; where the set has a designation_ok column,
+    // only a place marked 1 is a candidate at all, in the seat's own tier and
+    // its neighbours' alike. Both dropped here, as hoc/places.py drops them; a
+    // set without the columns (ne-2026) loses nothing.
     this.placesByRiding = new Map();
     for (const row of placeRows) {
       if (row.spans_ridings === '1') continue;
+      if (row.designation_ok !== undefined && row.designation_ok !== '1') continue;
       if (!this.placesByRiding.has(row.fed_id)) this.placesByRiding.set(row.fed_id, []);
       this.placesByRiding.get(row.fed_id).push(row.place);
     }

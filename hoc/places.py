@@ -14,7 +14,12 @@ Two tables in every reference-data set:
   subdivisions, with a `spans_ridings` column: 1 when the place's population
   exceeds its riding's, as a city filed under the riding its point fell in does
   (Halifax under Central Nova). Such a place is never a designation for that
-  riding, and is dropped here, on load, in both engines.
+  riding. It also has a `designation_ok` column, 1 only for a name a peerage
+  could be styled after — not "Division No.  1, Subd. U" or "Yarmouth 33"
+  (scripts/build_world_meridian.py, docs/DETERMINISM.md). Only a place with
+  designation_ok = 1 is kept here, on load, in both engines, so it is the only
+  kind either designation tier (the seat's own, or its neighbours') can offer.
+  `ne-2026` has neither column and loses nothing.
 * `riding_tokens.csv` — the usable words in a riding's own name, in name order.
   Every riding has at least one, which is what makes the draw always able to
   answer.
@@ -95,11 +100,12 @@ def reference_dir_for(conn):
 
 def places_by_riding(reference_dir=None):
     """fed_id -> place names, largest population first (the file's own order),
-    without any place that spans its riding."""
+    keeping only those that may be a designation: none that spans its riding,
+    and, where the set marks it, only designation_ok = 1."""
     def build(directory):
         rows = [
             row for row in _rows(directory / "places_by_riding.csv")
-            if row.get("spans_ridings", "0") != "1"
+            if row.get("spans_ridings", "0") != "1" and row.get("designation_ok", "1") == "1"
         ]
         return _group(rows, "fed_id", "place")
     return _cached("places", reference_dir, build)
