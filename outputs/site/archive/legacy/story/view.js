@@ -89,12 +89,9 @@ export function dispatchHtml(d, { unit = 'season' } = {}) {
 }
 
 // Why Auto stopped on this dispatch, or null.
-export function pauseReason(d, threshold) {
+export function pauseReason(d) {
   if (!d || !d.pause) return null;
-  if (d.moments && d.moments.length) {
-    return `Paused: ${d.moments.map((m) => `${m.name} ${CHANGES[m.change] || m.change}`).join('; ')}. Press Auto to carry on.`;
-  }
-  return `Paused on a headline of weight ${d.headline.weight} (the pause threshold is ${threshold}). Press Auto to carry on.`;
+  return `Paused: ${(d.stops || []).join('; ')}. Press Auto to carry on.`;
 }
 
 export function recordHtml(d) {

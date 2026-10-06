@@ -36,7 +36,7 @@ const BRANCH = 'main';
 const SCENARIO = {"name": "dominion", "title": "The Dominion", "status": "live"};
 // The same key the console keeps its token under: one token, pasted once.
 const TOKEN_KEY = 'hoc-token';
-const RULES_FILES = ["actions.csv", "communities.csv", "denylist.csv", "events.csv", "given_names.csv", "mortality.csv", "objectives.csv", "places.csv", "surnames.csv", "eras.json", "founding.json", "friction.json", "responses.json", "succession.json", "features.json"];
+const RULES_FILES = ["actions.csv", "communities.csv", "denylist.csv", "events.csv", "given_names.csv", "mortality.csv", "objectives.csv", "places.csv", "surnames.csv", "eras.json", "founding.json", "friction.json", "responses.json", "succession.json", "features.json", "traits.csv", "upkeep.json"];
 const REFERENCE_FILES = ["ridings.csv", "adjacency.csv", "places_by_riding.csv", "riding_tokens.csv", "riding_stats.csv", "riding_jurisdictions.csv"];
 const UNCLAIMED_FILL = '#E5E5E5';
 const FOLLOW_KEY = `hoc-story-follow:${SCENARIO.name}`;
@@ -57,11 +57,21 @@ function assetUrl(logical) {
   return logical.startsWith('rules/') ? `data/${logical}` : logical;
 }
 
+// Rules tables a version may lack (hoc/export/play.py OPTIONAL_RULES_FILES):
+// a 404 for one is the version saying it has none, and the loader reads it so.
+const OPTIONAL_RULES_FILES = ["traits.csv", "upkeep.json"];
+
 async function fetchAll(paths, onProgress) {
   const contents = new Map();
   let done = 0;
   for (const logical of paths) {
     const response = await fetch(assetUrl(logical));
+    const optional = OPTIONAL_RULES_FILES.some((name) => logical.endsWith(`/${name}`));
+    if (!response.ok && optional && response.status === 404) {
+      done += 1;
+      onProgress(done, paths.length);
+      continue;
+    }
     if (!response.ok) throw new Error(`could not load ${logical} (${response.status})`);
     contents.set(logical, await response.text());
     done += 1;
@@ -464,7 +474,7 @@ function playOne({ zoom = false } = {}) {
   app.viewing = record.season;
   appendFeed(record.season, record.chronicle, { stopped });
   renderAll({ flash: true });
-  tellSeason(record.season, { zoom });
+  tellSeason(record.season, { zoom, prestige: record.prestige || null });
   autosave();
   return stopped;
 }
@@ -496,6 +506,7 @@ function newStory() {
     seen: currentSeason() > 0 ? BEAT_KINDS : [],
     styleOf,
     ridings: ridingNames(),
+    watch: app.world.feature('succession_watch'),
   });
   app.afoot = null;
   app.lastDispatch = null;
@@ -539,9 +550,9 @@ function focusOf(d) {
     .map(([fed]) => fed);
 }
 
-function tellSeason(season, { zoom = false } = {}) {
+function tellSeason(season, { zoom = false, prestige = null } = {}) {
   if (!app.story) return null;
-  const d = app.story.step(season, typeTurn(inputFromState(app.world.state, season)));
+  const d = app.story.step(season, typeTurn(inputFromState(app.world.state, season)), { prestige });
   renderAfoot();
   const current = el('story-dispatch');
   if (app.lastDispatch !== null) {
@@ -590,7 +601,7 @@ function autoTick() {
     return;
   }
   const d = app.lastDispatch;
-  if (d && d.pause) stopAuto(pauseReason(d, app.weights.thresholds.pause));
+  if (d && d.pause) stopAuto(pauseReason(d));
 }
 
 function startAuto() {

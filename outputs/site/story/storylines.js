@@ -8,9 +8,11 @@
 //               take part in escalates it. Closes on a reconciliation, a
 //               dispute carried to a settlement, a riding passing between
 //               them, or the removal of either.
-//   succession  opens on a disorderly succession. Escalated by the house's
-//               successions, ridings lost and partition. Closes when an heir is
-//               named or succeeds cleanly, or when the house fails.
+//   succession  opens on a disorderly succession, or — for a game whose record
+//               carries rules 1.0's succession watch — on a holder turning sixty
+//               with no heir. Escalated by the house's successions, ridings lost
+//               and partition. Closes when an heir is named (or, with the watch,
+//               comes of age) or succeeds cleanly, or when the house fails.
 //   rise        opens when a house enters the top eight. Escalated by every
 //               beat that moves the house's own standing. Closes when it
 //               reaches first, or drops out of the top eight.
@@ -21,8 +23,9 @@
 //               cast. Escalated by every beat both take part in. Closes on a
 //               partition or absorption of either, or a falling-out between them.
 //   frontier    opens on the first riding any house holds in a province.
-//               Escalated by every riding taken there. Closes when the province
-//               is half claimed (`storylines.frontier_share`).
+//               Escalated by every unclaimed riding taken there (a riding
+//               passing between houses is not a frontier beat). Closes when the
+//               province is half claimed (`storylines.frontier_share`).
 //
 // Over all of them: a storyline with no beat for `lapse_turns` turns closes as
 // "lapsed"; a house's removal closes every storyline it is in, the removal its
@@ -49,7 +52,7 @@ export const PROVINCES = {
 
 const QUIET_KINDS = new Set([
   'invest', 'cultivate', 'consolidate', 'name_heir', 'correspondence', 'era_response',
-  'major_response', 'other',
+  'major_response', 'other', 'bide',
 ]);
 
 function storyBeat(beat) {
@@ -86,8 +89,11 @@ export class Storylines {
   // `provinceTotals` maps a province code to its number of ridings; `held`
   // lists the provinces in which some house already held a riding before the
   // first turn (they are no frontier).
-  constructor({ weights, provinceTotals = {}, held = [] }) {
+  constructor({ weights, provinceTotals = {}, held = [], watch = false }) {
     this.weights = weights;
+    // Whether the record carries rules 1.0's succession watch (heir_wanted and
+    // heir_of_age beats): its questions then close on an heir coming of age.
+    this.watch = watch;
     this.provinceTotals = provinceTotals;
     this.held = new Set(held);
     this.all = [];
@@ -133,7 +139,7 @@ export class Storylines {
       if (s.beats.some((entry) => entry.index === index && entry.turn === turn)) return;
       const earlier = s.beats.length;
       s.beats.push({ turn, beat: beats[index], index });
-      roles[index].push({ id: s.id, role, earlier });
+      roles[index].push({ id: s.id, role, earlier, type: s.type });
       touched.add(s.id);
       if (s.state === 'rising' && s.beats.length >= cfg.climax_beats && role !== 'close') {
         s.state = 'climax';
@@ -200,13 +206,15 @@ export class Storylines {
         const subject = beat.merge ? beat.parts[0].houses[0] : a;
         const running = subject === undefined ? null : this.find('succession', subject);
         if (running) {
-          if (beat.kind === 'name_heir' || beat.kind === 'succession_clean' || beat.merge === 'partition') {
-            close(running, i, beat.kind === 'name_heir' ? 'an heir named' : 'an heir succeeded');
-          } else if (['succession_disorderly', 'riding_lost', 'partition', 'removed'].includes(beat.kind)
+          if (beat.kind === 'heir_of_age') {
+            close(running, i, 'an heir came of age');
+          } else if (beat.kind === 'succession_clean' || beat.merge === 'partition') {
+            close(running, i, 'an heir succeeded');
+          } else if (['succession_disorderly', 'riding_lost', 'partition', 'removed', 'heir_wanted'].includes(beat.kind)
                      && houses.includes(running.key)) {
             attach(running, i, 'escalate');
           }
-        } else if (beat.kind === 'succession_disorderly'
+        } else if (beat.kind === 'succession_disorderly' || beat.kind === 'heir_wanted'
                    || (beat.merge === 'collapse' && beat.parts[0].kind === 'succession_disorderly')) {
           if (!removed.includes(subject)) open('succession', subject, [subject], i);
         }
@@ -221,7 +229,9 @@ export class Storylines {
         // Frontier: the first riding in a province opens one; later ridings
         // there escalate it.
         for (const [fed, owner] of Object.entries(beat.owners || {})) {
-          if (owner === null) continue;
+          // Only unclaimed land taken counts: a riding passing from one house
+          // to another is never a frontier beat.
+          if (owner === null || board.owners[fed] !== undefined) continue;
           const province = provinceOf(fed);
           const running = this.find('frontier', province);
           if (running) {
@@ -243,8 +253,11 @@ export class Storylines {
           }
         }
       } else if (beat.kind === 'name_heir' && a !== undefined) {
+        // With the watch, naming an heir is a step; the question closes when
+        // the heir comes of age. Without it, naming one is the answer.
         const running = this.find('succession', a);
-        if (running) close(running, i, 'an heir named');
+        if (running && this.watch) attach(running, i, 'escalate');
+        else if (running) close(running, i, 'an heir named');
       }
 
       // A removal ends every storyline the house is a principal of. A frontier
