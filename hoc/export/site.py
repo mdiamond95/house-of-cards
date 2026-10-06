@@ -1131,6 +1131,20 @@ def _house_engine_sections(conn, house, slugs):
         + (f" (since season {stats['enclosed_since']})" if stats["enclosed_since"] else "")
         + "</dd>"
     )
+    # Rules 1.0 `prestige` and `holder_traits`, where the record carries them.
+    if stats["prestige"] is not None:
+        parts.append(f"<dt>Prestige</dt><dd>{stats['prestige']}</dd>")
+    for person in conn.execute(
+        "SELECT name, role, traits FROM persons WHERE house = ? AND alive = 1"
+        " AND traits IS NOT NULL AND role IN ('holder', 'heir', 'heir2') ORDER BY role DESC, id",
+        (house,),
+    ):
+        label = {"holder": "Holder's traits", "heir": "Heir's traits", "heir2": "Second heir's traits"}
+        traits = ", ".join(t for t in person["traits"].split(",") if t)
+        parts.append(
+            f"<dt>{label[person['role']]}</dt><dd>{esc(traits)}"
+            f' <span class="meta">({esc(person["name"])})</span></dd>'
+        )
     parts.append("</dl>")
 
     series = _stat_series(conn, house)
@@ -3049,6 +3063,7 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
             site_dir / "play.js",
             PLAY_JS
             .replace("__RULES_FILES__", json.dumps(list(play_export.RULES_FILES)))
+            .replace("__OPTIONAL_RULES_FILES__", json.dumps(list(play_export.OPTIONAL_RULES_FILES)))
             .replace(
                 "__REFERENCE_FILES__",
                 json.dumps(list(play_export.reference_files(reference_dir))),

@@ -15,8 +15,11 @@
 //   * at most one era response (major_response or era_response) appears in a
 //     dispatch, and one headlines only when nothing else reaches the quiet
 //     threshold;
-//   * a dispatch pauses Auto at the pause threshold, and also when a storyline
-//     of a cast or followed house opens, reaches its climax or closes.
+//   * a dispatch pauses Auto (Phase C1) only when a storyline of at least
+//     `storylines.pause_closing_beats` beats involving a cast or followed house
+//     closes, a house is removed, a riding passes between two cast houses, or
+//     the followed house is in a headline at or above the pause threshold.
+//     Storyline openings, climaxes and rises and declines are shown, not paused on.
 //
 // `Story` steps through a game turn by turn: it keeps the board (standings.js),
 // the weighting context (weight.js) and the storylines, and returns each turn's
@@ -64,14 +67,20 @@ function estates(n) {
   return n === 1 ? 'one house tended its estates' : `${numberWord(n)} houses tended their estates`;
 }
 
-// The storyline a beat is best told as part of: the longest it belongs to.
+// The storyline a beat is best told as part of: the longest it belongs to,
+// other than a frontier — a frontier names a headline only when the headline
+// belongs to nothing else.
 function mainStoryline(roles, lines) {
   let best = null;
+  let frontier = null;
   for (const { id } of roles || []) {
     const s = lines.of(id);
-    if (s && (best === null || s.beats.length > best.beats.length)) best = s;
+    if (!s) continue;
+    if (s.type === 'frontier') {
+      if (frontier === null || s.beats.length > frontier.beats.length) frontier = s;
+    } else if (best === null || s.beats.length > best.beats.length) best = s;
   }
-  return best;
+  return best || frontier;
 }
 
 // Choose a turn's headline, its storyline's other beats, the secondaries and
@@ -120,7 +129,7 @@ export class Story {
   // `ridings` maps every fed_id to its riding's name.
   constructor({
     weights, baseline = emptyBoard(), follow = null, unit = 'season', seen = [],
-    styleOf = () => null, ridings = {},
+    styleOf = () => null, ridings = {}, watch = false,
   }) {
     this.weights = weights;
     this.follow = follow;
@@ -135,6 +144,7 @@ export class Story {
       weights,
       provinceTotals: provinceTotals(ridings),
       held: Object.keys(this.board.owners).map(provinceOf),
+      watch,
     });
   }
 
@@ -172,14 +182,16 @@ export class Story {
     return new Set(this.standings.slice(0, this.weights.cast_size).map((row) => row.house));
   }
 
-  step(turn, rawBeats) {
+  // `prestige`, for a record that carries it (rules 1.0), is each house's
+  // prestige at the end of this turn: the standings use it.
+  step(turn, rawBeats, { prestige = null } = {}) {
     const w = this.weights;
     const beats = mergeActs(rawBeats);
     const before = this.standings;
     const boardBefore = this.board;
     const cast = this.cast();
     const boardAfter = applyBeats(boardBefore, beats);
-    const after = table(boardAfter, w);
+    const after = table(boardAfter, w, prestige);
     const { roles, changes } = this.lines.step(turn, beats, {
       cast, boardBefore, boardAfter, tableBefore: before, tableAfter: after,
     });
@@ -249,15 +261,49 @@ export class Story {
         + (notable ? `; ${numberWord(notable)} more ${notable === 1 ? 'matter is' : 'matters are'} in the full record.` : '.');
     }
 
-    // Storyline moments worth stopping for: a cast or followed storyline that
-    // opened, reached its climax or closed.
+    // Storyline moments to show: a cast or followed storyline that opened,
+    // reached its climax or closed.
     const watched = new Set([...cast, ...this.cast()]);
     if (this.follow) watched.add(this.follow);
     const moments = changes
       .map(({ id, change }) => ({ storyline: this.lines.of(id), change }))
       .filter(({ storyline }) => storyline.houses.some((h) => watched.has(h)))
-      .map(({ storyline, change }) => ({ id: storyline.id, name: this.name(storyline), change }));
+      .map(({ storyline, change }) => ({
+        id: storyline.id, name: this.name(storyline), change, type: storyline.type,
+        beats: storyline.beats.length,
+      }));
     const heavy = !chosen.quiet && chosen.headline.weight >= w.thresholds.pause;
+
+    // What stops Auto (Phase C1): a long cast storyline closing, a removal, a
+    // riding passing between two cast houses, or a heavy headline about the
+    // followed house.
+    const stops = [];
+    const castEither = new Set([...cast, ...this.cast()]);
+    // A storyline involves the cast if any of its houses was in the top eight
+    // at any turn while it ran, so one whose house has just fallen out of the
+    // cast still counts when it closes.
+    for (const s of this.lines.all) {
+      if (s.state !== 'closed' || s.closed === turn) {
+        if (s.houses.some((h) => castEither.has(h))) s.cast = true;
+      }
+    }
+    for (const { id, change } of changes) {
+      const s = this.lines.of(id);
+      const involved = s.cast || (this.follow && s.houses.includes(this.follow));
+      if (change === 'closed' && involved && s.beats.length >= w.storylines.pause_closing_beats) {
+        stops.push(`${this.name(s)} closes`);
+      }
+    }
+    for (const beat of beats) {
+      for (const house of beat.removed || []) stops.push(`${this.namer(boardAfter.ranks).style(house)} is removed`);
+      if (beat.kind === 'riding_passes') {
+        const [from, to] = beat.houses;
+        if (castEither.has(from) && castEither.has(to)) stops.push('a riding passes between two houses of the cast');
+      }
+    }
+    if (heavy && this.follow && chosen.headline.beat.houses.includes(this.follow)) {
+      stops.push(`a headline of weight ${chosen.headline.weight} about the followed house`);
+    }
 
     return {
       turn,
@@ -269,7 +315,8 @@ export class Story {
       secondary,
       ledger,
       quietLine,
-      pause: heavy || moments.length > 0,
+      pause: stops.length > 0,
+      stops: [...new Set(stops)],
       heavy,
       moments,
       zoom: chosen.quiet ? [] : [...(chosen.headline.beat.ridings || [])],
@@ -345,9 +392,9 @@ export function summarise(dispatches) {
   let quiet = 0;
   let paused = 0;
   for (const d of dispatches) {
+    if (d.pause) paused += 1;
     if (d.quiet) { quiet += 1; continue; }
     headlines += 1;
-    if (d.pause) paused += 1;
     byKind[d.headline.beat.kind] = (byKind[d.headline.beat.kind] || 0) + 1;
   }
   const top = Object.values(byKind).reduce((a, b) => Math.max(a, b), 0);

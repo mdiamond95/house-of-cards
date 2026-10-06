@@ -1,0 +1,12 @@
+{
+  "local_designations": true,
+  "quiet_season_line": true,
+  "atlas_jurisdiction": true,
+  "riding_endowments": true,
+  "upkeep_phase": true,
+  "holder_traits": true,
+  "marriage_pairing": true,
+  "prestige": true,
+  "founding_curve": true,
+  "succession_watch": true
+}

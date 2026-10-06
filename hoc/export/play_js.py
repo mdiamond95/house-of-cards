@@ -71,11 +71,21 @@ function assetUrl(logical) {
   return logical.startsWith('rules/') ? `data/${logical}` : logical;
 }
 
+// Rules tables a version may lack (hoc/export/play.py OPTIONAL_RULES_FILES):
+// a 404 for one is the version saying it has none, and the loader reads it so.
+const OPTIONAL_RULES_FILES = __OPTIONAL_RULES_FILES__;
+
 async function fetchAll(paths, onProgress) {
   const contents = new Map();
   let done = 0;
   for (const logical of paths) {
     const response = await fetch(assetUrl(logical));
+    const optional = OPTIONAL_RULES_FILES.some((name) => logical.endsWith(`/${name}`));
+    if (!response.ok && optional && response.status === 404) {
+      done += 1;
+      onProgress(done, paths.length);
+      continue;
+    }
     if (!response.ok) throw new Error(`could not load ${logical} (${response.status})`);
     contents.set(logical, await response.text());
     done += 1;
@@ -478,7 +488,7 @@ function playOne({ zoom = false } = {}) {
   app.viewing = record.season;
   appendFeed(record.season, record.chronicle, { stopped });
   renderAll({ flash: true });
-  tellSeason(record.season, { zoom });
+  tellSeason(record.season, { zoom, prestige: record.prestige || null });
   autosave();
   return stopped;
 }
@@ -510,6 +520,7 @@ function newStory() {
     seen: currentSeason() > 0 ? BEAT_KINDS : [],
     styleOf,
     ridings: ridingNames(),
+    watch: app.world.feature('succession_watch'),
   });
   app.afoot = null;
   app.lastDispatch = null;
@@ -553,9 +564,9 @@ function focusOf(d) {
     .map(([fed]) => fed);
 }
 
-function tellSeason(season, { zoom = false } = {}) {
+function tellSeason(season, { zoom = false, prestige = null } = {}) {
   if (!app.story) return null;
-  const d = app.story.step(season, typeTurn(inputFromState(app.world.state, season)));
+  const d = app.story.step(season, typeTurn(inputFromState(app.world.state, season)), { prestige });
   renderAfoot();
   const current = el('story-dispatch');
   if (app.lastDispatch !== null) {
@@ -604,7 +615,7 @@ function autoTick() {
     return;
   }
   const d = app.lastDispatch;
-  if (d && d.pause) stopAuto(pauseReason(d, app.weights.thresholds.pause));
+  if (d && d.pause) stopAuto(pauseReason(d));
 }
 
 function startAuto() {

@@ -126,6 +126,11 @@ def world_snapshot(conn):
             "removedSeason": row["removed_season"],
             "forcedAction": row["forced_action"],
             "quietSeasons": row["quiet_seasons"],
+            # Rules 1.0 `prestige` and `founding_curve` read these.
+            "prestige": row["prestige"],
+            "contestsWon": row["contests_won"],
+            "ridingsLost": row["ridings_lost"],
+            "foundedBy": row["founded_by"],
         }
         for row in conn.execute("SELECT * FROM house_stats ORDER BY house")
     ]
@@ -154,6 +159,8 @@ def world_snapshot(conn):
             "role": row["role"],
             "married": row["married"],
             "bornSeason": row["born_season"],
+            # Rules 1.0 `holder_traits`.
+            "traits": row["traits"],
         }
         for row in conn.execute("SELECT * FROM persons WHERE alive = 1 ORDER BY id")
     ]
@@ -361,13 +368,15 @@ def load_snapshot(conn, snapshot):
         conn.execute(
             "INSERT INTO house_stats (house, capital, influence, cohesion, ambition, enclosed,"
             " enclosed_since, community, region, tradition, tag, province, seat_place,"
-            " founded_season, removed_season, forced_action, quiet_seasons)"
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            " founded_season, removed_season, forced_action, quiet_seasons, prestige,"
+            " contests_won, ridings_lost, founded_by)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (row["house"], row["capital"], row["influence"], row["cohesion"], row["ambition"],
              row["enclosed"], row["enclosedSince"], row["community"], row["region"],
              row["tradition"], row["tag"], row["province"], row["seatPlace"],
              row["foundedSeason"], row["removedSeason"], row["forcedAction"],
-             row.get("quietSeasons", 0)),
+             row.get("quietSeasons", 0), row.get("prestige"), row.get("contestsWon", 0),
+             row.get("ridingsLost", 0), row.get("foundedBy")),
         )
 
     # Events first: holdings and relations reference them.
@@ -393,10 +402,10 @@ def load_snapshot(conn, snapshot):
         )
     for row in snapshot["persons"]:
         conn.execute(
-            "INSERT INTO persons (id, house, name, gender, age, role, alive, married, born_season)"
-            " VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)",
+            "INSERT INTO persons (id, house, name, gender, age, role, alive, married, born_season,"
+            " traits) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?)",
             (row["id"], row["house"], row["name"], row["gender"], row["age"], row["role"],
-             row["married"], row["bornSeason"]),
+             row["married"], row["bornSeason"], row.get("traits")),
         )
     for row in snapshot["clocks"]:
         conn.execute(

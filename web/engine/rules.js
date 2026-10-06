@@ -45,7 +45,38 @@ export const FEATURE_DEFAULTS = {
   quiet_season_line: false,
   atlas_jurisdiction: false,
   riding_endowments: false,
+  // rules 1.0 (draft; docs/STORY_DESIGN.md §4). False in 0.7-0.9.
+  upkeep_phase: false,
+  holder_traits: false,
+  marriage_pairing: false,
+  prestige: false,
+  founding_curve: false,
+  succession_watch: false,
 };
+
+// "Expand:+2;Dispute:-2" as an ordered object of integers (hoc/rules_data.py
+// _signed_pairs). A bare name reads as 1.
+function signedPairs(raw) {
+  const out = {};
+  for (const piece of String(raw || '').split(';')) {
+    const part = piece.trim();
+    if (!part) continue;
+    const at = part.lastIndexOf(':');
+    const name = at === -1 ? part : part.slice(0, at);
+    const value = at === -1 ? '1' : part.slice(at + 1);
+    out[name] = toInt(value, `traits.${part}`);
+  }
+  return out;
+}
+
+// Rules 1.0 tables: absent from earlier versions, which read as none.
+function optional(read, path) {
+  try {
+    return read(path);
+  } catch (error) {
+    return null;
+  }
+}
 
 // Where a version's tables live. Rules are versioned so that a season always
 // replays under the rules it was played with — see hoc/rules_data.py and
@@ -200,7 +231,21 @@ export function loadRules(read, version = null) {
     // asking about a different version than the one it is holding.
     version: rulesVersion,
     features: loadFeatures(read, rulesVersion),
+    traits: loadTraits(optional(read, rulesPath(rulesVersion, 'traits.csv'))),
+    upkeep: JSON.parse(optional(read, rulesPath(rulesVersion, 'upkeep.json')) || '{}'),
   };
+}
+
+// traits.csv (rules 1.0 `holder_traits`), in the file's own row order.
+function loadTraits(text) {
+  if (text === null) return [];
+  return parseCsvDicts(text).map((row) => ({
+    trait: row.trait,
+    actions: signedPairs(row.actions),
+    upkeep: signedPairs(row.upkeep),
+    excludes: String(row.excludes || '').split(';').map((x) => x.trim()).filter(Boolean),
+    effects: signedPairs(row.effect),
+  }));
 }
 
 /** Whether a loaded bundle's version turns on a named behaviour. */

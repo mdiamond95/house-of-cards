@@ -1,2 +1,2 @@
-id,house,name,gender,age,role,alive,married,born_season,died_season
-1,Ritchie,Frederick Ritchie,m,50,holder,1,0,1,
+id,house,name,gender,age,role,alive,married,traits,born_season,died_season
+1,Ritchie,Frederick Ritchie,m,50,holder,1,0,,1,

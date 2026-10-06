@@ -22,6 +22,10 @@ Every season file records `rules_version`, and `hoc/sim.py`'s `World.replay`, `w
 
 A flag added with a `true` default would change the past, which is the one thing this arrangement exists to prevent. `tests/test_rules_versions.py` asserts the two default tables match and that every default is false.
 
+## A draft version
+
+**Rules 1.0 is a draft.** `versions/1.0/` exists so both engines, the cross-check and `scripts/story_trial.py` can play it, but `current.txt` stays at 0.9 and no season of any committed game — live or frozen — has been played under it. Until one is, its tables are not published and may still be edited, which is what tuning a draft means. The rule above ("never edit a published version's tables") applies from the moment the first season under 1.0 is committed; from then on it is frozen like every other version. Only one draft version may exist at a time: `tests/test_rules_versions.py` allows exactly one directory newer than `current.txt`.
+
 ## features.json
 
 Named booleans, one per behaviour change. As of 0.9:
@@ -32,6 +36,17 @@ Named booleans, one per behaviour change. As of 0.9:
 - `riding_endowments` — founding capital adds `2*(wealth_tier − 3)` of the seat, and a successful Expand costs `15 + (wealth_tier − 3)` of the target instead of 15. False in 0.7 and 0.8, where every riding was worth the same.
 
 Both 0.9 flags read `riding_stats.csv`; on a reference set without it (`ne-2026`) every riding is open at 1867 and every `wealth_tier` reads 3, so turning them on changes nothing there.
+
+Rules 1.0 (draft; `docs/STORY_DESIGN.md` §4) adds six, false in 0.7–0.9 and on in 1.0:
+
+- `upkeep_phase` — at the start of a house's turn, before events, capital, influence and cohesion move by an automatic integer upkeep (`upkeep.json`: from holdings, the seat's wealth tier and the holder's traits). Invest, Cultivate influence, Consolidate (rest) and Correspond leave the action pool; each house gets one automatic letter a turn at `correspondence_pct`, resolved exactly as Correspond was, offence included (its events carry `letter: true`). A house with nothing legal to do bides (`Bide` in `house_actions`).
+- `holder_traits` — a holder draws two traits from `traits.csv` at founding or accession; an heir's are drawn when the heir is named. Each shifts named action weights by 2 × WEIGHT_SCALE or an upkeep by 1; Zealot never responds Neutral to an era event and adds 1 friction a turn on each opposed-tag border. Grasping/Cautious and Litigious/Conciliator never occur together. Traits are recorded on `persons.traits` and in the founding, succession and naming events.
+- `marriage_pairing` — a Marriage alliance pairs one man and one woman, by recorded gender, from the two houses' unmarried heirs and children, and is legal only when such a pair exists.
+- `prestige` — every season each active house's prestige (10 per holding, 20 per rank index, influence // 5, 5 per compact or kin tie, 15 per dispute or challenge won, −15 per riding lost to another house) is written to `house_stats.prestige`, `prestige_history` and the season record. Nothing reads it yet.
+- `founding_curve` — Crown foundings follow `founding.json`'s `founding_curve` schedule of integer per cents in place of `p_found`, and after `late_after` never fall within `late_gap` seasons of the last. Partition is unaffected.
+- `succession_watch` — an event when a holder turns 60 with no heir named, and one when an heir comes of age (`succession.json` `watch`).
+
+`traits.csv` and `upkeep.json` are new in 1.0; `founding.json` gains `founding_curve` and `succession.json` gains `watch`. Both loaders read a version without them as having none.
 
 ## The tables
 
@@ -49,6 +64,8 @@ Machine-readable transcription of `docs/ENGINE_DESIGN.md`'s numeric tables, load
 - **places.csv** — territorial-designation place names (§10 seat-riding flavour), one row per place. Columns: `province` (2-letter code, matching the codes in `data/reference/ridings.csv`); `place`.
 - **given_names.csv** — given names by naming tradition and gender. Columns: `tradition` (matches a `communities.naming_tradition` value); `gender` (`m` or `f`); `name`.
 - **surnames.csv** — surnames by community. Columns: `community` (matches a `communities.community` value); `surname`.
+- **traits.csv** (1.0) — one row per holder trait. Columns: `trait`; `actions` (`Action:+2;Action:-2`, weight shifts in units of WEIGHT_SCALE); `upkeep` (`influence:+1`); `excludes` (traits it never occurs with, named both ways); `effect` (`steadfast`, `friction:+1`); `note`.
+- **upkeep.json** (1.0) — the automatic upkeep's integers and the automatic letter's chance (`upkeep_phase`).
 - **features.json** — the named behaviour booleans described above.
 - **CHANGELOG.md** — one entry per rules version, with the metric that motivated it. Not inside a version directory: it is the history of all of them.
 

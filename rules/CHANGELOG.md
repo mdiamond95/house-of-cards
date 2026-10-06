@@ -242,3 +242,66 @@ With the atlas on, the first of the 74 fell at seasons 35–73 (both on) and 9�
 The West stays nearly empty for about a century of seasons, is then entered from the East and from British Columbia by a handful of houses, and fills slowly — still not full at season 300 in four of six atlas-on runs — without ending in a monopoly. Almost all of that comes from the Crown never granting there, not from blocked expansion: a clock is past 1870 three seasons after any founding or accession. The director considered and declined a "frontier grant" flag to let the Crown seat houses on the 1870 ridings: the West being opened from the East, rather than granted outright, is the game this version is meant to play. Endowments move median capital by at most two points and nothing else measurably; they are kept for what they mean, not for what they tune.
 
 The cross-check agrees byte for byte on seeds 1867, 1868 and 1869 at 300 seasons on `meridian-v1.0.3`, under both 0.9 and 0.8.
+
+## 1.0 (draft) — the mechanical rules of the story game
+
+**A draft.** `rules/versions/1.0/` exists for both engines, the cross-check and `scripts/story_trial.py`, but `rules/current.txt` stays at 0.9 and no season of any committed game is played under 1.0. Its tables stay editable until one is. Docs: `docs/STORY_DESIGN.md` §4 and Phase C1 (§7).
+
+The six flags (`rules/README.md`, "features.json") each implement a part of §4, behind its own name, false in 0.7–0.9, in both engines; the cross-check agrees byte for byte on seeds 1867, 2 and 3 at 120 seasons under 1.0 and under 0.9, and on the Meridian world.
+
+Numbers chosen for the draft, by trial (`scripts/story_trial.py`):
+
+- `upkeep.json`: capital 1 + holdings // 4 + the seat's wealth_tier − 3; influence 1; cohesion 0, +3 while below 40; one automatic letter a turn at 30%. With `upkeep_phase` alone on, median capital, influence and cohesion at turn 100 are within 5 points of 0.9's on the same ten seeds (39.6 / 60.1 / 97.3 against 39.0 / 55.5 / 97.8).
+- `founding.json` `founding_curve`: 100% through season 24, 3% through 40, 2% after, never within 10 seasons of the last Crown founding after season 40. That seats 24 houses by turn 25 on every seed, at most one Crown founding in any ten turns after 40, and 29 houses (24–33) active at turn 100 with the flag alone, 39 (35–42) with every flag on. The p_found formula's 12 by turn 25 and six in a ten-turn window late are what it replaces.
+- `traits.csv`: the eight traits of §4.3, each ±2 × WEIGHT_SCALE on its named actions or +1 on its named upkeep; `succession.json` `watch`: 60 and 25.
+
+### The trial
+
+`python scripts/story_trial.py --matrix`: 100 turns on the Meridian world, seeds 1867–1876, mean (min–max) across the ten. Columns: 0.9; 1.0 with one new flag on and the rest off; 1.0 with every flag on. A storyline type absent from every seed of a column shows —.
+
+| metric | 0.9 | 1.0: upkeep_phase | 1.0: holder_traits | 1.0: marriage_pairing | 1.0: prestige | 1.0: founding_curve | 1.0: succession_watch | 1.0: all on |
+|---|---|---|---|---|---|---|---|---|
+| §6 actions aimed at another house (target ≥ 30%) | 27% (26–29) | 56% (52–61) | 27% (26–30) | 27% (25–31) | 27% (26–29) | 28% (26–29) | 27% (26–29) | 57% (52–61) |
+| §6 riding passes per turn after 20 (target ≥ 0.33) | 0.13 (0.03–0.23) | 0.18 (0.09–0.38) | 0.11 (0.07–0.17) | 0.13 (0.07–0.21) | 0.13 (0.03–0.23) | 0.14 (0.07–0.24) | 0.13 (0.03–0.23) | 0.33 (0.19–0.50) |
+| ridings passing between houses, all turns | 10.3 (2–18) | 14.8 (7–30) | 8.7 (6–14) | 10.5 (6–17) | 10.3 (2–18) | 11.7 (6–20) | 10.3 (2–18) | 26.7 (15–40) |
+| §6 lead changes (target ≥ 4) | 12.0 (1–20) | 12.0 (8–22) | 11.7 (5–17) | 7.9 (2–13) | 11.1 (1–17) | 11.4 (4–25) | 12.0 (1–20) | 13.1 (6–23) |
+| §6 longest single lead, turns (target ≤ 50) | 36.0 (12–98) | 38.1 (27–51) | 31.2 (15–63) | 43.1 (22–76) | 43.7 (24–98) | 40.6 (14–65) | 36.0 (12–98) | 34.2 (19–50) |
+| §6 chapters II–V with top-eight churn (target 4) | 3.8 (3–4) | 3.6 (2–4) | 3.8 (3–4) | 3.8 (2–4) | 4.0 (4–4) | 3.9 (3–4) | 3.8 (3–4) | 3.8 (3–4) |
+| §6 turns with a headline ≥ pause (target ≥ 70%) | 54% (42–70) | 70% (66–78) | 48% (42–61) | 55% (49–68) | 53% (42–68) | 60% (46–72) | 57% (45–75) | 79% (74–83) |
+| §6 longest quiet run after turn 10 (target ≤ 3) | 1.5 (1–2) | 1.1 (1–2) | 2.1 (1–3) | 1.4 (1–2) | 1.5 (1–2) | 1.7 (1–3) | 1.2 (1–2) | 0.5 (0–1) |
+| §6 houses active at turn 100 (target 20–40) | 38.9 (33–50) | 44.3 (38–53) | 37.2 (31–41) | 39.1 (32–51) | 38.9 (33–50) | 28.8 (24–33) | 38.9 (33–50) | 38.9 (35–42) |
+| §6 ridings open at 1867 claimed by turn 60 (target ≥ 85%) | 38% (28–50) | 48% (36–60) | 36% (30–41) | 39% (31–54) | 38% (28–50) | 47% (42–55) | 38% (28–50) | 64% (54–72) |
+| §6 storylines of 5+ beats (target ≥ 8) | 10.5 (7–16) | 17.3 (12–24) | 9.0 (6–11) | 9.4 (6–14) | 9.8 (7–18) | 9.3 (3–16) | 10.7 (7–17) | 20.5 (15–24) |
+| §6 closed storylines without an outcome (target 0) | 0.0 (0–0) | 0.0 (0–0) | 0.0 (0–0) | 0.0 (0–0) | 0.0 (0–0) | 0.0 (0–0) | 0.0 (0–0) | 0.0 (0–0) |
+| houses active at turn 25 | 12.0 (8–17) | 11.7 (9–16) | 12.3 (10–15) | 12.2 (8–17) | 12.0 (8–17) | 23.5 (23–24) | 12.0 (8–17) | 23.7 (22–24) |
+| houses active at turn 50 | 20.8 (16–27) | 23.1 (19–30) | 19.9 (16–25) | 22.0 (17–30) | 20.8 (16–27) | 24.2 (23–25) | 20.8 (16–27) | 25.8 (23–27) |
+| ridings claimed at turn 25 | 31.4 (22–43) | 34.1 (21–47) | 29.3 (22–35) | 32.0 (22–45) | 31.4 (22–43) | 56.2 (48–69) | 31.4 (22–43) | 72.1 (67–78) |
+| ridings claimed at turn 50 | 78.6 (55–101) | 98.7 (75–125) | 75.5 (64–93) | 82.8 (62–120) | 78.6 (55–101) | 112.3 (100–129) | 78.6 (55–101) | 145.0 (120–160) |
+| ridings claimed at turn 100 | 199.7 (174–228) | 234.3 (212–270) | 195.1 (156–224) | 199.1 (169–235) | 199.7 (174–228) | 191.1 (175–217) | 199.7 (174–228) | 249.6 (212–282) |
+| Crown foundings by turn 25 | 12.1 (8–17) | 11.8 (9–16) | 12.3 (10–15) | 12.2 (8–17) | 12.1 (8–17) | 24.0 (24–24) | 12.1 (8–17) | 24.0 (24–24) |
+| most Crown foundings in ten turns after 40 | 6.2 (5–8) | 5.2 (4–7) | 6.2 (5–8) | 6.0 (5–7) | 6.2 (5–8) | 0.7 (0–1) | 6.2 (5–8) | 0.8 (0–1) |
+| median capital at turn 100 | 39.0 (36.5–41) | 39.6 (35–43) | 38.5 (35–42.5) | 38.5 (35.5–42) | 39.0 (36.5–41) | 35.5 (32–39) | 39.0 (36.5–41) | 43.9 (39.5–50) |
+| median influence at turn 100 | 55.5 (49.5–61) | 60.1 (55–64) | 56.7 (45.5–65) | 57.8 (51.5–63) | 55.5 (49.5–61) | 65.5 (56–74) | 55.5 (49.5–61) | 75.3 (63–87) |
+| median cohesion at turn 100 | 97.8 (91–100) | 97.3 (93.5–100) | 99.0 (95–100) | 97.2 (86–100) | 97.8 (91–100) | 98.0 (94.5–100) | 97.8 (91–100) | 96.0 (90–100) |
+| median turns a rivalry runs | 2.3 (1–3) | 0.7 (0–1) | 2.9 (2–4) | 3.1 (2–6) | 2.3 (1–3) | 2.5 (1–4) | 2.3 (1–3) | 0.8 (0–1) |
+| storylines of 5+ beats: decline | 0.4 (0–3) | 3.4 (2–5) | 0.4 (0–2) | — | 0.3 (0–1) | 0.3 (0–1) | 0.4 (0–3) | 3.7 (2–5) |
+| storylines of 5+ beats: frontier | 3.9 (3–5) | 3.9 (2–6) | 3.7 (2–5) | 3.7 (3–5) | 3.9 (3–5) | 4.0 (2–5) | 3.9 (3–5) | 4.0 (3–5) |
+| storylines of 5+ beats: rise | 3.8 (2–6) | 7.4 (5–9) | 3.5 (0–6) | 3.3 (1–6) | 3.2 (1–5) | 3.7 (0–8) | 3.8 (2–6) | 8.6 (6–11) |
+| storylines of 5+ beats: rivalry | 2.4 (0–7) | 2.6 (0–6) | 1.4 (0–3) | 2.4 (1–5) | 2.4 (0–7) | 1.3 (0–4) | 2.4 (0–7) | 4.2 (1–9) |
+| storylines of 5+ beats: succession | — | — | — | — | — | — | 0.2 (0–1) | — |
+| headlines in: decline | 2% (0–10) | 10% (5–16) | 4% (1–8) | 3% (0–9) | 3% (0–11) | 4% (1–9) | 2% (0–9) | 11% (7–15) |
+| headlines in: frontier | 11% (4–18) | 5% (2–8) | 12% (7–19) | 13% (8–18) | 12% (4–18) | 9% (4–13) | 9% (3–14) | 4% (3–7) |
+| headlines in: none | 13% (7–19) | 11% (5–16) | 18% (11–23) | 14% (7–22) | 15% (8–20) | 13% (8–23) | 14% (7–24) | 11% (7–16) |
+| headlines in: rise | 31% (19–38) | 37% (30–45) | 24% (14–30) | 26% (18–35) | 26% (16–33) | 29% (18–41) | 27% (16–34) | 33% (27–47) |
+| headlines in: rivalry | 36% (22–53) | 28% (17–39) | 34% (23–39) | 38% (29–47) | 36% (22–53) | 38% (27–46) | 34% (21–52) | 34% (26–44) |
+| headlines in: succession | 2% (0–6) | 1% (0–1) | 3% (1–5) | 3% (0–6) | 3% (0–6) | 3% (0–5) | 10% (6–16) | 2% (0–6) |
+| headlines in: union | 5% (2–7) | 8% (3–14) | 5% (2–8) | 4% (1–7) | 5% (1–9) | 4% (1–7) | 5% (2–7) | 4% (0–8) |
+| rivalries: a house removed | 0.6 (0–2) | — | — | 0.5 (0–2) | 0.6 (0–2) | 0.4 (0–3) | 0.6 (0–2) | 0.2 (0–1) |
+| rivalries: a riding changed hands | 0.5 (0–1) | 0.7 (0–2) | 0.1 (0–1) | 0.4 (0–2) | 0.5 (0–1) | 0.1 (0–1) | 0.5 (0–1) | 1.1 (0–4) |
+| rivalries: lapsed | 3.6 (1–8) | 0.2 (0–1) | 3.8 (1–7) | 3.9 (1–8) | 3.6 (1–8) | 4.2 (2–5) | 3.6 (1–8) | 1.1 (0–3) |
+| rivalries: open | 9.8 (3–19) | 2.2 (1–4) | 6.5 (1–11) | 8.1 (3–16) | 9.8 (3–19) | 5.5 (2–12) | 9.8 (3–19) | 5.7 (4–9) |
+| rivalries: reconciled | 28.0 (11–52) | 48.2 (33–60) | 20.1 (13–28) | 29.9 (17–66) | 28.0 (11–52) | 31.2 (18–45) | 28.0 (11–52) | 58.2 (37–85) |
+| rivalries: settled by cession | 7.5 (2–13) | 11.5 (2–25) | 6.8 (3–12) | 7.8 (3–13) | 7.5 (2–13) | 8.0 (4–15) | 7.5 (2–13) | 22.8 (13–35) |
+
+Taking the four standing actions out of the pool is what moves the game: with `upkeep_phase` alone, actions aimed at another house rise from 27% to 56% and headlines at the pause threshold from 54% to 70%; with every flag on, ridings pass between houses 0.33 times a turn after turn 20 (0.13 under 0.9), storylines of five or more beats double to 20.5, and the founding curve seats 24 houses by turn 25 with 39 active at turn 100. What did not move enough is the land and the length of quarrels: only 64% of the ridings open at personal 1867 are claimed by turn 60 against §6's 85%, chapters II–V churn the top eight in 3.8 of 4 rather than every time, and rivalries settle within a turn. Those, and every target that needs schemes, are Phase C2's.
+

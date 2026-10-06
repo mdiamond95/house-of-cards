@@ -347,6 +347,10 @@ def test_the_engine_and_its_tables_are_copied_into_the_site(played_site):
     assert (played_site / "data" / "rules" / "current.txt").exists()
     for version in rules_data.available_versions():
         for name in play_export.RULES_FILES:
+            if name in play_export.OPTIONAL_RULES_FILES and not (
+                rules_data.version_dir(version) / name
+            ).exists():
+                continue  # a version predating the table has none to export
             assert (version_root / version / name).exists(), \
                 f"rules/versions/{version}/{name} was not exported"
     for name in play_export.REFERENCE_FILES:
@@ -419,7 +423,8 @@ def test_the_play_page_and_its_assets_stay_under_the_download_budget(played_site
     files += [
         played_site / "data" / "rules" / "current.txt",
         *(played_site / "data" / "rules" / "versions" / current / name
-          for name in play_export.RULES_FILES),
+          for name in play_export.RULES_FILES
+          if (played_site / "data" / "rules" / "versions" / current / name).exists()),
     ]
     files += [played_site / "data" / "reference" / name for name in play_export.REFERENCE_FILES]
     files += [played_site / "data" / "world.json"]

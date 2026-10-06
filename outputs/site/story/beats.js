@@ -57,6 +57,8 @@ export const BEAT_KINDS = [
   'major_response', 'compact', 'expansion', 'failed', 'correspondence',
   'invest', 'cultivate', 'consolidate', 'name_heir',
   'riding_lost', 'endowment', 'era_response', 'other',
+  // Rules 1.0: the succession watch's two events, and a house with nothing to do.
+  'heir_wanted', 'heir_of_age', 'bide',
 ];
 
 // The four bookkeeping actions. They never headline (§3.1: weight 0, and no
@@ -77,6 +79,8 @@ const BOOKKEEPING_ACTIONS = {
   Invest: 'invest',
   'Cultivate influence': 'cultivate',
   'Consolidate (rest)': 'consolidate',
+  // Rules 1.0 `upkeep_phase`: a house with no legal action bides.
+  Bide: 'bide',
 };
 
 function has(object, key) {
@@ -121,6 +125,8 @@ export function typeEvent(event, actionOf) {
       if (d.outcome === 'lost') return { kind: 'failed', outcome: 'Dispute' };
       if (has(d, 'cause') && d.marker === GRIEVANCE) return { kind: 'quarrel', outcome: d.cause };
       if (has(d, 'ceded')) return { kind: 'reconciled', outcome: 'cession' };
+      // Rules 1.0 `upkeep_phase`: an automatic letter says so in its delta.
+      if (d.letter) return { kind: 'correspondence', outcome: d.marker ?? null };
       const action = houses.length ? actionOf(houses[0]) : null;
       switch (action) {
         case 'Correspond': return { kind: 'correspondence', outcome: d.marker ?? null };
@@ -132,6 +138,9 @@ export function typeEvent(event, actionOf) {
       }
     }
     case 'other': {
+      // Rules 1.0 `succession_watch`.
+      if (d.watch === 'no_heir') return { kind: 'heir_wanted', outcome: null };
+      if (d.watch === 'heir_of_age') return { kind: 'heir_of_age', outcome: null };
       const action = houses.length ? actionOf(houses[0]) : null;
       if (action === 'Name heir') return { kind: 'name_heir', outcome: d.role ?? null };
       if (action === 'Endow') return { kind: 'endowment', outcome: null };

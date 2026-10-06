@@ -9,7 +9,8 @@
 //   + storyline   by the beat's place in the storylines it belongs to
 //                 (storylines.js): none for the beat that opens one; for a beat
 //                 that escalates one, escalate_per_beat for each earlier beat in
-//                 it, up to escalate_max; close for the beat that closes one. A
+//                 it, up to escalate_max — except a frontier, whose beats take
+//                 no escalation bonus; close for the beat that closes one. A
 //                 beat in several storylines takes the largest.
 //   + repeat_headline (negative) if its kind headlined the previous turn
 //   × follow_multiplier if the followed house is among its houses
@@ -54,9 +55,11 @@ function gainedProvinces(beat) {
 // What a beat's storyline roles add (§3.4): the largest of them.
 export function storylineBonus(roles, cfg) {
   let bonus = 0;
-  for (const { role, earlier } of roles || []) {
+  for (const { role, earlier, type } of roles || []) {
     if (role === 'close') bonus = Math.max(bonus, cfg.close);
-    else if (role === 'escalate') bonus = Math.max(bonus, Math.min(cfg.escalate_max, cfg.escalate_per_beat * earlier));
+    else if (role === 'escalate' && type !== 'frontier') {
+      bonus = Math.max(bonus, Math.min(cfg.escalate_max, cfg.escalate_per_beat * earlier));
+    }
   }
   return bonus;
 }

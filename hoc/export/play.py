@@ -27,6 +27,7 @@ from hoc.export import world as world_export
 
 __all__ = [
     "write_play_assets", "write_story_assets", "ENGINE_MODULES", "ENGINE_TOOLS", "RULES_FILES",
+    "OPTIONAL_RULES_FILES",
     "REFERENCE_FILES", "WORLD_FILES", "STORY_FILES", "reference_files",
 ]
 
@@ -59,7 +60,14 @@ RULES_FILES = (
     "given_names.csv", "mortality.csv", "objectives.csv", "places.csv",
     "surnames.csv", "eras.json", "founding.json", "friction.json",
     "responses.json", "succession.json", "features.json",
+    # Rules 1.0 (draft): absent from earlier versions, so a page reading a
+    # version without them treats a 404 as "none" (OPTIONAL_RULES_FILES).
+    "traits.csv", "upkeep.json",
 )
+
+# Tables a version may lack: the play page reads their absence as none, the way
+# hoc/rules_data.py and web/engine/rules.js do.
+OPTIONAL_RULES_FILES = ("traits.csv", "upkeep.json")
 
 # The reference tables `web/engine/adjacency.js` reads. places_by_riding and
 # riding_tokens joined them at rules 0.8, for the designation draw. Every

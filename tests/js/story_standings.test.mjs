@@ -45,3 +45,9 @@ test('only the top eight are shown', () => {
   const rows = table({ owners: {}, ranks, removed: [] }, weights);
   assert.equal(movement(rows, rows, weights).length, 8);
 });
+
+test('where the record carries prestige, it is the standing', () => {
+  const board = { owners: { 1: 'A', 2: 'A', 3: 'B' }, ranks: { A: 0, B: 0, C: 0 }, removed: [] };
+  const rows = table(board, weights, { A: 30, B: 90 });
+  assert.deepEqual(rows.map((r) => [r.house, r.score]), [['B', 90], ['A', 30], ['C', 0]]);
+});

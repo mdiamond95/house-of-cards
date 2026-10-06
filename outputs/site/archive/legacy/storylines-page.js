@@ -38,15 +38,22 @@ async function boot() {
     return;
   }
   const byTurn = {};
-  for (const chunk of chunks) Object.assign(byTurn, chunk.turns);
+  const prestige = {};
+  for (const chunk of chunks) {
+    Object.assign(byTurn, chunk.turns);
+    Object.assign(prestige, chunk.prestige || {});
+  }
   const styles = {};
   for (const [house, info] of Object.entries(index.houses)) styles[house] = houseStyle({ house, ...info });
   const unit = index.unit === 'turn' ? 'turn' : 'season';
   const story = new Story({
     weights, baseline: index.baseline, unit,
     styleOf: (house) => styles[house] || null, ridings: index.ridings || {},
+    watch: Boolean(index.succession_watch),
   });
-  for (let turn = 1; turn <= index.turns; turn += 1) story.step(turn, byTurn[String(turn)] || []);
+  for (let turn = 1; turn <= index.turns; turn += 1) {
+    story.step(turn, byTurn[String(turn)] || [], { prestige: prestige[String(turn)] || null });
+  }
 
   const all = story.lines.all;
   const sections = [];

@@ -206,3 +206,15 @@ test('mergeActs: one act, one beat, carrying every part', () => {
   const alone = [b(0, 'riding_passes', ['A', 'B'], { outcome: 'cession' })];
   assert.deepEqual(mergeActs(alone), alone, 'a part with no partner passes through');
 });
+
+test('rules 1.0 records: automatic letters, the succession watch and a house that bides', () => {
+  assert.equal(typeEvent(ev('relational', ['A', 'B'], { marker: 'kin', letter: true }), () => 'Expand').kind,
+    'correspondence', 'a letter is typed by its delta, whatever the house did as its action');
+  assert.equal(typeEvent(ev('relational', ['A', 'B'], { marker: 'Sig\u2212', cause: 'correspondence', letter: true }), none).kind,
+    'quarrel', 'a letter that gave offence is still a quarrel');
+  assert.equal(typeEvent(ev('other', ['A'], { watch: 'no_heir', age: 60 }), none).kind, 'heir_wanted');
+  assert.equal(typeEvent(ev('other', ['A'], { watch: 'heir_of_age', heir_age: 25 }), none).kind, 'heir_of_age');
+  const beats = typeTurn({ turn: 4, events: [], actions: [{ house: 'A', action: 'Bide', success: 1 }], holdings: [], ranks: {} });
+  assert.deepEqual(beats.map((b) => b.kind), ['bide']);
+  for (const kind of ['heir_wanted', 'heir_of_age', 'bide']) assert.ok(BEAT_KINDS.includes(kind));
+});

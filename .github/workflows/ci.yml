@@ -42,9 +42,17 @@ jobs:
       - name: The story layer's node tests
         run: node --test tests/js/story_*.test.mjs
 
-      # The same seeds and length as tests/test_crosscheck.py.
+      # The same seeds and length as tests/test_crosscheck.py, under the
+      # current rules and under the draft 1.0 (rules/README.md, "A draft
+      # version"), which no committed game plays yet.
       - name: The two engines play the same game
         run: |
           for seed in 1867 2 3; do
             python scripts/crosscheck.py --seed "$seed" --seasons 120
+          done
+
+      - name: The two engines play the same game under rules 1.0 (draft)
+        run: |
+          for seed in 1867 2 3; do
+            python scripts/crosscheck.py --seed "$seed" --seasons 120 --rules-version 1.0
           done

@@ -143,6 +143,10 @@ CORRESPONDENCE_RANGE = 2
 # §7b: a house that cannot grow outward grows upward.
 ENCLOSURE_DOUBLED = frozenset({"Cultivate influence", "Endow", "Petition elevation"})
 
+# Rules 1.0 `upkeep_phase`: the four standing actions automatic upkeep and the
+# automatic letter replace. They leave the action pool under the flag.
+UPKEEP_ACTIONS = frozenset({"Invest", "Cultivate influence", "Consolidate (rest)", "Correspond"})
+
 # How a response reads in the chronicle. "Neutral" has no verb of its own.
 RESPONSE_VERB = {
     "Lead": "leads",
@@ -1022,8 +1026,9 @@ class World:
         }
         self.conn.execute(
             "INSERT INTO house_stats (house, capital, influence, cohesion, ambition, enclosed,"
-            " community, region, tradition, tag, province, seat_place, founded_season)"
-            " VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?)",
+            " community, region, tradition, tag, province, seat_place, founded_season,"
+            " founded_by)"
+            " VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, 'crown')",
             (
                 house,
                 stats["capital"],
@@ -1041,17 +1046,21 @@ class World:
         )
 
         holder_age = 40 + rng.randint(1, 30, "founding.holder_age")
-        self.conn.execute(
+        cursor = self.conn.execute(
             "INSERT INTO persons (house, name, gender, age, role, alive, born_season)"
             " VALUES (?, ?, ?, ?, 'holder', 1, ?)",
             (house, f"{drawn['given']} {drawn['surname']}", drawn["gender"], holder_age, season),
         )
+        # Rules 1.0 `holder_traits`: the founding holder's two traits.
+        traits = self._give_traits(cursor.lastrowid, house, rng)
         self.conn.execute(
             "INSERT INTO clocks (house, personal_year, basis) VALUES (?, 1867, ?)",
             (house, f"founded season {season}"),
         )
 
         founding_delta = {"stats": stats, "community": community_obj.community, "tag": tag}
+        if traits:
+            founding_delta["traits"] = traits
         seat_jurisdiction = (
             self.jurisdiction_name(fed_id, FOUNDING_YEAR)
             if self.feature("atlas_jurisdiction") else None
@@ -1195,6 +1204,9 @@ class World:
             self.conn.execute(
                 "UPDATE persons SET role = 'holder' WHERE id = ?", (heir["id"],)
             )
+            # Rules 1.0 `holder_traits`: the heir's traits were drawn when the
+            # heir was named; one named before they were draws them now.
+            heir_traits = self._ensure_traits(heir["id"], house, rng)
             # §9: two named heirs and four holdings partition the house — this is
             # how the map's later seasons fill with related houses.
             partitioned = None
@@ -1221,7 +1233,7 @@ class World:
                 season,
                 band=band,
                 line=f"Season {season} · {heir['name']} succeeds to {row['peerage']}.",
-                delta={"nature": "clean", "cause": cause},
+                delta=self._with_traits({"nature": "clean", "cause": cause}, heir_traits),
             )
             return self._check_extinction(house, season, rng)
 
@@ -1240,11 +1252,12 @@ class World:
         generator = NameGenerator(self.rules, rng)
         given, surname, gender = generator.draw_person(community, surname=house.split(" ")[0])
         age = 35 + rng.randint(1, 20, "succession.successor_age")
-        self.conn.execute(
+        cursor = self.conn.execute(
             "INSERT INTO persons (house, name, gender, age, role, alive, born_season)"
             " VALUES (?, ?, ?, ?, 'holder', 1, ?)",
             (house, f"{given} {surname}", gender, age, season),
         )
+        successor_traits = self._give_traits(cursor.lastrowid, house, rng)
         self.conn.execute(
             "UPDATE clocks SET personal_year = 1867, basis = ? WHERE house = ?",
             (f"reset at disorderly accession, season {season}", house),
@@ -1256,7 +1269,7 @@ class World:
             season,
             band=band,
             line=f"Season {season} · {row['peerage']} passes in disorder to {given} {surname}.",
-            delta={"nature": "disorderly", "cause": cause},
+            delta=self._with_traits({"nature": "disorderly", "cause": cause}, successor_traits),
         )
 
         # §9: a disorderly succession sours a neighbour.
@@ -1338,8 +1351,9 @@ class World:
         )
         self.conn.execute(
             "INSERT INTO house_stats (house, capital, influence, cohesion, ambition, enclosed,"
-            " community, region, tradition, tag, province, seat_place, founded_season)"
-            " VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?)",
+            " community, region, tradition, tag, province, seat_place, founded_season,"
+            " founded_by)"
+            " VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, 'partition')",
             (
                 cadet,
                 max(0, row["capital"] // 2),
@@ -1358,6 +1372,9 @@ class World:
         self.conn.execute(
             "UPDATE persons SET house = ?, role = 'holder' WHERE id = ?", (cadet, junior["id"])
         )
+        # Rules 1.0 `holder_traits`: a junior heir named before traits were
+        # drawn for heirs draws them on taking the cadet seat.
+        self._ensure_traits(junior["id"], cadet, rng)
         self.conn.execute(
             "INSERT INTO clocks (house, personal_year, basis) VALUES (?, 1867, ?)",
             (cadet, f"cadet founding by partition, season {season}"),
@@ -1511,6 +1528,7 @@ class World:
             "UPDATE holdings SET released_event_id = ? WHERE id = ?", (event_id, holding["id"])
         )
         if to_house is not None:
+            self._tally(house, lost=1)
             self.conn.execute(
                 "INSERT INTO holdings (house, fed_id, seat_order, hex, acquired_event_id)"
                 " VALUES (?, ?, ?, ?, ?)",
@@ -1563,6 +1581,9 @@ class World:
             modifier = self.rules.responses["tag_modifier"]["opposing_tag"]
         roll = rng.die(6, purpose=f"event.response.{house}") + modifier
         response = self._response_for(roll)
+        # Rules 1.0 `holder_traits`: a steadfast holder (Zealot) never stands aside.
+        if response == "Neutral" and self._trait_effect(house, "steadfast"):
+            response = "Resist"
 
         deltas = {}
         if response == "Lead":
@@ -1890,6 +1911,232 @@ class World:
                 return heir
         return None
 
+    # ------------------------------------------------------------- rules 1.0 --
+    #
+    # docs/STORY_DESIGN.md §4. Every behaviour here is behind its own flag and
+    # mirrored line for line in web/engine/sim.js.
+
+    def _marriable(self, house):
+        """Rules 1.0 `marriage_pairing`: a house's unmarried heirs and children,
+        by person id — everyone living in it but the holder who has not married."""
+        return self.conn.execute(
+            "SELECT * FROM persons WHERE house = ? AND alive = 1 AND married = 0"
+            " AND role IN ('heir', 'heir2', 'other') ORDER BY id",
+            (house,),
+        ).fetchall()
+
+    def _marriage_pair(self, house, other):
+        """One man and one woman, by recorded gender, one from each house: the
+        first such pair taking this house's people by id, then the other's."""
+        theirs_all = self._marriable(other)
+        for mine in self._marriable(house):
+            for theirs in theirs_all:
+                if {mine["gender"], theirs["gender"]} == {"m", "f"}:
+                    return mine, theirs
+        return None
+
+    def _traits_of(self, person):
+        return [t for t in ((person["traits"] if person else None) or "").split(",") if t]
+
+    def _holder_trait_rows(self, house):
+        """The rules rows of the holder's traits, under `holder_traits`."""
+        if not self.feature("holder_traits"):
+            return []
+        names = self._traits_of(self.holder(house))
+        return [t for t in self.rules.traits if t.trait in names]
+
+    def _trait_effect(self, house, effect):
+        """The sum of a named effect over the holder's traits (0 without the flag)."""
+        return sum(t.effects.get(effect, 0) for t in self._holder_trait_rows(house))
+
+    def _draw_traits(self, house, rng):
+        """Two traits from traits.csv, in its row order: the first from all of
+        them, the second from those neither excluding nor excluded by it."""
+        names = [t.trait for t in self.rules.traits]
+        if not names:
+            return []
+        first = rng.choice(names, purpose=f"traits.{house}")
+        row = next(t for t in self.rules.traits if t.trait == first)
+        rest = [
+            t.trait for t in self.rules.traits
+            if t.trait != first and t.trait not in row.excludes and first not in t.excludes
+        ]
+        if not rest:
+            return [first]
+        return [first, rng.choice(rest, purpose=f"traits.{house}")]
+
+    def _give_traits(self, person_id, house, rng):
+        """Draw and record a person's traits under `holder_traits`."""
+        if not self.feature("holder_traits"):
+            return []
+        traits = self._draw_traits(house, rng)
+        self.conn.execute(
+            "UPDATE persons SET traits = ? WHERE id = ?", (",".join(traits), person_id)
+        )
+        return traits
+
+    def _ensure_traits(self, person_id, house, rng):
+        """A new holder's traits: those drawn when they were named, or drawn now."""
+        if not self.feature("holder_traits"):
+            return []
+        row = self.conn.execute("SELECT * FROM persons WHERE id = ?", (person_id,)).fetchone()
+        return self._traits_of(row) or self._give_traits(person_id, house, rng)
+
+    def _with_traits(self, delta, traits):
+        if traits:
+            delta = dict(delta)
+            delta["traits"] = traits
+        return delta
+
+    def _upkeep(self, house):
+        """Rules 1.0 `upkeep_phase` (§4.1): the turn's automatic upkeep."""
+        spec = self.rules.upkeep
+        row = self.house_row(house)
+        holdings = self.holdings(house)
+        capital = spec["capital"]["base"] + len(holdings) // spec["capital"]["holdings_per_point"]
+        if holdings:
+            capital += self.wealth_offset(holdings[0]["fed_id"])
+        influence = spec["influence"]["base"]
+        cohesion = spec["cohesion"]["base"]
+        if row["cohesion"] < spec["cohesion"]["recovery_below"]:
+            cohesion += spec["cohesion"]["recovery"]
+        for trait in self._holder_trait_rows(house):
+            capital += trait.upkeep.get("capital", 0)
+            influence += trait.upkeep.get("influence", 0)
+            cohesion += trait.upkeep.get("cohesion", 0)
+        self.log.append({
+            "purpose": f"upkeep.{house}",
+            "result": {"capital": capital, "influence": influence, "cohesion": cohesion},
+        })
+        self.set_stats(house, capital=capital, influence=influence, cohesion=cohesion)
+
+    _letter_mode = False
+
+    def _letter_delta(self, delta):
+        """A correspondence event's delta, marked when it is an automatic letter."""
+        if self._letter_mode:
+            delta = dict(delta)
+            delta["letter"] = True
+        return delta
+
+    def _letter(self, house, season, rng):
+        """Rules 1.0 `upkeep_phase`: one automatic correspondence draw a turn,
+        resolved exactly as the Correspond action was, offence included."""
+        if not self.houses_within_reach(house):
+            return None
+        if not rng.chance(self.rules.upkeep["correspondence_pct"], purpose=f"letter.{house}"):
+            return None
+        roll = rng.two_d6(purpose=f"resolve.Correspond.{house}")
+        success = roll >= self.actions["Correspond"].target
+        band = self.band_for(self.personal_year(house))
+        self._letter_mode = True
+        try:
+            return self._do_correspond(house, season, rng, success, band, roll)
+        finally:
+            self._letter_mode = False
+
+    def _record_of_age(self, house, name, age, season, band):
+        row = self.house_row(house)
+        self.record(
+            "other",
+            f"{row['peerage']}: an heir comes of age",
+            [house],
+            season,
+            band=band,
+            line=f"Season {season} · {name}, heir to {row['peerage']}, comes of age.",
+            delta={"watch": "heir_of_age", "heir_age": age},
+        )
+
+    def _succession_watch(self, house, season):
+        """Rules 1.0 `succession_watch` (§4.8): a holder turning sixty with no
+        heir named, and an heir coming of age, each recorded once."""
+        spec = self.rules.succession["watch"]
+        holder = self.holder(house)
+        band = self.band_for(self.personal_year(house))
+        if holder is not None and holder["age"] == spec["holder_age"] and not self.heirs(house):
+            row = self.house_row(house)
+            self.record(
+                "other",
+                f"{row['peerage']}: no heir at {spec['holder_age']}",
+                [house],
+                season,
+                band=band,
+                line=f"Season {season} · {holder['name']} of {row['peerage']} turns"
+                     f" {spec['holder_age']} with no heir named.",
+                delta={"watch": "no_heir", "age": spec["holder_age"]},
+            )
+        for heir in self.heirs(house):
+            if heir["role"] == "heir" and heir["age"] == spec["heir_of_age"]:
+                self._record_of_age(house, heir["name"], heir["age"], season, band)
+
+    def _tally(self, house, won=0, lost=0):
+        """Rules 1.0 `prestige`: the contests a house has won and the ridings it
+        has lost to another house. Kept only under the flag."""
+        if not self.feature("prestige"):
+            return
+        self.conn.execute(
+            "UPDATE house_stats SET contests_won = contests_won + ?,"
+            " ridings_lost = ridings_lost + ? WHERE house = ?",
+            (won, lost, house),
+        )
+
+    def _compute_prestige(self, season):
+        """Rules 1.0 `prestige` (§4.5): 10 per holding, 20 per rank index,
+        influence // 5, 5 per compact or kin tie with an active house, 15 per
+        dispute or challenge won, -15 per riding lost to another house."""
+        out = {}
+        for row in self.active_houses():
+            house = row["house"]
+            stats = self.house_row(house)
+            ties = self.conn.execute(
+                "SELECT COUNT(*) AS n FROM relations r"
+                " JOIN houses o ON o.house = CASE WHEN r.house_a = ? THEN r.house_b ELSE r.house_a END"
+                " WHERE (r.house_a = ? OR r.house_b = ?) AND r.marker IN (?, ?)"
+                " AND o.status = 'active'",
+                (house, house, house, COMPACT, KIN),
+            ).fetchone()["n"]
+            value = (
+                10 * self.holding_count(house)
+                + 20 * self.rank_index.get(stats["rank"], 0)
+                + stats["influence"] // 5
+                + 5 * ties
+                + 15 * stats["contests_won"]
+                - 15 * stats["ridings_lost"]
+            )
+            out[house] = value
+            self.conn.execute(
+                "UPDATE house_stats SET prestige = ? WHERE house = ?", (value, house)
+            )
+            self.conn.execute(
+                "INSERT OR REPLACE INTO prestige_history (season_no, house, value) VALUES (?, ?, ?)",
+                (season, house, value),
+            )
+        return out
+
+    def _founding_curve_roll(self, season, rng):
+        """Rules 1.0 `founding_curve` (§4.6): the Crown founds a house at the
+        schedule's integer per cent for this season, while foundable land is
+        left, and after `late_after` never within `late_gap` seasons of its
+        last founding."""
+        spec = self.rules.founding["founding_curve"]
+        pct = 0
+        for row in spec["schedule"]:
+            if row["through"] is None or season <= row["through"]:
+                pct = row["pct"]
+                break
+        room = self.founding_room()
+        last = self.conn.execute(
+            "SELECT MAX(founded_season) AS n FROM house_stats WHERE founded_by = 'crown'"
+        ).fetchone()["n"]
+        if season > spec["late_after"] and last is not None and season - last < spec["late_gap"]:
+            pct = 0
+        rng.draw("founding.curve", {"room": room, "pct": pct})
+        if room <= 0 or pct <= 0:
+            return None
+        if not rng.chance(pct, purpose="founding.roll"):
+            return None
+        return self.found_house(season, rng=rng)
+
 
     # ------------------------------------------------------------- friction --
     #
@@ -1955,6 +2202,10 @@ class World:
 
         if tags == {"Progressive", "Conservative"}:
             delta += spec["opposed_tags"]["value"]
+            # Rules 1.0 `holder_traits`: each Zealot holder on an opposed-tag
+            # border adds its friction effect.
+            delta += self._trait_effect(row_a["house"], "friction")
+            delta += self._trait_effect(row_b["house"], "friction")
             moved = True
         if row_a["enclosed"] or row_b["enclosed"]:
             delta += spec["either_enclosed"]["value"]
@@ -2110,6 +2361,16 @@ class World:
         if self._absorb_targets(house):
             legal.add("Absorb")
 
+        # Rules 1.0 `marriage_pairing`: legal only when a man and a woman can be
+        # paired from the two houses' unmarried heirs and children.
+        if self.feature("marriage_pairing"):
+            legal.discard("Marriage alliance")
+            if any(self._marriage_pair(house, other) for other in friendly):
+                legal.add("Marriage alliance")
+        # Rules 1.0 `upkeep_phase`: upkeep does what these four did.
+        if self.feature("upkeep_phase"):
+            legal -= UPKEEP_ACTIONS
+
         return legal & IMPLEMENTED_ACTIONS
 
     def _purchase_targets(self, house):
@@ -2137,6 +2398,7 @@ class World:
         row = self.house_row(house)
         holder = self.holder(house)
         held = self.held_objectives(house)
+        holder_trait_rows = self._holder_trait_rows(house)
 
         bonus_for = defaultdict(int)
         for objective in held:
@@ -2186,6 +2448,10 @@ class World:
                     weight -= 2 * WEIGHT_SCALE
 
             weight += bonus_for.get(name, 0)
+            # Rules 1.0 `holder_traits`: each of the holder's traits shifts the
+            # actions it names, in units of WEIGHT_SCALE.
+            for trait in holder_trait_rows:
+                weight += trait.actions.get(name, 0) * WEIGHT_SCALE
             if row["enclosed"] and name in ENCLOSURE_DOUBLED:
                 weight *= 2
             weights.append((name, max(0, weight)))
@@ -2216,6 +2482,10 @@ class World:
         weights = self.action_weights(house, legal)
         name = rng.weighted(weights, purpose=f"action.{house}")
         if name is None:
+            # Rules 1.0 `upkeep_phase`: with the four standing actions gone, a
+            # house can have nothing legal to do; the record says it bides.
+            if self.feature("upkeep_phase"):
+                return {"action": "Bide", "success": True, "note": "no legal action"}
             return None
         return self.resolve_action(house, name, season, rng)
 
@@ -2264,6 +2534,7 @@ class World:
                         "riding": name, "to": rival["house"]}
             # We outbid the house that took it: it loses the riding again.
             self._grievance_from_contest(rival["house"], house, name, season, band)
+            self._tally(rival["house"], lost=1)
             self.conn.execute(
                 "UPDATE holdings SET released_event_id = acquired_event_id"
                 " WHERE house = ? AND fed_id = ? AND released_event_id IS NULL",
@@ -2353,11 +2624,14 @@ class World:
         given, surname, gender = generator.draw_person(
             row["community"], surname=house.split(" ")[0]
         )
-        self.conn.execute(
+        cursor = self.conn.execute(
             "INSERT INTO persons (house, name, gender, age, role, alive, born_season)"
             " VALUES (?, ?, ?, ?, ?, 1, ?)",
             (house, f"{given} {surname}", gender, heir_age, role, season),
         )
+        # Rules 1.0 `holder_traits`: an heir's traits are drawn, and public,
+        # when the heir is named.
+        heir_traits = self._give_traits(cursor.lastrowid, house, rng)
         if role == "heir2":
             # §9: naming a second heir steadies the house now and enables partition later.
             self.set_stats(house, cohesion=3)
@@ -2369,8 +2643,12 @@ class World:
             band=band,
             line=f"Season {season} · {row['peerage']} names {given} {surname}"
                  f"{' second heir' if role == 'heir2' else ' heir'}.",
-            delta={"heir_age": heir_age, "role": role},
+            delta=self._with_traits({"heir_age": heir_age, "role": role}, heir_traits),
         )
+        # Rules 1.0 `succession_watch`: an heir named already of age has come of age.
+        if role == "heir" and self.feature("succession_watch") \
+                and heir_age >= self.rules.succession["watch"]["heir_of_age"]:
+            self._record_of_age(house, f"{given} {surname}", heir_age, season, band)
         return {"action": "Name heir", "success": True, "role": role}
 
     def _do_endow(self, house, season, rng, success, band, roll):
@@ -2448,7 +2726,7 @@ class World:
                 band=band,
                 line=f"Season {season} · a letter from {row['peerage']} gives offence to "
                      f"{other_row['peerage']}.",
-                delta={"marker": GRIEVANCE, "cause": "correspondence"},
+                delta=self._letter_delta({"marker": GRIEVANCE, "cause": "correspondence"}),
             )
             self.set_relation(house, other, GRIEVANCE, event_id, "a letter that gave offence")
             return {"action": "Correspond", "success": False, "with": other, "fumble": True}
@@ -2470,7 +2748,7 @@ class World:
             band=band,
             line=f"Season {season} · {row['peerage']} opens a correspondence with "
                  f"{other_row['peerage']}.",
-            delta={"marker": marker},
+            delta=self._letter_delta({"marker": marker}),
         )
         self.set_relation(house, other, marker, event_id, "correspondence")
         return {"action": "Correspond", "success": True, "with": other, "marker": marker}
@@ -2569,6 +2847,7 @@ class World:
             delta={"outcome": "won", "marker": marker},
         )
         self.set_relation(house, other, marker, event_id, "dispute won")
+        self._tally(house, won=1)
         # A dispute is a direct shared event, so the clocks meet (hard rule 5).
         self._sync(house, other, event_id, season)
         self._satisfy_objective(house, "Answer a grievance", season)
@@ -2655,6 +2934,8 @@ class World:
              mechanics._expansion_hex(self.conn, house), event_id),
         )
         self.set_relation(house, other, CHALLENGED, event_id, f"challenge over {name}")
+        self._tally(house, won=1)
+        self._tally(other, lost=1)
         self._sync(house, other, event_id, season)
         return {"action": "Challenge (11b)", "success": True, "with": other, "riding": name}
 
@@ -2700,22 +2981,27 @@ class World:
         )
         self.set_stats(house, capital=-40)
         self.set_stats(other, capital=30)
+        self._tally(other, lost=1)
         self._sync(house, other, event_id, season)
         return {"action": "Purchase riding", "success": True, "with": other, "riding": name}
 
     def _do_marriage_alliance(self, house, season, rng, success, band, roll):
         row = self.house_row(house)
+        pairing = self.feature("marriage_pairing")
         candidates = [
             other for other in self.houses_related_by(house, {FRIENDLY, COMPACT})
-            if self._unmarried_heir(other)
+            if (self._marriage_pair(house, other) if pairing else self._unmarried_heir(other))
         ]
         other = self._pick(rng, candidates, f"marriage.target.{house}")
-        if other is None or not self._unmarried_heir(house) or not success:
+        if other is None or not success or (not pairing and not self._unmarried_heir(house)):
             return {"action": "Marriage alliance", "success": False}
 
         other_row = self.house_row(other)
-        mine = self._unmarried_heir(house)
-        theirs = self._unmarried_heir(other)
+        if pairing:
+            mine, theirs = self._marriage_pair(house, other)
+        else:
+            mine = self._unmarried_heir(house)
+            theirs = self._unmarried_heir(other)
         event_id = self.record(
             "relational",
             f"{row['peerage']} and {other_row['peerage']} are joined by marriage",
@@ -3004,7 +3290,8 @@ class World:
         if house is None:
             raise SimError("season 1 founded no house: the map has no unclaimed riding")
 
-        record = self._write_season(1, [], house)
+        prestige = self._compute_prestige(1) if self.feature("prestige") else None
+        record = self._write_season(1, [], house, prestige=prestige)
         record["kind"] = "initial"
         record["seat"] = seat
         self._rewrite_season_file(1, record)
@@ -3074,6 +3361,13 @@ class World:
             if self.house_row(house)["removed_season"] is not None:
                 continue
 
+            # Rules 1.0: upkeep before anything else in the turn, then the
+            # succession watch.
+            if self.feature("upkeep_phase"):
+                self._upkeep(house)
+            if self.feature("succession_watch"):
+                self._succession_watch(house, season)
+
             # 2. Era events, which may demand an extra mortality roll.
             fired = self._era_event(house, season, rng) if "events" in self.phases else None
             extra_mortality = bool(fired and fired["extra_mortality"])
@@ -3099,6 +3393,9 @@ class World:
                             outcome.get("riding") or outcome.get("with") or outcome.get("note"),
                         ),
                     )
+                # Rules 1.0 `upkeep_phase`: one automatic letter a turn.
+                if self.feature("upkeep_phase"):
+                    self._letter(house, season, rng)
 
             # 6. Objectives, then the §7c debt check.
             if "objectives" in self.phases:
@@ -3117,8 +3414,11 @@ class World:
         if self.feature("quiet_season_line"):
             self._quiet_season_lines(season)
 
+        # Rules 1.0 `prestige`: every active house's, once the season is done.
+        prestige = self._compute_prestige(season) if self.feature("prestige") else None
+
         # 10. The season record.
-        return self._write_season(season, outcomes, founded)
+        return self._write_season(season, outcomes, founded, prestige=prestige)
 
     # A house that has done nothing worth recording for this many consecutive
     # seasons is noticed once. Ten is long enough that it is a fact about the
@@ -3165,6 +3465,8 @@ class World:
         here — tuning the founding rate is a rules change with a CHANGELOG entry,
         never a code change (§11).
         """
+        if self.feature("founding_curve"):
+            return self._founding_curve_roll(season, rng)
         spec = self.rules.founding["p_found"]
         room = self.founding_room()
         # The only floating-point computation in the engine, and the only float
@@ -3235,7 +3537,7 @@ class World:
                     out.append({"operation": operation, "title": row["title"], **entry})
         return out
 
-    def _write_season(self, season, outcomes, founded):
+    def _write_season(self, season, outcomes, founded, prestige=None):
         self._snapshot(season)
         houses_after = self.conn.execute(
             "SELECT COUNT(*) AS n FROM houses WHERE status = 'active'"
@@ -3260,6 +3562,8 @@ class World:
             "houses_after": houses_after,
             "ridings_after": ridings_after,
         }
+        if prestige is not None:
+            record["prestige"] = prestige
 
         path = self._write_season_file(season, record)
 

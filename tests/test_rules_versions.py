@@ -219,3 +219,18 @@ def test_the_committed_seasons_rebuild_byte_identically(tmp_path):
     for season, original in sorted(committed.items()):
         produced = (out / f"{season:04d}.json").read_bytes()
         assert produced == original, f"season {season} no longer replays to the same bytes"
+
+
+def test_at_most_one_draft_version_is_newer_than_current():
+    """Rules 1.0 is a draft (rules/README.md): its directory exists for the
+    engines and the trial harness while current.txt still names 0.9. One draft
+    at a time is allowed; a second would mean two unpublished versions whose
+    order nothing decides. Every version's flags default false, drafts included."""
+    def key(version):
+        return tuple(int(part) for part in version.split("."))
+
+    current = key(rules_data.current_version())
+    drafts = [v for v in rules_data.available_versions() if key(v) > current]
+    assert len(drafts) <= 1, f"more than one draft version: {drafts}"
+    for name, default in rules_data.FEATURE_DEFAULTS.items():
+        assert default is False, name

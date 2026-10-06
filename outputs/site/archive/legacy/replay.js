@@ -40,15 +40,19 @@ async function fetchJson(url) {
   return response.json();
 }
 
-// The chunk holding `turn`, fetched the first time it is needed.
-async function beatsFor(turn) {
+// The chunk holding `turn`, fetched the first time it is needed: the turn's
+// beats, and its prestige where the record carries it (rules 1.0).
+async function turnData(turn) {
   const entry = app.index.chunks.find((c) => c.first <= turn && turn <= c.last);
-  if (!entry) return [];
+  if (!entry) return { beats: [], prestige: null };
   if (!app.chunks.has(entry.file)) {
     app.chunks.set(entry.file, fetchJson(`data/beats/${entry.file}`));
   }
   const chunk = await app.chunks.get(entry.file);
-  return chunk.turns[String(turn)] || [];
+  return {
+    beats: chunk.turns[String(turn)] || [],
+    prestige: (chunk.prestige && chunk.prestige[String(turn)]) || null,
+  };
 }
 
 function colourOf(house) {
@@ -68,6 +72,7 @@ function reset() {
     unit: unitName(),
     styleOf: (house) => app.styles[house] || null,
     ridings: app.index.ridings || {},
+    watch: Boolean(app.index.succession_watch),
   });
   app.turn = 0;
 }
@@ -75,8 +80,8 @@ function reset() {
 async function stepTo(target) {
   let last = null;
   while (app.turn < target) {
-    const beats = await beatsFor(app.turn + 1);
-    last = app.story.step(app.turn + 1, beats);
+    const { beats, prestige } = await turnData(app.turn + 1);
+    last = app.story.step(app.turn + 1, beats, { prestige });
     app.turn += 1;
   }
   return last;
@@ -172,7 +177,7 @@ function startAuto() {
     if (app.auto === null) return;
     if (!d) { stopAuto(`The end of the record: ${unitName()} ${app.index.turns}.`); return; }
     if (d.pause) {
-      stopAuto(pauseReason(d, app.weights.thresholds.pause));
+      stopAuto(pauseReason(d));
       return;
     }
     app.auto = setTimeout(tick, AUTO_MS);

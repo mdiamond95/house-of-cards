@@ -268,7 +268,19 @@ CREATE TABLE house_stats (
     -- chronicle. Rules 0.8 notices a house at ten (features.quiet_season_line);
     -- under 0.7 it is counted and never read, which costs nothing and keeps the
     -- column meaning one thing in both versions.
-    quiet_seasons   INTEGER NOT NULL DEFAULT 0
+    quiet_seasons   INTEGER NOT NULL DEFAULT 0,
+    -- Rules 1.0 `prestige` (docs/STORY_DESIGN.md §4.5): the house's prestige as
+    -- last computed, and the two tallies it reads that no other table keeps —
+    -- disputes and challenges won, and ridings lost to another house. NULL and
+    -- zero, and never moved, under any earlier version.
+    prestige        INTEGER,
+    contests_won    INTEGER NOT NULL DEFAULT 0,
+    ridings_lost    INTEGER NOT NULL DEFAULT 0,
+    -- 'crown' for a house the Crown founded (season 1, the founding roll, a
+    -- director's grant), 'partition' for a cadet line. Rules 1.0's
+    -- `founding_curve` spaces Crown foundings by it; it is written under every
+    -- version, being a plain fact about how the house began.
+    founded_by      TEXT
 );
 
 CREATE INDEX idx_house_stats_removed ON house_stats(removed_season);
@@ -287,6 +299,10 @@ CREATE TABLE persons (
     -- §7's Marriage alliance needs both houses to have an unmarried heir, and
     -- says so: "tracked as flag". Without it one heir marries every neighbour.
     married INTEGER NOT NULL DEFAULT 0 CHECK (married IN (0, 1)),
+    -- Rules 1.0 `holder_traits`: two traits from traits.csv, comma-separated in
+    -- the order drawn, at founding or accession, or when an heir is named.
+    -- NULL under earlier versions and for anyone never drawn for.
+    traits  TEXT,
     born_season   INTEGER,
     died_season   INTEGER
 );
@@ -340,6 +356,16 @@ CREATE TABLE stat_snapshots (
 );
 
 CREATE INDEX idx_stat_snapshots_house ON stat_snapshots(house);
+
+-- Rules 1.0 `prestige`: every active house's prestige at the end of each season
+-- played under the flag. house_stats holds only the present; this is what the
+-- story layer's standings read for a game that records prestige.
+CREATE TABLE prestige_history (
+    season_no  INTEGER NOT NULL,
+    house      TEXT NOT NULL REFERENCES houses(house),
+    value      INTEGER NOT NULL,
+    PRIMARY KEY (season_no, house)
+);
 
 -- Every action drawn, whether or not it changed anything worth an event. Invest,
 -- Cultivate influence and Consolidate move only stats and so record no event;

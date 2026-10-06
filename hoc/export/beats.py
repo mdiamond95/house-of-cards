@@ -48,6 +48,7 @@ BEAT_KINDS = (
     "major_response", "compact", "expansion", "failed", "correspondence",
     "invest", "cultivate", "consolidate", "name_heir",
     "riding_lost", "endowment", "era_response", "other",
+    "heir_wanted", "heir_of_age", "bide",
 )
 
 SILENT_FAILURES = (
@@ -59,6 +60,7 @@ BOOKKEEPING_ACTIONS = {
     "Invest": "invest",
     "Cultivate influence": "cultivate",
     "Consolidate (rest)": "consolidate",
+    "Bide": "bide",
 }
 
 
@@ -112,6 +114,8 @@ def type_event(event, action_of):
             return "quarrel", d["cause"]
         if "ceded" in d:
             return "reconciled", "cession"
+        if d.get("letter"):
+            return "correspondence", d.get("marker")
         action = action_of(houses[0]) if houses else None
         return {
             "Correspond": ("correspondence", d.get("marker")),
@@ -121,6 +125,10 @@ def type_event(event, action_of):
             "Absorb": ("failed", "Absorb"),
         }.get(action, ("other", None))
     if kind == "other":
+        if d.get("watch") == "no_heir":
+            return "heir_wanted", None
+        if d.get("watch") == "heir_of_age":
+            return "heir_of_age", None
         action = action_of(houses[0]) if houses else None
         if action == "Name heir":
             return "name_heir", d.get("role")
@@ -378,8 +386,38 @@ def build_story(conn):
         "baseline": baseline,
         "houses": houses,
         "ridings": ridings,
+        # Whether the record carries rules 1.0's succession watch: the story
+        # layer then opens and closes succession questions on its events.
+        "succession_watch": _record_has(conn, "succession_watch"),
     }
     return index, beats
+
+
+def _record_has(conn, flag):
+    """Whether any season of the game was played under a version with `flag` on."""
+    from hoc import rules_data
+
+    versions = [row["rules_version"] for row in conn.execute(
+        "SELECT DISTINCT rules_version FROM seasons WHERE rules_version IS NOT NULL"
+        " ORDER BY rules_version")]
+    for version in versions:
+        try:
+            if rules_data.load_features(version).get(flag):
+                return True
+        except rules_data.RulesDataError:
+            continue
+    return False
+
+
+def prestige_by_turn(conn):
+    """Rules 1.0 `prestige`: each house's prestige at the end of each season, for
+    a game whose record carries it ({turn: {house: value}}); empty otherwise."""
+    out = defaultdict(dict)
+    for row in conn.execute(
+        "SELECT season_no, house, value FROM prestige_history ORDER BY season_no, house"
+    ):
+        out[row["season_no"]][row["house"]] = row["value"]
+    return dict(out)
 
 
 def _dumps(value):
@@ -394,12 +432,15 @@ def write_beats(conn, data_dir, title=None):
         stale.unlink()
     index, beats = build_story(conn)
     index["title"] = title
+    prestige = prestige_by_turn(conn)
 
     chunks = []
     current = {}
     size = 0
     for turn in sorted(beats):
         piece = len(_dumps({str(turn): beats[turn]}).encode("utf-8"))
+        if turn in prestige:
+            piece += len(_dumps({str(turn): prestige[turn]}).encode("utf-8"))
         if current and size + piece > CHUNK_BUDGET - 64:
             chunks.append(current)
             current, size = {}, 0
@@ -412,7 +453,12 @@ def write_beats(conn, data_dir, title=None):
     index["chunks"] = []
     for number, chunk in enumerate(chunks, start=1):
         name = f"chunk-{number:03d}.json"
-        text = _dumps({"turns": chunk}) + "\n"
+        body = {"turns": chunk}
+        held = {t: prestige[int(t)] for t in chunk if int(t) in prestige}
+        if held:
+            # Rules 1.0 `prestige`: the standings the story layer shows.
+            body["prestige"] = held
+        text = _dumps(body) + "\n"
         if len(text.encode("utf-8")) > CHUNK_BUDGET:
             raise ValueError(f"{name} is over the {CHUNK_BUDGET:,}-byte budget; one turn is too large")
         (out / name).write_text(text, encoding="utf-8")
