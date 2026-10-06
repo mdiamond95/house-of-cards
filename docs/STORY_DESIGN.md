@@ -130,6 +130,51 @@ The largest kind supplies 20.7% of headlines, and no bookkeeping action headline
 125 of the 150 dispatches would pause Auto, either at the pause threshold or on a
 cast storyline opening, reaching its climax or closing.
 
+**Phase C1 note, 6 October 2026.** Clean succession is now 15 and marriage 35. Frontier
+beats lost their escalation bonus (§3.4 note), which let routine successions and
+marriages outside the cast take headlines that belong to no storyline; these two numbers
+put the storyline share back above 85%. Rules 1.0's records add three kinds:
+
+| Kind | Weight | What it is |
+|---|---|---|
+| heir_wanted | 25 | a holder turning sixty with no heir named |
+| heir_of_age | 20 | an heir coming of age |
+| bide | 0 | a house with no legal action |
+
+Automatic letters type as correspondence.
+
+Auto now pauses only when one of these happens:
+
+- a storyline of at least four beats closes, involving a house that was in the cast at
+  some point while it ran, or the followed house;
+- a house is removed;
+- a riding passes between two houses that are in the cast before or after the turn;
+- the followed house is in a headline at or above the pause threshold.
+
+That is 24 of The First Dominion's 150 seasons (16%). Headlines over the 150 seasons:
+138, with 12 quiet. By kind:
+
+| Kind | Headlines | Share |
+|---|---|---|
+| Riding passes | 28 | 20.3% |
+| Expansion | 24 | 17.4% |
+| Quarrel | 18 | 13.0% |
+| Dispute reconciled | 12 | 8.7% |
+| Crown founding | 11 | 8.0% |
+| Dispute won | 9 | 6.5% |
+| Elevation | 8 | 5.8% |
+| Compact | 7 | 5.1% |
+| Disorderly succession | 6 | 4.3% |
+| Marriage | 3 | 2.2% |
+| Partition | 3 | 2.2% |
+| Failed attempt | 2 | 1.4% |
+| House removed | 2 | 1.4% |
+| Five other kinds | 1 each | 0.7% each |
+
+The five kinds with one headline each are correspondence, endowment, response to a Major
+event, riding lost and clean succession. The largest kind supplies 20.3% of headlines,
+and no bookkeeping action headlines.
+
 ### 3.2 The dispatch
 
 One turn on screen is: a headline (the heaviest beat, with the map zoomed to where it
@@ -223,6 +268,31 @@ The five longest are:
 | The Alberta frontier | 12 | 71–145 | lapsed |
 | The decline of Bellechasse | 10 | 105–145 | recovered |
 
+**Phase C1 note, 6 October 2026.** These Phase B rules are approved as built:
+
+- a removed house leaves a frontier without closing it;
+- for a game without rules 1.0's succession watch, a succession question opens only on a
+  disorderly succession.
+
+Three changes:
+
+- **Frontiers.** A frontier beat takes no escalation bonus. A riding passing between
+  houses is never a frontier beat; only unclaimed land counts. A frontier names a headline
+  only when the headline belongs to no other storyline.
+- **The succession watch.** For a game whose record carries it, a succession question also
+  opens on a holder turning sixty with no heir. The question then closes when an heir comes
+  of age; naming one is a step towards that, not the answer.
+- **Prestige.** Where the record carries prestige, the standings are the engine's prestige.
+
+On The First Dominion the Phase B gates still hold:
+
+- After season 20, 86.5% of headlines belong to a storyline, and 21.8% open one.
+- 17 storylines have five or more beats.
+- 17.2% of closed storylines lapsed.
+
+The storyline counts by type and outcome, and the five longest, are as in the Phase B
+note, except that the Ontario frontier has 64 beats and the Quebec frontier 40.
+
 ### 3.5 Prose (Phase E)
 
 Per-turn scenes come from deterministic templates keyed on storyline type, beat kind and
@@ -241,6 +311,27 @@ Income, influence drift and cohesion recovery happen automatically at the start 
 turn, scaled by holdings and wealth tier. Invest, Cultivate influence and Consolidate
 (rest) leave the action table. A house's one action per turn is always a real move.
 
+**Phase C1 note, 6 October 2026.** Built in both engines (rules 1.0, draft), with these
+numbers in `upkeep.json`:
+
+- capital: 1 + holdings // 4 + the seat's wealth tier − 3;
+- influence: 1;
+- cohesion: 0, plus 3 while cohesion is below 40;
+- a Courtier holder adds 1 to influence, and an Improver 1 to capital.
+
+Correspond leaves the action table too. Each house gets one automatic letter a turn, at a
+30% chance, resolved exactly as Correspond was, giving offence included. A house with no
+legal action bides.
+
+With this flag alone on, median capital, influence and cohesion at turn 100 are within
+five points of 0.9's on the same ten seeds:
+
+| Median at turn 100 | Upkeep alone | 0.9 |
+|---|---|---|
+| Capital | 39.6 | 39.0 |
+| Influence | 60.1 | 55.5 |
+| Cohesion | 97.3 | 97.8 |
+
 ### 4.2 Schemes (`schemes`)
 A house commits to a scheme: a multi-turn plan with a named target, preparation steps that
 cost capital or influence, an abort condition and a resolution roll. Schemes are public
@@ -255,6 +346,25 @@ Grasping, Pious, Reformer, Dynast, Litigious). Traits shift scheme utilities and
 responses. An heir's traits are drawn when the heir is named and are public, so a
 succession can be anticipated.
 
+**Phase C1 note, 6 October 2026.** Built as `traits.csv`, with eight traits. Each shifts
+its named action weights by 2 × WEIGHT_SCALE, or its named upkeep by 1:
+
+| Trait | Effect |
+|---|---|
+| Grasping | + Expand, Purchase riding, Challenge |
+| Cautious | − Expand, − Dispute, + Name heir |
+| Litigious | + Dispute, − Reconcile |
+| Conciliator | + Reconcile, Propose compact, Cede / swap |
+| Dynast | + Marriage alliance, Name heir |
+| Courtier | + Petition elevation; +1 influence upkeep |
+| Improver | + Endow; +1 capital upkeep |
+| Zealot | never Neutral in an era response; +1 friction a turn on each opposed-tag border |
+
+Grasping and Cautious never occur together, nor Litigious and Conciliator. Traits are
+drawn in two draws, in the table's order, at founding or accession, or when an heir is
+named. They are recorded on the person and in the founding, succession and naming events,
+and shown on the house page. Scheme utilities wait for Phase C2.
+
 ### 4.4 Contests (`contested_claims`)
 A claim on a neighbour's riding resolves as 2d6 plus committed capital, influence and
 allies on each side. The loser pays; the riding can change hands; a seat can be lost; a
@@ -265,14 +375,47 @@ An integer score per house from holdings, rank, influence, alliances and contest
 It is the standings, it is what the game is scored on at the end, and houses read it: the
 leader draws coalitions, and a falling house draws claims.
 
+**Phase C1 note, 6 October 2026.** Prestige is recomputed at the end of every turn. It is
+written to `house_stats.prestige`, `prestige_history` and the season record. It is the sum
+of:
+
+- 10 per holding;
+- 20 per rank index;
+- influence // 5;
+- 5 per compact or kin tie with an active house;
+- 15 per dispute or challenge won;
+- −15 per riding lost to another house (cession, sale, purchase, challenge, or being
+  outbid for a contested riding).
+
+Nothing in the engine reads it yet; houses reading it is Phase C2. Where a record carries
+it, the story layer's standings use it.
+
 ### 4.6 A smaller table (`founding_curve`)
 Crown foundings are front-loaded so the board is set in the first quarter of the game and
 rare afterwards. The late game is zero-sum between established houses and their cadets.
+
+**Phase C1 note, 6 October 2026.** An integer schedule in `founding.json` replaces
+p_found: 100% through turn 24, 3% through turn 40, then 2%. After turn 40 no Crown founding
+falls within ten turns of the last, and a house records whether the Crown or a partition
+founded it. Cadet foundings by partition are unaffected.
+
+On ten seeds:
+
+- 24 houses are seated by turn 25 on every seed;
+- there is at most one Crown founding in any ten turns after turn 40;
+- 29 houses (24–33) are active at turn 100 with this flag alone, and 39 (35–42) with
+  every flag on.
 
 ### 4.7 Marriage pairing (`marriage_pairing`)
 A Marriage alliance pairs one man and one woman, by recorded gender, from the two houses'
 unmarried heirs and children; the action is legal only when such a pair exists.
 Director's decision, 6 October 2026.
+
+### 4.8 Succession watch (`succession_watch`)
+The engine records one event when a holder turns 60 with no heir named, and one when an
+heir comes of age at 25, or is named already of age. The story layer opens a succession
+question on the first and closes it on the second, for games whose record carries them.
+Phase C1, 6 October 2026.
 
 ## 5. The shared calendar (Phase D)
 
@@ -320,6 +463,7 @@ Initial targets across ten seeds, 100 turns, to be tuned and recorded in rules/C
 |---|---|---|---|
 | A | Beats, story weight, dispatch, standings, follow, Replay page | None | First Dominion replays as dispatches; headline mix within §3.1 limits |
 | B | Storylines derived from the record; dispatch organised by them | None | On The First Dominion: at least 85% of headlines after turn 20 belong to a storyline; at least eight storylines have five or more beats, and each closed one has an outcome; no more than 25% of headlines after turn 20 are storyline openings; fewer than 20% of closed storylines close as "lapsed" (if not reachable without distorting the triggers, the figure is reported, as it measures the engine); the Phase A limits still hold |
-| C | Rules 1.0 flags §4.1–4.6, both engines | Yes | Cross-check byte-identical; §6 targets on a personal-clock trial |
+| C1 | Rules 1.0's mechanical flags (§4.1, §4.3, §4.5–§4.8) as a draft version, both engines; the trial harness | Yes | Every flag in both engines, false before 1.0; cross-check byte-identical on seeds 1867, 2 and 3 at 120 turns under 1.0 and the current version; the baseline trial table (current / each flag alone / all on) recorded in rules/CHANGELOG.md |
+| C2 | Schemes (§4.2), contested claims (§4.4), houses reading prestige | Yes | §6 targets on a personal-clock trial |
 | D | `world_calendar`, chapters, crises, ending; new scenario begins | Yes | §6 targets across ten seeds; a full game ends in 1967 |
 | E | Scene templates, chapter narration, epilogues | None | A full game reads start to finish from the site |
