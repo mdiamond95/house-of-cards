@@ -12,7 +12,6 @@ and writes, beside them, the tables a scenario whose manifest says
     adjacency.csv             the existing shape, from each row's `neighbours`
     places_by_riding.csv      the existing shape, plus spans_ridings and designation_ok
     riding_tokens.csv         the existing shape, by the same rule as build_places.py
-    geometry_simplified.geojson, borders_shared.geojson     the map (and the site's), from the layer
     riding_stats.csv          new: integers only, one row per riding
     riding_jurisdictions.csv  new: one row per jurisdiction span, in whole years
     build_report.json         what this build had to decide, for the record
@@ -24,6 +23,9 @@ docs/DETERMINISM.md ("Reference data from Meridian"). Neither engine ever sees
 a float from Meridian. Geometry coordinates stay decimal degrees, because a map
 is drawn in them, but they too are computed in exact decimal arithmetic and
 are read only by the site's map, never by an engine.
+
+**Drawing.** This script writes no geometry. The layer is Meridian's unclipped
+file; the map is drawn from the coast-clipped files in `data/reference/`.
 
 **What the table does not have is not made up.** It has no `score.cohesion`
 (Meridian omits it for unit tables: a cohesion needs a split, a lens and a
@@ -410,11 +412,11 @@ def build(out_dir=OUT_DIR, raw_dir=RAW_DIR, verbose=True):
     ])
     write_csv(out_dir / "riding_jurisdictions.csv", jurisdictions,
               ["fed_id", "from_year", "to_year", "unit", "name", "status", "sovereign"])
-    # One drawing. Meridian's layer is already simplified for drawing, so there
-    # is no coarser site copy: hoc/export/map.py draws the site map from these
-    # two when a set has no geometry_site.geojson / borders_site.geojson.
-    write_geojson(out_dir / "geometry_simplified.geojson", features)
-    write_geojson(out_dir / "borders_shared.geojson", borders)
+    # No drawing files. Meridian's layer is the unclipped Elections Canada file
+    # and fills open water, so this set draws with the coast-clipped geometry in
+    # data/reference/ (hoc/export/map.py's _drawing_path). `features` and
+    # `borders` are still decoded, to check the layer has exactly the 343
+    # ridings and to keep build_report.json's border_arcs as it was.
 
     usable = {p["fed_id"] for p in places if not p["spans_ridings"]}
     designations = [p for p in places if p["designation_ok"]]
