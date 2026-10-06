@@ -4,7 +4,7 @@
     "top": 3,
     "abandon_below": 10,
     "abandon_refund_pct": 50,
-    "answer_stand": 40
+    "answer_stand": 55
   },
   "utility": {
     "objective": 20,
@@ -12,23 +12,24 @@
     "ambition": 2,
     "wealth_tier": 6,
     "low_cohesion": 40,
-    "low_cohesion_penalty": 15,
-    "grievance": 25,
-    "hostile": 35,
-    "weaker_target": 15,
-    "seat": -20,
+    "low_cohesion_penalty": 30,
+    "grievance": 15,
+    "hostile": 10,
+    "weaker_target": 10,
+    "seat": -30,
     "claim_discount": 2,
     "peace_cause": 50,
     "under_claim": 40,
     "protector_per_gap": 10,
     "protector_gap_max": 30,
-    "line_age_from": 55,
+    "line_age_from": 45,
     "elevation_influence_from": 60,
     "weak_target": 20,
     "recent_loss_turns": 10,
     "leader_target": 25,
     "leader_ally": -25,
-    "top": 8
+    "top": 8,
+    "overreach": 10
   },
   "peace": {
     "wait": 3,
@@ -50,6 +51,6 @@
     "ally_quarrel": -30
   },
   "frontier": {
-    "double_on": 10
+    "double_on": 8
   }
 }

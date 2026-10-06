@@ -2365,6 +2365,12 @@ class World:
             value += row["ambition"] * terms["ambition"]
             if row["cohesion"] < terms["low_cohesion"]:
                 value -= terms["low_cohesion_penalty"]
+        if kind in ("contest", "frontier", "Purchase riding") and self.feature("cohesion_strain"):
+            # Overreach: under strain, every holding beyond what the rank holds
+            # without cost makes another riding less worth having.
+            strain = self.rules.upkeep["strain"]
+            free = strain["free_holdings"] + strain["per_rank_index"] * self.rank_index.get(row["rank"], 0)
+            value -= terms["overreach"] * max(0, self.holding_count(house) - free)
         if target_riding is not None and kind in ("contest", "frontier"):
             value += terms["wealth_tier"] * self._wealth_tier(target_riding)
         if kind == "contest":
@@ -2726,7 +2732,14 @@ class World:
             claim = pending[0]
             for p in pending:
                 self.conn.execute("UPDATE schemes SET considered = 1 WHERE id = ?", (p["id"],))
-            if current is None or current["answers"] != claim["id"]:
+            # A house already pressing a claim against its claimant keeps to it:
+            # its own claim is its answer, and setting it aside for another
+            # would only trade one claim for the next.
+            engaged = (
+                current is not None and current["target_house"] == claim["house"]
+                and current["scheme"] in self._contest_schemes()
+            )
+            if not engaged and (current is None or current["answers"] != claim["id"]):
                 candidates = self._scheme_candidates(house, season, claim=claim)
                 stand = self.rules.scheme_rules["choice"]["answer_stand"]
                 candidates.append((stand, len(self.rules.schemes), "", "", None))

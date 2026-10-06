@@ -1,15 +1,15 @@
 {
   "note": "Rules 1.0 `upkeep_phase` (docs/STORY_DESIGN.md §4.1): at the start of a house's turn, before events, capital, influence and cohesion move by these integers. Capital: base + holdings // holdings_per_point + the seat's wealth_tier - 3 (under riding_endowments). Influence: base. Cohesion: base, plus recovery while cohesion is below recovery_below. A holder's Courtier or Improver trait adds 1 to influence or capital. Invest, Cultivate influence, Consolidate (rest) and Correspond leave the action pool; correspondence_pct is each house's chance per turn of one automatic letter, resolved exactly as the Correspond action was.",
   "capital": {
-    "base": 1,
-    "holdings_per_point": 4
+    "base": 3,
+    "holdings_per_point": 3
   },
   "influence": {
     "base": 1
   },
   "cohesion": {
-    "base": 0,
-    "recovery_below": 40,
+    "base": 3,
+    "recovery_below": 50,
     "recovery": 3
   },
   "correspondence_pct": 30,

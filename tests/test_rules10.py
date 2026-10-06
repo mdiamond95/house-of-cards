@@ -756,6 +756,39 @@ def test_cohesion_strains_with_holdings_beyond_rank_and_an_old_holder(tmp_path):
     assert not [d for d in off.log if d["purpose"].startswith("strain.")]
 
 
+def test_under_strain_another_riding_is_worth_less_to_a_house_past_its_reach(tmp_path):
+    world = _c2(tmp_path, 25)
+    house = max((r["house"] for r in world.active_houses()), key=lambda h: (world.holding_count(h), h))
+    spec = world.rules.upkeep["strain"]
+    free = spec["free_holdings"] + spec["per_rank_index"] * world.rank_index.get(world.house_row(house)["rank"], 0)
+    excess = max(0, world.holding_count(house) - free)
+    frontier = next(s for s in world.rules.schemes if s.scheme == "Open the frontier")
+    season = world.season_no + 1
+    strained = world.scheme_utility(house, frontier, None, None, season)
+    world.rules.features["cohesion_strain"] = False
+    relaxed = world.scheme_utility(house, frontier, None, None, season)
+    assert relaxed - strained == world.rules.scheme_rules["utility"]["overreach"] * excess
+
+
+def test_a_house_pressing_a_claim_on_its_claimant_keeps_to_it(tmp_path):
+    world = _c2(tmp_path, 20)
+    attacker, defender, fed_id = _claim_pair(world)
+    season = world.season_no + 1
+    world.conn.execute("DELETE FROM schemes WHERE house IN (?, ?) AND status = 'active'", (attacker, defender))
+    theirs = next(f for o, f in world._claim_targets(defender) if o == attacker) \
+        if any(o == attacker for o, _ in world._claim_targets(defender)) else None
+    if theirs is None:
+        pytest.skip("the defender has no riding of the attacker's to claim")
+    mine = _insert_scheme(world, defender, "Claim a riding", attacker, theirs, steps=4, done=1, season=season)
+    claim = _insert_scheme(world, attacker, "Claim a riding", defender, fed_id, steps=3, done=1, season=season)
+    world.conn.execute("UPDATE house_stats SET capital = 80, influence = 60 WHERE house = ?", (defender,))
+    world._turn_cache = {}
+    outcome = world._scheme_turn(defender, season, world.rng_for(season))
+    assert world._scheme(claim["id"])["considered"] == 1, "considered, not answered"
+    assert world.active_scheme(defender)["id"] == mine["id"] and outcome["scheme"] == "step"
+    assert not [d for d in world.log if d["purpose"] == f"scheme.answer.{defender}"]
+
+
 # ------------------------------------------------- both engines, value by value --
 
 

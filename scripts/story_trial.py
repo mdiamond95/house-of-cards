@@ -16,6 +16,10 @@ current published rules as a baseline, the draft version with each of its new
 flags on alone (the earlier versions' flags left as the draft sets them), and
 the draft with every flag on.
 
+`--c2` runs Phase C2's before/after: the current published rules, the draft
+with Phase C1's flags on and Phase C2's off ("C1 all on"), and the draft with
+every flag on ("C2 all on").
+
 What it measures (§6, as far as it can be measured without schemes):
 
 - the share of actions aimed at another named house;
@@ -32,6 +36,19 @@ What it measures (§6, as far as it can be measured without schemes):
 - rivalries by outcome and the median number of turns a rivalry runs;
 - median capital, influence and cohesion at turn 100;
 - Crown foundings by turn 25, and the most in any ten turns after turn 40.
+
+And Phase C2's (rules 1.0 `schemes` and `contested_claims`), from the schemes
+table and the story layer:
+
+- the share of closed rivalries reconciled, and the share ended by a contest, a
+  cession under a standing claim or a house's removal;
+- contests resolved, and the share the attacker won;
+- the share of claims their target answered (of those it had a turn to);
+- houses fallen or removed by turn 100;
+- the share of ended schemes that reached their resolution, and the median
+  length of a resolved scheme in turns;
+- after turn 15, the share of turns with at least three public schemes
+  involving a house of the cast.
 """
 
 import argparse
@@ -58,11 +75,16 @@ TURNS = 100
 AIMED = {
     "Correspond", "Propose compact", "Reconcile", "Dispute", "Challenge (11b)",
     "Purchase riding", "Marriage alliance", "Absorb", "Cede / swap",
+    # Rules 1.0 `schemes`: the schemes with a named house as their target.
+    "Claim a riding", "Buy out a neighbour", "Break a rival", "Dynastic match",
+    "Seek a protector", "Make peace", "Fortify", "Sue for peace", "Counter-claim",
 }
 NEW_FLAGS = (
     "upkeep_phase", "holder_traits", "marriage_pairing", "prestige", "founding_curve",
     "succession_watch",
 )
+C2_FLAGS = ("schemes", "contested_claims", "prestige_politics", "cohesion_strain")
+DECISIVE = ("won in a contest", "held in a contest", "ceded under a claim", "a house removed")
 REPORT = ROOT / "tests" / "js" / "story_report.mjs"
 
 
@@ -118,9 +140,22 @@ def play_one(version, overrides, seed, turns=TURNS):
             default=0,
         )
 
+        claims = [s.scheme for s in rules.schemes if s.resolves_as == "contest"]
+        schemes = conn.execute("SELECT * FROM schemes").fetchall()
+        contests = [r for r in schemes if r["scheme"] in claims and r["status"] == "resolved"
+                    and r["outcome"] in ("won", "held")]
+        considered = [r for r in schemes if r["scheme"] in claims and r["considered"] > 0]
+        ended = [r for r in schemes if r["status"] != "active"]
+        resolved = [r for r in ended if r["status"] == "resolved"]
+        lengths = sorted(r["ended_season"] - r["begun_season"] + 1 for r in resolved)
+        removed = conn.execute(
+            "SELECT COUNT(*) AS n FROM houses WHERE status = 'removed'").fetchone()["n"]
+
         turn_inputs, _ = beats_export.turn_inputs(conn)
+        # A riding passing between houses: a transfer, or (rules 1.0) a claim
+        # won in a contest, and each riding a rout takes.
         passes = [(turn, beat) for turn, data in turn_inputs for beat in beats_export.type_turn(data)
-                  if beat["kind"] == "riding_passes"]
+                  if beat["kind"] in ("riding_passes", "contest_won")]
         beats_export.write_beats(conn, work / "data", title=f"trial {seed}")
         conn.close()
         report = json.loads(subprocess.run(
@@ -131,6 +166,22 @@ def play_one(version, overrides, seed, turns=TURNS):
     story = report["storylines"]
     trial = report["trial"]
     headlines = report["summary"]["headlines"] or 1
+    outcomes = trial["rivalryOutcomes"]
+    closed = sum(v for k, v in outcomes.items() if k != "open")
+    c2 = {}
+    if schemes:
+        c2 = {
+            "rivalry_reconciled": outcomes.get("reconciled", 0) / closed if closed else 0,
+            "rivalry_decisive": sum(outcomes.get(k, 0) for k in DECISIVE) / closed if closed else 0,
+            "contests": len(contests),
+            "attacker_wins": (sum(1 for r in contests if r["outcome"] == "won") / len(contests)
+                              if contests else 0),
+            "claims_answered": (sum(1 for r in considered if r["considered"] == 2) / len(considered)
+                                if considered else 0),
+            "schemes_resolved": len(resolved) / len(ended) if ended else 0,
+            "median_scheme_turns": statistics.median(lengths) if lengths else 0,
+            "cast_scheme_share": trial.get("castSchemeShare") or 0,
+        }
     return {
         "aimed": aimed / len(actions) if actions else 0,
         "passes": len(passes),
@@ -154,6 +205,8 @@ def play_one(version, overrides, seed, turns=TURNS):
         "median_cohesion": median["cohesion"],
         "crown_by_25": sum(1 for s in crown if s <= 25),
         "crown_late_window": late_window,
+        "removed_100": removed,
+        **c2,
     }
 
 
@@ -205,6 +258,16 @@ ROWS = (
     ("median influence at turn 100", "median_influence", "num"),
     ("median cohesion at turn 100", "median_cohesion", "num"),
     ("median turns a rivalry runs", "median_rivalry_turns", "num"),
+    ("houses fallen or removed by turn 100", "removed_100", "num"),
+    ("C2 rivalries reconciled (target ≤ 40%)", "rivalry_reconciled", "pct"),
+    ("C2 rivalries ended by contest, cession under a claim or a fall (target ≥ 25%)",
+     "rivalry_decisive", "pct"),
+    ("C2 contests resolved (target ≥ 15)", "contests", "num"),
+    ("C2 contests the attacker won (target 35–60%)", "attacker_wins", "pct"),
+    ("C2 claims answered by their target (target ≥ 50%)", "claims_answered", "pct"),
+    ("C2 ended schemes that reached resolution (target ≥ 60%)", "schemes_resolved", "pct"),
+    ("C2 median turns a resolved scheme runs (target 3–6)", "median_scheme_turns", "num"),
+    ("C2 turns after 15 with 3+ cast schemes (target ≥ 80%)", "cast_scheme_share", "pct"),
 )
 
 
@@ -254,6 +317,23 @@ def matrix(draft="1.0", baseline=None, seeds=SEEDS, turns=TURNS, workers=4):
         return [f.result() for f in futures]
 
 
+def c2_compare(draft="1.0", baseline=None, seeds=SEEDS, turns=TURNS, workers=4):
+    """Phase C2's before/after: the published rules, the draft with Phase C1's
+    flags on and Phase C2's off, and the draft with every flag on."""
+    baseline = baseline or rules_data.current_version()
+    draft_features = rules_data.load_features(draft)
+    plan = [
+        (baseline, baseline, {}),
+        (f"{draft}: C1 all on", draft, {**{f: draft_features.get(f, False) for f in NEW_FLAGS},
+                                         **{f: False for f in C2_FLAGS}}),
+        (f"{draft}: C2 all on", draft, {f: draft_features.get(f, False) for f in NEW_FLAGS + C2_FLAGS}),
+    ]
+    with ProcessPoolExecutor(max_workers=workers) as pool:
+        futures = [pool.submit(run_config, label, version, overrides, seeds, turns)
+                   for label, version, overrides in plan]
+        return [f.result() for f in futures]
+
+
 def _parse_flags(text):
     out = {}
     for part in (text or "").split(","):
@@ -271,6 +351,7 @@ def main(argv=None):
     parser.add_argument("--rules-version", default=None)
     parser.add_argument("--flags", default="", help="name=1,name=0 overrides")
     parser.add_argument("--matrix", action="store_true")
+    parser.add_argument("--c2", action="store_true", help="Phase C2's before/after table")
     parser.add_argument("--seeds", default=f"{SEEDS[0]}-{SEEDS[-1]}")
     parser.add_argument("--turns", type=int, default=TURNS)
     parser.add_argument("--markdown", default=None, help="also write the table here")
@@ -284,6 +365,8 @@ def main(argv=None):
 
     if args.matrix:
         configs = matrix(seeds=seeds, turns=args.turns, workers=args.workers)
+    elif args.c2:
+        configs = c2_compare(seeds=seeds, turns=args.turns, workers=args.workers)
     else:
         version = args.rules_version or rules_data.current_version()
         overrides = _parse_flags(args.flags)

@@ -1794,6 +1794,13 @@ export class World {
       value += row.ambition * terms.ambition;
       if (row.cohesion < terms.low_cohesion) value -= terms.low_cohesion_penalty;
     }
+    if (['contest', 'frontier', 'Purchase riding'].includes(kind) && this.feature('cohesion_strain')) {
+      // Overreach: under strain, every holding beyond what the rank holds
+      // without cost makes another riding less worth having.
+      const strain = this.rules.upkeep.strain;
+      const free = strain.free_holdings + strain.per_rank_index * (this.rankIndex.get(row.rank) ?? 0);
+      value -= terms.overreach * Math.max(0, this.holdingCount(house) - free);
+    }
     if (targetRiding !== null && (kind === 'contest' || kind === 'frontier')) {
       value += terms.wealth_tier * this.wealthTier(targetRiding);
     }
@@ -2103,7 +2110,9 @@ export class World {
     if (pending.length > 0) {
       const claim = pending[0];
       for (const p of pending) p.considered = 1;
-      if (current === null || current.answers !== claim.id) {
+      // A house already pressing a claim against its claimant keeps to it.
+      const engaged = current !== null && current.targetHouse === claim.house && contest.has(current.scheme);
+      if (!engaged && (current === null || current.answers !== claim.id)) {
         const candidates = this.schemeCandidates(house, season, claim);
         candidates.push([this.rules.schemeRules.choice.answer_stand, this.rules.schemes.length, '', '', null]);
         const chosen = this.chooseScheme(house, candidates, rng, `scheme.answer.${house}`);
