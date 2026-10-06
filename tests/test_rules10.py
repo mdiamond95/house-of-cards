@@ -1073,7 +1073,9 @@ def test_a_through_year_event_repeats_its_direct_effect_each_year(calendar_game,
         fresh._world_events(house, 10, fresh.rng_for(10))
     finally:
         fresh._playing_season = None
-    assert fresh.house_row(house)["capital"] == 60 - 10
+    each_year = sum(e.delta for e in depression.direct_effect if e.stat == "capital")
+    assert each_year < 0
+    assert fresh.house_row(house)["capital"] == 60 + each_year
     assert depression not in fresh._in_force(1880)
 
 
