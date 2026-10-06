@@ -129,7 +129,7 @@ export class Story {
   // `ridings` maps every fed_id to its riding's name.
   constructor({
     weights, baseline = emptyBoard(), follow = null, unit = 'season', seen = [],
-    styleOf = () => null, ridings = {},
+    styleOf = () => null, ridings = {}, watch = false,
   }) {
     this.weights = weights;
     this.follow = follow;
@@ -144,6 +144,7 @@ export class Story {
       weights,
       provinceTotals: provinceTotals(ridings),
       held: Object.keys(this.board.owners).map(provinceOf),
+      watch,
     });
   }
 
@@ -181,14 +182,16 @@ export class Story {
     return new Set(this.standings.slice(0, this.weights.cast_size).map((row) => row.house));
   }
 
-  step(turn, rawBeats) {
+  // `prestige`, for a record that carries it (rules 1.0), is each house's
+  // prestige at the end of this turn: the standings use it.
+  step(turn, rawBeats, { prestige = null } = {}) {
     const w = this.weights;
     const beats = mergeActs(rawBeats);
     const before = this.standings;
     const boardBefore = this.board;
     const cast = this.cast();
     const boardAfter = applyBeats(boardBefore, beats);
-    const after = table(boardAfter, w);
+    const after = table(boardAfter, w, prestige);
     const { roles, changes } = this.lines.step(turn, beats, {
       cast, boardBefore, boardAfter, tableBefore: before, tableAfter: after,
     });

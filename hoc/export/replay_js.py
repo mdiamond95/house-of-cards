@@ -51,15 +51,19 @@ async function fetchJson(url) {
   return response.json();
 }
 
-// The chunk holding `turn`, fetched the first time it is needed.
-async function beatsFor(turn) {
+// The chunk holding `turn`, fetched the first time it is needed: the turn's
+// beats, and its prestige where the record carries it (rules 1.0).
+async function turnData(turn) {
   const entry = app.index.chunks.find((c) => c.first <= turn && turn <= c.last);
-  if (!entry) return [];
+  if (!entry) return { beats: [], prestige: null };
   if (!app.chunks.has(entry.file)) {
     app.chunks.set(entry.file, fetchJson(`data/beats/${entry.file}`));
   }
   const chunk = await app.chunks.get(entry.file);
-  return chunk.turns[String(turn)] || [];
+  return {
+    beats: chunk.turns[String(turn)] || [],
+    prestige: (chunk.prestige && chunk.prestige[String(turn)]) || null,
+  };
 }
 
 function colourOf(house) {
@@ -79,6 +83,7 @@ function reset() {
     unit: unitName(),
     styleOf: (house) => app.styles[house] || null,
     ridings: app.index.ridings || {},
+    watch: Boolean(app.index.succession_watch),
   });
   app.turn = 0;
 }
@@ -86,8 +91,8 @@ function reset() {
 async function stepTo(target) {
   let last = null;
   while (app.turn < target) {
-    const beats = await beatsFor(app.turn + 1);
-    last = app.story.step(app.turn + 1, beats);
+    const { beats, prestige } = await turnData(app.turn + 1);
+    last = app.story.step(app.turn + 1, beats, { prestige });
     app.turn += 1;
   }
   return last;
@@ -351,15 +356,22 @@ async function boot() {
     return;
   }
   const byTurn = {};
-  for (const chunk of chunks) Object.assign(byTurn, chunk.turns);
+  const prestige = {};
+  for (const chunk of chunks) {
+    Object.assign(byTurn, chunk.turns);
+    Object.assign(prestige, chunk.prestige || {});
+  }
   const styles = {};
   for (const [house, info] of Object.entries(index.houses)) styles[house] = houseStyle({ house, ...info });
   const unit = index.unit === 'turn' ? 'turn' : 'season';
   const story = new Story({
     weights, baseline: index.baseline, unit,
     styleOf: (house) => styles[house] || null, ridings: index.ridings || {},
+    watch: Boolean(index.succession_watch),
   });
-  for (let turn = 1; turn <= index.turns; turn += 1) story.step(turn, byTurn[String(turn)] || []);
+  for (let turn = 1; turn <= index.turns; turn += 1) {
+    story.step(turn, byTurn[String(turn)] || [], { prestige: prestige[String(turn)] || null });
+  }
 
   const all = story.lines.all;
   const sections = [];

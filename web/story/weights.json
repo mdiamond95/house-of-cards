@@ -3,7 +3,8 @@
   "notes": [
     "docs/STORY_DESIGN.md sections 3.1 and 3.4. Integers only; a share is [numerator, denominator]. The story layer reads this file and nothing in either engine does.",
     "riding_lost, endowment, era_response and other are kinds the record holds that section 3.1 does not name: a riding returned to the Crown, an endowment, a response to a Minor or Significant era event, and anything untyped. Approved by the director, 6 October 2026.",
-    "At most one era response (major_response or era_response) appears in a dispatch, and one headlines only when nothing else reaches the quiet threshold."
+    "At most one era response (major_response or era_response) appears in a dispatch, and one headlines only when nothing else reaches the quiet threshold.",
+    "heir_wanted, heir_of_age and bide are rules 1.0's: a holder turning sixty with no heir named, an heir coming of age (succession_watch), and a house with no legal action (upkeep_phase)."
   ],
   "kinds": {
     "removed": 100,
@@ -29,7 +30,10 @@
     "riding_lost": 35,
     "endowment": 15,
     "era_response": 5,
-    "other": 0
+    "other": 0,
+    "heir_wanted": 25,
+    "heir_of_age": 20,
+    "bide": 0
   },
   "modifiers": {
     "top_eight": 20,

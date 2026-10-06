@@ -478,7 +478,7 @@ function playOne({ zoom = false } = {}) {
   app.viewing = record.season;
   appendFeed(record.season, record.chronicle, { stopped });
   renderAll({ flash: true });
-  tellSeason(record.season, { zoom });
+  tellSeason(record.season, { zoom, prestige: record.prestige || null });
   autosave();
   return stopped;
 }
@@ -510,6 +510,7 @@ function newStory() {
     seen: currentSeason() > 0 ? BEAT_KINDS : [],
     styleOf,
     ridings: ridingNames(),
+    watch: app.world.feature('succession_watch'),
   });
   app.afoot = null;
   app.lastDispatch = null;
@@ -553,9 +554,9 @@ function focusOf(d) {
     .map(([fed]) => fed);
 }
 
-function tellSeason(season, { zoom = false } = {}) {
+function tellSeason(season, { zoom = false, prestige = null } = {}) {
   if (!app.story) return null;
-  const d = app.story.step(season, typeTurn(inputFromState(app.world.state, season)));
+  const d = app.story.step(season, typeTurn(inputFromState(app.world.state, season)), { prestige });
   renderAfoot();
   const current = el('story-dispatch');
   if (app.lastDispatch !== null) {

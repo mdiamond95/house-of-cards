@@ -2,8 +2,8 @@
 //
 // Phase A's standing is provisional and the story layer's own: per_holding ×
 // ridings held + per_rank × rank index (weights.json `standing`), folded from
-// beats. It is never read by either engine. From Phase C the engine's prestige
-// replaces it.
+// beats. It is never read by either engine. Where a game's record carries the
+// engine's prestige (rules 1.0, §4.5), the standing is that instead.
 //
 // A board is { owners: {fed_id: house}, ranks: {house: rank index},
 // removed: [house] } — plain data, so it can be shipped, stored and compared.
@@ -41,7 +41,9 @@ export function applyBeats(board, beats) {
 
 // Every house still standing, best first: score, then ridings, then name.
 // A house is standing once the board knows its rank and until it is removed.
-export function table(board, weights) {
+// `prestige`, where the record carries it (rules 1.0), is each house's score
+// in place of the provisional formula.
+export function table(board, weights, prestige = null) {
   const per = weights.standing;
   const holdings = new Map();
   for (const house of Object.values(board.owners)) {
@@ -52,7 +54,10 @@ export function table(board, weights) {
   for (const [house, rank] of Object.entries(board.ranks)) {
     if (removed.has(house)) continue;
     const held = holdings.get(house) || 0;
-    rows.push({ house, holdings: held, rank, score: per.per_holding * held + per.per_rank * rank });
+    const score = prestige
+      ? (Object.prototype.hasOwnProperty.call(prestige, house) ? prestige[house] : 0)
+      : per.per_holding * held + per.per_rank * rank;
+    rows.push({ house, holdings: held, rank, score });
   }
   rows.sort((a, b) => b.score - a.score || b.holdings - a.holdings || compareText(a.house, b.house));
   return rows.map((row, i) => ({ ...row, place: i + 1 }));
