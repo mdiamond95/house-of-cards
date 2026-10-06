@@ -1,2 +1,2 @@
-house,capital,influence,cohesion,ambition,enclosed,enclosed_since,community,region,tradition,tag,province,seat_place,founded_season,removed_season,forced_action,quiet_seasons,prestige,contests_won,ridings_lost,founded_by
-Ritchie,48,31,74,9,0,,Loyalist Anglican,ontario,english,Conservative,ON,Frontenac Islands,1,,,0,,0,0,crown
+house,capital,influence,cohesion,ambition,enclosed,enclosed_since,community,region,tradition,tag,province,seat_place,founded_season,removed_season,forced_action,quiet_seasons,prestige,contests_won,ridings_lost,founded_by,peak_prestige,peak_season,top_eight,successions
+Ritchie,48,31,74,9,0,,Loyalist Anglican,ontario,english,Conservative,ON,Frontenac Islands,1,,,0,,0,0,crown,,,0,0

@@ -45,11 +45,18 @@ async function boot() {
   }
   const styles = {};
   for (const [house, info] of Object.entries(index.houses)) styles[house] = houseStyle({ house, ...info });
-  const unit = index.unit === 'turn' ? 'turn' : 'season';
+  // Rules 1.0 `world_calendar`: a turn is a year, told by its year.
+  const calendar = index.calendar || null;
+  const start = calendar ? calendar.start_year : null;
+  const unit = calendar ? 'year' : (index.unit === 'turn' ? 'turn' : 'season');
+  const anchor = calendar ? 'turn' : unit;
+  const span = (s) => (calendar
+    ? (s.state === 'closed' ? `${start + s.opened - 1}–${start + s.closed - 1}` : `since ${start + s.opened - 1}`)
+    : (s.state === 'closed' ? `${unit}s ${s.opened}–${s.closed}` : `since ${unit} ${s.opened}`));
   const story = new Story({
     weights, baseline: index.baseline, unit,
     styleOf: (house) => styles[house] || null, ridings: index.ridings || {},
-    watch: Boolean(index.succession_watch),
+    watch: Boolean(index.succession_watch), calendar, reckoning: index.reckoning || null,
   });
   for (let turn = 1; turn <= index.turns; turn += 1) {
     story.step(turn, byTurn[String(turn)] || [], { prestige: prestige[String(turn)] || null });
@@ -64,19 +71,20 @@ async function boot() {
     contents.push(`<a href="#type-${type}">${HEADINGS[type]} (${lines.length})</a>`);
     const items = lines.map((s) => {
       const told = story.tell(s.id);
-      const end = s.state === 'closed' ? `${unit}s ${s.opened}–${s.closed}` : `since ${unit} ${s.opened}`;
+      const end = span(s);
       return `<details class="storyline" id="${escapeHtml(s.id)}"><summary>`
         + `<span class="storyline-title">${escapeHtml(told.name)}</span>`
         + `<span class="meta"> ${told.beats.length} beat${told.beats.length === 1 ? '' : 's'} &middot; ${end}`
         + ` &middot; ${escapeHtml(s.state === 'closed' ? s.outcome : s.state)}</span></summary>`
-        + storylineHtml(told, { unit, link: (turn) => `replay.html#${unit}-${turn}` })
+        + storylineHtml(told, { unit, link: (turn) => `replay.html#${anchor}-${turn}`, start })
         + '</details>';
     });
     sections.push(`<section id="type-${type}" class="storyline-type"><h2>${HEADINGS[type]}`
       + ` <span class="count">${lines.length}</span></h2>${items.join('')}</section>`);
   }
   const closed = all.filter((s) => s.state === 'closed').length;
-  el('lines-summary').textContent = `${all.length} storylines over ${index.turns} ${unit}s:`
+  el('lines-summary').textContent = `${all.length} storylines over ${calendar
+    ? `the years ${start}–${start + index.turns - 1}` : `${index.turns} ${unit}s`}:`
     + ` ${closed} closed, ${all.length - closed} still open when the record ends.`;
   el('lines-types').innerHTML = contents.join(' &middot; ');
   el('lines-body').innerHTML = sections.join('') || '<p class="meta">This game has no storylines.</p>';

@@ -1,11 +1,13 @@
 {
-  "version": "phase-c2-1",
+  "version": "phase-d1-1",
   "notes": [
     "docs/STORY_DESIGN.md sections 3.1 and 3.4. Integers only; a share is [numerator, denominator]. The story layer reads this file and nothing in either engine does.",
     "riding_lost, endowment, era_response and other are kinds the record holds that section 3.1 does not name: a riding returned to the Crown, an endowment, a response to a Minor or Significant era event, and anything untyped. Approved by the director, 6 October 2026.",
     "At most one era response (major_response or era_response) appears in a dispatch, and one headlines only when nothing else reaches the quiet threshold.",
     "heir_wanted, heir_of_age and bide are rules 1.0's: a holder turning sixty with no heir named, an heir coming of age (succession_watch), and a house with no legal action (upkeep_phase).",
-    "scheme_begun, scheme_step, scheme_answered, scheme_abandoned, scheme_resolved, ally_joins, ally_declines, contest_won, contest_lost and fallen are rules 1.0's (Phase C2): a scheme's public events, the allies a contest calls, a claim decided, and a house falling to the house that took its seat. A preparation step and a resolution are ledger-only; a resolution folds into the act it ends (beats.js mergeActs)."
+    "scheme_begun, scheme_step, scheme_answered, scheme_abandoned, scheme_resolved, ally_joins, ally_declines, contest_won, contest_lost and fallen are rules 1.0's (Phase C2): a scheme's public events, the allies a contest calls, a claim decided, and a house falling to the house that took its seat. A preparation step and a resolution are ledger-only; a resolution folds into the act it ends (beats.js mergeActs).",
+    "Phase D1: a rise or a decline opens only for a house of the cast after trend_turns turns of sustained movement of at least trend_places places, and closes no sooner than trend_min_run turns after opening (but by a removal). A contest decided between houses outside the cast weighs its base times contest_outside_cast. The allies a contest called are told in one sentence with it.",
+    "crisis, accession, event_continues and reckoning are rules 1.0's world events (Phase D1): a crisis with both camps, land coming under Canada or becoming a province, a further year of an event still running, and the reckoning after the last turn. They belong to no storyline."
   ],
   "kinds": {
     "removed": 100,
@@ -44,7 +46,11 @@
     "ally_declines": 15,
     "contest_won": 90,
     "contest_lost": 90,
-    "fallen": 110
+    "fallen": 110,
+    "crisis": 70,
+    "accession": 45,
+    "event_continues": 10,
+    "reckoning": 100
   },
   "modifiers": {
     "top_eight": 20,
@@ -53,7 +59,7 @@
     "repeat_headline": -15
   },
   "thresholds": {
-    "pause": 60,
+    "pause": 90,
     "quiet": 40,
     "secondary": 20
   },
@@ -76,7 +82,15 @@
     ],
     "afoot_max": 6,
     "afoot_window": 10,
-    "pause_closing_beats": 4
+    "pause_closing_beats": 7,
+    "contest_outside_cast": [
+      1,
+      2
+    ],
+    "trend_turns": 3,
+    "trend_places": 4,
+    "trend_min_run": 3,
+    "trend_rest": 10
   },
   "claim_schemes": [
     "Claim a riding",

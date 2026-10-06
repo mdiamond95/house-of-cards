@@ -29,26 +29,29 @@
     "leader_target": 25,
     "leader_ally": -25,
     "top": 8,
-    "overreach": 10
+    "overreach": 10,
+    "elevation_at_reach": 45,
+    "elevation_influence_min": 50
   },
   "peace": {
     "wait": 3,
     "indemnity_capital": 10
   },
   "contest": {
-    "committed_per_point": 10,
+    "committed_per_point": 15,
     "fortified_per_point": 10,
     "cohesion_per_point": 25,
     "per_ally": 2,
     "seat_bonus": 2,
-    "loss_cohesion": 10,
+    "loss_cohesion": 30,
     "rout_margin": 5,
     "rout_cohesion_below": 40,
-    "cooldown": 5,
+    "cooldown": 8,
     "ally_accept": 50,
     "ally_kin": 15,
     "ally_bound_both": -100,
-    "ally_quarrel": -30
+    "ally_quarrel": -30,
+    "loser_bar": 6
   },
   "frontier": {
     "double_on": 8

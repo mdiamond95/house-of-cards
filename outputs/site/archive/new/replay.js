@@ -7,8 +7,8 @@
 import { Story } from './story/dispatch.js';
 import { houseStyle } from './story/text.js';
 import {
-  MapCamera, afootHtml, dispatchHtml, escapeHtml, pauseReason, plansHtml, readStored, recordHtml,
-  storylineHtml, stripHtml, writeStored,
+  MapCamera, afootHtml, chapterHtml, dispatchHtml, escapeHtml, pauseReason, plansHtml, readStored,
+  reckoningHtml, recordHtml, storylineHtml, stripHtml, writeStored,
 } from './story/view.js';
 
 const SCENARIO = "new";
@@ -62,8 +62,23 @@ function colourOf(house) {
   return info && info.colour ? info.colour : null;
 }
 
+// Rules 1.0 `world_calendar`: a turn is a year, told by its year.
+function calendar() {
+  return app.index.calendar || null;
+}
+
 function unitName() {
+  if (calendar()) return 'year';
   return app.index.unit === 'turn' ? 'turn' : 'season';
+}
+
+function startYear() {
+  return calendar() ? calendar().start_year : null;
+}
+
+// How a turn is linked: #season-N, #turn-N, and #turn-N for a calendar game.
+function anchor(turn) {
+  return `#${calendar() ? 'turn' : unitName()}-${turn}`;
 }
 
 function reset() {
@@ -75,6 +90,8 @@ function reset() {
     styleOf: (house) => app.styles[house] || null,
     ridings: app.index.ridings || {},
     watch: Boolean(app.index.succession_watch),
+    calendar: calendar(),
+    reckoning: app.index.reckoning || null,
   });
   app.turn = 0;
 }
@@ -110,9 +127,15 @@ function focusOf(d) {
 
 function renderLabel() {
   const total = app.index.turns;
-  el('story-turn').textContent = app.turn === 0
-    ? `before ${unitName()} 1 of ${total}`
-    : `${unitName()} ${app.turn} of ${total}`;
+  if (calendar()) {
+    el('story-turn').textContent = app.turn === 0
+      ? `before ${startYear()} (turn 1 of ${total})`
+      : `${startYear() + app.turn - 1} (turn ${app.turn} of ${total})`;
+  } else {
+    el('story-turn').textContent = app.turn === 0
+      ? `before ${unitName()} 1 of ${total}`
+      : `${unitName()} ${app.turn} of ${total}`;
+  }
   el('story-next').disabled = app.turn >= total;
 }
 
@@ -126,10 +149,10 @@ function renderAfoot() {
   }
   const list = app.story.afoot();
   if (app.afoot && !app.story.lines.of(app.afoot)) app.afoot = null;
-  el('story-afoot-list').innerHTML = afootHtml(list, { unit: unitName(), selected: app.afoot });
+  el('story-afoot-list').innerHTML = afootHtml(list, { unit: unitName(), selected: app.afoot, start: startYear() });
   const told = app.afoot ? app.story.tell(app.afoot) : null;
   el('story-afoot-detail').innerHTML = told
-    ? storylineHtml(told, { unit: unitName(), link: (turn) => `#${unitName()}-${turn}` })
+    ? storylineHtml(told, { unit: unitName(), link: anchor, start: startYear() })
     : '';
   const houses = new Set(told ? told.houses : []);
   const owners = app.story.board.owners;
@@ -149,7 +172,10 @@ function show(d, { zoom = true } = {}) {
     el('story-record-lines').innerHTML = '';
     return;
   }
-  el('story-dispatch').innerHTML = dispatchHtml(d, { unit: unitName() });
+  // Phase D1: a chapter's interstitial at its end, and the reckoning after the last turn.
+  el('story-dispatch').innerHTML = dispatchHtml(d, { unit: unitName() })
+    + (d.chapter ? chapterHtml(d.chapter, { colourOf, follow: app.follow, start: startYear() }) : '')
+    + (d.reckoning ? reckoningHtml(d.reckoning, { colourOf }) : '');
   el('story-record-lines').innerHTML = recordHtml(d);
   if (zoom && app.camera) app.camera.focus(focusOf(d));
 }
@@ -182,7 +208,11 @@ function startAuto() {
   const tick = async () => {
     const d = await guarded(next);
     if (app.auto === null) return;
-    if (!d) { stopAuto(`The end of the record: ${unitName()} ${app.index.turns}.`); return; }
+    if (!d) {
+      stopAuto(calendar() ? `The end of the record: ${startYear() + app.index.turns - 1}.`
+        : `The end of the record: ${unitName()} ${app.index.turns}.`);
+      return;
+    }
     if (d.pause) {
       stopAuto(pauseReason(d));
       return;
@@ -228,7 +258,7 @@ function renderFollow() {
 // replay.html#season-88 (or #turn-2) opens the replay at that turn: the
 // Storylines page links each beat here.
 function hashTurn() {
-  const match = /^#(?:season|turn)-(\d+)$/.exec(window.location.hash);
+  const match = /^#(?:season|turn|year)-(\d+)$/.exec(window.location.hash);
   return match ? Number(match[1]) : null;
 }
 
