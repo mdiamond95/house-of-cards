@@ -49,16 +49,16 @@
     "note": "Rules 1.0 `founding_curve` (docs/STORY_DESIGN.md §4.6): replaces p_found. Each season the Crown founds a house with the integer per cent of the first schedule row whose `through` is at or after the season (null: every later season), rolled as rand_int(1, 100) <= pct, provided some foundable riding is unclaimed. After season `late_after`, no Crown founding falls within `late_gap` seasons of the last one. Cadet foundings by partition are not Crown foundings and are unaffected.",
     "schedule": [
       {
-        "through": 25,
+        "through": 24,
         "pct": 100
       },
       {
         "through": 40,
-        "pct": 30
+        "pct": 3
       },
       {
         "through": null,
-        "pct": 10
+        "pct": 2
       }
     ],
     "late_after": 40,
