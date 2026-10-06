@@ -707,6 +707,7 @@ export class World {
       drawn = generator.drawHouse(
         communityObj.community, province, chosenRank,
         this.state.takenPlaces(), null, surname || null, tiers,
+        this.feature('distinct_surnames') ? this.borneSurnames() : null,
       );
     } catch (exc) {
       this.log.push({ purpose: 'founding.abandoned', result: String(exc.message) });
@@ -838,6 +839,12 @@ export class World {
     if (objective === 'Endow an institution') return row.capital >= 70 ? 1 : 0;
     if (objective === 'Form a compact') return ['Progressive', 'Mixed'].includes(row.tag) ? 1 : 0;
     return 0;
+  }
+
+  // Rules 1.0 `distinct_surnames`: the surnames active houses bear (a house's
+  // name less any numeral).
+  borneSurnames() {
+    return new Set(this.activeHouses().map((row) => row.house.replace(/ [0-9]+$/, '')));
   }
 
   uniqueHouseName(surname) {
@@ -1492,6 +1499,7 @@ export class World {
     const row = this.houseRow(house);
     const holdings = this.holdings(house);
     let capital = spec.capital.base + Math.floor(holdings.length / spec.capital.holdings_per_point);
+    if (spec.capital.holdings_per_cost) capital -= Math.floor(holdings.length / spec.capital.holdings_per_cost);
     if (holdings.length > 0) capital += this.wealthOffset(holdings[0].fedId);
     let influence = spec.influence.base;
     let cohesion = spec.cohesion.base;
@@ -1692,8 +1700,8 @@ export class World {
     return last !== null && season - last < this.rules.schemeRules.contest.cooldown;
   }
 
-  lostContest(house, season, other = null) {
-    const window = this.rules.schemeRules.utility.recent_loss_turns;
+  lostContest(house, season, other = null, window = null) {
+    if (window === null) window = this.rules.schemeRules.utility.recent_loss_turns;
     for (const s of [...this.state.schemes].sort((x, y) => x.id - y.id)) {
       if (s.status !== 'resolved' || (s.outcome !== 'won' && s.outcome !== 'held')) continue;
       if (s.endedSeason < season - window) continue;
@@ -1819,6 +1827,12 @@ export class World {
       }
     } else if (kind === 'Petition elevation') {
       value += Math.max(0, Math.floor((row.influence - terms.elevation_influence_from) / 5));
+      // A house at or beyond what its rank holds without strain wants the next rank.
+      const strain = this.rules.upkeep.strain;
+      if (strain !== undefined) {
+        const free = strain.free_holdings + strain.per_rank_index * (this.rankIndex.get(row.rank) ?? 0);
+        if (this.holdingCount(house) >= free) value += terms.elevation_at_reach ?? 0;
+      }
     } else if (kind === 'Name heir') {
       const holder = this.holder(house);
       if (holder !== null) value += Math.max(0, holder.age - terms.line_age_from);
@@ -1851,6 +1865,9 @@ export class World {
     const row = this.houseRow(house);
     if (kind === 'contest') {
       if (!this.feature('contested_claims')) return [];
+      // A house that lost a contest begins no claim for contest.loser_bar turns.
+      const bar = this.rules.schemeRules.contest.loser_bar ?? 0;
+      if (bar && this.lostContest(house, season, null, bar)) return [];
       const out = [];
       for (const [other, fedId] of this.claimTargets(house)) {
         if (claim !== null && other !== claim.house) continue;
@@ -1879,8 +1896,9 @@ export class World {
       return this.matchCandidates(house).map((other) => [other, null]);
     }
     if (kind === 'Petition elevation') {
+      const least = this.rules.schemeRules.utility.elevation_influence_min ?? 60;
       if (
-        row.influence >= 60 && this.holdingCount(house) >= 3
+        row.influence >= least && this.holdingCount(house) >= 3
         && (this.rankIndex.get(row.rank) ?? 0) < this.rankIndex.get('Marquis')
         && this.affords(house, spec, null)
       ) return [[null, null]];

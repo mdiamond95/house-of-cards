@@ -118,6 +118,9 @@ FEATURE_DEFAULTS = {
     # §4.9: cohesion falls with holdings beyond a rank's reach and with an
     # old holder, and recovers only through upkeep.
     "cohesion_strain": False,
+    # Phase D1. §4.10: a Crown founding never draws a surname an active house
+    # bears while its community's bank has an unused one.
+    "distinct_surnames": False,
 }
 
 

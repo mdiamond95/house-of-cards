@@ -39,7 +39,9 @@ needs_node = pytest.mark.skipif(shutil.which("node") is None, reason="node is no
 # action draw, which `schemes` replaces, so `_world` turns these off unless a
 # test asks for them (`c2=True`); the C2 tests at the end of this file do.
 C2_FLAGS = ("schemes", "contested_claims", "prestige_politics", "cohesion_strain")
-ALL_FLAGS = NEW_FLAGS + C2_FLAGS
+# Phase D1's (the end of this file).
+D1_FLAGS = ("distinct_surnames",)
+ALL_FLAGS = NEW_FLAGS + C2_FLAGS + D1_FLAGS
 
 
 def _world(tmp_path, version="1.0", name="w", reference=MERIDIAN, c2=False, **flags):
@@ -117,7 +119,7 @@ def test_upkeep_moves_the_stats_at_the_start_of_a_turn(tmp_path):
     after = world.house_row(house)
     seat = world.holdings(house)[0]["fed_id"]
     assert after["capital"] - before["capital"] == spec["capital"]["base"] + 1 // spec["capital"]["holdings_per_point"] \
-        + world.wealth_offset(seat)
+        - 1 // spec["capital"]["holdings_per_cost"] + world.wealth_offset(seat)
     assert after["influence"] - before["influence"] == spec["influence"]["base"]
     assert after["cohesion"] == 30 + spec["cohesion"]["base"] + spec["cohesion"]["recovery"]
     assert world.log[-1]["purpose"] == f"upkeep.{house}"
@@ -612,12 +614,10 @@ def test_the_contest_totals_follow_the_formula(tmp_path):
     spec = world.rules.scheme_rules["contest"]
     a_row, d_row = world.house_row(attacker), world.house_row(defender)
     attack, defence = world.contest_totals(attacker, defender, fed_id, 23, 17, 1, 2, 7, 6)
-    assert attack == 7 + 23 // 10 + world.rank_index.get(a_row["rank"], 0) + spec["per_ally"] * 1
-    assert defence == 6 + 17 // 10 + d_row["cohesion"] // 25 + spec["per_ally"] * 2 + (
-        spec["seat_bonus"] if world._is_seat(defender, fed_id) else 0)
-    assert (spec["committed_per_point"], spec["cohesion_per_point"], spec["per_ally"],
-            spec["seat_bonus"], spec["loss_cohesion"], spec["rout_margin"],
-            spec["rout_cohesion_below"], spec["cooldown"]) == (10, 25, 2, 2, 10, 5, 40, 5)
+    per = spec["committed_per_point"]
+    assert attack == 7 + 23 // per + world.rank_index.get(a_row["rank"], 0) + spec["per_ally"] * 1
+    assert defence == 6 + 17 // spec["fortified_per_point"] + d_row["cohesion"] // spec["cohesion_per_point"] \
+        + spec["per_ally"] * 2 + (spec["seat_bonus"] if world._is_seat(defender, fed_id) else 0)
 
 
 def _set_up_contest(world, single=False):
@@ -673,16 +673,17 @@ def test_ties_go_to_the_defender_and_the_loser_pays_in_cohesion(tmp_path):
     outcome = world._contest(claim, season, _Dice(world, season, [roll_a, roll_d]))
     assert outcome["contest"] == "held"
     assert mechanics_holder(world, fed_id) == defender
-    assert world.house_row(attacker)["cohesion"] == 50 - 10
+    assert world.house_row(attacker)["cohesion"] == 50 - world.rules.scheme_rules["contest"]["loss_cohesion"]
 
 
 def test_the_pair_may_not_contest_again_for_the_cooldown(tmp_path):
     world = _c2(tmp_path, 25)
     attacker, defender, fed_id, season, claim = _set_up_contest(world)
     world._resolve_scheme(claim, season, _Dice(world, season, [2, 12]))
+    cooldown = world.rules.scheme_rules["contest"]["cooldown"]
     assert world._contest_cooldown(attacker, defender, season)
-    assert world._contest_cooldown(defender, attacker, season + 4)
-    assert not world._contest_cooldown(attacker, defender, season + 5)
+    assert world._contest_cooldown(defender, attacker, season + cooldown - 1)
+    assert not world._contest_cooldown(attacker, defender, season + cooldown)
     spec = next(s for s in world.rules.schemes if s.scheme == "Claim a riding")
     world._turn_cache = {}
     assert all(t[0] != defender for t in world._scheme_targets(attacker, spec, season + 1))
@@ -830,3 +831,98 @@ def test_the_scheme_utility_and_the_contest_totals_agree_in_both_engines(tmp_pat
     assert sum(len(v) for v in python["utilities"].values()) > 20
     assert python["contests"]
     assert js == python
+
+
+# =========================================================== Phase D1 ======
+#
+# Part 0's pacing terms ride on the C2 flags (schemes.json, upkeep.json);
+# `distinct_surnames` (§4.10) is a flag of its own.
+
+
+def test_a_house_that_lost_a_contest_begins_no_claim_for_the_bar(tmp_path):
+    world = _c2(tmp_path, 25)
+    attacker, defender, fed_id, season, claim = _set_up_contest(world)
+    world._resolve_scheme(claim, season, _Dice(world, season, [2, 12]))
+    assert world._scheme(claim["id"])["outcome"] == "held", "the attacker lost"
+    spec = next(s for s in world.rules.schemes if s.scheme == "Claim a riding")
+    bar = world.rules.scheme_rules["contest"]["loser_bar"]
+    assert bar > 0
+    world.conn.execute("UPDATE house_stats SET capital = 100, influence = 100 WHERE house = ?", (attacker,))
+    world._turn_cache = {}
+    assert world._scheme_targets(attacker, spec, season + 1) == []
+    assert world._scheme_targets(attacker, spec, season + bar) == []
+    world.rules.scheme_rules["contest"]["loser_bar"] = 0
+    world._turn_cache = {}
+    unbarred = world._scheme_targets(attacker, spec, season + 1)
+    assert all(other != defender for other, _ in unbarred), "the pair's own truce still holds"
+
+
+def test_upkeep_charges_capital_for_every_holding(tmp_path):
+    world = _c2(tmp_path, 25, holder_traits=False)
+    house = max((r["house"] for r in world.active_houses()), key=lambda h: (world.holding_count(h), h))
+    spec = world.rules.upkeep["capital"]
+    n = world.holding_count(house)
+    assert n >= spec["holdings_per_cost"], "a house large enough to pay"
+    world.conn.execute("UPDATE house_stats SET capital = 50 WHERE house = ?", (house,))
+    world._upkeep(house)
+    seat = world.holdings(house)[0]["fed_id"]
+    assert world.house_row(house)["capital"] == 50 + spec["base"] + n // spec["holdings_per_point"] \
+        - n // spec["holdings_per_cost"] + world.wealth_offset(seat)
+
+
+def test_a_house_at_its_ranks_reach_wants_elevation_more(tmp_path):
+    world = _c2(tmp_path, 25)
+    terms = world.rules.scheme_rules["utility"]
+    strain = world.rules.upkeep["strain"]
+    spec = next(s for s in world.rules.schemes if s.resolves_as == "Petition elevation")
+    season = world.season_no + 1
+    at_reach = terms["elevation_at_reach"]
+    assert at_reach > 0
+    for row in world.active_houses():
+        house = row["house"]
+        free = strain["free_holdings"] + strain["per_rank_index"] * world.rank_index.get(row["rank"], 0)
+        terms["elevation_at_reach"] = at_reach
+        with_term = world.scheme_utility(house, spec, None, None, season)
+        terms["elevation_at_reach"] = 0
+        without = world.scheme_utility(house, spec, None, None, season)
+        assert with_term - without == (at_reach if world.holding_count(house) >= free else 0), house
+    terms["elevation_at_reach"] = at_reach
+    # The influence a petition needs is the table's, not a constant.
+    least = terms["elevation_influence_min"]
+    house = next((r["house"] for r in world.active_houses() if world.holding_count(r["house"]) >= 3
+                  and world.rank_index.get(r["rank"], 0) < world.rank_index["Marquis"]), None)
+    if house is None:
+        pytest.skip("no house of three holdings below Marquis")
+    world.conn.execute("UPDATE house_stats SET influence = ?, capital = 100 WHERE house = ?", (least, house))
+    world._turn_cache = {}
+    assert world._scheme_targets(house, spec, season) == [(None, None)]
+    world.conn.execute("UPDATE house_stats SET influence = ? WHERE house = ?", (least - 1, house))
+    world._turn_cache = {}
+    assert world._scheme_targets(house, spec, season) == []
+
+
+# -------------------------------------------------------- distinct_surnames --
+
+
+def test_the_name_draw_skips_borne_surnames_while_the_bank_has_others():
+    from hoc.names import NameGenerator
+
+    rules = rules_data.load_rules(version="1.0")
+    community = rules.surnames[0].community
+    bank = [r.surname for r in rules.surnames if r.community == community]
+    generator = NameGenerator(rules, prng.Prng(SEED))
+    for _ in range(20):
+        _, surname, _ = generator.draw_person(community, avoid=set(bank[1:]))
+        assert surname == bank[0]
+    # A bank wholly borne draws from all of it; a fixed surname is kept.
+    assert generator.draw_person(community, avoid=set(bank))[1] in bank
+    assert generator.draw_person(community, surname=bank[1], avoid={bank[1]})[1] == bank[1]
+
+
+def test_a_crown_founding_never_repeats_an_active_houses_surname(tmp_path):
+    world = _c2(tmp_path, 60)
+    crown = world.conn.execute(
+        "SELECT h.house FROM houses h JOIN house_stats s ON s.house = h.house"
+        " WHERE s.founded_by = 'crown'").fetchall()
+    assert len(crown) > 20
+    assert not [r["house"] for r in crown if sim._SURNAME_NUMERAL.search(r["house"])]

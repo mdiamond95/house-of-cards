@@ -28,6 +28,7 @@ are recognised and weighted zero until PART B.
 """
 
 import json
+import re
 from collections import defaultdict
 from functools import lru_cache
 from datetime import datetime, timezone
@@ -61,6 +62,8 @@ RULES_VERSION = rules_data.current_version()
 STAT_RANGE = (0, 100)
 AMBITION_RANGE = (0, 10)
 TOTAL_RIDINGS = 343
+# A second house of a surname takes a numeral (_unique_house_name).
+_SURNAME_NUMERAL = re.compile(r" [0-9]+$")
 
 # Rules 0.9 (`atlas_jurisdiction`): every founding and every accession starts a
 # personal clock here (hard rule 5), so this is also the year at which a Crown
@@ -983,6 +986,7 @@ class World:
             drawn = generator.draw_house(
                 community_obj.community, province, rank,
                 taken_places=self.taken_places(), surname=surname or None, tiers=tiers,
+                avoid=self._borne_surnames() if self.feature("distinct_surnames") else (),
             )
         except Exception as exc:  # a bank that cannot serve this province
             self.log.append({"purpose": "founding.abandoned", "result": str(exc)})
@@ -1133,6 +1137,11 @@ class World:
         if objective == "Form a compact":
             return 1 if row["tag"] in ("Progressive", "Mixed") else 0
         return 0
+
+    def _borne_surnames(self):
+        """Rules 1.0 `distinct_surnames`: the surnames active houses bear (a
+        house's name less any numeral)."""
+        return {_SURNAME_NUMERAL.sub("", row["house"]) for row in self.active_houses()}
 
     def _unique_house_name(self, surname):
         """House names are surnames; a second house of the same surname takes a
@@ -1997,6 +2006,8 @@ class World:
         row = self.house_row(house)
         holdings = self.holdings(house)
         capital = spec["capital"]["base"] + len(holdings) // spec["capital"]["holdings_per_point"]
+        if spec["capital"].get("holdings_per_cost"):
+            capital -= len(holdings) // spec["capital"]["holdings_per_cost"]
         if holdings:
             capital += self.wealth_offset(holdings[0]["fed_id"])
         influence = spec["influence"]["base"]
@@ -2247,10 +2258,11 @@ class World:
         cooldown = self.rules.scheme_rules["contest"]["cooldown"]
         return row["n"] is not None and season - row["n"] < cooldown
 
-    def _lost_contest(self, house, season, other=None):
+    def _lost_contest(self, house, season, other=None, window=None):
         """Whether the house lost a contest (to `other`, if named) within
-        utility.recent_loss_turns."""
-        window = self.rules.scheme_rules["utility"]["recent_loss_turns"]
+        `window` turns, utility.recent_loss_turns unless given."""
+        if window is None:
+            window = self.rules.scheme_rules["utility"]["recent_loss_turns"]
         for row in self.conn.execute(
             "SELECT house, target_house, outcome FROM schemes WHERE status = 'resolved'"
             " AND outcome IN ('won', 'held') AND ended_season >= ?"
@@ -2392,6 +2404,12 @@ class World:
                     value += terms["leader_target"]
         elif kind == "Petition elevation":
             value += max(0, (row["influence"] - terms["elevation_influence_from"]) // 5)
+            # A house at or beyond what its rank holds without strain wants the next rank.
+            strain = self.rules.upkeep.get("strain")
+            if strain is not None:
+                free = strain["free_holdings"] + strain["per_rank_index"] * self.rank_index.get(row["rank"], 0)
+                if self.holding_count(house) >= free:
+                    value += terms.get("elevation_at_reach", 0)
         elif kind == "Name heir":
             holder = self.holder(house)
             if holder is not None:
@@ -2431,6 +2449,10 @@ class World:
         if kind == "contest":
             if not self.feature("contested_claims"):
                 return []
+            # A house that lost a contest begins no claim for contest.loser_bar turns.
+            bar = self.rules.scheme_rules["contest"].get("loser_bar", 0)
+            if bar and self._lost_contest(house, season, window=bar):
+                return []
             out = []
             for other, fed_id in self._claim_targets(house):
                 if claim is not None and other != claim["house"]:
@@ -2460,8 +2482,9 @@ class World:
                 return []
             return [(other, None) for other in self._match_candidates(house)]
         if kind == "Petition elevation":
+            least = self.rules.scheme_rules["utility"].get("elevation_influence_min", 60)
             if (
-                row["influence"] >= 60 and self.holding_count(house) >= 3
+                row["influence"] >= least and self.holding_count(house) >= 3
                 and self.rank_index.get(row["rank"], 0) < self.rank_index["Marquis"]
                 and self._affords(house, spec, None)
             ):

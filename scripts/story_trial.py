@@ -121,6 +121,9 @@ def play_one(version, overrides, seed, turns=TURNS):
                 if season in (25, 50, 60, 100):
                     at[season] = _counts(conn)
                 if season == 60:
+                    ranked = sorted((-world.standing(r["house"]), r["house"]) for r in world.active_houses())
+                    top = [world.rank_index.get(world.house_row(h)["rank"], 0) for _, h in ranked[:8]]
+                    at["rank_span60"] = (max(top) - min(top) + 1) if top else 0
                     held = {r["fed_id"] for r in conn.execute(
                         "SELECT fed_id FROM holdings WHERE released_event_id IS NULL")}
                     at["open60"] = len(held & open_1867) / len(open_1867)
@@ -195,6 +198,9 @@ def play_one(version, overrides, seed, turns=TURNS):
         "ridings_25": at[25][1], "ridings_50": at[50][1], "ridings_100": at[100][1],
         "open_claimed_60": at["open60"],
         "five_plus": story["fivePlus"],
+        "rise_decline": story["byType"].get("rise", 0) + story["byType"].get("decline", 0),
+        "pause_share": report["summary"]["paused"] / max(1, report["summary"]["turns"]),
+        "rank_span_60": at["rank_span60"],
         "five_plus_by_type": trial["fivePlusByType"],
         "closed_without_outcome": story["closedWithoutOutcome"],
         "headline_types": {k: v / headlines for k, v in trial["headlineTypes"].items()},
@@ -241,9 +247,12 @@ ROWS = (
     ("§6 lead changes (target ≥ 4)", "lead_changes", "num"),
     ("§6 longest single lead, turns (target ≤ 50)", "longest_lead", "num"),
     ("§6 chapters II–V with top-eight churn (target 4)", "chapters_churned", "num"),
-    ("§6 turns with a headline ≥ pause (target ≥ 70%)", "heavy_share", "pct"),
+    ("D1 turns with a headline ≥ pause (target 40–65%)", "heavy_share", "pct"),
     ("§6 longest quiet run after turn 10 (target ≤ 3)", "max_quiet_run", "num"),
     ("§6 houses active at turn 100 (target 20–40)", "houses_100", "num"),
+    ("D1 ranks spanned by the top eight at turn 60 (target ≥ 3)", "rank_span_60", "num"),
+    ("D1 rise and decline storylines (target ≤ 20)", "rise_decline", "num"),
+    ("D1 turns that pause Auto (target 15–30%)", "pause_share", "pct"),
     ("§6 ridings open at 1867 claimed by turn 60 (target ≥ 80%)", "open_claimed_60", "pct"),
     ("§6 storylines of 5+ beats (target ≥ 8)", "five_plus", "num"),
     ("§6 closed storylines without an outcome (target 0)", "closed_without_outcome", "num"),
@@ -254,7 +263,7 @@ ROWS = (
     ("ridings claimed at turn 100", "ridings_100", "num"),
     ("Crown foundings by turn 25", "crown_by_25", "num"),
     ("most Crown foundings in ten turns after 40", "crown_late_window", "num"),
-    ("median capital at turn 100", "median_capital", "num"),
+    ("D1 median capital at turn 100 (target 30–70)", "median_capital", "num"),
     ("§6 median influence at turn 100 (target 40–70)", "median_influence", "num"),
     ("§6 median cohesion at turn 100 (target 55–85)", "median_cohesion", "num"),
     ("§6 median turns a rivalry runs (target 4–10)", "median_rivalry_turns", "num"),
@@ -262,7 +271,7 @@ ROWS = (
     ("§6 rivalries reconciled (target ≤ 40%)", "rivalry_reconciled", "pct"),
     ("§6 rivalries ended by contest, cession under a claim or a fall (target ≥ 25%)",
      "rivalry_decisive", "pct"),
-    ("§6 contests resolved (target ≥ 15)", "contests", "num"),
+    ("D1 contests resolved (target 20–35)", "contests", "num"),
     ("§6 contests the attacker won (target 35–60%)", "attacker_wins", "pct"),
     ("§6 claims answered by their target (target ≥ 50%)", "claims_answered", "pct"),
     ("§6 ended schemes that reached resolution (target ≥ 60%)", "schemes_resolved", "pct"),

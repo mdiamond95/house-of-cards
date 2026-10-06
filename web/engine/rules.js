@@ -57,6 +57,8 @@ export const FEATURE_DEFAULTS = {
   contested_claims: false,
   prestige_politics: false,
   cohesion_strain: false,
+  // Phase D1 (docs/STORY_DESIGN.md §4.10).
+  distinct_surnames: false,
 };
 
 // "Expand:+2;Dispute:-2" as an ordered object of integers (hoc/rules_data.py
