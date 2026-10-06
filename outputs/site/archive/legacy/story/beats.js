@@ -63,7 +63,15 @@ export const BEAT_KINDS = [
   // house that falls to the house that took its seat.
   'scheme_begun', 'scheme_step', 'scheme_answered', 'scheme_abandoned', 'scheme_resolved',
   'ally_joins', 'ally_declines', 'contest_won', 'contest_lost', 'fallen',
+  // Rules 1.0 (Phase D1): a crisis, land opened, a year of an event still
+  // running, and the reckoning after the last turn.
+  'crisis', 'accession', 'event_continues', 'reckoning',
 ];
+
+// Rules 1.0 `world_calendar`: the world's own events, by their delta's `world`.
+const WORLD_KINDS = {
+  accession: 'accession', extension: 'accession', continues: 'event_continues', reckoning: 'reckoning',
+};
 
 // A scheme event's phase, as its beat kind (Phase C2).
 const SCHEME_PHASES = {
@@ -141,6 +149,8 @@ export function typeEvent(event, actionOf) {
     case 'expansion':
       return { kind: 'expansion', outcome: null };
     case 'societal':
+      // Rules 1.0 `crises`: one event for the whole crisis, both camps in it.
+      if (d.crisis && typeof d.crisis === 'object') return { kind: 'crisis', outcome: d.crisis.carried ?? null };
       return d.magnitude === 'Major'
         ? { kind: 'major_response', outcome: d.response ?? null }
         : { kind: 'era_response', outcome: d.response ?? null };
@@ -164,6 +174,7 @@ export function typeEvent(event, actionOf) {
       }
     }
     case 'other': {
+      if (has(WORLD_KINDS, d.world)) return { kind: WORLD_KINDS[d.world], outcome: d.event ?? d.world };
       // Rules 1.0 `schemes` and `contested_claims`.
       if (d.scheme && typeof d.scheme === 'object' && has(SCHEME_PHASES, d.scheme.phase)) {
         return { kind: SCHEME_PHASES[d.scheme.phase], outcome: d.scheme.name ?? null };
@@ -237,11 +248,17 @@ export function typeTurn(input) {
       if (kind === 'scheme_resolved') ran = d.scheme.ran ?? null;
     } else if (Number.isInteger(d.scheme)) {
       scheme = d.scheme;
+    } else if (d.ally && typeof d.ally === 'object') {
+      // Phase D1: an ally answers the call of one contest, told with it.
+      scheme = d.ally.scheme ?? null;
     }
     if (kind === 'riding_passes' && outcome === 'absorption' && houses.length > 1) removed.push(houses[1]);
+    const world = worldFacts(kind, d);
+    // The land an accession opens, for the map to show.
+    const shown = kind === 'accession' ? [...(d.fed_ids || [])].sort() : ridings;
 
     beats.push(makeBeat(input.turn, beats.length, {
-      kind, houses, ridings, outcome, line: event.line ?? null, owners, ranks, removed, scheme, ran,
+      kind, houses, ridings: shown, outcome, line: event.line ?? null, owners, ranks, removed, scheme, ran, world,
     }));
   }
 
@@ -276,7 +293,22 @@ function makeBeat(turn, seq, fields) {
   if (fields.removed.length) beat.removed = fields.removed;
   if (fields.scheme !== null && fields.scheme !== undefined) beat.scheme = fields.scheme;
   if (fields.ran !== null && fields.ran !== undefined) beat.ran = fields.ran;
+  if (fields.world !== null && fields.world !== undefined) beat.world = fields.world;
   return beat;
+}
+
+// Rules 1.0 `world_calendar` and `crises`: what a world beat carries for its
+// sentence and the pages (hoc/export/beats.py _world_facts).
+function worldFacts(kind, d) {
+  if (kind === 'crisis') {
+    const c = d.crisis;
+    const facts = { event: d.event ?? null, lead: c.lead, resist: c.resist, carried: c.carried };
+    if (has(d, 'years')) facts.years = d.years;
+    return facts;
+  }
+  if (kind === 'event_continues') return { event: d.event, year_of: d.year_of, years: d.years };
+  if (kind === 'accession') return { jurisdiction: d.jurisdiction, status: d.status, change: d.world };
+  return null;
 }
 
 // One season's input from the JavaScript engine's in-memory tables (web/engine/
@@ -355,7 +387,11 @@ export function baselineFromState(state) {
 //   contest     a contested expansion: the grievance, and either the winner's
 //               expansion or the loser's failed Expand
 //   claim       (rules 1.0) a claim decided: the contest, the rout that may
-//               follow it, and the fall of a house left with no riding
+//               follow it, and the fall of a house left with no riding. The
+//               allies each side called (ally_joins, ally_declines, the same
+//               scheme) are carried as `allies` [{ house, party, joins }] rather
+//               than as parts, so they are told in one sentence and take no
+//               part in the contest's storylines (Phase D1)
 //
 // And before any of these, a scheme's resolution (scheme_resolved, which is
 // ledger-only) folds into the act that resolved it — the beat carrying the same
@@ -426,10 +462,23 @@ function foldResolutions(beats) {
     .filter((_, i) => !dropped.has(i));
 }
 
+const ALLY_KINDS = ['ally_joins', 'ally_declines'];
+const DECIDED = ['contest_won', 'contest_lost'];
+
 export function mergeActs(input) {
   const beats = foldResolutions(input);
   const used = new Set();
   const out = [];
+  // The allies called to each contest decided this turn, by scheme.
+  const alliesOf = new Map();
+  const decided = new Set(beats.filter((b) => DECIDED.includes(b.kind) && b.outcome !== 'rout'
+    && b.scheme !== undefined).map((b) => b.scheme));
+  beats.forEach((b, i) => {
+    if (!ALLY_KINDS.includes(b.kind) || b.scheme === undefined || !decided.has(b.scheme)) return;
+    if (!alliesOf.has(b.scheme)) alliesOf.set(b.scheme, []);
+    alliesOf.get(b.scheme).push({ house: b.houses[0], party: b.houses[1], joins: b.kind === 'ally_joins' });
+    used.add(i);
+  });
   const after = (i, test) => {
     for (let j = i + 1; j < beats.length; j += 1) {
       if (!used.has(j) && test(beats[j])) return j;
@@ -461,7 +510,11 @@ export function mergeActs(input) {
       if (rout !== -1) { used.add(rout); parts.push(beats[rout]); }
       const fall = after(i, (x) => x.kind === 'fallen' && x.houses[0] === second && x.houses[1] === first);
       if (fall !== -1) { used.add(fall); parts.push(beats[fall]); }
-      if (parts.length > 1) merged = mergeGroup('claim', fall !== -1 ? 'fallen' : b.kind, parts);
+      const allies = b.scheme !== undefined ? alliesOf.get(b.scheme) : undefined;
+      if (parts.length > 1 || allies) {
+        merged = mergeGroup('claim', fall !== -1 ? 'fallen' : b.kind, parts);
+        if (allies) merged.allies = allies;
+      }
     } else if (b.kind === 'quarrel' && b.outcome === 'contested expansion') {
       let j = i + 1 < beats.length && !used.has(i + 1) && beats[i + 1].kind === 'expansion'
         && beats[i + 1].houses[0] === second ? i + 1 : -1;

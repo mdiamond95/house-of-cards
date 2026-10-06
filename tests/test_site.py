@@ -697,3 +697,32 @@ def test_plans_afoot_sits_above_afoot_on_the_replay_and_play_pages(preview_site,
     for name in scenario.frozen_names():
         index = json.loads((archive_site / name / "data" / "beats" / "index.json").read_text(encoding="utf-8"))
         assert index["schemes"] is False, name
+
+
+# ------------------------------- Phase D1: the calendar game in the preview --
+
+
+def test_the_preview_is_the_whole_calendar_game_with_its_reckoning(preview_site):
+    index = json.loads((preview_site / "data" / "beats" / "index.json").read_text(encoding="utf-8"))
+    assert index["calendar"]["start_year"] == 1867 and index["calendar"]["turns"] == 100
+    assert index["reckoning"]["reckoned"] == 1967
+    for name, script in (("reckoning.html", "reckoning-page.js"),):
+        html = (preview_site / name).read_text(encoding="utf-8")
+        js = (preview_site / script).read_text(encoding="utf-8")
+        missing = sorted(_story_ids_reached(js) - set(re.findall(r'id="([^"]+)"', html)))
+        assert not missing, f"{script} reaches for elements {name} lacks: {missing}"
+        assert "the whole game, 1867–1966" in html
+    for page_name in ("replay.html", "storylines.html", "reckoning.html"):
+        assert 'href="reckoning.html">Reckoning</a>' in (preview_site / page_name).read_text(encoding="utf-8")
+    replay = (preview_site / "replay.js").read_text(encoding="utf-8")
+    assert "chapterHtml(d.chapter" in replay and "reckoningHtml(d.reckoning" in replay
+    # Told headlessly by the story layer the page uses: a year a turn, five
+    # chapter interstitials that each pause Auto, and the reckoning last.
+    report = json.loads(subprocess.run(
+        ["node", str(ROOT / "tests" / "js" / "story_report.mjs"), str(preview_site / "data" / "beats")],
+        cwd=ROOT, capture_output=True, text=True, check=True,
+    ).stdout)["trial"]
+    assert report["years"] == [1867, 1966]
+    assert report["chapters"] == [[1885, "I", True], [1913, "II", True], [1929, "III", True],
+                                  [1945, "IV", True], [1966, "V", True]]
+    assert report["reckoning"] is True

@@ -207,7 +207,8 @@ def compare(python_dir, js_dir, seasons):
     return differences
 
 
-def crosscheck_resume(seed, snapshot_at, seasons, keep=None, script=()):
+def crosscheck_resume(seed, snapshot_at, seasons, keep=None, script=(), rules_version=None,
+                      reference_data=None):
     """Snapshot a Python world, resume it in JavaScript, and compare what follows.
 
     This is Phase 10-2's central claim: the browser picks the committed game up
@@ -217,7 +218,7 @@ def crosscheck_resume(seed, snapshot_at, seasons, keep=None, script=()):
     """
     import load_seed  # noqa: E402
 
-    from hoc import scenario, sim
+    from hoc import rules_data, scenario, sim
     from hoc.export import world as world_export
 
     workspace = Path(keep) if keep else Path(tempfile.mkdtemp(prefix="hoc-resume-"))
@@ -230,8 +231,10 @@ def crosscheck_resume(seed, snapshot_at, seasons, keep=None, script=()):
     try:
         # Play to the snapshot point writing nothing, snapshot, then keep going
         # and write only the seasons the resumed world should reproduce.
-        conn = load_seed.build(workspace / "python.db", seed=scenario.blank_seed_dir())
-        world = sim.World(conn, world_seed=seed, seasons_dir=None)
+        conn = load_seed.build(workspace / "python.db", seed=scenario.blank_seed_dir(),
+                               reference_data=reference_data)
+        rules = rules_data.load_rules(version=rules_version) if rules_version else None
+        world = sim.World(conn, rules=rules, world_seed=seed, seasons_dir=None)
         with conn:
             world.initialise(seed)
             _apply_script(conn, world, script, 1)
@@ -255,7 +258,8 @@ def crosscheck_resume(seed, snapshot_at, seasons, keep=None, script=()):
             script_path = workspace / "interventions.json"
             script_path.write_text(json.dumps(list(script), ensure_ascii=False), encoding="utf-8")
 
-        run_js(seed, seasons, js_dir, resume=snapshot_path, interventions=script_path)
+        run_js(seed, seasons, js_dir, resume=snapshot_path, interventions=script_path,
+               rules_version=rules_version, reference_data=reference_data)
         return _compare_range(python_dir, js_dir, snapshot_at + 1, snapshot_at + seasons)
     finally:
         if keep is None:

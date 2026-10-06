@@ -58,13 +58,28 @@ export function stripHtml(rows, { nameOf = (h) => h, colourOf = () => null, foll
 
 const CHANGES = { opened: 'opens', climax: 'reaches its climax', closed: 'closes' };
 
+// What a turn is called: a year (rules 1.0 `world_calendar`), a season or a turn.
+function unitWord(unit) {
+  return unit === 'turn' ? 'turn' : unit === 'year' ? 'year' : 'season';
+}
+
+// When a turn happened: its year under a world calendar (`start` the first
+// year), else "season N".
+function whenText(turn, unit, start) {
+  if (unit === 'year' && Number.isInteger(start)) return String(start + turn - 1);
+  return `${unitWord(unit)} ${turn}`;
+}
+
 // One dispatch (§3.2) as HTML: the heading, then a headline — with its
 // storyline's kicker, the storyline's other beats this turn and its previous
 // beat — up to three secondary beats and a ledger line; or the one quiet-turn
 // line.
 export function dispatchHtml(d, { unit = 'season' } = {}) {
   const word = unit === 'turn' ? 'Turn' : 'Season';
-  const heading = `<h2 class="dispatch-turn">${word} ${d.turn}</h2>`;
+  // Under a world calendar the heading is the year (Phase D1).
+  const heading = Number.isInteger(d.year)
+    ? `<h2 class="dispatch-turn">${d.year}</h2>`
+    : `<h2 class="dispatch-turn">${word} ${d.turn}</h2>`;
   if (d.quiet) return `${heading}<p class="dispatch-quiet">${escapeHtml(d.quietLine)}</p>`;
   const kind = d.headline.beat.kind.replace(/_/g, ' ');
   const kicker = d.kicker
@@ -74,7 +89,8 @@ export function dispatchHtml(d, { unit = 'season' } = {}) {
     ? `<ul class="dispatch-related">${d.related.map((r) => `<li>${escapeHtml(r.text)}</li>`).join('')}</ul>`
     : '';
   const previously = d.previously
-    ? `<p class="dispatch-previously">Previously, ${unit === 'turn' ? 'turn' : 'season'} ${d.previously.turn}: ${escapeHtml(d.previously.text)}</p>`
+    ? `<p class="dispatch-previously">Previously, ${Number.isInteger(d.previously.year) ? d.previously.year
+      : `${unit === 'turn' ? 'turn' : 'season'} ${d.previously.turn}`}: ${escapeHtml(d.previously.text)}</p>`
     : '';
   const secondary = d.secondary.length
     ? `<ul class="dispatch-secondary">${d.secondary.map((s) => `<li>${escapeHtml(s.text)}</li>`).join('')}</ul>`
@@ -100,28 +116,34 @@ export function recordHtml(d) {
     : '<li class="meta">Nothing was written this turn.</li>';
 }
 
-function storylineMeta(s, unit) {
-  const word = unit === 'turn' ? 'turn' : 'season';
-  const span = s.closed === null || s.closed === undefined
-    ? `since ${word} ${s.opened}` : `${word}s ${s.opened}–${s.closed}`;
+function storylineMeta(s, unit, start = null) {
+  const word = unitWord(unit);
+  let span;
+  if (unit === 'year' && Number.isInteger(start)) {
+    span = s.closed === null || s.closed === undefined
+      ? `since ${start + s.opened - 1}` : `${start + s.opened - 1}–${start + s.closed - 1}`;
+  } else {
+    span = s.closed === null || s.closed === undefined
+      ? `since ${word} ${s.opened}` : `${word}s ${s.opened}–${s.closed}`;
+  }
   const state = s.state === 'closed' ? (s.outcome || 'closed') : s.state;
   const n = Array.isArray(s.beats) ? s.beats.length : s.beats;
   return `${escapeHtml(state)} &middot; ${n} beat${n === 1 ? '' : 's'} &middot; ${span}`;
 }
 
 // The Afoot panel (§3.4): open storylines, as buttons that show their beats.
-export function afootHtml(list, { unit = 'season', selected = null } = {}) {
+export function afootHtml(list, { unit = 'season', selected = null, start = null } = {}) {
   if (!list.length) return '<li class="meta">Nothing is afoot yet.</li>';
   return list.map((s) => `<li><button type="button" class="afoot-item${s.id === selected ? ' chosen' : ''}"`
     + ` data-storyline="${escapeHtml(s.id)}"><span class="afoot-name">${escapeHtml(s.name)}</span>`
-    + `<span class="afoot-meta meta">${storylineMeta(s, unit)}</span></button></li>`).join('');
+    + `<span class="afoot-meta meta">${storylineMeta(s, unit, start)}</span></button></li>`).join('');
 }
 
 // The Plans afoot panel (Phase C2): every public scheme of a cast or followed
 // house (dispatch.js Story.plansAfoot), with its target and turns remaining.
 export function plansHtml(list, { unit = 'season' } = {}) {
   if (!list || !list.length) return '<li class="meta">No scheme of the cast is afoot.</li>';
-  const word = unit === 'turn' ? 'turn' : 'season';
+  const word = unitWord(unit);
   return list.map((p) => {
     const aim = [p.target, p.riding].filter(Boolean).join(', ');
     const left = p.turnsRemaining === 1 ? `resolves next ${word}` : `${p.turnsRemaining} ${word}s to run`;
@@ -134,18 +156,56 @@ export function plansHtml(list, { unit = 'season' } = {}) {
 
 // A storyline told top to bottom (dispatch.js Story.tell): its beats with
 // their turns, then how it ended. `link(turn)` gives a link for a beat's turn.
-export function storylineHtml(told, { unit = 'season', link = null } = {}) {
-  const word = unit === 'turn' ? 'Turn' : 'Season';
+export function storylineHtml(told, { unit = 'season', link = null, start = null } = {}) {
+  const at = (turn) => {
+    const text = whenText(turn, unit, start);
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  };
   const beats = told.beats.map((b) => {
-    const when = link ? `<a href="${escapeHtml(link(b.turn))}">${word} ${b.turn}</a>` : `${word} ${b.turn}`;
+    const when = link ? `<a href="${escapeHtml(link(b.turn))}">${at(b.turn)}</a>` : at(b.turn);
     return `<li><span class="storyline-turn">${when}</span> ${escapeHtml(b.text)}</li>`;
   }).join('');
   const end = told.state === 'closed'
-    ? `<p class="storyline-outcome">Closed ${word.toLowerCase()} ${told.closed}: ${escapeHtml(told.outcome || 'closed')}.</p>`
+    ? `<p class="storyline-outcome">Closed ${unit === 'year' && Number.isInteger(start) ? 'in ' : ''}`
+      + `${whenText(told.closed, unit, start)}: ${escapeHtml(told.outcome || 'closed')}.</p>`
     : `<p class="storyline-outcome meta">Still ${told.state === 'climax' ? 'at its climax' : 'rising'}.</p>`;
   return `<h3 class="storyline-name">${escapeHtml(told.name)}</h3>`
-    + `<p class="meta">${storylineMeta(told, unit)}</p>`
+    + `<p class="meta">${storylineMeta(told, unit, start)}</p>`
     + `<ol class="storyline-beats">${beats || '<li class="meta">No beat yet.</li>'}</ol>${end}`;
+}
+
+// A chapter's interstitial (Phase D1, dispatch.js Story.interstitial): its
+// title and years, the standings with their movement over the chapter, and the
+// storylines it closed and left open.
+export function chapterHtml(ch, { colourOf = () => null, nameOf = (h) => h, follow = null, start = null } = {}) {
+  const lines = (list, empty) => (list.length
+    ? list.map((s) => `<li>${escapeHtml(s.name)} <span class="meta">${storylineMeta(s, 'year', start)}</span></li>`).join('')
+    : `<li class="meta">${empty}</li>`);
+  return `<section class="chapter-interstitial" aria-label="The end of Chapter ${escapeHtml(ch.numeral)}">`
+    + `<h2 class="chapter-title">Chapter ${escapeHtml(ch.numeral)} · ${escapeHtml(ch.name)},`
+    + ` ${ch.start_year}–${ch.end_year}</h2>`
+    + '<p class="meta">The standings at the chapter\'s close, with each house\'s movement since it began.</p>'
+    + `<ol class="story-strip chapter-standings">${stripHtml(ch.standings, { colourOf, nameOf, follow })}</ol>`
+    + `<h3>Closed in this chapter</h3><ul class="chapter-closed">${lines(ch.closed, 'No storyline of the cast closed.')}</ul>`
+    + `<h3>Still open</h3><ul class="chapter-open">${lines(ch.open, 'No storyline of the cast is open.')}</ul>`
+    + '</section>';
+}
+
+// The reckoning (Phase D1, reckoning.js reckoningView): the final table and an
+// epilogue for every house ever of the top eight.
+export function reckoningHtml(r, { colourOf = () => null } = {}) {
+  const rows = r.standings.map((row) => `<tr><td>${row.place}</td>`
+    + `<td><span class="swatch" style="background:${escapeHtml(colourOf(row.house) || '#bbb')}"></span>`
+    + ` ${escapeHtml(row.name)}</td><td>${row.prestige}</td><td>${row.ridings}</td></tr>`).join('');
+  const epilogues = r.epilogues.map((e) => `<li class="epilogue" data-house="${escapeHtml(e.house)}">`
+    + `<h3>${escapeHtml(e.name)}</h3><p>${escapeHtml(e.text)}</p></li>`).join('');
+  return `<section class="reckoning" aria-label="The reckoning of ${r.year}">`
+    + `<h2 class="reckoning-title">The reckoning of ${r.year}</h2>`
+    + `<p class="meta">The final standings at the close of ${r.lastYear}, by prestige.</p>`
+    + '<table class="reckoning-table"><thead><tr><th>Place</th><th>House</th><th>Prestige</th>'
+    + `<th>Ridings</th></tr></thead><tbody>${rows}</tbody></table>`
+    + '<h3>The houses that stood among the first eight</h3>'
+    + `<ol class="epilogues">${epilogues}</ol></section>`;
 }
 
 // ----------------------------------------------------------------- boxes ----

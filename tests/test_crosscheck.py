@@ -31,6 +31,15 @@ from hoc import rules_data  # noqa: E402
 # expansion, friction, disputes, challenges, absorption — has fired many times.
 CROSSCHECK_SEASONS = 120
 CROSSCHECK_SEEDS = (1867, 2, 3)
+# A version whose game.json sets a length (rules 1.0 `world_calendar`) refuses
+# a turn after its last: it is played to its end instead.
+
+
+def _seasons_for(rules_version):
+    game = rules_data.load_rules(version=rules_version).game
+    if rules_data.load_features(rules_version).get("world_calendar") and game:
+        return min(CROSSCHECK_SEASONS, game["turns"])
+    return CROSSCHECK_SEASONS
 
 # What "fast enough to run a game in a browser" means (Phase 10-2 puts this
 # engine behind a live UI). A 300-season run is the whole game.
@@ -67,9 +76,10 @@ def test_the_two_engines_write_identical_seasons(seed, rules_version):
     older version is the day anyone would find out. So each version is played by
     both engines and compared.
     """
+    seasons = _seasons_for(rules_version)
     try:
         differences = crosscheck.crosscheck(
-            seed, CROSSCHECK_SEASONS, rules_version=rules_version
+            seed, seasons, rules_version=rules_version
         )
     except crosscheck.CrosscheckUnavailable as exc:
         pytest.skip(str(exc))
@@ -78,7 +88,7 @@ def test_the_two_engines_write_identical_seasons(seed, rules_version):
         season, diff = differences[0]
         pytest.fail(
             f"seed {seed}, rules {rules_version}: the engines diverge at season {season}"
-            f" ({len(differences)} of {CROSSCHECK_SEASONS} seasons differ).\n\n{diff}"
+            f" ({len(differences)} of {seasons} seasons differ).\n\n{diff}"
         )
 
 

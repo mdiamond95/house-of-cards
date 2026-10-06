@@ -172,11 +172,14 @@ class NameGenerator:
     def draw_gender(self):
         return self.rng.choice(["m", "f"])
 
-    def draw_person(self, community, gender=None, surname=None):
+    def draw_person(self, community, gender=None, surname=None, avoid=()):
         """(given_name, surname, gender) for a member of a community.
 
         A surname may be fixed — an heir carries the house's name — in which case
         only the given name is drawn. Redraws on any denylist collision.
+
+        `avoid` (rules 1.0 `distinct_surnames`) is surnames not to draw while
+        the bank holds any other; the bank's order is kept.
         """
         tradition = self.tradition_for(community)
         gender = gender or self.draw_gender()
@@ -184,6 +187,9 @@ class NameGenerator:
         surnames = self.surnames_by_community.get(community)
         if not surnames:
             raise NameError_(f"no surnames in the bank for community {community!r}")
+        if surname is None and avoid:
+            unused = [s for s in surnames if s not in avoid]
+            surnames = unused or surnames
         givens = self.given_by_tradition.get((tradition, gender))
         if not givens:
             raise NameError_(f"no {gender!r} given names in the bank for tradition {tradition!r}")
@@ -250,7 +256,7 @@ class NameGenerator:
         )
 
     def draw_house(self, community, province, rank, taken_places=(), gender=None, surname=None,
-                   tiers=None):
+                   tiers=None, avoid=()):
         """Everything a founding needs: (surname, given, gender, place, peerage).
 
         `surname` is the director's, when a grant names the house; the given name
@@ -262,7 +268,8 @@ class NameGenerator:
         way — person, then place — so the only thing the flag changes is where
         the place comes from.
         """
-        given, surname, gender = self.draw_person(community, gender=gender, surname=surname)
+        given, surname, gender = self.draw_person(community, gender=gender, surname=surname,
+                                                  avoid=avoid)
         if tiers is None:
             tier, place = None, self.draw_place(province, taken_places)
         else:

@@ -39,7 +39,9 @@ needs_node = pytest.mark.skipif(shutil.which("node") is None, reason="node is no
 # action draw, which `schemes` replaces, so `_world` turns these off unless a
 # test asks for them (`c2=True`); the C2 tests at the end of this file do.
 C2_FLAGS = ("schemes", "contested_claims", "prestige_politics", "cohesion_strain")
-ALL_FLAGS = NEW_FLAGS + C2_FLAGS
+# Phase D1's (the end of this file).
+D1_FLAGS = ("distinct_surnames", "world_calendar", "crises")
+ALL_FLAGS = NEW_FLAGS + C2_FLAGS + D1_FLAGS
 
 
 def _world(tmp_path, version="1.0", name="w", reference=MERIDIAN, c2=False, **flags):
@@ -48,7 +50,8 @@ def _world(tmp_path, version="1.0", name="w", reference=MERIDIAN, c2=False, **fl
     )
     rules = rules_data.load_rules(version=version)
     if not c2:
-        rules.features.update({flag: False for flag in C2_FLAGS})
+        # The C1 tests read personal clocks, which world_calendar sets aside.
+        rules.features.update({flag: False for flag in C2_FLAGS + ("world_calendar", "crises")})
     rules.features.update(flags)
     return sim.World(conn, rules=rules, world_seed=SEED)
 
@@ -117,7 +120,7 @@ def test_upkeep_moves_the_stats_at_the_start_of_a_turn(tmp_path):
     after = world.house_row(house)
     seat = world.holdings(house)[0]["fed_id"]
     assert after["capital"] - before["capital"] == spec["capital"]["base"] + 1 // spec["capital"]["holdings_per_point"] \
-        + world.wealth_offset(seat)
+        - 1 // spec["capital"]["holdings_per_cost"] + world.wealth_offset(seat)
     assert after["influence"] - before["influence"] == spec["influence"]["base"]
     assert after["cohesion"] == 30 + spec["cohesion"]["base"] + spec["cohesion"]["recovery"]
     assert world.log[-1]["purpose"] == f"upkeep.{house}"
@@ -612,12 +615,10 @@ def test_the_contest_totals_follow_the_formula(tmp_path):
     spec = world.rules.scheme_rules["contest"]
     a_row, d_row = world.house_row(attacker), world.house_row(defender)
     attack, defence = world.contest_totals(attacker, defender, fed_id, 23, 17, 1, 2, 7, 6)
-    assert attack == 7 + 23 // 10 + world.rank_index.get(a_row["rank"], 0) + spec["per_ally"] * 1
-    assert defence == 6 + 17 // 10 + d_row["cohesion"] // 25 + spec["per_ally"] * 2 + (
-        spec["seat_bonus"] if world._is_seat(defender, fed_id) else 0)
-    assert (spec["committed_per_point"], spec["cohesion_per_point"], spec["per_ally"],
-            spec["seat_bonus"], spec["loss_cohesion"], spec["rout_margin"],
-            spec["rout_cohesion_below"], spec["cooldown"]) == (10, 25, 2, 2, 10, 5, 40, 5)
+    per = spec["committed_per_point"]
+    assert attack == 7 + 23 // per + world.rank_index.get(a_row["rank"], 0) + spec["per_ally"] * 1
+    assert defence == 6 + 17 // spec["fortified_per_point"] + d_row["cohesion"] // spec["cohesion_per_point"] \
+        + spec["per_ally"] * 2 + (spec["seat_bonus"] if world._is_seat(defender, fed_id) else 0)
 
 
 def _set_up_contest(world, single=False):
@@ -673,16 +674,17 @@ def test_ties_go_to_the_defender_and_the_loser_pays_in_cohesion(tmp_path):
     outcome = world._contest(claim, season, _Dice(world, season, [roll_a, roll_d]))
     assert outcome["contest"] == "held"
     assert mechanics_holder(world, fed_id) == defender
-    assert world.house_row(attacker)["cohesion"] == 50 - 10
+    assert world.house_row(attacker)["cohesion"] == 50 - world.rules.scheme_rules["contest"]["loss_cohesion"]
 
 
 def test_the_pair_may_not_contest_again_for_the_cooldown(tmp_path):
     world = _c2(tmp_path, 25)
     attacker, defender, fed_id, season, claim = _set_up_contest(world)
     world._resolve_scheme(claim, season, _Dice(world, season, [2, 12]))
+    cooldown = world.rules.scheme_rules["contest"]["cooldown"]
     assert world._contest_cooldown(attacker, defender, season)
-    assert world._contest_cooldown(defender, attacker, season + 4)
-    assert not world._contest_cooldown(attacker, defender, season + 5)
+    assert world._contest_cooldown(defender, attacker, season + cooldown - 1)
+    assert not world._contest_cooldown(attacker, defender, season + cooldown)
     spec = next(s for s in world.rules.schemes if s.scheme == "Claim a riding")
     world._turn_cache = {}
     assert all(t[0] != defender for t in world._scheme_targets(attacker, spec, season + 1))
@@ -830,3 +832,378 @@ def test_the_scheme_utility_and_the_contest_totals_agree_in_both_engines(tmp_pat
     assert sum(len(v) for v in python["utilities"].values()) > 20
     assert python["contests"]
     assert js == python
+
+
+# =========================================================== Phase D1 ======
+#
+# Part 0's pacing terms ride on the C2 flags (schemes.json, upkeep.json);
+# `distinct_surnames` (§4.10) is a flag of its own.
+
+
+def test_a_house_that_lost_a_contest_begins_no_claim_for_the_bar(tmp_path):
+    world = _c2(tmp_path, 25)
+    attacker, defender, fed_id, season, claim = _set_up_contest(world)
+    world._resolve_scheme(claim, season, _Dice(world, season, [2, 12]))
+    assert world._scheme(claim["id"])["outcome"] == "held", "the attacker lost"
+    spec = next(s for s in world.rules.schemes if s.scheme == "Claim a riding")
+    bar = world.rules.scheme_rules["contest"]["loser_bar"]
+    assert bar > 0
+    world.conn.execute("UPDATE house_stats SET capital = 100, influence = 100 WHERE house = ?", (attacker,))
+    world._turn_cache = {}
+    assert world._scheme_targets(attacker, spec, season + 1) == []
+    assert world._scheme_targets(attacker, spec, season + bar) == []
+    world.rules.scheme_rules["contest"]["loser_bar"] = 0
+    world._turn_cache = {}
+    unbarred = world._scheme_targets(attacker, spec, season + 1)
+    assert all(other != defender for other, _ in unbarred), "the pair's own truce still holds"
+
+
+def test_upkeep_charges_capital_for_every_holding(tmp_path):
+    world = _c2(tmp_path, 25, holder_traits=False)
+    house = max((r["house"] for r in world.active_houses()), key=lambda h: (world.holding_count(h), h))
+    spec = world.rules.upkeep["capital"]
+    n = world.holding_count(house)
+    assert n >= spec["holdings_per_cost"], "a house large enough to pay"
+    world.conn.execute("UPDATE house_stats SET capital = 50 WHERE house = ?", (house,))
+    world._upkeep(house)
+    seat = world.holdings(house)[0]["fed_id"]
+    assert world.house_row(house)["capital"] == 50 + spec["base"] + n // spec["holdings_per_point"] \
+        - n // spec["holdings_per_cost"] + world.wealth_offset(seat)
+
+
+def test_a_house_at_its_ranks_reach_wants_elevation_more(tmp_path):
+    world = _c2(tmp_path, 25)
+    terms = world.rules.scheme_rules["utility"]
+    strain = world.rules.upkeep["strain"]
+    spec = next(s for s in world.rules.schemes if s.resolves_as == "Petition elevation")
+    season = world.season_no + 1
+    at_reach = terms["elevation_at_reach"]
+    assert at_reach > 0
+    for row in world.active_houses():
+        house = row["house"]
+        free = strain["free_holdings"] + strain["per_rank_index"] * world.rank_index.get(row["rank"], 0)
+        terms["elevation_at_reach"] = at_reach
+        with_term = world.scheme_utility(house, spec, None, None, season)
+        terms["elevation_at_reach"] = 0
+        without = world.scheme_utility(house, spec, None, None, season)
+        assert with_term - without == (at_reach if world.holding_count(house) >= free else 0), house
+    terms["elevation_at_reach"] = at_reach
+    # The influence a petition needs is the table's, not a constant.
+    least = terms["elevation_influence_min"]
+    house = next((r["house"] for r in world.active_houses() if world.holding_count(r["house"]) >= 3
+                  and world.rank_index.get(r["rank"], 0) < world.rank_index["Marquis"]), None)
+    if house is None:
+        pytest.skip("no house of three holdings below Marquis")
+    world.conn.execute("UPDATE house_stats SET influence = ?, capital = 100 WHERE house = ?", (least, house))
+    world._turn_cache = {}
+    assert world._scheme_targets(house, spec, season) == [(None, None)]
+    world.conn.execute("UPDATE house_stats SET influence = ? WHERE house = ?", (least - 1, house))
+    world._turn_cache = {}
+    assert world._scheme_targets(house, spec, season) == []
+
+
+# -------------------------------------------------------- distinct_surnames --
+
+
+def test_the_name_draw_skips_borne_surnames_while_the_bank_has_others():
+    from hoc.names import NameGenerator
+
+    rules = rules_data.load_rules(version="1.0")
+    community = rules.surnames[0].community
+    bank = [r.surname for r in rules.surnames if r.community == community]
+    generator = NameGenerator(rules, prng.Prng(SEED))
+    for _ in range(20):
+        _, surname, _ = generator.draw_person(community, avoid=set(bank[1:]))
+        assert surname == bank[0]
+    # A bank wholly borne draws from all of it; a fixed surname is kept.
+    assert generator.draw_person(community, avoid=set(bank))[1] in bank
+    assert generator.draw_person(community, surname=bank[1], avoid={bank[1]})[1] == bank[1]
+
+
+def test_a_crown_founding_never_repeats_an_active_houses_surname(tmp_path):
+    world = _c2(tmp_path, 60)
+    crown = world.conn.execute(
+        "SELECT h.house FROM houses h JOIN house_stats s ON s.house = h.house"
+        " WHERE s.founded_by = 'crown'").fetchall()
+    assert len(crown) > 20
+    assert not [r["house"] for r in crown if sim._SURNAME_NUMERAL.search(r["house"])]
+
+
+# ----------------------------------------------------------- world_calendar --
+#
+# §5. One turn is one year (game.json); the atlas is read at the world year;
+# events fire for every house in the same turn; one climate ledger; a reckoning
+# after the last turn, and no turn after it.
+
+
+@pytest.fixture(scope="module")
+def calendar_game(tmp_path_factory):
+    """A whole game under the draft with every flag on: 1867 to 1966."""
+    work = tmp_path_factory.mktemp("calendar")
+    conn = load_seed.build(work / "game.db", seed=scenario.blank_seed_dir(), reference_data=MERIDIAN)
+    rules = rules_data.load_rules(version="1.0")
+    world = sim.World(conn, rules=rules, world_seed=SEED, seasons_dir=work / "seasons")
+    with conn:
+        records = [world.initialise(SEED)] + [world.run_season() for _ in range(rules.game["turns"] - 1)]
+    yield world, records
+    conn.close()
+
+
+def _events(world, like):
+    return [
+        (json.loads(r["mechanical_delta"]), r["title"], r["narrative"], r["era_cohort"], r["id"])
+        for r in world.conn.execute(
+            "SELECT * FROM events WHERE mechanical_delta LIKE ? ORDER BY id", (f"%{like}%",))
+    ]
+
+
+def test_one_turn_is_one_year_and_the_chapters_are_the_bands(calendar_game, tmp_path):
+    world, records = calendar_game
+    game = world.rules.game
+    assert (game["start_year"], game["turns"]) == (1867, 100)
+    assert [r["year"] for r in records] == list(range(1867, 1967))
+    assert [c["id"] for c in game["chapters"]] == ["confederation", "rails", "war", "depression", "centennial"]
+    assert world.band_for(1885) == "confederation" and world.band_for(1886) == "rails"
+    assert world.band_for(1966) == "centennial"
+    cohorts = {r["era_cohort"] for r in world.conn.execute("SELECT era_cohort FROM events WHERE source = 'engine'")}
+    assert cohorts <= {c["id"] for c in game["chapters"]}
+    # One climate ledger.
+    assert {r[0] for r in world.conn.execute("SELECT DISTINCT era_cohort FROM climate")} == {"world"}
+    off = _world(tmp_path, name="nocal", c2=True, world_calendar=False, crises=False)
+    with off.conn:
+        record = off.initialise(SEED)
+    assert "year" not in record
+
+
+def test_the_crown_never_founds_outside_a_province(calendar_game):
+    world, _ = calendar_game
+    rows = world.conn.execute(
+        "SELECT s.house, s.founded_season, h.fed_id FROM house_stats s"
+        " JOIN holdings h ON h.house = s.house AND h.acquired_event_id = ("
+        "   SELECT MIN(acquired_event_id) FROM holdings WHERE house = s.house)"
+        " WHERE s.founded_by = 'crown'").fetchall()
+    assert len(rows) > 20
+    for row in rows:
+        year = 1866 + row["founded_season"]
+        assert world.crown_may_found(row["fed_id"], year), (row["house"], row["fed_id"], year)
+    # A grant on a territory riding is refused, naming it and the year.
+    world._playing_season = 3  # 1869: Rupert's Land is not yet Canada's
+    try:
+        territory = next(f for f in world.riding_jurisdictions
+                         if not world.crown_may_found(f, 1869)
+                         and world.conn.execute("SELECT 1 FROM holdings WHERE fed_id = ?"
+                                                " AND released_event_id IS NULL", (f,)).fetchone() is None)
+        with pytest.raises(sim.SimError, match="1869.*the Crown founds only in a province"):
+            world.found_house(3, seat=world._riding_name(territory))
+    finally:
+        world._playing_season = None
+
+
+def test_a_riding_outside_canada_is_never_claimed_that_year(calendar_game):
+    world, _ = calendar_game
+    held = world.conn.execute(
+        "SELECT h.fed_id, e.mechanical_delta FROM holdings h JOIN events e ON e.id = h.acquired_event_id"
+    ).fetchall()
+    assert len(held) > 200
+    for row in held:
+        year = 1866 + json.loads(row["mechanical_delta"])["season"]
+        assert world.in_play(row["fed_id"], year), (row["fed_id"], year)
+    # Nor by a claim: Labrador lies outside Canada from 1927 to 1948.
+    names = world._contest_schemes()
+    for row in world.conn.execute("SELECT * FROM schemes ORDER BY id"):
+        if row["scheme"] in names and row["outcome"] == "won":
+            assert world.in_play(row["target_riding"], 1866 + row["ended_season"])
+    assert not world.in_play("10004", 1930) and world.in_play("10004", 1926)
+    # The atlas counts the director chose: in a province in 1867, and when
+    # British Columbia, Prince Edward Island, the Prairies and Newfoundland join.
+    feds = [r["fed_id"] for r in world.conn.execute("SELECT fed_id FROM ridings")]
+    province = {y: sum(world.crown_may_found(f, y) for f in feds) for y in (1867, 1871, 1873, 1905, 1949)}
+    assert province == {1867: 216, 1871: 269, 1873: 273, 1905: 330, 1949: 340}
+    assert sum(world.in_play(f, 1867) for f in feds) == 216
+    assert sum(world.in_play(f, 1949) for f in feds) == 343
+
+
+def test_each_accession_is_a_world_event_naming_its_ridings(calendar_game):
+    world, _ = calendar_game
+    opened = {(d["year"], d["jurisdiction"], d["world"]): d for d, *_ in _events(world, '"world": "')
+              if d["world"] in ("accession", "extension")}
+    assert len(opened[(1870, "Manitoba", "accession")]["ridings"]) == 10
+    assert len(opened[(1871, "British Columbia", "accession")]["ridings"]) == 43
+    assert len(opened[(1873, "Prince Edward Island", "accession")]["ridings"]) == 4
+    assert {k[1] for k in opened if k[0] == 1905} >= {"Alberta", "Saskatchewan"}
+    # Seven ridings join with Newfoundland; Labrador had been Canada's before
+    # 1927, so six are new to play (343 in all from 1949).
+    newfoundland = [d for k, d in opened.items() if k[0] == 1949 and k[2] == "accession"]
+    assert sum(len(d["ridings"]) for d in newfoundland) == 7
+    for d in opened.values():
+        assert d["ridings"] == [world._riding_name(f) for f in d["fed_ids"]]
+
+
+def test_events_fire_for_every_house_in_the_same_turn(calendar_game):
+    world, _ = calendar_game
+    event = next(e for e in world.rules.events if e.name == "National Policy")
+    season = event.personal_year - 1866
+    met = {r["house"] for r in world.conn.execute(
+        "SELECT eh.house FROM events e JOIN event_houses eh ON eh.event_id = e.id"
+        " WHERE e.title = ? AND e.kind = 'societal'", (event.name,))}
+    seasons = {json.loads(d)["season"] for (d,) in world.conn.execute(
+        "SELECT mechanical_delta FROM events WHERE title = ? AND kind = 'societal'", (event.name,))}
+    assert seasons == {season}
+    founded_before = {r["house"] for r in world.conn.execute(
+        "SELECT house FROM house_stats WHERE founded_season < ?"
+        " AND (removed_season IS NULL OR removed_season >= ?)", (season, season))}
+    assert met and met <= founded_before
+    assert len(met) >= len(founded_before) - 2, "every house of the year meets it (a house may fall first)"
+
+
+def test_a_through_year_event_repeats_its_direct_effect_each_year(calendar_game, tmp_path):
+    world, _ = calendar_game
+    depression = next(e for e in world.rules.events if e.name == "Long Depression Reaches Canada")
+    assert (depression.personal_year, depression.through_year) == (1874, 1879)
+    years = [d["year"] for d, *_ in _events(world, '"world": "continues"') if d["event"] == depression.name]
+    assert years == [1875, 1876, 1877, 1878, 1879]
+    # Its effect lands on every house in its turn, each of those years.
+    fresh = _world(tmp_path, name="dep", c2=True)
+    _play(fresh, 9)  # through 1875
+    house = _first_house(fresh)
+    fresh.conn.execute("UPDATE house_stats SET capital = 60 WHERE house = ?", (house,))
+    fresh._playing_season = 10  # 1876
+    try:
+        assert depression in fresh._in_force(1876)
+        fresh._world_events(house, 10, fresh.rng_for(10))
+    finally:
+        fresh._playing_season = None
+    each_year = sum(e.delta for e in depression.direct_effect if e.stat == "capital")
+    assert each_year < 0
+    assert fresh.house_row(house)["capital"] == 60 + each_year
+    assert depression not in fresh._in_force(1880)
+
+
+def test_turn_101_is_refused_and_the_reckoning_closes_the_game(calendar_game):
+    world, records = calendar_game
+    with pytest.raises(sim.SimError, match="the game is over"):
+        world.run_season()
+    reckoning = records[-1]["reckoning"]
+    assert (reckoning["last_year"], reckoning["reckoned"]) == (1966, 1967)
+    places = [row["place"] for row in reckoning["standings"]]
+    assert places == list(range(1, len(places) + 1))
+    prestige = [row["prestige"] for row in reckoning["standings"]]
+    assert prestige == sorted(prestige, reverse=True)
+    ever = {r["house"] for r in world.conn.execute("SELECT house FROM house_stats WHERE top_eight = 1")}
+    assert {h["house"] for h in reckoning["houses"]} == ever and len(ever) >= 8
+    history = {}
+    for r in world.conn.execute("SELECT season_no, house, value FROM prestige_history ORDER BY season_no"):
+        history.setdefault(r["house"], []).append((r["value"], r["season_no"]))
+    for house in reckoning["houses"]:
+        peak = max(v for v, _ in history[house["house"]])
+        first = min(s for v, s in history[house["house"]] if v == peak)
+        assert (house["peak_prestige"], house["peak_year"]) == (peak, 1866 + first)
+        successions = world.conn.execute(
+            "SELECT COUNT(*) FROM events e JOIN event_houses eh ON eh.event_id = e.id"
+            " WHERE eh.house = ? AND e.kind = 'succession'"
+            " AND (e.mechanical_delta LIKE '%\"nature\": \"clean\"%'"
+            "      OR e.mechanical_delta LIKE '%\"nature\": \"disorderly\"%')", (house["house"],)).fetchone()[0]
+        assert house["successions"] == successions
+    assert _events(world, '"world": "reckoning"')
+
+
+# ------------------------------------------------------------------- crises --
+
+
+def test_a_crisis_records_both_camps_and_the_weightier_camp_carries_it(calendar_game):
+    world, _ = calendar_game
+    crises = _events(world, '"crisis"')
+    # Turn 1 (1867) is the first founding alone: Confederation is that founding.
+    majors = [e for e in world.rules.events if e.magnitude == "Major" and 1867 < e.personal_year <= 1966]
+    assert len(crises) == len(majors)
+    both = 0
+    for delta, title, line, *_ in crises:
+        crisis = delta["crisis"]
+        both += bool(crisis["lead"] and crisis["resist"])
+        lead, resist = crisis["influence"]["lead"], crisis["influence"]["resist"]
+        assert crisis["carried"] == ("lead" if lead > resist else "resist" if resist > lead else None)
+        assert line.startswith(f"Season {delta['season']} · {title}:")
+    assert both >= len(crises) // 2
+    # A crisis is met in the world phase, not by each house in its turn.
+    assert not world.conn.execute(
+        "SELECT 1 FROM events WHERE kind = 'societal' AND title = 'The Great War'"
+        " AND mechanical_delta LIKE '%\"response\"%'").fetchone()
+
+
+def test_crisis_camps_move_borders_influence_and_compact_goodwill(tmp_path, monkeypatch):
+    world = _c2(tmp_path, 30)
+    season = world.season_no + 1
+    event = next(e for e in world.rules.events if e.name == "The Great War")
+    houses = [r["house"] for r in world.active_houses()]
+    lead = set(houses[::2])
+    rolls = {h: (6 if h in lead else 2) for h in houses}
+    spec = world.rules.game["crises"]
+    world.conn.execute("UPDATE house_stats SET tag = 'Mixed'")
+    for h in houses:
+        world.conn.execute("UPDATE persons SET traits = NULL WHERE house = ?", (h,))
+    rng = world.rng_for(season)
+    monkeypatch.setattr(rng, "die", lambda sides, purpose=None: rolls[purpose.rsplit(".", 1)[-1]])
+    before = {(a, b): world.friction_between(a, b) for a, b in world.bordering_pairs()}
+    influence = {h: world.house_row(h)["influence"] for h in houses}
+    world._playing_season = season
+    try:
+        world._crisis(event, season, rng, world.year_now())
+    finally:
+        world._playing_season = None
+    crisis = json.loads(world.conn.execute(
+        "SELECT mechanical_delta FROM events ORDER BY id DESC LIMIT 1").fetchone()[0])["crisis"]
+    assert set(crisis["lead"]) == lead and set(crisis["resist"]) == set(houses) - lead
+    winners = crisis["lead"] if crisis["carried"] == "lead" else crisis["resist"]
+    for h in houses:
+        change = spec["win_influence"] if h in winners else -spec["lose_influence"]
+        assert world.house_row(h)["influence"] == max(0, min(100, influence[h] + change)), h
+    lo, hi = world.rules.friction["range"]
+    for (a, b), value in before.items():
+        same = (a in lead) == (b in lead)
+        expected = value + (spec["friction_same"] if same else spec["friction_opposed"])
+        assert world.friction_between(a, b) == max(lo, min(hi, expected)), (a, b)
+    # Goodwill: a compact with a house of the same camp is worth more.
+    a, b = next((x, y) for x in crisis["lead"] for y in crisis["lead"] if x != y)
+    assert world._stood_together(a, b, season + 1)
+    assert not world._stood_together(a, b, season + spec["goodwill_turns"])
+    assert not world._stood_together(crisis["lead"][0], crisis["resist"][0], season + 1)
+
+
+@needs_node
+def test_a_crisis_resolves_the_same_in_both_engines(tmp_path):
+    from hoc.export import world as world_export
+
+    world = _c2(tmp_path, 47)  # 1913: the Great War is the next turn's crisis
+    snapshot = world_export.world_snapshot(world.conn)
+    path = tmp_path / "world.json"
+    path.write_text(json.dumps(snapshot), encoding="utf-8")
+    result = subprocess.run(
+        ["node", str(ROOT / "tests" / "js" / "crisis_parity.mjs"), str(path), "1.0",
+         scenario.reference_set_dir(MERIDIAN).as_posix(), "The Great War"],
+        cwd=ROOT, capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stderr[-3000:]
+    js = json.loads(result.stdout)
+    season = snapshot["season"] + 1
+    event = next(e for e in world.rules.events if e.name == "The Great War")
+    world._playing_season = season
+    world._turn_cache = {}
+    world._crisis(event, season, world.rng_for(season), world.year_now())
+    world._playing_season = None
+    crisis = json.loads(world.conn.execute(
+        "SELECT mechanical_delta FROM events ORDER BY id DESC LIMIT 1").fetchone()[0])["crisis"]
+    python = {
+        "crisis": crisis,
+        "influence": {r["house"]: world.house_row(r["house"])["influence"] for r in world.active_houses()},
+        "friction": [[a, b, world.friction_between(a, b)] for a, b in world.bordering_pairs()],
+    }
+    assert crisis["lead"] or crisis["resist"]
+    assert js == python
+
+
+@needs_node
+def test_a_calendar_game_resumed_in_the_browser_plays_on_to_the_reckoning():
+    import crosscheck
+
+    differences = crosscheck.crosscheck_resume(1867, 66, 34, rules_version="1.0", reference_data=MERIDIAN)
+    assert not differences, differences[0][1][:3000]

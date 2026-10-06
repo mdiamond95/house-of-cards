@@ -18,8 +18,8 @@ REPLAY_JS = r"""// A frozen game, told one turn at a time.
 import { Story } from './story/dispatch.js';
 import { houseStyle } from './story/text.js';
 import {
-  MapCamera, afootHtml, dispatchHtml, escapeHtml, pauseReason, plansHtml, readStored, recordHtml,
-  storylineHtml, stripHtml, writeStored,
+  MapCamera, afootHtml, chapterHtml, dispatchHtml, escapeHtml, pauseReason, plansHtml, readStored,
+  reckoningHtml, recordHtml, storylineHtml, stripHtml, writeStored,
 } from './story/view.js';
 
 const SCENARIO = __SCENARIO__;
@@ -73,8 +73,23 @@ function colourOf(house) {
   return info && info.colour ? info.colour : null;
 }
 
+// Rules 1.0 `world_calendar`: a turn is a year, told by its year.
+function calendar() {
+  return app.index.calendar || null;
+}
+
 function unitName() {
+  if (calendar()) return 'year';
   return app.index.unit === 'turn' ? 'turn' : 'season';
+}
+
+function startYear() {
+  return calendar() ? calendar().start_year : null;
+}
+
+// How a turn is linked: #season-N, #turn-N, and #turn-N for a calendar game.
+function anchor(turn) {
+  return `#${calendar() ? 'turn' : unitName()}-${turn}`;
 }
 
 function reset() {
@@ -86,6 +101,8 @@ function reset() {
     styleOf: (house) => app.styles[house] || null,
     ridings: app.index.ridings || {},
     watch: Boolean(app.index.succession_watch),
+    calendar: calendar(),
+    reckoning: app.index.reckoning || null,
   });
   app.turn = 0;
 }
@@ -121,9 +138,15 @@ function focusOf(d) {
 
 function renderLabel() {
   const total = app.index.turns;
-  el('story-turn').textContent = app.turn === 0
-    ? `before ${unitName()} 1 of ${total}`
-    : `${unitName()} ${app.turn} of ${total}`;
+  if (calendar()) {
+    el('story-turn').textContent = app.turn === 0
+      ? `before ${startYear()} (turn 1 of ${total})`
+      : `${startYear() + app.turn - 1} (turn ${app.turn} of ${total})`;
+  } else {
+    el('story-turn').textContent = app.turn === 0
+      ? `before ${unitName()} 1 of ${total}`
+      : `${unitName()} ${app.turn} of ${total}`;
+  }
   el('story-next').disabled = app.turn >= total;
 }
 
@@ -137,10 +160,10 @@ function renderAfoot() {
   }
   const list = app.story.afoot();
   if (app.afoot && !app.story.lines.of(app.afoot)) app.afoot = null;
-  el('story-afoot-list').innerHTML = afootHtml(list, { unit: unitName(), selected: app.afoot });
+  el('story-afoot-list').innerHTML = afootHtml(list, { unit: unitName(), selected: app.afoot, start: startYear() });
   const told = app.afoot ? app.story.tell(app.afoot) : null;
   el('story-afoot-detail').innerHTML = told
-    ? storylineHtml(told, { unit: unitName(), link: (turn) => `#${unitName()}-${turn}` })
+    ? storylineHtml(told, { unit: unitName(), link: anchor, start: startYear() })
     : '';
   const houses = new Set(told ? told.houses : []);
   const owners = app.story.board.owners;
@@ -160,7 +183,10 @@ function show(d, { zoom = true } = {}) {
     el('story-record-lines').innerHTML = '';
     return;
   }
-  el('story-dispatch').innerHTML = dispatchHtml(d, { unit: unitName() });
+  // Phase D1: a chapter's interstitial at its end, and the reckoning after the last turn.
+  el('story-dispatch').innerHTML = dispatchHtml(d, { unit: unitName() })
+    + (d.chapter ? chapterHtml(d.chapter, { colourOf, follow: app.follow, start: startYear() }) : '')
+    + (d.reckoning ? reckoningHtml(d.reckoning, { colourOf }) : '');
   el('story-record-lines').innerHTML = recordHtml(d);
   if (zoom && app.camera) app.camera.focus(focusOf(d));
 }
@@ -193,7 +219,11 @@ function startAuto() {
   const tick = async () => {
     const d = await guarded(next);
     if (app.auto === null) return;
-    if (!d) { stopAuto(`The end of the record: ${unitName()} ${app.index.turns}.`); return; }
+    if (!d) {
+      stopAuto(calendar() ? `The end of the record: ${startYear() + app.index.turns - 1}.`
+        : `The end of the record: ${unitName()} ${app.index.turns}.`);
+      return;
+    }
     if (d.pause) {
       stopAuto(pauseReason(d));
       return;
@@ -239,7 +269,7 @@ function renderFollow() {
 // replay.html#season-88 (or #turn-2) opens the replay at that turn: the
 // Storylines page links each beat here.
 function hashTurn() {
-  const match = /^#(?:season|turn)-(\d+)$/.exec(window.location.hash);
+  const match = /^#(?:season|turn|year)-(\d+)$/.exec(window.location.hash);
   return match ? Number(match[1]) : null;
 }
 
@@ -370,11 +400,18 @@ async function boot() {
   }
   const styles = {};
   for (const [house, info] of Object.entries(index.houses)) styles[house] = houseStyle({ house, ...info });
-  const unit = index.unit === 'turn' ? 'turn' : 'season';
+  // Rules 1.0 `world_calendar`: a turn is a year, told by its year.
+  const calendar = index.calendar || null;
+  const start = calendar ? calendar.start_year : null;
+  const unit = calendar ? 'year' : (index.unit === 'turn' ? 'turn' : 'season');
+  const anchor = calendar ? 'turn' : unit;
+  const span = (s) => (calendar
+    ? (s.state === 'closed' ? `${start + s.opened - 1}–${start + s.closed - 1}` : `since ${start + s.opened - 1}`)
+    : (s.state === 'closed' ? `${unit}s ${s.opened}–${s.closed}` : `since ${unit} ${s.opened}`));
   const story = new Story({
     weights, baseline: index.baseline, unit,
     styleOf: (house) => styles[house] || null, ridings: index.ridings || {},
-    watch: Boolean(index.succession_watch),
+    watch: Boolean(index.succession_watch), calendar, reckoning: index.reckoning || null,
   });
   for (let turn = 1; turn <= index.turns; turn += 1) {
     story.step(turn, byTurn[String(turn)] || [], { prestige: prestige[String(turn)] || null });
@@ -389,19 +426,20 @@ async function boot() {
     contents.push(`<a href="#type-${type}">${HEADINGS[type]} (${lines.length})</a>`);
     const items = lines.map((s) => {
       const told = story.tell(s.id);
-      const end = s.state === 'closed' ? `${unit}s ${s.opened}–${s.closed}` : `since ${unit} ${s.opened}`;
+      const end = span(s);
       return `<details class="storyline" id="${escapeHtml(s.id)}"><summary>`
         + `<span class="storyline-title">${escapeHtml(told.name)}</span>`
         + `<span class="meta"> ${told.beats.length} beat${told.beats.length === 1 ? '' : 's'} &middot; ${end}`
         + ` &middot; ${escapeHtml(s.state === 'closed' ? s.outcome : s.state)}</span></summary>`
-        + storylineHtml(told, { unit, link: (turn) => `replay.html#${unit}-${turn}` })
+        + storylineHtml(told, { unit, link: (turn) => `replay.html#${anchor}-${turn}`, start })
         + '</details>';
     });
     sections.push(`<section id="type-${type}" class="storyline-type"><h2>${HEADINGS[type]}`
       + ` <span class="count">${lines.length}</span></h2>${items.join('')}</section>`);
   }
   const closed = all.filter((s) => s.state === 'closed').length;
-  el('lines-summary').textContent = `${all.length} storylines over ${index.turns} ${unit}s:`
+  el('lines-summary').textContent = `${all.length} storylines over ${calendar
+    ? `the years ${start}–${start + index.turns - 1}` : `${index.turns} ${unit}s`}:`
     + ` ${closed} closed, ${all.length - closed} still open when the record ends.`;
   el('lines-types').innerHTML = contents.join(' &middot; ');
   el('lines-body').innerHTML = sections.join('') || '<p class="meta">This game has no storylines.</p>';
@@ -412,6 +450,45 @@ async function boot() {
     if (target && target.tagName === 'DETAILS') target.open = true;
     if (target) target.scrollIntoView();
   }
+}
+
+boot();
+"""
+
+
+RECKONING_JS = r"""// The reckoning after a calendar game's last turn (Phase D1).
+//
+// Generated by hoc/export/replay_js.py. The final table and an epilogue for
+// every house ever of the top eight, built in the browser by the story layer
+// (./story/reckoning.js) from the reckoning record the engine wrote, which
+// hoc/export/beats.py ships in the beat index. Nothing here adds a fact.
+
+import { reckoningView } from './story/reckoning.js';
+import { houseStyle } from './story/text.js';
+import { reckoningHtml } from './story/view.js';
+
+const el = (id) => document.getElementById(id);
+
+async function boot() {
+  let index;
+  try {
+    const response = await fetch('data/beats/index.json');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    index = await response.json();
+  } catch (error) {
+    el('reckoning-load').textContent = `The reckoning could not be loaded (${error.message}).`;
+    return;
+  }
+  if (!index.reckoning) {
+    el('reckoning-load').textContent = 'This game has no reckoning: it was not played to the end of a calendar.';
+    return;
+  }
+  const styles = {};
+  for (const [house, info] of Object.entries(index.houses)) styles[house] = houseStyle({ house, ...info });
+  const view = reckoningView(index.reckoning, { styleOf: (house) => styles[house] || null });
+  const colourOf = (house) => (index.houses[house] && index.houses[house].colour) || null;
+  el('reckoning-body').innerHTML = reckoningHtml(view, { colourOf });
+  el('reckoning-load').hidden = true;
 }
 
 boot();

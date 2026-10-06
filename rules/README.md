@@ -55,20 +55,31 @@ Phase C2 (§4.2, §4.4, §4.5, §4.9) adds four more, false in 0.7–0.9 and on 
   - Every begin, step, answer, abandonment and resolution is an event with its turns remaining, and each season record carries `plans`, the public schemes as the season left them.
   - The existing action handlers stay the resolution primitives. Break a rival hardens on success, and Make peace may also end open hostility.
 - `contested_claims` — a Claim resolves as a contest:
-  - The attacker rolls 2d6 + committed // 10 + rank index + 2 per ally + the holder's claim trait. The defender rolls 2d6 + fortified // 10 + cohesion // 25 + 2 per ally + 2 for a seat (`schemes.json` `contest`). Ties go to the defender.
-  - The loser loses its stake and 10 cohesion.
+  - The attacker rolls 2d6 + committed // `committed_per_point` + rank index + 2 per ally + the holder's claim trait. The defender rolls 2d6 + fortified // `fortified_per_point` + cohesion // 25 + 2 per ally + 2 for a seat (`schemes.json` `contest`). Ties go to the defender.
+  - The loser loses its stake and `loss_cohesion` cohesion, and begins no claim for `loser_bar` turns (Phase D1).
   - A seat can be taken, and a house left with no riding falls, naming the house that took its seat.
   - A win by 5 against cohesion below 40 takes a second riding.
-  - The pair is then hostile and may not contest again for 5 turns.
+  - The pair is then hostile and may not contest again for `cooldown` turns.
   - Allies (compact or kin) are each asked on a per-cent utility test, and a refusal is recorded.
   - Without this flag no claim is offered.
 - `prestige_politics` — houses read prestige:
   - the leader is a poorer ally and, for the top eight, a richer target;
   - a house that lost a contest in the last 10 turns, or has cohesion below 40, draws claims;
   - a protector is sought above, the gap adding utility.
-- `cohesion_strain` — each turn −1 cohesion per holding beyond `upkeep.json` `strain` (3 + 2 × rank index), and −1 while the holder is over 70. Recovery comes only from upkeep. Under it, each holding past that reach makes another riding worth `utility.overreach` less to the house.
+- `cohesion_strain` — each turn −1 cohesion per holding beyond `upkeep.json` `strain` (3 + 2 × rank index), and −1 while the holder is over 70. Recovery comes only from upkeep. Under it, each holding past that reach makes another riding worth `utility.overreach` less to the house, and a house at or past it values Win elevation by `utility.elevation_at_reach` more (Phase D1).
 
-`traits.csv` and `upkeep.json` are new in 1.0, and so are `schemes.csv` and `schemes.json`. `founding.json` gains `founding_curve`, `succession.json` gains `watch`, and `upkeep.json` gains `strain`. Every loader reads a version without them as having none.
+Phase D1 (§4.10, §5, §5.1) adds three more, false in 0.7–0.9 and on in 1.0, and its pacing terms ride on the flags above: `upkeep.json` `capital.holdings_per_cost` (one capital a turn for so many holdings), `schemes.json` `contest.loser_bar`, `utility.elevation_at_reach` and `utility.elevation_influence_min`.
+
+- `distinct_surnames` — a Crown founding never draws a surname an active house bears (its name less any numeral) while its community's bank has an unused one. A director's chosen surname, and a cadet's, are kept.
+- `world_calendar` — one turn is one year, from `game.json` (start year, turns, chapters). Season records carry `year`.
+  - Every event of the world year fires for every house, in deck order; an event with a `through_year` repeats its direct effect each year to it, recorded once a year as a world event (`world: continues`). A §7c contraction sale lands in an event's first year only.
+  - One climate ledger (`game.json` `climate_ledger`); the chapters are the era bands.
+  - The atlas is read at the world year from `riding_jurisdictions.csv`, unchanged: a riding is in play while its sovereign is Canada, the Crown founds only on a riding in a province, and land outside Canada is not taken or claimed that year. Each accession (land coming under Canada) or extension (land becoming a province) is a world event naming its ridings.
+  - After the last turn the engine writes the reckoning (`world: reckoning`, and the season record's `reckoning`): the final standings and, for every house ever of the top eight, its ridings, rank, peak prestige and year, contests won and lost and successions, from `house_stats`' `peak_prestige`, `peak_season`, `top_eight` and `successions`. A run refuses the turn after the last.
+  - Personal clocks still advance, reset and sync, as reign years; nothing reads them.
+- `crises` — under `world_calendar`, a Major event is a crisis. Every house takes a side by the response roll (tag modifier and the steadfast trait); Lead and Resist are the camps, Exploit takes its capital and Neutral stands aside. The camp with more total influence carries it: the climate moves its way, its members gain `game.json` `crises.win_influence` and the other camp's lose `lose_influence`. Land neighbours in the same camp move `friction_same` on their border, in opposed camps `friction_opposed`, and a compact with a house that stood in the same camp within `goodwill_turns` is worth `goodwill` more. One societal event records both camps and the outcome; the crisis's direct effect lands on each house in its turn.
+
+`traits.csv` and `upkeep.json` are new in 1.0, and so are `schemes.csv`, `schemes.json` and `game.json`. `founding.json` gains `founding_curve`, `succession.json` gains `watch`, `upkeep.json` gains `strain`, and `events.csv` gains `through_year`. Every loader reads a version without them as having none.
 
 ## The tables
 
@@ -81,7 +92,7 @@ Machine-readable transcription of `docs/ENGINE_DESIGN.md`'s numeric tables, load
 - **succession.json** — `clean_succession`, `partition`, `disorderly_succession`, `extinction`, `heirs` (all §9); `losing_ridings` (§7c: contraction sale, debt, disorderly succession's riding-loss roll, cession, escheat); `enclosure` (§7b: definition, effects, and what happens once the map is full).
 - **eras.json** — the three era bands and their personal-year ranges (§3), each with a lowercase `id` (the key used in data and code) and a display `name`, and `end_year: null` on the open-ended final band.
 - **responses.json** — the four event-response options (Lead / Resist / Exploit / Neutral) and their effects, and the response-roll tag modifier chosen in version 0.1 (§8).
-- **events.csv** — the event deck (§8), one row per event from 1867 to 1960. Columns: `personal_year`; `band` (the era band id from `eras.json` — `confederation`, `dominion`, `late`; a house's actual era context is still decided by its own personal clock against `eras.json`'s year ranges, since two houses in the same season are rarely in the same band); `name`; `magnitude` (Minor / Significant / Major); `tag` (Progressive / Conservative / Mixed / Global — Global marking an event with no partisan lean, distinct from `Outside`, which is a scope value below, not an event tag); `direct_effect` (see "Event effect scopes" below); `note`.
+- **events.csv** — the event deck (§8), one row per event from 1867 to 1960 (to 1966 in 1.0). Columns: `personal_year`; `band` (the era band id from `eras.json` — `confederation`, `dominion`, `late`; a house's actual era context is still decided by its own personal clock against `eras.json`'s year ranges, since two houses in the same season are rarely in the same band); `name`; `magnitude` (Minor / Significant / Major); `tag` (Progressive / Conservative / Mixed / Global — Global marking an event with no partisan lean, distinct from `Outside`, which is a scope value below, not an event tag); `direct_effect` (see "Event effect scopes" below); `note`; and in 1.0 `through_year`, the last world year an event's direct effect repeats in under `world_calendar` (blank for a one-year event).
 - **communities.csv** — the cultural-community table (§10), one row per community. Columns: `region` (`maritime, quebec, ontario, prairie, bc, north` — the same lowercase ids as `founding.json`'s `region_weights.initial` keys; six of the seven regions used for event scopes, since `newfoundland` is not a community region: before 1949 its communities are recorded under `maritime`, and after 1949 the event deck targets it directly by scope); `community`; `weight` (the founding draw weight within its region); `naming_tradition` (a key into `given_names.csv`); `note`.
 - **places.csv** — territorial-designation place names (§10 seat-riding flavour), one row per place. Columns: `province` (2-letter code, matching the codes in `data/reference/ridings.csv`); `place`.
 - **given_names.csv** — given names by naming tradition and gender. Columns: `tradition` (matches a `communities.naming_tradition` value); `gender` (`m` or `f`); `name`.
@@ -100,6 +111,7 @@ Machine-readable transcription of `docs/ENGINE_DESIGN.md`'s numeric tables, load
   - `begins`, `abandons`: the chronicle's templates, naming only `{house}`, `{target}` and `{riding}`;
   - `note`.
 - **schemes.json** (1.0, Phase C2) — `choice` (top, abandon_below, abandon_refund_pct, answer_stand), `utility` (every term of the integer utility), `peace` (wait, indemnity_capital), `contest` (§4.4's numbers and the ally test), `frontier` (double_on).
+- **game.json** (1.0, Phase D1) — `world_calendar`'s `start_year`, `turns`, `climate_ledger` and `chapters` (`id`, `name`, `numeral`, `start_year`, `end_year`, contiguous over the game), and `crises`' terms.
 - **features.json** — the named behaviour booleans described above.
 - **CHANGELOG.md** — one entry per rules version, with the metric that motivated it. Not inside a version directory: it is the history of all of them.
 

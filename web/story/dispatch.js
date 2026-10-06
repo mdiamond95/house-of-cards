@@ -31,9 +31,19 @@
 // dispatch. Following a different house means replaying with a different
 // `follow`, which changes weights and never the game.
 //
+// Phase D1 adds the world calendar. For a game played with one (`calendar`,
+// from game.json by way of the beat index), a turn is a year: the dispatch
+// carries its `year`, and kickers, plans and quiet lines count years. A crisis
+// is one beat naming both camps, the cast first. At the end of each chapter the
+// dispatch carries an interstitial (`chapter`) — its title and years, the
+// standings with their movement over the chapter, the storylines it closed and
+// those left open — and Auto always pauses there; after the last turn it
+// carries the reckoning (reckoning.js) and pauses there too.
+//
 // Pure: no DOM, no engine, no clock, no randomness.
 
-import { BOOKKEEPING, mergeActs } from './beats.js';
+import { BOOKKEEPING, compareText, mergeActs } from './beats.js';
+import { reckoningView } from './reckoning.js';
 import { createContext, weighTurn, advance, provinceOf } from './weight.js';
 import { emptyBoard, copyBoard, applyBeats, table, movement } from './standings.js';
 import { Storylines, storylineName } from './storylines.js';
@@ -134,11 +144,14 @@ export class Story {
   // `ridings` maps every fed_id to its riding's name.
   constructor({
     weights, baseline = emptyBoard(), follow = null, unit = 'season', seen = [],
-    styleOf = () => null, ridings = {}, watch = false,
+    styleOf = () => null, ridings = {}, watch = false, calendar = null, reckoning = null,
   }) {
     this.weights = weights;
     this.follow = follow;
-    this.unit = unit;
+    // Rules 1.0 `world_calendar`: one turn is one year.
+    this.calendar = calendar;
+    this.reckoningFacts = reckoning;
+    this.unit = calendar ? 'year' : unit;
     this.styleOf = styleOf;
     this.ridings = ridings;
     this.board = copyBoard(baseline);
@@ -154,6 +167,18 @@ export class Story {
       held: Object.keys(this.board.owners).map(provinceOf),
       watch,
     });
+    // The standings as the current chapter began, for its interstitial.
+    this.chapterStart = { turn: 1, table: this.standings };
+  }
+
+  // The world year of a turn, or null for a game without a calendar.
+  yearOf(turn) {
+    return this.calendar ? this.calendar.start_year + turn - 1 : null;
+  }
+
+  // When a turn happened, as the pages say it: its year, or "season N".
+  when(turn) {
+    return this.calendar ? String(this.yearOf(turn)) : `${this.unit} ${turn}`;
   }
 
   ridingName(fed) {
@@ -223,9 +248,13 @@ export class Story {
     if (plans !== null) this.plans = plans;
 
     const namer = this.namer(boardAfter.ranks);
+    // A crisis names its camps' houses in standings order, the cast first.
+    const placeOf = new Map(after.map((row) => [row.house, row.place]));
+    const order = (houses) => [...houses].sort((a, b) => (placeOf.get(a) ?? Infinity) - (placeOf.get(b) ?? Infinity)
+      || compareText(a, b));
     const told = (entry) => ({
       beat: entry.beat, weight: entry.weight, mods: entry.mods,
-      text: sentence(entry.beat, namer, (fed) => this.ridingName(fed)),
+      text: sentence(entry.beat, namer, (fed) => this.ridingName(fed), { order }),
     });
 
     let headline = null;
@@ -257,7 +286,10 @@ export class Story {
         const prior = s.beats.filter((e) => e.turn < turn);
         if (prior.length) {
           const last = prior[prior.length - 1];
-          previously = { turn: last.turn, text: sentence(last.beat, namer, (fed) => this.ridingName(fed)) };
+          previously = {
+            turn: last.turn, year: this.yearOf(last.turn),
+            text: sentence(last.beat, namer, (fed) => this.ridingName(fed), { order }),
+          };
         }
       }
     }
@@ -320,8 +352,28 @@ export class Story {
       stops.push(`a headline of weight ${chosen.headline.weight} about the followed house`);
     }
 
+    // Phase D1: the end of a chapter, and the reckoning after the last turn.
+    const year = this.yearOf(turn);
+    let chapter = null;
+    let reckoning = null;
+    if (this.calendar) {
+      const ch = this.calendar.chapters.find((c) => c.end_year === year);
+      if (ch) {
+        chapter = this.interstitial(ch, turn);
+        stops.push(`the end of Chapter ${ch.numeral}, ${ch.name}`);
+        this.chapterStart = { turn: turn + 1, table: this.standings };
+      }
+      if (this.reckoningFacts && turn === this.calendar.turns) {
+        reckoning = reckoningView(this.reckoningFacts, { styleOf: this.styleOf });
+        stops.push(`the reckoning of ${reckoning.year}`);
+      }
+    }
+
     return {
       turn,
+      year,
+      chapter,
+      reckoning,
       quiet: chosen.quiet,
       headline,
       kicker,
@@ -337,10 +389,35 @@ export class Story {
       zoom: chosen.quiet ? [] : [...(chosen.headline.beat.ridings || [])],
       standings: movement(before, this.standings, w),
       record: rawBeats.filter((beat) => beat.line)
-        .map((beat) => sentence(beat, this.namer(boardAfter.ranks), (fed) => this.ridingName(fed))),
+        .map((beat) => sentence(beat, this.namer(boardAfter.ranks), (fed) => this.ridingName(fed), { order })),
       headlineOpens: !chosen.quiet && chosen.headline.roles.some((r) => r.role === 'open')
         && !chosen.headline.roles.some((r) => r.role !== 'open'),
       inStoryline: !chosen.quiet && chosen.headline.roles.length > 0,
+    };
+  }
+
+  // A chapter's interstitial (Phase D1): its title and years, the standings
+  // with their movement since the chapter began, the storylines of the cast it
+  // closed, and those of the cast still open, longest first.
+  interstitial(ch, turn) {
+    const cfg = this.weights.storylines;
+    const from = this.chapterStart.turn;
+    const castOf = (s) => s.cast || (this.follow && s.houses.includes(this.follow));
+    const longest = (a, b) => b.beats.length - a.beats.length || compareText(a.id, b.id);
+    const closed = this.lines.all
+      .filter((s) => s.state === 'closed' && s.closed >= from && s.closed <= turn && castOf(s))
+      .sort(longest).slice(0, cfg.afoot_max)
+      .map((s) => this.summary(s));
+    const open = this.lines.open.filter(castOf).sort(longest).slice(0, cfg.afoot_max)
+      .map((s) => this.summary(s));
+    return {
+      numeral: ch.numeral,
+      name: ch.name,
+      start_year: ch.start_year,
+      end_year: ch.end_year,
+      standings: movement(this.chapterStart.table, this.standings, this.weights),
+      closed,
+      open,
     };
   }
 

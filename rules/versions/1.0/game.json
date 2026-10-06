@@ -1,0 +1,21 @@
+{
+  "note": "Rules 1.0 `world_calendar` and `crises` (docs/STORY_DESIGN.md §5, §5.1). One turn is one year: turn N is start_year + N - 1, and the game ends after `turns` turns with a reckoning. The chapters are the era bands under world_calendar; their ids are what events.era_cohort records. There is one climate ledger, `climate_ledger`. The crisis terms: the camp that carries a crisis gains win_influence, the other camp loses lose_influence; neighbours in the same camp move friction_same on their border and neighbours in opposed camps friction_opposed; a house values a compact with a house that stood with it in a crisis within goodwill_turns by goodwill (schemes.json utility). Integers only.",
+  "start_year": 1867,
+  "turns": 100,
+  "climate_ledger": "world",
+  "chapters": [
+    {"id": "confederation", "name": "Confederation", "numeral": "I", "start_year": 1867, "end_year": 1885},
+    {"id": "rails", "name": "Rails and Wheat", "numeral": "II", "start_year": 1886, "end_year": 1913},
+    {"id": "war", "name": "The Great War", "numeral": "III", "start_year": 1914, "end_year": 1929},
+    {"id": "depression", "name": "Depression and War", "numeral": "IV", "start_year": 1930, "end_year": 1945},
+    {"id": "centennial", "name": "The Centennial Road", "numeral": "V", "start_year": 1946, "end_year": 1966}
+  ],
+  "crises": {
+    "win_influence": 5,
+    "lose_influence": 3,
+    "friction_same": -10,
+    "friction_opposed": 10,
+    "goodwill": 20,
+    "goodwill_turns": 10
+  }
+}

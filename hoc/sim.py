@@ -28,6 +28,7 @@ are recognised and weighted zero until PART B.
 """
 
 import json
+import re
 from collections import defaultdict
 from functools import lru_cache
 from datetime import datetime, timezone
@@ -61,6 +62,8 @@ RULES_VERSION = rules_data.current_version()
 STAT_RANGE = (0, 100)
 AMBITION_RANGE = (0, 10)
 TOTAL_RIDINGS = 343
+# A second house of a surname takes a numeral (_unique_house_name).
+_SURNAME_NUMERAL = re.compile(r" [0-9]+$")
 
 # Rules 0.9 (`atlas_jurisdiction`): every founding and every accession starts a
 # personal clock here (hard rule 5), so this is also the year at which a Crown
@@ -392,6 +395,13 @@ class World:
         would play a game neither version describes.
         """
         self.eras = sorted(self.rules.eras, key=lambda e: e.start_year)
+        if self.feature("world_calendar"):
+            # Rules 1.0 `world_calendar`: the chapters are the era bands.
+            self.eras = [
+                rules_data.EraBand(id=c["id"], name=c["name"], start_year=c["start_year"],
+                                   end_year=c["end_year"])
+                for c in self.rules.game["chapters"]
+            ]
         self.actions = {a.action: a for a in self.rules.actions}
         self.objectives = {o.objective: o for o in self.rules.objectives}
         self.communities_by_region = defaultdict(list)
@@ -421,23 +431,82 @@ class World:
 
     def riding_open(self, fed_id, personal_year):
         """Whether a house at `personal_year` may take the riding. Always true
-        unless `atlas_jurisdiction` is on."""
+        unless `atlas_jurisdiction` is on. Under `world_calendar` the year is
+        the world year, and a riding is open while it is in play."""
+        if self.feature("world_calendar"):
+            return self.in_play(fed_id, personal_year)
         if not self.feature("atlas_jurisdiction"):
             return True
         return personal_year >= self.opens_year(fed_id)
 
     def foundable(self, fed_id):
         """Whether the Crown may seat a new house here. A new house's clock
-        reads FOUNDING_YEAR, so this is `riding_open` at that year."""
+        reads FOUNDING_YEAR, so this is `riding_open` at that year. Under
+        `world_calendar`, only on a riding in a province this world year."""
+        if self.feature("world_calendar"):
+            return self.crown_may_found(fed_id, self.year_now())
         return self.riding_open(fed_id, FOUNDING_YEAR)
 
     def closed_message(self, fed_id, who, personal_year):
         """The refusal a director sees for a closed riding: the riding, the
-        house's personal year, and the riding's opens_year."""
+        house's personal year, and the riding's opens_year — under
+        `world_calendar`, the world year and the riding's standing in it."""
+        if self.feature("world_calendar"):
+            span = self._span(fed_id, personal_year)
+            where = f"{span['name']}, a {span['status']} under {span['sovereign']}" if span else "no jurisdiction"
+            return (
+                f"{self._riding_name(fed_id)} is closed to {who} in {personal_year}:"
+                f" it lies in {where}"
+            )
         return (
             f"{self._riding_name(fed_id)} is closed to {who}: personal year"
             f" {personal_year} is before its opens_year {self.opens_year(fed_id)}"
         )
+
+    # -- rules 1.0 `world_calendar`: one year a turn, and the atlas read at it --
+
+    _playing_season = None
+
+    def year_now(self):
+        """The world year: of the season being played, or between seasons of
+        the next one (game.json start_year + season - 1)."""
+        season = self._playing_season if self._playing_season is not None else self.season_no + 1
+        return self.rules.game["start_year"] + season - 1
+
+    def year_of(self, house):
+        """The year a house reads the world at: the world year under
+        `world_calendar`, else its own personal year."""
+        return self.year_now() if self.feature("world_calendar") else self.personal_year(house)
+
+    def _founding_year(self):
+        """The year a new house reads the map at: its clock's 1867, or the
+        world year under `world_calendar`."""
+        return self.year_now() if self.feature("world_calendar") else FOUNDING_YEAR
+
+    def _atlas(self):
+        """Whether the map is read by year at all."""
+        return self.feature("atlas_jurisdiction") or self.feature("world_calendar")
+
+    def _span(self, fed_id, year):
+        for span in self.riding_jurisdictions.get(fed_id, ()):
+            if span["from_year"] <= year and (span["to_year"] is None or year <= span["to_year"]):
+                return span
+        return None
+
+    def in_play(self, fed_id, year):
+        """A riding is in play while its sovereign is Canada that year. A
+        reference set with no spans for it (ne-2026) has it in play throughout."""
+        if not self.riding_jurisdictions.get(fed_id):
+            return True
+        span = self._span(fed_id, year)
+        return span is not None and span["sovereign"] == "Canada"
+
+    def crown_may_found(self, fed_id, year):
+        """The Crown founds only on a riding in a province that year."""
+        if not self.riding_jurisdictions.get(fed_id):
+            return True
+        span = self._span(fed_id, year)
+        return span is not None and span["sovereign"] == "Canada" and span["status"] == "province"
 
     def wealth_offset(self, fed_id):
         """wealth_tier − 3 under `riding_endowments`, else 0. A set without
@@ -460,7 +529,7 @@ class World:
         """" (Rupert's Land)" when a riding's jurisdiction in `year` is named
         differently from the one in force today, else "". Under
         `atlas_jurisdiction` only, so a 0.8 chronicle line reads as it did."""
-        if not self.feature("atlas_jurisdiction"):
+        if not self._atlas():
             return ""
         then = self.jurisdiction_name(fed_id, year)
         spans = self.riding_jurisdictions.get(fed_id, ())
@@ -656,15 +725,15 @@ class World:
         any weight or draw, exactly as land adjacency is — so a closed riding
         never consumes a draw."""
         targets = self.expansion_targets(house)
-        if not self.feature("atlas_jurisdiction"):
+        if not self._atlas():
             return targets
-        year = self.personal_year(house)
+        year = self.year_of(house)
         return [fed_id for fed_id in targets if self.riding_open(fed_id, year)]
 
     def can_expand_into_open(self, house):
         """§7's Expand precondition: an unclaimed land-adjacent riding exists —
         under `atlas_jurisdiction`, one open to this house."""
-        if not self.feature("atlas_jurisdiction"):
+        if not self._atlas():
             return self.has_expansion_target(house)
         key = ("can_expand_open", house)
         if key not in self._turn_cache:
@@ -675,7 +744,7 @@ class World:
         """§10's p_found numerator: unclaimed ridings with a land neighbour —
         under `atlas_jurisdiction`, only those the Crown may grant, so p_found
         reaches zero when the foundable map is full."""
-        if not self.feature("atlas_jurisdiction"):
+        if not self._atlas():
             return self.unclaimed_land_adjacent_count()
         return sum(
             1 for row in self.conn.execute(
@@ -696,12 +765,12 @@ class World:
         so the message names a closed riding, that year, and the opens_year.
         A house with no unclaimed neighbour at all is not this refusal's
         business: the season refuses that as it always has."""
-        if not self.feature("atlas_jurisdiction"):
+        if not self._atlas():
             return None
         targets = self.expansion_targets(house)
         if not targets:
             return None
-        year = self.personal_year(house) + 1
+        year = self.year_now() if self.feature("world_calendar") else self.personal_year(house) + 1
         if any(self.riding_open(fed_id, year) for fed_id in targets):
             return None
         return self.closed_message(targets[0], house, year)
@@ -821,18 +890,25 @@ class World:
 
     # -------------------------------------------------------------- founding --
 
+    def _ledger(self, band):
+        """The climate ledger a band reads and moves: its own, or under
+        `world_calendar` the one ledger game.json names."""
+        return self.rules.game["climate_ledger"] if self.feature("world_calendar") else band
+
     def _initial_climate(self):
         """Every band starts its ledger at zero. The ledgers are parallel and are
-        never collapsed into one number (hard rule 8)."""
-        for era in self.eras:
+        never collapsed into one number (hard rule 8). Under `world_calendar`
+        there is one ledger, game.json's climate_ledger."""
+        ids = [self._ledger(None)] if self.feature("world_calendar") else [era.id for era in self.eras]
+        for era_id in ids:
             existing = self.conn.execute(
-                "SELECT 1 FROM climate WHERE era_cohort = ?", (era.id,)
+                "SELECT 1 FROM climate WHERE era_cohort = ?", (era_id,)
             ).fetchone()
             if existing is None:
                 self.conn.execute(
                     "INSERT INTO climate (era_cohort, seq, event, magnitude, tag,"
                     " cumulative_after, source) VALUES (?, 1, 'Season 0', NULL, NULL, '0', 'engine')",
-                    (era.id,),
+                    (era_id,),
                 )
 
     def _draw_region(self, rng):
@@ -840,7 +916,7 @@ class World:
         land-adjacent capacity, so settlement moves west as the east fills
         without any date driving it (§10)."""
         capacity = defaultdict(int)
-        if self.feature("atlas_jurisdiction"):
+        if self._atlas():
             # Rules 0.9: "unclaimed" means unclaimed and foundable, so a region
             # with no seat left the Crown may grant has no room and no weight.
             for row in self.conn.execute(
@@ -901,7 +977,7 @@ class World:
         weight of the matching tag (§10)."""
         weights = {"Progressive": 200, "Conservative": 200, "Mixed": 200, "Outside": 100}
         try:
-            climate = mechanics.current_climate(self.conn, "confederation")
+            climate = mechanics.current_climate(self.conn, self._ledger("confederation"))
         except mechanics.RuleError:
             climate = 0
         if climate > 0:
@@ -935,7 +1011,9 @@ class World:
             if mechanics._holder_of(self.conn, fed_id) is not None:
                 raise SimError(f"riding {seat!r} is already held")
             if not self.foundable(fed_id):
-                raise SimError(self.closed_message(fed_id, "a new house", FOUNDING_YEAR))
+                raise SimError(self.closed_message(
+                    fed_id, "a new house", self._founding_year()) + (
+                    "; the Crown founds only in a province" if self.feature("world_calendar") else ""))
             province = self.conn.execute(
                 "SELECT province FROM ridings WHERE fed_id = ?", (fed_id,)
             ).fetchone()["province"]
@@ -983,6 +1061,7 @@ class World:
             drawn = generator.draw_house(
                 community_obj.community, province, rank,
                 taken_places=self.taken_places(), surname=surname or None, tiers=tiers,
+                avoid=self._borne_surnames() if self.feature("distinct_surnames") else (),
             )
         except Exception as exc:  # a bank that cannot serve this province
             self.log.append({"purpose": "founding.abandoned", "result": str(exc)})
@@ -1062,8 +1141,8 @@ class World:
         if traits:
             founding_delta["traits"] = traits
         seat_jurisdiction = (
-            self.jurisdiction_name(fed_id, FOUNDING_YEAR)
-            if self.feature("atlas_jurisdiction") else None
+            self.jurisdiction_name(fed_id, self._founding_year())
+            if self._atlas() else None
         )
         if seat_jurisdiction is not None:
             # Display only (rules 0.9): the seat's jurisdiction at the new
@@ -1078,10 +1157,10 @@ class World:
             f"{drawn['peerage']} founded",
             [house],
             season,
-            band="confederation",
+            band=self.band_for(self.year_now()) if self.feature("world_calendar") else "confederation",
             line=f"Season {season} · {drawn['peerage']} is created, seated at "
                  f"{self._riding_name(fed_id)}"
-                 f"{self._jurisdiction_suffix(fed_id, FOUNDING_YEAR)}.",
+                 f"{self._jurisdiction_suffix(fed_id, self._founding_year())}.",
             delta=founding_delta,
         )
         self.conn.execute(
@@ -1133,6 +1212,11 @@ class World:
         if objective == "Form a compact":
             return 1 if row["tag"] in ("Progressive", "Mixed") else 0
         return 0
+
+    def _borne_surnames(self):
+        """Rules 1.0 `distinct_surnames`: the surnames active houses bear (a
+        house's name less any numeral)."""
+        return {_SURNAME_NUMERAL.sub("", row["house"]) for row in self.active_houses()}
 
     def _unique_house_name(self, surname):
         """House names are surnames; a second house of the same surname takes a
@@ -1197,7 +1281,7 @@ class World:
         """Clean, disorderly or extinct (§9). Returns True if removed."""
         row = self.house_row(house)
         heirs = self.heirs(house)
-        band = self.band_for(self.personal_year(house))
+        band = self.band_for(self.year_of(house))
 
         if heirs:
             heir = heirs[0]
@@ -1235,6 +1319,7 @@ class World:
                 line=f"Season {season} · {heir['name']} succeeds to {row['peerage']}.",
                 delta=self._with_traits({"nature": "clean", "cause": cause}, heir_traits),
             )
+            self._count_succession(house)
             self._reconsider_scheme(house, season)
             return self._check_extinction(house, season, rng)
 
@@ -1272,6 +1357,7 @@ class World:
             line=f"Season {season} · {row['peerage']} passes in disorder to {given} {surname}.",
             delta=self._with_traits({"nature": "disorderly", "cause": cause}, successor_traits),
         )
+        self._count_succession(house)
 
         # §9: a disorderly succession sours a neighbour.
         neighbours = self.neighbouring_houses(house)
@@ -1471,7 +1557,7 @@ class World:
         otherwise they escheat to unclaimed. Either way the house stays in the
         record with its full history."""
         row = self.house_row(house)
-        band = self.band_for(self.personal_year(house))
+        band = self.band_for(self.year_of(house))
 
         if rng is not None:
             partners = self.houses_related_by(house, {COMPACT, KIN})
@@ -1515,7 +1601,7 @@ class World:
             return None
         holding = rows[0]
         row = self.house_row(house)
-        band = self.band_for(self.personal_year(house))
+        band = self.band_for(self.year_of(house))
         name = self._riding_name(holding["fed_id"])
         houses = [house] if to_house is None else [house, to_house]
         event_id = self.record(
@@ -1558,7 +1644,9 @@ class World:
     def _era_event(self, house, season, rng):
         """§8. An event fires when the house's personal year equals its year, at
         most once per house. Returns the event row that fired, or None."""
-        year = self.personal_year(house)
+        if self.feature("world_calendar"):
+            return self._world_events(house, season, rng)
+        year = self.year_of(house)
         due = [e for e in self.rules.events if e.personal_year == year]
         if not due:
             return None
@@ -1574,6 +1662,10 @@ class World:
             # Log the name, not the row: a season log has to stay JSON.
             name = rng.choice([e.name for e in due], purpose=f"event.pick.{house}")
             event = next(e for e in due if e.name == name)
+        return self._meet_event(house, season, rng, event, year)
+
+    def _meet_event(self, house, season, rng, event, year):
+        """A house meets one event: its response, the climate, the direct effect."""
         row = self.house_row(house)
         band = self.band_for(year)
 
@@ -1615,6 +1707,272 @@ class World:
         )
         return {"event": event, "response": response, "extra_mortality": extra_mortality}
 
+    # -- rules 1.0 `world_calendar` and `crises`: the world's own turn --
+
+    def _world_events(self, house, season, rng):
+        """§5: every event of the world year, in deck order, that the house has
+        not met; a crisis's side was taken in the world phase, so only its
+        direct effect lands here, as does each further year of a multi-year
+        event's."""
+        year = self.year_now()
+        already = self._fired_events(house)
+        extra = False
+        for event in self.rules.events:
+            if event.personal_year != year or event.name in already:
+                continue
+            if self._is_crisis(event):
+                continue
+            extra = self._meet_event(house, season, rng, event, year)["extra_mortality"] or extra
+        for event in self._in_force(year):
+            # The §7c sale is the shock of an event striking: its first year only.
+            extra = self._apply_direct_effects(
+                house, event, season, sale=event.personal_year == year) or extra
+        return {"extra_mortality": extra}
+
+    def _is_crisis(self, event):
+        return self.feature("crises") and event.magnitude == "Major"
+
+    def _in_force(self, year):
+        """Events whose direct effect lands on every house in its own turn this
+        year without a response: a crisis in its first year, and every later
+        year of an event with a through_year."""
+        return [
+            e for e in self.rules.events
+            if (e.personal_year == year and self._is_crisis(e))
+            or (e.through_year is not None and e.personal_year < year <= e.through_year)
+        ]
+
+    def _world_phase(self, season, rng):
+        """Before any house acts: land the world year opens, the years of
+        events still running, and (under `crises`) the year's crises."""
+        year = self.year_now()
+        self._accessions(season, year)
+        band = self.band_for(year)
+        for event in self.rules.events:
+            if event.through_year is None or not event.personal_year < year <= event.through_year:
+                continue
+            k = year - event.personal_year + 1
+            n = event.through_year - event.personal_year + 1
+            self.record(
+                "other",
+                f"{event.name}, year {k} of {n}",
+                [],
+                season,
+                band=band,
+                line=f"Season {season} · {event.name} continues: year {k} of {n}.",
+                delta={"world": "continues", "event": event.name, "year_of": k, "years": n,
+                       "year": year},
+            )
+        for event in self.rules.events:
+            if event.personal_year == year and self._is_crisis(event):
+                self._crisis(event, season, rng, year)
+
+    def _accessions(self, season, year):
+        """§5: each accession (land coming under Canada) or extension (land
+        becoming a province) this year is a world event naming its ridings."""
+        if year <= self.rules.game["start_year"]:
+            return
+        groups = {}
+        for row in self.conn.execute("SELECT fed_id FROM ridings ORDER BY fed_id"):
+            fed_id = row["fed_id"]
+            if self.in_play(fed_id, year) and not self.in_play(fed_id, year - 1):
+                kind = "accession"
+            elif self.crown_may_found(fed_id, year) and not self.crown_may_found(fed_id, year - 1):
+                kind = "extension"
+            else:
+                continue
+            span = self._span(fed_id, year)
+            groups.setdefault((kind, span["name"], span["status"]), []).append(fed_id)
+        band = self.band_for(year)
+        for (kind, name, status), feds in sorted(groups.items()):
+            ridings = [self._riding_name(f) for f in feds]
+            if kind == "accession":
+                line = (f"Season {season} · {name} comes under Canada as a {status}:"
+                        f" {len(feds)} riding{'' if len(feds) == 1 else 's'} open — {', '.join(ridings)}.")
+            else:
+                line = (f"Season {season} · {name} becomes a province: the Crown may found in"
+                        f" {len(feds)} riding{'' if len(feds) == 1 else 's'} — {', '.join(ridings)}.")
+            self.record(
+                "other",
+                f"{name}: {kind}",
+                [],
+                season,
+                band=band,
+                line=line,
+                delta={"world": kind, "jurisdiction": name, "status": status, "year": year,
+                       "ridings": ridings, "fed_ids": feds},
+            )
+
+    def _crisis(self, event, season, rng, year):
+        """§5.1: every active house takes a side by the response roll; Lead
+        and Resist are the camps, and the camp with more influence carries it."""
+        spec = self.rules.game["crises"]
+        band = self.band_for(year)
+        camps = {"Lead": [], "Resist": [], "Exploit": [], "Neutral": []}
+        for row in self.active_houses():
+            house = row["house"]
+            modifier = 0
+            if row["tag"] == event.tag:
+                modifier = self.rules.responses["tag_modifier"]["matching_tag"]
+            elif self._opposing(row["tag"], event.tag):
+                modifier = self.rules.responses["tag_modifier"]["opposing_tag"]
+            roll = rng.die(6, purpose=f"crisis.response.{house}") + modifier
+            response = self._response_for(roll)
+            if response == "Neutral" and self._trait_effect(house, "steadfast"):
+                response = "Resist"
+            camps[response].append(house)
+            if response == "Exploit":
+                self.set_stats(house, capital=10, influence=-5)
+        weight = {
+            camp: sum(self.house_row(h)["influence"] for h in camps[camp])
+            for camp in ("Lead", "Resist")
+        }
+        carried = None
+        if weight["Lead"] > weight["Resist"]:
+            carried = "Lead"
+        elif weight["Resist"] > weight["Lead"]:
+            carried = "Resist"
+        if carried is not None:
+            other = "Resist" if carried == "Lead" else "Lead"
+            for house in camps[carried]:
+                self.set_stats(house, influence=spec["win_influence"])
+            for house in camps[other]:
+                self.set_stats(house, influence=-spec["lose_influence"])
+            self._shift_climate(band, event, 1 if carried == "Lead" else -1)
+        side = {h: camp for camp in ("Lead", "Resist") for h in camps[camp]}
+        for house_a, house_b in self.bordering_pairs():
+            if house_a in side and house_b in side:
+                change = spec["friction_same"] if side[house_a] == side[house_b] else spec["friction_opposed"]
+                self._set_friction(house_a, house_b, self.friction_between(house_a, house_b) + change)
+        lead, resist = len(camps["Lead"]), len(camps["Resist"])
+        outcome = {"Lead": "those who lead carry it", "Resist": "those who resist carry it"}.get(
+            carried, "neither side carries it")
+        self.record(
+            "societal",
+            event.name,
+            camps["Lead"] + camps["Resist"],
+            season,
+            band=band,
+            line=f"Season {season} · {event.name}: {lead} house{'' if lead == 1 else 's'} lead"
+                 f" and {resist} resist; {outcome}.",
+            delta={
+                "crisis": {
+                    "lead": camps["Lead"], "resist": camps["Resist"],
+                    "exploit": camps["Exploit"], "neutral": camps["Neutral"],
+                    "carried": carried.lower() if carried else None,
+                    "influence": {"lead": weight["Lead"], "resist": weight["Resist"]},
+                },
+                "magnitude": event.magnitude, "tag": event.tag, "year": year,
+                "event": event.name,
+                # A crisis that runs for years says how many (its first is this).
+                **({"years": event.through_year - event.personal_year + 1}
+                   if event.through_year is not None else {}),
+            },
+        )
+
+    def _stood_together(self, house, other, season):
+        """Whether two houses were in the same camp of a crisis within
+        game.json crises.goodwill_turns."""
+        window = self.rules.game["crises"]["goodwill_turns"]
+        for row in self.conn.execute(
+            "SELECT mechanical_delta FROM events WHERE kind = 'societal'"
+            " AND mechanical_delta LIKE '%\"crisis\"%' ORDER BY id"
+        ):
+            delta = json.loads(row["mechanical_delta"])
+            if "crisis" not in delta or season - delta["season"] >= window:
+                continue
+            crisis = delta["crisis"]
+            for camp in ("lead", "resist"):
+                if house in crisis[camp] and other in crisis[camp]:
+                    return True
+        return False
+
+    # Rules 1.0 `world_calendar`: the reckoning's cast, the top eight by
+    # prestige at the end of any turn.
+    RECKONING_CAST = 8
+
+    def _track_standing(self, season, prestige):
+        """After each turn's prestige: each house's peak and whether it has
+        been of the top eight."""
+        values = prestige if prestige is not None else {
+            r["house"]: self.standing(r["house"]) for r in self.active_houses()
+        }
+        ranked = sorted(values.items(), key=lambda kv: (-kv[1], kv[0]))
+        top = {house for house, _ in ranked[:self.RECKONING_CAST]}
+        for house, value in ranked:
+            row = self.conn.execute(
+                "SELECT peak_prestige FROM house_stats WHERE house = ?", (house,)
+            ).fetchone()
+            if row["peak_prestige"] is None or value > row["peak_prestige"]:
+                self.conn.execute(
+                    "UPDATE house_stats SET peak_prestige = ?, peak_season = ? WHERE house = ?",
+                    (value, season, house),
+                )
+            if house in top:
+                self.conn.execute("UPDATE house_stats SET top_eight = 1 WHERE house = ?", (house,))
+
+    def _count_succession(self, house):
+        if self.feature("world_calendar"):
+            self.conn.execute(
+                "UPDATE house_stats SET successions = successions + 1 WHERE house = ?", (house,))
+
+    def _contest_record(self, house):
+        """(won, lost): the claims a house decided, as attacker or defender."""
+        names = self._contest_schemes()
+        won = lost = 0
+        for row in self.conn.execute(
+            "SELECT house, target_house, scheme, outcome FROM schemes WHERE status = 'resolved'"
+            " AND outcome IN ('won', 'held') AND (house = ? OR target_house = ?) ORDER BY id",
+            (house, house),
+        ):
+            if row["scheme"] not in names:
+                continue
+            attacker = row["house"] == house
+            if (row["outcome"] == "won") == attacker:
+                won += 1
+            else:
+                lost += 1
+        return won, lost
+
+    def _reckoning(self, season):
+        """§5: the final standings, and for every house ever of the top eight
+        its recorded facts."""
+        start = self.rules.game["start_year"]
+        ranked = sorted((-self.standing(r["house"]), r["house"]) for r in self.active_houses())
+        standings = []
+        place_of = {}
+        for place, (value, house) in enumerate(ranked, 1):
+            place_of[house] = place
+            standings.append({
+                "place": place, "house": house, "prestige": -value,
+                "ridings": self.holding_count(house), "rank": self.house_row(house)["rank"],
+            })
+        cast = []
+        for row in self.conn.execute(
+            "SELECT h.house, h.rank, h.status, s.peak_prestige, s.peak_season, s.successions"
+            " FROM houses h JOIN house_stats s ON s.house = h.house"
+            " WHERE s.top_eight = 1 ORDER BY h.house"
+        ):
+            won, lost = self._contest_record(row["house"])
+            cast.append({
+                "house": row["house"],
+                "status": row["status"],
+                "place": place_of.get(row["house"]),
+                "rank": row["rank"],
+                "ridings": self.holding_count(row["house"]),
+                "peak_prestige": row["peak_prestige"],
+                "peak_year": start + row["peak_season"] - 1,
+                "contests_won": won,
+                "contests_lost": lost,
+                "successions": row["successions"],
+            })
+        return {
+            "last_year": start + season - 1,
+            "reckoned": start + season,
+            "standings": standings,
+            "houses": cast,
+        }
+
     @staticmethod
     def _opposing(house_tag, event_tag):
         pairs = {("Progressive", "Conservative"), ("Conservative", "Progressive")}
@@ -1639,7 +1997,7 @@ class World:
             return
         try:
             mechanics.climate_shift(
-                self.conn, band, event.name, event.magnitude,
+                self.conn, self._ledger(band), event.name, event.magnitude,
                 event.tag if event.tag in mechanics.CLIMATE_TAGS else "Mixed",
                 sign * direction,
             )
@@ -1671,7 +2029,7 @@ class World:
             return holder is not None and holder["gender"] == "f"
         return False
 
-    def _apply_direct_effects(self, house, event, season):
+    def _apply_direct_effects(self, house, event, season, sale=True):
         """A Major event's direct effects, by scope. Returns True if the house
         owes an extra mortality roll this season."""
         row = self.house_row(house)
@@ -1690,7 +2048,8 @@ class World:
         # §7c contraction sale: a Major Conservative economic event forces a poor
         # house to sell. The deck marks those with a negative capital effect.
         if (
-            event.magnitude == "Major"
+            sale
+            and event.magnitude == "Major"
             and event.tag == "Conservative"
             and any(e.stat == "capital" and e.delta < 0 for e in event.direct_effect)
             and self.house_row(house)["capital"] < 20
@@ -1997,6 +2356,8 @@ class World:
         row = self.house_row(house)
         holdings = self.holdings(house)
         capital = spec["capital"]["base"] + len(holdings) // spec["capital"]["holdings_per_point"]
+        if spec["capital"].get("holdings_per_cost"):
+            capital -= len(holdings) // spec["capital"]["holdings_per_cost"]
         if holdings:
             capital += self.wealth_offset(holdings[0]["fed_id"])
         influence = spec["influence"]["base"]
@@ -2031,7 +2392,7 @@ class World:
             return None
         roll = rng.two_d6(purpose=f"resolve.Correspond.{house}")
         success = roll >= self.actions["Correspond"].target
-        band = self.band_for(self.personal_year(house))
+        band = self.band_for(self.year_of(house))
         self._letter_mode = True
         try:
             return self._do_correspond(house, season, rng, success, band, roll)
@@ -2055,7 +2416,7 @@ class World:
         heir named, and an heir coming of age, each recorded once."""
         spec = self.rules.succession["watch"]
         holder = self.holder(house)
-        band = self.band_for(self.personal_year(house))
+        band = self.band_for(self.year_of(house))
         if holder is not None and holder["age"] == spec["holder_age"] and not self.heirs(house):
             row = self.house_row(house)
             self.record(
@@ -2247,10 +2608,11 @@ class World:
         cooldown = self.rules.scheme_rules["contest"]["cooldown"]
         return row["n"] is not None and season - row["n"] < cooldown
 
-    def _lost_contest(self, house, season, other=None):
+    def _lost_contest(self, house, season, other=None, window=None):
         """Whether the house lost a contest (to `other`, if named) within
-        utility.recent_loss_turns."""
-        window = self.rules.scheme_rules["utility"]["recent_loss_turns"]
+        `window` turns, utility.recent_loss_turns unless given."""
+        if window is None:
+            window = self.rules.scheme_rules["utility"]["recent_loss_turns"]
         for row in self.conn.execute(
             "SELECT house, target_house, outcome FROM schemes WHERE status = 'resolved'"
             " AND outcome IN ('won', 'held') AND ended_season >= ?"
@@ -2392,6 +2754,12 @@ class World:
                     value += terms["leader_target"]
         elif kind == "Petition elevation":
             value += max(0, (row["influence"] - terms["elevation_influence_from"]) // 5)
+            # A house at or beyond what its rank holds without strain wants the next rank.
+            strain = self.rules.upkeep.get("strain")
+            if strain is not None:
+                free = strain["free_holdings"] + strain["per_rank_index"] * self.rank_index.get(row["rank"], 0)
+                if self.holding_count(house) >= free:
+                    value += terms.get("elevation_at_reach", 0)
         elif kind == "Name heir":
             holder = self.holder(house)
             if holder is not None:
@@ -2399,6 +2767,9 @@ class World:
         elif kind == "Propose compact":
             if self._claims_on(house):
                 value += terms["under_claim"]
+            # Rules 1.0 `crises`: goodwill toward a house that stood in the same camp.
+            if self.feature("crises") and self._stood_together(house, target_house, season):
+                value += self.rules.game["crises"]["goodwill"]
             if self.feature("prestige_politics"):
                 gap = self.standing(target_house) - self.standing(house)
                 value += min(terms["protector_gap_max"], max(0, gap) // terms["protector_per_gap"])
@@ -2431,6 +2802,10 @@ class World:
         if kind == "contest":
             if not self.feature("contested_claims"):
                 return []
+            # A house that lost a contest begins no claim for contest.loser_bar turns.
+            bar = self.rules.scheme_rules["contest"].get("loser_bar", 0)
+            if bar and self._lost_contest(house, season, window=bar):
+                return []
             out = []
             for other, fed_id in self._claim_targets(house):
                 if claim is not None and other != claim["house"]:
@@ -2438,6 +2813,9 @@ class World:
                 if self.relation_marker(house, other) in (KIN, COMPACT):
                     continue
                 if self._contest_cooldown(house, other, season):
+                    continue
+                # Rules 1.0 `world_calendar`: no claim on a riding out of play this year.
+                if self.feature("world_calendar") and not self.in_play(fed_id, self.year_now()):
                     continue
                 if self._affords(house, spec, other):
                     out.append((other, fed_id))
@@ -2460,8 +2838,9 @@ class World:
                 return []
             return [(other, None) for other in self._match_candidates(house)]
         if kind == "Petition elevation":
+            least = self.rules.scheme_rules["utility"].get("elevation_influence_min", 60)
             if (
-                row["influence"] >= 60 and self.holding_count(house) >= 3
+                row["influence"] >= least and self.holding_count(house) >= 3
                 and self.rank_index.get(row["rank"], 0) < self.rank_index["Marquis"]
                 and self._affords(house, spec, None)
             ):
@@ -2568,7 +2947,7 @@ class World:
             f"{peerage}: {s['scheme']} ({phase})",
             [house] + ([target] if target else []),
             season,
-            band=self.band_for(self.personal_year(house)),
+            band=self.band_for(self.year_of(house)),
             line=text,
             delta={"scheme": payload},
         )
@@ -2666,10 +3045,12 @@ class World:
                 return "bound by alliance"
             if self._contest_cooldown(house, target, season):
                 return "the field is decided"
+            if not self.riding_open(fed_id, self.year_of(house)):
+                return "target closed"
         elif kind == "frontier":
             if mechanics._holder_of(self.conn, fed_id) is not None:
                 return "target gone"
-            if not self.riding_open(fed_id, self.personal_year(house)):
+            if not self.riding_open(fed_id, self.year_of(house)):
                 return "target closed"
         elif kind == "Purchase riding":
             if target not in self._purchase_targets(house):
@@ -2786,7 +3167,7 @@ class World:
         """resolve_action with a bonus from what the scheme committed."""
         action = self.actions[name]
         row = self.house_row(house)
-        band = self.band_for(self.personal_year(house))
+        band = self.band_for(self.year_of(house))
         if action.target == "auto":
             success, roll = True, None
         else:
@@ -2826,10 +3207,10 @@ class World:
         """Take an unclaimed riding: the record Expand writes, at Expand's cost."""
         row = self.house_row(house)
         name = self._riding_name(fed_id)
-        year = self.personal_year(house)
+        year = self.year_of(house)
         delta = {"riding": name, "roll": roll, "scheme": scheme_id}
         jurisdiction = (
-            self.jurisdiction_name(fed_id, year) if self.feature("atlas_jurisdiction") else None
+            self.jurisdiction_name(fed_id, year) if self._atlas() else None
         )
         if jurisdiction is not None:
             delta["jurisdiction"] = jurisdiction
@@ -2866,7 +3247,7 @@ class World:
         """Open the frontier: Expand on the named riding; a roll at or above
         frontier.double_on takes a second open riding beside it."""
         house, fed_id = s["house"], s["target_riding"]
-        band = self.band_for(self.personal_year(house))
+        band = self.band_for(self.year_of(house))
         roll = rng.two_d6(purpose=f"resolve.Expand.{house}")
         name = self._riding_name(fed_id)
         if roll + bonus < self.actions["Expand"].target:
@@ -2874,7 +3255,7 @@ class World:
         self._settle(house, fed_id, season, band, roll, s["id"])
         outcome = {"action": "Expand", "success": True, "riding": name}
         if roll >= self.rules.scheme_rules["frontier"]["double_on"]:
-            year = self.personal_year(house)
+            year = self.year_of(house)
             beside = [
                 n for n in self._land_neighbours(fed_id)
                 if mechanics._holder_of(self.conn, n) is None and self.riding_open(n, year)
@@ -2916,7 +3297,7 @@ class World:
                 f"{ally_peerage} {'joins' if joins else 'declines'} {party_peerage}",
                 [ally, party, opponent],
                 season,
-                band=self.band_for(self.personal_year(ally)),
+                band=self.band_for(self.year_of(ally)),
                 line=line,
                 delta={"ally": {"scheme": scheme_id, "side": side, "party": party, "joins": joins}},
             )
@@ -2989,7 +3370,7 @@ class World:
         spec = self.rules.scheme_rules["contest"]
         attacker, defender, fed_id = s["house"], s["target_house"], s["target_riding"]
         a_row, d_row = self.house_row(attacker), self.house_row(defender)
-        band = self.band_for(self.personal_year(attacker))
+        band = self.band_for(self.year_of(attacker))
         name = self._riding_name(fed_id)
         allies_a = self._call_allies(attacker, defender, s["id"], "attacker", season, rng)
         allies_d = self._call_allies(defender, attacker, s["id"], "defender", season, rng)
@@ -3071,7 +3452,7 @@ class World:
         house, other = s["house"], s["target_house"]
         claim = self._scheme(s["answers"])
         row, other_row = self.house_row(house), self.house_row(other)
-        band = self.band_for(self.personal_year(house))
+        band = self.band_for(self.year_of(house))
         fed_id = claim["target_riding"]
         if (
             self.standing(house) < self.standing(other)
@@ -3271,7 +3652,7 @@ class World:
             if rng.die(6, purpose=f"friction.flashpoint.{house_a}|{house_b}") >= spec["succeeds_on"]:
                 if marker not in (KIN, COMPACT):
                     grievance = self._grievance_template(row_a, row_b, rng)
-                    band = self.band_for(self.personal_year(house_a))
+                    band = self.band_for(self.year_of(house_a))
                     event_id = self.record(
                         "relational",
                         f"{row_a['peerage']} and {row_b['peerage']} fall out",
@@ -3495,7 +3876,7 @@ class World:
         """Roll 2d6 + modifiers against the action's target and apply the outcome."""
         action = self.actions[name]
         row = self.house_row(house)
-        band = self.band_for(self.personal_year(house))
+        band = self.band_for(self.year_of(house))
 
         if action.target == "auto":
             success = True
@@ -3521,7 +3902,7 @@ class World:
             return {"action": "Expand", "success": False, "note": "no target"}
         fed_id = rng.choice(targets, purpose=f"expand.target.{house}")
         name = self._riding_name(fed_id)
-        year = self.personal_year(house)
+        year = self.year_of(house)
 
         # Contested expansion (rules 0.6): if another house already reached for
         # this riding this season, the two roll off. The loser walks away with a
@@ -3552,7 +3933,7 @@ class World:
 
         expansion_delta = {"riding": name, "roll": roll}
         jurisdiction = (
-            self.jurisdiction_name(fed_id, year) if self.feature("atlas_jurisdiction") else None
+            self.jurisdiction_name(fed_id, year) if self._atlas() else None
         )
         if jurisdiction is not None:
             expansion_delta["jurisdiction"] = jurisdiction
@@ -3889,7 +4270,7 @@ class World:
 
         other_row = self.house_row(other)
         try:
-            climate = mechanics.current_climate(self.conn, band)
+            climate = mechanics.current_climate(self.conn, self._ledger(band))
         except mechanics.RuleError:
             climate = 0
         modifier = {"Progressive": 3, "Conservative": -3, "Outside": 6}.get(row["tag"], 0)
@@ -4297,13 +4678,18 @@ class World:
         self.log = []
         self.chronicle = []
         rng = self.rng_for(1)
+        self._playing_season = 1
+        try:
+            house = self.found_house(1, seat=seat, rng=rng)
+            if house is None:
+                raise SimError("season 1 founded no house: the map has no unclaimed riding")
 
-        house = self.found_house(1, seat=seat, rng=rng)
-        if house is None:
-            raise SimError("season 1 founded no house: the map has no unclaimed riding")
-
-        prestige = self._compute_prestige(1) if self.feature("prestige") else None
-        record = self._write_season(1, [], house, prestige=prestige)
+            prestige = self._compute_prestige(1) if self.feature("prestige") else None
+            if self.feature("world_calendar"):
+                self._track_standing(1, prestige)
+            record = self._write_season(1, [], house, prestige=prestige)
+        finally:
+            self._playing_season = None
         record["kind"] = "initial"
         record["seat"] = seat
         self._rewrite_season_file(1, record)
@@ -4350,6 +4736,20 @@ class World:
     def run_season(self, season_no=None):
         """Play one season, in §6's order. Returns the season's log record."""
         season = season_no if season_no is not None else self.season_no + 1
+        if self.feature("world_calendar") and season > self.rules.game["turns"]:
+            last = self.rules.game["turns"]
+            raise SimError(
+                f"the game is over: it ended after turn {last}"
+                f" ({self.rules.game['start_year'] + last - 1}) with its reckoning,"
+                f" and there is no turn {season}"
+            )
+        self._playing_season = season
+        try:
+            return self._run_season(season)
+        finally:
+            self._playing_season = None
+
+    def _run_season(self, season):
         self.log = []
         self.chronicle = []
         self._noticed = set()
@@ -4362,6 +4762,11 @@ class World:
         # Borders warm or cool before anyone acts, so a grievance struck this
         # season is available to the houses that act after it (rules 0.6).
         self._turn_cache = {}
+        # Rules 1.0 `world_calendar`: the world's turn — land opened, events
+        # still running, crises — before borders move or any house acts.
+        if self.feature("world_calendar") and "events" in self.phases:
+            self._world_phase(season, rng)
+            self._turn_cache = {}
         if "friction" in self.phases:
             self._run_friction(season, rng)
 
@@ -4431,10 +4836,31 @@ class World:
         # Rules 1.0 `prestige`: every active house's, once the season is done.
         prestige = self._compute_prestige(season) if self.feature("prestige") else None
 
+        # Rules 1.0 `world_calendar`: peaks and the top eight, and after the
+        # last turn the reckoning.
+        reckoning = None
+        if self.feature("world_calendar"):
+            self._track_standing(season, prestige)
+            if season == self.rules.game["turns"]:
+                reckoning = self._reckoning(season)
+                leader = reckoning["standings"][0]["house"] if reckoning["standings"] else None
+                self.record(
+                    "other",
+                    "The reckoning",
+                    [],
+                    season,
+                    band=self.band_for(self.year_now()),
+                    line=f"Season {season} · The reckoning of {reckoning['reckoned']}: "
+                         + (f"{self.house_row(leader)['peerage']} stands first." if leader
+                            else "no house stands."),
+                    delta={"world": "reckoning", "reckoning": reckoning},
+                )
+
         # 10. The season record.
         # Rules 1.0 `schemes`: every public scheme, as the season left them.
         plans = self._plans() if self.feature("schemes") else None
-        return self._write_season(season, outcomes, founded, prestige=prestige, plans=plans)
+        return self._write_season(season, outcomes, founded, prestige=prestige, plans=plans,
+                                  reckoning=reckoning)
 
     # A house that has done nothing worth recording for this many consecutive
     # seasons is noticed once. Ten is long enough that it is a fact about the
@@ -4553,7 +4979,7 @@ class World:
                     out.append({"operation": operation, "title": row["title"], **entry})
         return out
 
-    def _write_season(self, season, outcomes, founded, prestige=None, plans=None):
+    def _write_season(self, season, outcomes, founded, prestige=None, plans=None, reckoning=None):
         self._snapshot(season)
         houses_after = self.conn.execute(
             "SELECT COUNT(*) AS n FROM houses WHERE status = 'active'"
@@ -4582,6 +5008,10 @@ class World:
             record["prestige"] = prestige
         if plans is not None:
             record["plans"] = plans
+        if self.feature("world_calendar"):
+            record["year"] = self.rules.game["start_year"] + season - 1
+        if reckoning is not None:
+            record["reckoning"] = reckoning
 
         path = self._write_season_file(season, record)
 

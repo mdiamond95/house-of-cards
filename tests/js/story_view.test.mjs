@@ -157,3 +157,25 @@ test('Plans afoot: each scheme with its house, target and turns remaining', asyn
   assert.ok(html.includes('2 seasons to run') && html.includes('resolves next season'));
   assert.ok(plansHtml([]).includes('No scheme'));
 });
+
+test('Phase D1: a calendar dispatch is headed by its year; a chapter and the reckoning have their own sections', async () => {
+  const { chapterHtml } = await import('../../web/story/view.js');
+  const d = {
+    turn: 8, year: 1874, quiet: false, pause: false,
+    headline: { text: 'The Long Depression divides the peerage.', weight: 90, beat: { kind: 'crisis' } },
+    kicker: null, related: [], previously: { turn: 3, year: 1869, text: 'Earlier.' }, secondary: [], ledger: null, moments: [],
+  };
+  const html = dispatchHtml(d, { unit: 'year' });
+  assert.ok(html.startsWith('<h2 class="dispatch-turn">1874</h2>'));
+  assert.ok(html.includes('Previously, 1869: Earlier.'));
+  const ch = chapterHtml({
+    numeral: 'I', name: 'Confederation', start_year: 1867, end_year: 1885,
+    standings: [{ house: 'A', place: 1, score: 40, move: 'up', was: 3 }],
+    closed: [{ id: 's1', name: 'The Alpha–Beta rivalry', state: 'closed', outcome: 'reconciled', opened: 2, closed: 9, beats: 4 }],
+    open: [],
+  }, { start: 1867 });
+  assert.ok(ch.includes('Chapter I · Confederation, 1867–1885'));
+  assert.ok(ch.includes('The Alpha–Beta rivalry'));
+  assert.ok(ch.includes('1868–1875'), 'storylines are dated by year');
+  assert.ok(ch.includes('No storyline of the cast is open.'));
+});

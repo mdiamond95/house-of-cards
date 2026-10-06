@@ -571,6 +571,19 @@ influence, so influence has a sink.
 On ten seeds, median cohesion at turn 100 is 66 (48–78) and median influence 48 (39–57),
 against 96 and 75 in Phase C1.
 
+**Phase D1 note, 6 October 2026.** Cohesion's base is 2 a turn. A contest's loser pays 30.
+A house at or past its reach values Win elevation by `elevation_at_reach` (45) more.
+
+### 4.10 Distinct surnames (`distinct_surnames`)
+
+A Crown founding never draws a surname that an active house bears while its community's
+bank has an unused one. A house's surname is its name less any numeral ("Benjamin 2" bears
+Benjamin). A director's chosen surname is kept, and a cadet keeps its parent's. The bank's
+order is kept, so with no borne surname in it the draw is the draw it was.
+
+**Phase D1 note, 6 October 2026.** Built in both engines. Over five seeds and sixty turns,
+the Crown houses that took a numeral fell from 4 to none.
+
 ## 5. The shared calendar (Phase D)
 
 Flag `world_calendar`. It replaces hard rule 5 and ENGINE_DESIGN §16 decision 4 for
@@ -595,64 +608,169 @@ scenarios played with the flag on, and for no other.
 - The game is a new scenario under rules 1.0. Working name `centennial`; the director may
   rename it. The Dominion is frozen when that scenario begins.
 
+**Phase D1 notes, 6 October 2026.** Built behind `world_calendar`, in both engines.
+
+The calendar:
+
+- `game.json` holds the calendar: start 1867, 100 turns, and the five chapters, whose ids
+  (`confederation`, `rails`, `war`, `depression`, `centennial`) are the era bands. Season
+  records carry `year`.
+- One climate ledger, `world`.
+- Turn 1 is the first founding alone, so 1867's events, Confederation among them, are that
+  founding.
+
+Events:
+
+- From 1868 every event of the year fires for every house, in deck order.
+- An event's `through_year` repeats its direct effect each year, recorded as one world
+  event a year ("The Great War continues: year 3 of 5"). The four that do are the Long
+  Depression (1874–1879), the Great War (1914–1918), the Long Contraction (1930–1939) and
+  the Second World War (1939–1945).
+- Their effects are sized per year (rules/CHANGELOG.md). A §7c contraction sale lands only
+  in an event's first year.
+
+The atlas:
+
+- The atlas is read at the world year from `riding_jurisdictions.csv`. A riding is in play
+  while its sovereign is Canada; the Crown founds only on a riding in a province; land
+  outside Canada is not taken or claimed that year.
+- On meridian-v1.0.3, the ridings in play and in a province by year:
+
+  | Year | In play | In a province |
+  |---|---|---|
+  | 1867 | 216 | 216 |
+  | 1870 | 290 | 226 |
+  | 1871 | 333 | 269 |
+  | 1873 | 337 | 273 |
+  | 1905 | 337 | 330 |
+  | 1949 | 343 | 340 |
+
+- Rupert's Land and the North-Western Territory come under Canada in 1870, Manitoba as a
+  province with 10 ridings. British Columbia's 43 follow in 1871 and Prince Edward
+  Island's 4 in 1873.
+- Alberta's 37 and Saskatchewan's 14 ridings become foundable in 1905. Ontario extends in
+  1874 and 1889, Manitoba in 1881, and Manitoba, Ontario and Quebec in 1912, each by a few
+  ridings.
+- Seven Newfoundland ridings join in 1949. Labrador is one of them: it was Canada's from
+  1870 to 1926, then Newfoundland's, a British colony, from 1927 to 1948. That makes six
+  ridings new to play and 343 in all.
+- Each accession or extension is a world event naming its ridings.
+
+The ending:
+
+- After turn 100 the engine writes the reckoning: final standings, and for every house ever
+  of the top eight its ridings, rank, place, peak prestige and year, contests won and lost,
+  and successions. `house_stats` keeps the running facts in both engines and the world
+  snapshot.
+- `hoc sim run` refuses turn 101 with a message that the game is over.
+
+Personal clocks still run, reset and sync, as reign years; nothing reads them.
+
+The story layer (Part 2):
+
+- Headings, kickers, plans, storylines and the full record count years.
+- Each chapter ends with an interstitial (its title and years, the standings with their
+  movement over the chapter, the cast's storylines it closed and left open), and Auto
+  always pauses there.
+- The last turn carries the reckoning, with an epilogue per house built by template from
+  its facts (`web/story/reckoning.js`). The preview is the draft's whole game, with a
+  Reckoning page.
+
+### 5.1 Crises (`crises`)
+
+A Major event is a crisis. In the world's turn, before any house acts, every house takes a
+side by the existing response roll, with its tag modifier and the steadfast trait:
+
+- Lead and Resist are the camps. Exploit takes its capital and Neutral stands aside.
+- The camp with more total influence carries the crisis. The climate moves its way, its
+  members gain 5 influence, and the other camp's members lose 3.
+- Land neighbours in the same camp cool their border by 10, and a compact with a house of
+  the same camp is worth 20 more for ten turns. Neighbours in opposed camps gain 10
+  friction.
+- One societal event records both camps, who carried it and, for a multi-year crisis, how
+  many years it runs.
+- The crisis's direct effect lands on each house in its own turn.
+- It reads the world year, so without `world_calendar` it does nothing.
+
+**Phase D1 note, 6 October 2026.** Built in both engines, with a parity test of one
+crisis's camps, influence and borders. On ten seeds:
+
+- Both camps are non-empty in 87% (83–94) of crises.
+- Those who lead carry 12%: the response roll gives Lead only on a 6.
+- Most crises with an empty camp come before a dozen houses are seated: the Red River
+  Resistance (1869) on nine seeds of ten, the Manitoba Act (1870) on seven, the Indian Act
+  (1876) on four. Four later crises had one, each on a single seed.
+
 ## 6. Story targets (replace ENGINE_DESIGN §17 for rules 1.0)
 
 Targets across ten seeds (1867–1876), 100 turns, on the Meridian world, measured by
-`scripts/story_trial.py` and recorded in rules/CHANGELOG.md. Phase C2 merged its own
-targets into the list. The figure after each is the draft 1.0 with every flag on, as the
-Phase C2 trial measured it, mean (min–max). **Met** means met on the mean.
+`scripts/story_trial.py` and recorded in rules/CHANGELOG.md.
+
+- Phase C2 merged its own targets into the list.
+- Phase D1 added the pacing targets and the calendar's, and the director dropped the land
+  target.
+- The figure after each is the draft 1.0 with every flag on, the shared calendar
+  included, as the Phase D1 trial measured it: mean (min–max). **Met** means met on the
+  mean.
 
 Action and land:
 
-- At least 30% of actions are aimed at another named house. **Met**: 45% (41–49).
+- At least 30% of actions are aimed at another named house. **Met**: 34% (29–42).
 - After turn 20, a riding passes between houses at least once every three turns on
-  average. **Met**: 0.57 a turn (0.44–0.68).
-- 20 to 40 houses are active at turn 100. **Met**: 30.1 (25–38).
-- 4 to 10 houses have fallen or been removed by turn 100. **Met**: 7.7 (1–12).
-- At least 80% of the ridings in play (open at personal 1867) are claimed by turn 60.
-  **Not met**: 63% (59–72). One frontier venture takes three turns, and overreach slows
-  the houses that most want land. With the same tables and the weighted draw, 89% are
-  claimed (rules/CHANGELOG.md, Phase C2).
+  average. **Met**: 0.41 a turn (0.23–0.64).
+- 20 to 40 houses are active at turn 100. **Met**: 23.7 (21–29).
+- 4 to 10 houses have fallen or been removed by turn 100. **Met**: 6.7 (5–9).
+- Land has no target from Phase D1. The share of the ridings in play that year that are
+  held is 22% at turn 25, 41% at 50, 36% at 75 (the Long Contraction's debt sales) and 52%
+  at 100.
 
-The lead and the chapters:
+The lead, the rank and the chapters:
 
-- The prestige lead changes at least four times. **Met**: 16.1 (4–25).
-- No house leads for more than 50 turns. **Met on the mean**: 32.5. One seed of ten has a
-  lead of 84 turns; 0.9's worst is 98.
+- The prestige lead changes at least four times. **Met**: 20.4 (16–31).
+- No house leads for more than 50 turns. **Met**: 24.0 (14–45).
 - In every chapter after the first, a house that began it in the top eight ends it
   outside or removed. **Met**: 4 of 4 on every seed.
+- At turn 60 the top eight by prestige span at least three ranks. **Met**: 3.2 (3–4).
 
 Headlines and storylines:
 
-- At least 70% of turns have a headline at or above the pause threshold. **Met**: 95%.
+- 40–65% of turns have a headline at or above the pause threshold. **Met**: 59% (55–65).
+- Auto pauses on 15–30% of turns. **Met**: 26% (19–32); 27% in the preview game.
 - Never more than three quiet turns in a row after turn 10. **Met**: none.
-- At least eight storylines of five or more beats per game. **Met**: 71.6.
+- At least eight storylines of five or more beats per game. **Met**: 35.3.
+- At most 20 rise and decline storylines a game. **Met**: 15.4 (9–21).
 - Every closed storyline has an outcome. **Met**: none without one.
 
 Quarrels:
 
-- The median rivalry runs 4 to 10 turns. **Met**: 4.4 (4–5).
-- At most 40% of rivalries are reconciled. **Met**: 11% (4–21).
+- The median rivalry runs 4 to 10 turns. **Met**: 10.0 (5–15).
+- At most 40% of rivalries are reconciled. **Met**: 14% (4–26).
 - At least 25% end in a contest, a cession under a standing claim, or a house's fall.
-  **Met**: 75% (68–82).
+  **Met**: 47% (29–62).
 
 Contests and claims:
 
-- At least 15 contests are resolved per game. **Met**: 65.1 (53–80).
-- The attacker wins 35–60% of them. **Met**: 46% (36–57).
-- At least half of claims are answered by their target. **Met**: 62% (55–72).
+- 20 to 35 contests are resolved per game. **Met**: 24.3 (11–42).
+- The attacker wins 35–60% of them. **Met**: 50% (26–71).
+- At least half of claims are answered by their target. **Met**: 60% (49–70).
 
 Schemes:
 
-- At least 60% of schemes reach resolution. **Met**: 81% (76–84).
+- At least 60% of schemes reach resolution. **Met**: 78% (75–84).
 - The median scheme runs three to six turns. **Met**: 3.
 - After turn 15, at least three public schemes involve a cast house in at least 80% of
   turns. **Met**: 100%.
 
 The economy:
 
-- Median cohesion at turn 100 is 55–85. **Met**: 65.8 (48–78).
-- Median influence at turn 100 is 40–70. **Met**: 47.7 (39–57).
+- Median capital at turn 100 is 30–70. **Met**: 48.9 (40–59).
+- Median cohesion at turn 100 is 55–85. **Met**: 83.4 (58–95).
+- Median influence at turn 100 is 40–70. **Met**: 42.2 (29–64).
+
+The calendar:
+
+- Both camps are non-empty in at least 70% of crises. **Met**: 87% (83–94).
+- Every game ends with a reckoning. **Met**: 10 of 10.
 
 ## 7. Phases
 
@@ -662,5 +780,6 @@ The economy:
 | B | Storylines derived from the record; dispatch organised by them | None | On The First Dominion: at least 85% of headlines after turn 20 belong to a storyline; at least eight storylines have five or more beats, and each closed one has an outcome; no more than 25% of headlines after turn 20 are storyline openings; fewer than 20% of closed storylines close as "lapsed" (if not reachable without distorting the triggers, the figure is reported, as it measures the engine); the Phase A limits still hold |
 | C1 | Rules 1.0's mechanical flags (§4.1, §4.3, §4.5–§4.8) as a draft version, both engines; the trial harness | Yes | Every flag in both engines, false before 1.0; cross-check byte-identical on seeds 1867, 2 and 3 at 120 turns under 1.0 and the current version; the baseline trial table (current / each flag alone / all on) recorded in rules/CHANGELOG.md |
 | C2 | Schemes (§4.2), contested claims (§4.4), houses reading prestige (§4.5), cohesion strain (§4.9) as draft flags; beats, Plans afoot and the draft-rules preview; the trial's C2 measures | Yes | §6 targets on a personal-clock trial: every one met on the mean except land claimed by turn 60 (63% against 80%), reported with what holds it back; the before/after table (C1 against C2 all on) recorded in rules/CHANGELOG.md. Built 6 October 2026 |
-| D | `world_calendar`, chapters, crises, ending; new scenario begins | Yes | §6 targets across ten seeds; a full game ends in 1967 |
+| D1 | Pacing (fewer, weightier contests; scarce capital; rank that differentiates), `distinct_surnames` (§4.10), `world_calendar` (§5) with the deck to 1966 and the reckoning, `crises` (§5.1), all in the 1.0 draft; years, chapter interstitials and the reckoning in the story layer; the preview as the whole game | Yes | §6 targets across ten seeds on the mean; cross-check byte-identical on seeds 1867, 2 and 3 at 120 turns under 0.9 and 100 under 1.0; the three-column table (C2 all on, D1 without `world_calendar`, D1 all on) in rules/CHANGELOG.md. Built 6 October 2026 |
+| D2 | The director reviews the preview; then the new scenario begins under 1.0, The Dominion is frozen, and 1.0 is published (`rules/current.txt` points at it) | Yes | A full game ends in 1967 with its reckoning, from the record |
 | E | Scene templates, chapter narration, epilogues | None | A full game reads start to finish from the site |

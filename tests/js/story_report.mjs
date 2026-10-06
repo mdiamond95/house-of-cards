@@ -41,6 +41,7 @@ const story = new Story({
   weights, baseline: index.baseline, follow: option('follow', null), unit: index.unit,
   styleOf: (h) => styles[h] || null, ridings: index.ridings || {},
   watch: Boolean(index.succession_watch),
+  calendar: index.calendar || null, reckoning: index.reckoning || null,
 });
 const dispatches = turns.map(([turn, beats]) => story.step(turn, beats, {
   prestige: prestige[String(turn)] || null,
@@ -117,15 +118,19 @@ if (index.schemes) {
 
 const lines = Number(option('lines', 0));
 const show = (d) => {
-  if (d.quiet) return `${d.turn} ${d.quietLine}`;
-  const out = [`${d.turn} [${d.headline.weight} ${d.headline.beat.kind}] ${d.headline.text}`];
+  const at = Number.isInteger(d.year) ? `${d.turn} (${d.year})` : `${d.turn}`;
+  const tail = (d.pause ? [`    PAUSE: ${d.stops.join('; ')}`] : [])
+    .concat(d.chapter ? [`    CHAPTER ${d.chapter.numeral}: ${d.chapter.standings.map((r) => `${r.place}.${r.house}(${r.move})`).join(' ')}`] : [])
+    .concat(d.reckoning ? d.reckoning.epilogues.map((e) => `    EPILOGUE ${e.text}`) : []);
+  if (d.quiet) return [`${at} ${d.quietLine}`, ...tail].join('\n');
+  const out = [`${at} [${d.headline.weight} ${d.headline.beat.kind}] ${d.headline.text}`];
   if (d.kicker) out.push(`    kicker: ${d.kicker.text}`);
   for (const r of d.related) out.push(`    + ${r.text}`);
   if (d.previously) out.push(`    previously (${d.previously.turn}): ${d.previously.text}`);
   for (const s of d.secondary) out.push(`    - [${s.weight} ${s.beat.kind}] ${s.text}`);
   if (d.ledger) out.push(`    ${d.ledger}`);
   if (d.moments.length) out.push(`    moments: ${d.moments.map((m) => `${m.name} ${m.change}`).join('; ')}`);
-  return out.join('\n');
+  return out.concat(tail).join('\n');
 };
 process.stdout.write(JSON.stringify({
   summary: summarise(dispatches),
@@ -143,6 +148,10 @@ process.stdout.write(JSON.stringify({
     fivePlusByType,
     chapterChurn,
     castSchemeShare,
+    // Phase D1: the calendar's interstitials and the reckoning.
+    chapters: dispatches.filter((d) => d.chapter).map((d) => [d.year, d.chapter.numeral, d.pause]),
+    reckoning: dispatches.length ? Boolean(dispatches[dispatches.length - 1].reckoning) : false,
+    years: dispatches.length ? [dispatches[0].year, dispatches[dispatches.length - 1].year] : null,
   },
   board,
   sample: dispatches.slice(0, lines).map(show),

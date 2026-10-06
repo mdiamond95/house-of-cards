@@ -16,7 +16,9 @@
 //   × follow_multiplier if the followed house is among its houses
 // and never below zero. A quarrel that opens a rivalry between two houses
 // outside the cast starts from `storylines.quarrel_outside_cast` instead of the
-// quarrel's base. A beat whose base is zero takes no modifier: the four
+// quarrel's base, and a contest decided between houses outside the cast
+// (contest_won, contest_lost, fallen) from its base times the share
+// `storylines.contest_outside_cast` (Phase D1). A beat whose base is zero takes no modifier: the four
 // bookkeeping actions never headline, whoever is involved.
 //
 // What carries from turn to turn — kinds seen, provinces entered, the last
@@ -24,6 +26,8 @@
 // returns the next one; neither mutates it.
 
 import { compareText } from './beats.js';
+
+const CONTEST_KINDS = ['contest_won', 'contest_lost', 'fallen'];
 
 // `seenKinds` are kinds whose first has already happened: a page that picks a
 // game up part-way through cannot know which firsts are spent, and passes every
@@ -81,6 +85,10 @@ export function weighTurn(beats, context, { weights, cast = new Set(), follow = 
     const inCast = houses.some((h) => cast.has(h));
     if (beat.kind === 'quarrel' && !inCast && mine.some((r) => r.role === 'open')) {
       base = cfg.quarrel_outside_cast;
+    }
+    if (CONTEST_KINDS.includes(beat.kind) && !inCast && cfg.contest_outside_cast) {
+      const [num, den] = cfg.contest_outside_cast;
+      base = Math.floor((base * num) / den);
     }
     const firstKind = !kinds.has(beat.kind);
     const fresh = gainedProvinces(beat).filter((p) => !provinces.has(p));

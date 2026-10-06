@@ -37,7 +37,7 @@ const BRANCH = 'main';
 const SCENARIO = {"name": "dominion", "title": "The Dominion", "status": "live"};
 // The same key the console keeps its token under: one token, pasted once.
 const TOKEN_KEY = 'hoc-token';
-const RULES_FILES = ["actions.csv", "communities.csv", "denylist.csv", "events.csv", "given_names.csv", "mortality.csv", "objectives.csv", "places.csv", "surnames.csv", "eras.json", "founding.json", "friction.json", "responses.json", "succession.json", "features.json", "traits.csv", "upkeep.json", "schemes.csv", "schemes.json"];
+const RULES_FILES = ["actions.csv", "communities.csv", "denylist.csv", "events.csv", "given_names.csv", "mortality.csv", "objectives.csv", "places.csv", "surnames.csv", "eras.json", "founding.json", "friction.json", "responses.json", "succession.json", "features.json", "traits.csv", "upkeep.json", "schemes.csv", "schemes.json", "game.json"];
 const REFERENCE_FILES = ["ridings.csv", "adjacency.csv", "places_by_riding.csv", "riding_tokens.csv", "riding_stats.csv", "riding_jurisdictions.csv"];
 const UNCLAIMED_FILL = '#E5E5E5';
 const FOLLOW_KEY = `hoc-story-follow:${SCENARIO.name}`;
@@ -60,7 +60,7 @@ function assetUrl(logical) {
 
 // Rules tables a version may lack (hoc/export/play.py OPTIONAL_RULES_FILES):
 // a 404 for one is the version saying it has none, and the loader reads it so.
-const OPTIONAL_RULES_FILES = ["traits.csv", "upkeep.json", "schemes.csv", "schemes.json"];
+const OPTIONAL_RULES_FILES = ["traits.csv", "upkeep.json", "schemes.csv", "schemes.json", "game.json"];
 
 async function fetchAll(paths, onProgress) {
   const contents = new Map();
