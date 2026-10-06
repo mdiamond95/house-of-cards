@@ -21,6 +21,11 @@
 //     the followed house is in a headline at or above the pause threshold.
 //     Storyline openings, climaxes and rises and declines are shown, not paused on.
 //
+// Phase C2 adds schemes. A headline that resolves one says how many turns it
+// ran; a claim decided between two houses of the cast pauses Auto as a riding
+// passing between them does; and, for a game whose record carries schemes,
+// `plansAfoot` lists every public scheme of a cast or followed house.
+//
 // `Story` steps through a game turn by turn: it keeps the board (standings.js),
 // the weighting context (weight.js) and the storylines, and returns each turn's
 // dispatch. Following a different house means replaying with a different
@@ -140,6 +145,9 @@ export class Story {
     this.context = createContext(this.board.owners, seen);
     this.standings = table(this.board, weights);
     this.turn = 0;
+    // Rules 1.0 `schemes`: every public scheme at the end of the last turn,
+    // for a record that carries them; null for one that does not.
+    this.plans = null;
     this.lines = new Storylines({
       weights,
       provinceTotals: provinceTotals(ridings),
@@ -184,7 +192,7 @@ export class Story {
 
   // `prestige`, for a record that carries it (rules 1.0), is each house's
   // prestige at the end of this turn: the standings use it.
-  step(turn, rawBeats, { prestige = null } = {}) {
+  step(turn, rawBeats, { prestige = null, plans = null } = {}) {
     const w = this.weights;
     const beats = mergeActs(rawBeats);
     const before = this.standings;
@@ -212,6 +220,7 @@ export class Story {
     this.board = boardAfter;
     this.standings = after;
     this.turn = turn;
+    if (plans !== null) this.plans = plans;
 
     const namer = this.namer(boardAfter.ranks);
     const told = (entry) => ({
@@ -225,6 +234,12 @@ export class Story {
     let related = [];
     if (!chosen.quiet) {
       headline = told(chosen.headline);
+      const ran = chosen.headline.beat.ran;
+      if (Number.isInteger(ran) && ran > 0) {
+        headline.ran = ran;
+        headline.text = `${headline.text} The scheme (${chosen.headline.beat.plan}) ran`
+          + ` ${numberWord(ran)} ${this.unit}${ran === 1 ? '' : 's'}.`;
+      }
       const s = mainStoryline(chosen.headline.roles, this.lines);
       if (s) {
         const at = s.beats.findIndex((e) => e.turn === turn && e.index === chosen.headline.index);
@@ -296,8 +311,8 @@ export class Story {
     }
     for (const beat of beats) {
       for (const house of beat.removed || []) stops.push(`${this.namer(boardAfter.ranks).style(house)} is removed`);
-      if (beat.kind === 'riding_passes') {
-        const [from, to] = beat.houses;
+      if (beat.kind === 'riding_passes' || beat.kind === 'contest_won' || beat.kind === 'fallen') {
+        const [from, to] = beat.kind === 'riding_passes' ? beat.houses : [beat.houses[1], beat.houses[0]];
         if (castEither.has(from) && castEither.has(to)) stops.push('a riding passes between two houses of the cast');
       }
     }
@@ -347,6 +362,29 @@ export class Story {
         || (a.s.id < b.s.id ? -1 : 1))
       .slice(0, cfg.afoot_max)
       .map(({ s, score }) => this.summary(s, score));
+  }
+
+  // Plans afoot (Phase C2): every public scheme of a cast or followed house,
+  // its target and its turns remaining, followed house first, then in the
+  // order the schemes were begun. Null for a record without schemes.
+  plansAfoot() {
+    if (this.plans === null) return null;
+    const cast = this.cast();
+    const mine = (p) => (this.follow && p.house === this.follow ? 0 : 1);
+    return this.plans
+      .filter((p) => cast.has(p.house) || (this.follow && p.house === this.follow))
+      .map((p) => ({ p, rank: mine(p) }))
+      .sort((a, b) => a.rank - b.rank || a.p.id - b.p.id)
+      .map(({ p }) => ({
+        id: p.id,
+        house: p.house,
+        name: this.placeOf(p.house),
+        scheme: p.scheme,
+        target: p.target_house ? this.placeOf(p.target_house) : null,
+        riding: p.riding || null,
+        turnsRemaining: p.turns_remaining,
+        followed: Boolean(this.follow && p.house === this.follow),
+      }));
   }
 
   summary(s, score = null) {

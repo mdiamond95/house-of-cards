@@ -23,7 +23,8 @@ import { Story } from './story/dispatch.js';
 import { BEAT_KINDS, baselineFromState, inputFromState, typeTurn } from './story/beats.js';
 import { houseStyle } from './story/text.js';
 import {
-  MapCamera, afootHtml, dispatchHtml, pauseReason, readStored, storylineHtml, stripHtml, writeStored,
+  MapCamera, afootHtml, dispatchHtml, pauseReason, plansHtml, readStored, storylineHtml, stripHtml,
+  writeStored,
 } from './story/view.js';
 
 const REPO = 'mdiamond95/house-of-cards';
@@ -36,7 +37,7 @@ const BRANCH = 'main';
 const SCENARIO = {"name": "dominion", "title": "The Dominion", "status": "live"};
 // The same key the console keeps its token under: one token, pasted once.
 const TOKEN_KEY = 'hoc-token';
-const RULES_FILES = ["actions.csv", "communities.csv", "denylist.csv", "events.csv", "given_names.csv", "mortality.csv", "objectives.csv", "places.csv", "surnames.csv", "eras.json", "founding.json", "friction.json", "responses.json", "succession.json", "features.json", "traits.csv", "upkeep.json"];
+const RULES_FILES = ["actions.csv", "communities.csv", "denylist.csv", "events.csv", "given_names.csv", "mortality.csv", "objectives.csv", "places.csv", "surnames.csv", "eras.json", "founding.json", "friction.json", "responses.json", "succession.json", "features.json", "traits.csv", "upkeep.json", "schemes.csv", "schemes.json"];
 const REFERENCE_FILES = ["ridings.csv", "adjacency.csv", "places_by_riding.csv", "riding_tokens.csv", "riding_stats.csv", "riding_jurisdictions.csv"];
 const UNCLAIMED_FILL = '#E5E5E5';
 const FOLLOW_KEY = `hoc-story-follow:${SCENARIO.name}`;
@@ -59,7 +60,7 @@ function assetUrl(logical) {
 
 // Rules tables a version may lack (hoc/export/play.py OPTIONAL_RULES_FILES):
 // a 404 for one is the version saying it has none, and the loader reads it so.
-const OPTIONAL_RULES_FILES = ["traits.csv", "upkeep.json"];
+const OPTIONAL_RULES_FILES = ["traits.csv", "upkeep.json", "schemes.csv", "schemes.json"];
 
 async function fetchAll(paths, onProgress) {
   const contents = new Map();
@@ -474,7 +475,7 @@ function playOne({ zoom = false } = {}) {
   app.viewing = record.season;
   appendFeed(record.season, record.chronicle, { stopped });
   renderAll({ flash: true });
-  tellSeason(record.season, { zoom, prestige: record.prestige || null });
+  tellSeason(record.season, { zoom, prestige: record.prestige || null, plans: record.plans || null });
   autosave();
   return stopped;
 }
@@ -508,6 +509,8 @@ function newStory() {
     ridings: ridingNames(),
     watch: app.world.feature('succession_watch'),
   });
+  // Rules 1.0 `schemes`: the public schemes as this page found them.
+  if (app.world.feature('schemes')) app.story.plans = app.world.plans();
   app.afoot = null;
   app.lastDispatch = null;
   el('story-dispatch').innerHTML =
@@ -521,6 +524,10 @@ function newStory() {
 // The Afoot panel: open storylines; the chosen one's beats, its houses marked.
 function renderAfoot() {
   if (!app.story) return;
+  // Plans afoot, above Afoot, for a game played under schemes (rules 1.0).
+  const plans = app.story.plansAfoot();
+  el('story-plans').hidden = plans === null;
+  if (plans !== null) el('story-plans-list').innerHTML = plansHtml(plans);
   if (app.afoot && !app.story.lines.of(app.afoot)) app.afoot = null;
   el('story-afoot-list').innerHTML = afootHtml(app.story.afoot(), { selected: app.afoot });
   const told = app.afoot ? app.story.tell(app.afoot) : null;
@@ -550,9 +557,9 @@ function focusOf(d) {
     .map(([fed]) => fed);
 }
 
-function tellSeason(season, { zoom = false, prestige = null } = {}) {
+function tellSeason(season, { zoom = false, prestige = null, plans = null } = {}) {
   if (!app.story) return null;
-  const d = app.story.step(season, typeTurn(inputFromState(app.world.state, season)), { prestige });
+  const d = app.story.step(season, typeTurn(inputFromState(app.world.state, season)), { prestige, plans });
   renderAfoot();
   const current = el('story-dispatch');
   if (app.lastDispatch !== null) {

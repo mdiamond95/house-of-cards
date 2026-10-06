@@ -11,7 +11,7 @@ import {
   storylineHtml, stripHtml, writeStored,
 } from './story/view.js';
 
-const SCENARIO = "legacy";
+const SCENARIO = "preview-1.0";
 const FOLLOW_KEY = `hoc-story-follow:${SCENARIO}`;
 const UNCLAIMED_FILL = '#E5E5E5';
 const AUTO_MS = 1600;

@@ -117,6 +117,21 @@ export function afootHtml(list, { unit = 'season', selected = null } = {}) {
     + `<span class="afoot-meta meta">${storylineMeta(s, unit)}</span></button></li>`).join('');
 }
 
+// The Plans afoot panel (Phase C2): every public scheme of a cast or followed
+// house (dispatch.js Story.plansAfoot), with its target and turns remaining.
+export function plansHtml(list, { unit = 'season' } = {}) {
+  if (!list || !list.length) return '<li class="meta">No scheme of the cast is afoot.</li>';
+  const word = unit === 'turn' ? 'turn' : 'season';
+  return list.map((p) => {
+    const aim = [p.target, p.riding].filter(Boolean).join(', ');
+    const left = p.turnsRemaining === 1 ? `resolves next ${word}` : `${p.turnsRemaining} ${word}s to run`;
+    return `<li class="plan${p.followed ? ' followed' : ''}"><span class="plan-house">${escapeHtml(p.name)}</span>`
+      + ` <span class="plan-scheme">${escapeHtml(p.scheme)}</span>`
+      + (aim ? ` <span class="plan-target">&rarr; ${escapeHtml(aim)}</span>` : '')
+      + ` <span class="plan-left meta">${escapeHtml(left)}</span></li>`;
+  }).join('');
+}
+
 // A storyline told top to bottom (dispatch.js Story.tell): its beats with
 // their turns, then how it ended. `link(turn)` gives a link for a beat's turn.
 export function storylineHtml(told, { unit = 'season', link = null } = {}) {
