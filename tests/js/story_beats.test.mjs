@@ -4,8 +4,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  BEAT_KINDS, BOOKKEEPING, compareText, inputFromState, baselineFromState, rankIndex, typeEvent,
-  typeTurn,
+  BEAT_KINDS, BOOKKEEPING, compareText, inputFromState, baselineFromState, mergeActs, rankIndex,
+  typeEvent, typeTurn,
 } from '../../web/story/beats.js';
 
 const none = () => null;
@@ -171,4 +171,38 @@ test('baselineFromState is the board as the engine holds it', () => {
     ranks: { A: 0, B: 2, Z: 1 },
     removed: ['Z'],
   });
+});
+
+test('mergeActs: one act, one beat, carrying every part', () => {
+  const b = (seq, kind, houses, extra = {}) => ({ turn: 9, seq, kind, houses, ...extra });
+  const merged = mergeActs([
+    b(0, 'riding_passes', ['A', 'B'], { outcome: 'cession', ridings: ['24001'], owners: { 24001: 'B' }, line: 'x' }),
+    b(1, 'quarrel', ['C', 'D'], { outcome: 'friction', line: 'y' }),
+    b(2, 'reconciled', ['A', 'B'], { outcome: 'cession', line: 'z' }),
+    b(3, 'partition', ['P', 'Q'], { owners: { 35001: 'Q' }, ranks: { Q: 0 }, ridings: ['35001'] }),
+    b(4, 'succession_clean', ['P'], { outcome: 'death' }),
+    b(5, 'succession_disorderly', ['R'], { outcome: 'death' }),
+    b(6, 'quarrel', ['R', 'S'], { outcome: 'disorderly succession' }),
+    b(7, 'riding_lost', ['R'], { outcome: 'disorderly succession', ridings: ['35002'], owners: { 35002: null } }),
+    b(8, 'succession_clean', ['T'], { outcome: 'death' }),
+    b(9, 'removed', ['T'], { outcome: 'cohesion collapse', removed: ['T'] }),
+    b(10, 'quarrel', ['U', 'V'], { outcome: 'contested expansion' }),
+    b(11, 'expansion', ['V'], { ridings: ['35003'], owners: { 35003: 'V' } }),
+    b(12, 'invest', ['W'], { outcome: 'success' }),
+  ]);
+  assert.deepEqual(merged.map((x) => [x.kind, x.merge || null]), [
+    ['riding_passes', 'cession'], ['quarrel', null], ['partition', 'partition'],
+    ['succession_disorderly', 'disorderly'], ['removed', 'collapse'], ['quarrel', 'contest'], ['invest', null],
+  ]);
+  assert.deepEqual(merged[0].houses, ['A', 'B']);
+  assert.deepEqual(merged[0].owners, { 24001: 'B' });
+  assert.equal(merged[0].parts.length, 2);
+  assert.deepEqual(merged[3].houses, ['R', 'S']);
+  assert.deepEqual(merged[3].owners, { 35002: null });
+  assert.deepEqual(merged[4].removed, ['T']);
+  assert.deepEqual(merged[5].owners, { 35003: 'V' });
+  const lost = mergeActs([b(0, 'quarrel', ['U', 'V'], { outcome: 'contested expansion' }), b(1, 'failed', ['U'], { outcome: 'Expand' })]);
+  assert.deepEqual(lost.map((x) => x.merge), ['contest']);
+  const alone = [b(0, 'riding_passes', ['A', 'B'], { outcome: 'cession' })];
+  assert.deepEqual(mergeActs(alone), alone, 'a part with no partner passes through');
 });

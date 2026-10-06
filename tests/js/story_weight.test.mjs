@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import { BEAT_KINDS, BOOKKEEPING } from '../../web/story/beats.js';
-import { advance, createContext, provinceOf, weighTurn } from '../../web/story/weight.js';
+import { advance, createContext, provinceOf, storylineBonus, weighTurn } from '../../web/story/weight.js';
 
 const weights = JSON.parse(readFileSync(new URL('../../web/story/weights.json', import.meta.url), 'utf8'));
 const beat = (turn, kind, houses, extra = {}) => ({ turn, seq: 0, kind, houses, ...extra });
@@ -17,6 +17,10 @@ test('weights.json: every beat kind has an integer weight; §3.1 values and thre
   assert.equal(weights.kinds.riding_passes, 80);
   assert.equal(weights.thresholds.pause, 60);
   assert.equal(weights.thresholds.quiet, 40);
+  for (const key of Object.keys(weights.storylines)) {
+    const v = weights.storylines[key];
+    assert.ok(Number.isInteger(v) || (Array.isArray(v) && v.every(Number.isInteger)), key);
+  }
   const walk = (value) => {
     if (typeof value === 'number') assert.ok(Number.isInteger(value), `${value} is not an integer`);
     else if (value && typeof value === 'object') Object.values(value).forEach(walk);
@@ -54,15 +58,32 @@ test('+15 for the first riding in a province, and not again', () => {
   assert.deepEqual(next.provinces, ['24', '35']);
 });
 
-test('+10 for a callback: the same pair within the window, not beyond it', () => {
-  let ctx = advance(spent(), [beat(10, 'correspondence', ['B', 'A'])], null, weights);
-  const near = weighTurn([beat(20, 'compact', ['A', 'B'])], ctx, { weights });
-  const far = weighTurn([beat(21, 'compact', ['A', 'B'])], ctx, { weights });
-  assert.equal(near[0].total, 35);
-  assert.equal(far[0].total, 25);
-  ctx = advance(spent(), [beat(10, 'invest', ['A', 'B'])], null, weights);
-  assert.equal(weighTurn([beat(11, 'compact', ['A', 'B'])], ctx, { weights })[0].total, 25,
-    'a zero-weight beat is not something a pair shared');
+test('storyline position: nothing to open, +10 per earlier beat to +30 to escalate, +25 to close', () => {
+  const cfg = weights.storylines;
+  assert.equal(storylineBonus([{ role: 'open', earlier: 0 }], cfg), 0);
+  assert.equal(storylineBonus([{ role: 'escalate', earlier: 1 }], cfg), 10);
+  assert.equal(storylineBonus([{ role: 'escalate', earlier: 2 }], cfg), 20);
+  assert.equal(storylineBonus([{ role: 'escalate', earlier: 7 }], cfg), 30);
+  assert.equal(storylineBonus([{ role: 'close', earlier: 1 }], cfg), 25);
+  assert.equal(storylineBonus([{ role: 'escalate', earlier: 1 }, { role: 'close', earlier: 9 }], cfg), 25,
+    'a beat in several storylines takes the largest');
+  const [w] = weighTurn([beat(9, 'compact', ['A', 'B'])], spent(),
+    { weights, roles: [[{ role: 'escalate', earlier: 3 }]] });
+  assert.deepEqual(w.mods, [['storyline', 30]]);
+  assert.equal(w.total, 55);
+});
+
+test('a quarrel opening a rivalry outside the cast weighs 30; inside the cast it keeps 50 + 20', () => {
+  const opens = [[{ role: 'open', earlier: 0 }]];
+  assert.equal(weighTurn([beat(9, 'quarrel', ['A', 'B'])], spent(), { weights, roles: opens })[0].total, 30);
+  assert.equal(weighTurn([beat(9, 'quarrel', ['A', 'B'])], spent(), { weights, roles: opens, cast: new Set(['B']) })[0].total, 70);
+  assert.equal(weighTurn([beat(9, 'quarrel', ['A', 'B'])], spent(), { weights })[0].total, 50,
+    'a quarrel that opens nothing keeps its base');
+});
+
+test('the flat callback is gone', () => {
+  assert.equal(weights.modifiers.callback, undefined);
+  assert.equal(weights.kinds.major_response, 15);
 });
 
 test('-15 when the kind headlined the previous turn', () => {

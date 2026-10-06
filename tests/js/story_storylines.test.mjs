@@ -1,0 +1,122 @@
+// web/story/storylines.js: storylines from typed beats alone (§3.4).
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+import { Storylines, storylineName } from '../../web/story/storylines.js';
+import { applyBeats, table } from '../../web/story/standings.js';
+
+const weights = JSON.parse(readFileSync(new URL('../../web/story/weights.json', import.meta.url), 'utf8'));
+let seq = 0;
+const beat = (turn, kind, houses, extra = {}) => ({ turn, seq: seq++, kind, houses, ...extra });
+
+// Steps a tracker the way dispatch.js does, keeping the board alongside.
+function harness({ owners = {}, ranks = {}, totals = { 35: 4, 24: 2 }, held = [] } = {}) {
+  const lines = new Storylines({ weights, provinceTotals: totals, held });
+  let board = { owners, ranks, removed: [] };
+  return {
+    lines,
+    step(turn, beats) {
+      const tableBefore = table(board, weights);
+      const cast = new Set(tableBefore.slice(0, weights.cast_size).map((r) => r.house));
+      const boardAfter = applyBeats(board, beats);
+      const out = lines.step(turn, beats, { cast, boardBefore: board, boardAfter, tableBefore, tableAfter: table(boardAfter, weights) });
+      board = boardAfter;
+      return out;
+    },
+  };
+}
+
+test('a rivalry opens on a quarrel, escalates on shared beats and closes on a reconciliation', () => {
+  const h = harness({ ranks: { A: 0, B: 0 } });
+  const opened = h.step(1, [beat(1, 'quarrel', ['B', 'A'], { outcome: 'friction' })]);
+  assert.deepEqual(opened.roles, [[{ id: 's1', role: 'open', earlier: 0 }]]);
+  const s = h.lines.of('s1');
+  assert.deepEqual([s.type, s.houses, s.opened, s.state], ['rivalry', ['A', 'B'], 1, 'rising']);
+  h.step(2, [beat(2, 'failed', ['A', 'B'], { outcome: 'Dispute' }), beat(2, 'correspondence', ['A', 'B'])]);
+  assert.equal(s.beats.length, 2, 'a letter is not a storyline beat');
+  const closing = h.step(3, [beat(3, 'reconciled', ['A', 'B'])]);
+  assert.deepEqual(closing.roles[0], [{ id: 's1', role: 'close', earlier: 2 }]);
+  assert.deepEqual([s.state, s.outcome, s.closed], ['closed', 'reconciled', 3]);
+  assert.equal(storylineName(s, (x) => `Place ${x}`), 'The Place A–Place B rivalry');
+});
+
+test('a storyline reaches its climax at the fourth beat, and lapses after fifteen quiet turns', () => {
+  const h = harness({ ranks: { A: 0, B: 0 } });
+  h.step(1, [beat(1, 'quarrel', ['A', 'B'], { outcome: 'friction' })]);
+  h.step(2, [beat(2, 'quarrel', ['A', 'B'], { outcome: 'friction' })]);
+  h.step(3, [beat(3, 'failed', ['A', 'B'], { outcome: 'Dispute' })]);
+  const climax = h.step(4, [beat(4, 'quarrel', ['A', 'B'], { outcome: 'friction' })]);
+  assert.deepEqual(climax.changes, [{ id: 's1', change: 'climax' }]);
+  assert.equal(h.step(18, []).changes.length, 0);
+  const lapse = h.step(19, []);
+  assert.deepEqual(lapse.changes, [{ id: 's1', change: 'closed' }]);
+  assert.equal(h.lines.of('s1').outcome, 'lapsed');
+});
+
+test('a removal closes every storyline its house is in; a frontier only loses the house', () => {
+  const h = harness({ ranks: { A: 0, B: 0, C: 0 }, owners: { 35001: 'A' }, held: ['35'] });
+  h.step(1, [beat(1, 'quarrel', ['A', 'B'], { outcome: 'friction' })]);
+  h.step(2, [beat(2, 'expansion', ['C'], { owners: { 24001: 'C' } }), beat(2, 'expansion', ['A'], { owners: { 24002: 'A' } })]);
+  const frontier = h.lines.all.find((s) => s.type === 'frontier');
+  assert.equal(frontier.state, 'closed', 'Quebec is half claimed at two of two');
+  const g = harness({ ranks: { A: 0, B: 0, C: 0 }, totals: { 24: 10 } });
+  g.step(1, [beat(1, 'quarrel', ['A', 'B'], { outcome: 'friction' })]);
+  g.step(2, [beat(2, 'expansion', ['A'], { owners: { 24001: 'A' } }), beat(2, 'expansion', ['C'], { owners: { 24002: 'C' } })]);
+  g.step(3, [beat(3, 'removed', ['A'], { owners: { 24001: null }, removed: ['A'] })]);
+  const rivalry = g.lines.all.find((s) => s.type === 'rivalry');
+  const quebec = g.lines.all.find((s) => s.type === 'frontier');
+  assert.deepEqual([rivalry.state, rivalry.outcome], ['closed', 'A removed']);
+  assert.deepEqual([quebec.state, quebec.houses], ['rising', ['C']]);
+});
+
+test('a union between cast houses closes on a falling-out, which opens a rivalry', () => {
+  const h = harness({ ranks: { A: 1, B: 1 } });
+  h.step(1, [beat(1, 'marriage', ['A', 'B'])]);
+  h.step(2, [beat(2, 'quarrel', ['A', 'B'], { outcome: 'friction' })]);
+  const [union, rivalry] = h.lines.all;
+  assert.deepEqual([union.type, union.state, union.outcome], ['union', 'closed', 'a falling-out']);
+  assert.deepEqual([rivalry.type, rivalry.state], ['rivalry', 'rising']);
+  const outside = harness({ ranks: {} });
+  outside.step(1, [beat(1, 'marriage', ['A', 'B'])]);
+  assert.equal(outside.lines.all.length, 0, 'a union is only between houses of the cast');
+});
+
+test('a succession question opens on a disorderly succession and closes when an heir is named', () => {
+  const h = harness({ ranks: { A: 0 } });
+  h.step(1, [beat(1, 'succession_disorderly', ['A'], { outcome: 'death' })]);
+  h.step(2, [beat(2, 'riding_lost', ['A'], { outcome: 'debt' })]);
+  h.step(3, [beat(3, 'name_heir', ['A'], { outcome: 'heir' })]);
+  const s = h.lines.all.find((x) => x.type === 'succession');
+  assert.deepEqual([s.beats.length, s.state, s.outcome], [3, 'closed', 'an heir named']);
+});
+
+test('a rise opens on entering the top eight below first and closes on reaching first', () => {
+  const h = harness({ ranks: { A: 1 }, owners: { 35001: 'A' } });
+  h.step(1, [beat(1, 'founding', ['B'], { owners: { 35002: 'B' }, ranks: { B: 0 } })]);
+  const rise = h.lines.all.find((s) => s.type === 'rise');
+  assert.deepEqual([rise.key, rise.beats.length], ['B', 1]);
+  h.step(2, [beat(2, 'elevation', ['B'], { ranks: { B: 2 } })]);
+  assert.deepEqual([rise.state, rise.outcome], ['closed', 'reached first']);
+});
+
+test('a decline opens when a cast house loses a riding, and closes when it recovers', () => {
+  const h = harness({ ranks: { A: 0, B: 0 }, owners: { 35001: 'A', 35002: 'A', 35003: 'B' }, held: ['35'] });
+  h.step(1, [beat(1, 'riding_passes', ['A', 'B'], { owners: { 35002: 'B' } })]);
+  const decline = h.lines.all.find((s) => s.type === 'decline');
+  assert.deepEqual([decline.key, decline.state, decline.mark], ['A', 'rising', 20]);
+  h.step(2, [beat(2, 'expansion', ['A'], { owners: { 35004: 'A' } })]);
+  assert.deepEqual([decline.state, decline.outcome], ['closed', 'recovered']);
+});
+
+test('a cadet inherits nothing, but the partition beat belongs to its parent\'s storylines', () => {
+  const h = harness({ ranks: { P: 2, X: 0 }, owners: { 35001: 'P', 35002: 'P', 24001: 'P' }, totals: { 35: 10, 24: 10 }, held: ['35'] });
+  h.step(1, [beat(1, 'expansion', ['P'], { owners: { 24002: 'P' } })]);
+  h.step(2, [beat(2, 'quarrel', ['P', 'X'], { outcome: 'friction' })]);
+  h.step(3, [beat(3, 'partition', ['P', 'C'], { owners: { 24001: 'C', 24002: 'C' }, ranks: { C: 0 } })]);
+  const quebec = h.lines.all.find((s) => s.type === 'frontier');
+  assert.ok(quebec.beats.some((e) => e.beat.kind === 'partition'), 'the partition belongs to the parent\'s frontier');
+  assert.ok(!quebec.houses.includes('C'), 'the cadet does not join it');
+  const rivalry = h.lines.all.find((s) => s.type === 'rivalry');
+  assert.ok(!rivalry.houses.includes('C'));
+});
