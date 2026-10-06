@@ -31,8 +31,10 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Install the runtime dependencies
-        run: python -m pip install --disable-pip-version-check -r requirements-engine.txt
+      # The engine's runtime dependencies, and shapely, which the geometry
+      # checks in tests/test_meridian.py need and the engine workflow omits.
+      - name: Install the dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-engine.txt shapely
 
       - name: The suite, without the smoke run
         run: python -m pytest -q -m "not smoke" -p no:cacheprovider

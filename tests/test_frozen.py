@@ -158,7 +158,11 @@ def test_the_engine_workflow_refuses_an_intervention_on_a_frozen_game(capsys, no
     assert _record_state() == before
 
 
-def test_a_refusal_is_the_whole_summary_and_commits_nothing(capsys, nothing_live):
+def test_a_refusal_is_the_whole_summary_and_commits_nothing(capsys, nothing_live, monkeypatch):
+    # The summary goes to $GITHUB_STEP_SUMMARY when Actions sets it, and to
+    # stdout otherwise; this test reads stdout, so it must not depend on where
+    # it runs.
+    monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
     engine_command.main(["run", "--seasons", "1"])
     out = capsys.readouterr()
     assert engine_command.COMMIT_PREFIX not in out.out
