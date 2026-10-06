@@ -86,6 +86,25 @@ FEATURE_DEFAULTS = {
     # a target's adds (tier-3) to the 15 an Expand costs. False in 0.7 and 0.8,
     # where every riding was worth the same.
     "riding_endowments": False,
+    # rules 1.0 (draft; docs/STORY_DESIGN.md §4). False in 0.7-0.9.
+    # §4.1: automatic upkeep at the start of a turn (upkeep.json); Invest,
+    # Cultivate influence, Consolidate (rest) and Correspond leave the action
+    # pool, and each house gets one automatic letter a turn.
+    "upkeep_phase": False,
+    # §4.3: holders draw two traits (traits.csv) that shift action weights,
+    # upkeep, era responses and friction.
+    "holder_traits": False,
+    # §4.7: a Marriage alliance pairs one man and one woman, by recorded gender,
+    # from the two houses' unmarried heirs and children.
+    "marriage_pairing": False,
+    # §4.5: an integer prestige per house, recomputed every turn and recorded.
+    "prestige": False,
+    # §4.6: Crown foundings follow an integer schedule (founding.json
+    # founding_curve) in place of p_found.
+    "founding_curve": False,
+    # §4.8: an event when a holder turns sixty with no heir, and one when an
+    # heir comes of age.
+    "succession_watch": False,
 }
 
 
@@ -240,6 +259,19 @@ class Surname:
 
 
 @dataclass
+class Trait:
+    """One row of traits.csv (rules 1.0, `holder_traits`). `actions` maps an
+    action to a weight shift in units of WEIGHT_SCALE; `upkeep` a stat to an
+    upkeep shift; `excludes` the traits it never occurs with; `effects` named
+    behaviours, each with an integer ("steadfast" carries 1)."""
+    trait: str
+    actions: dict
+    upkeep: dict
+    excludes: list
+    effects: dict
+
+
+@dataclass
 class RulesBundle:
     actions: list
     objectives: list
@@ -259,6 +291,10 @@ class RulesBundle:
     # and risk asking about a different version than the one it is holding.
     version: str = ""
     features: dict = field(default_factory=dict)
+    # Rules 1.0 tables. A version written before them has neither, and reads as
+    # an empty list and an empty dict.
+    traits: list = field(default_factory=list)
+    upkeep: dict = field(default_factory=dict)
 
     def feature(self, name):
         """Whether this version turns on a named behaviour."""
@@ -545,6 +581,65 @@ def probability_for_age(mortality, age):
     raise RulesDataError(f"no mortality band covers age {age}")
 
 
+TRAIT_EFFECTS = ("steadfast", "friction")
+UPKEEP_STATS = ("capital", "influence", "cohesion")
+
+
+def _signed_pairs(raw, where, allowed=None):
+    """"Expand:+2;Dispute:-2" as an ordered dict of integers."""
+    out = {}
+    for part in (raw or "").split(";"):
+        part = part.strip()
+        if not part:
+            continue
+        name, _, value = part.rpartition(":")
+        if not name:
+            name, value = value, "1"
+        try:
+            number = int(value)
+        except ValueError:
+            raise RulesDataError(f"{where}: {part!r} is not name:integer")
+        if allowed is not None and name not in allowed:
+            raise RulesDataError(f"{where}: unknown name {name!r}")
+        out[name] = number
+    return out
+
+
+def _load_traits(rules_dir, action_names):
+    path = rules_dir / "traits.csv"
+    if not path.exists():
+        return []
+    rows = _read_csv(path)
+    names = [row["trait"] for row in rows]
+    traits = []
+    for row in rows:
+        where = f"traits.csv {row['trait']!r}"
+        excludes = [x.strip() for x in (row["excludes"] or "").split(";") if x.strip()]
+        for other in excludes:
+            if other not in names:
+                raise RulesDataError(f"{where}: excludes unknown trait {other!r}")
+        traits.append(Trait(
+            trait=row["trait"],
+            actions=_signed_pairs(row["actions"], where, action_names),
+            upkeep=_signed_pairs(row["upkeep"], where, UPKEEP_STATS),
+            excludes=excludes,
+            effects=_signed_pairs(row["effect"], where, TRAIT_EFFECTS),
+        ))
+    for trait in traits:
+        for other in trait.excludes:
+            partner = next(t for t in traits if t.trait == other)
+            if trait.trait not in partner.excludes:
+                raise RulesDataError(
+                    f"traits.csv: {trait.trait} excludes {other}, but not the other way round"
+                )
+    return traits
+
+
+def _load_upkeep(rules_dir):
+    path = rules_dir / "upkeep.json"
+    return _read_json(path) if path.exists() else {}
+
+
 def load_rules(path=None, version=None, root=None):
     """Load and validate one version's rules tables.
 
@@ -582,6 +677,8 @@ def load_rules(path=None, version=None, root=None):
     places = _load_places(rules_dir)
     given_names = _load_given_names(rules_dir)
     surnames = _load_surnames(rules_dir)
+    traits = _load_traits(rules_dir, action_names)
+    upkeep = _load_upkeep(rules_dir)
 
     return RulesBundle(
         actions=actions,
@@ -599,4 +696,6 @@ def load_rules(path=None, version=None, root=None):
         surnames=surnames,
         version=version,
         features=features,
+        traits=traits,
+        upkeep=upkeep,
     )
