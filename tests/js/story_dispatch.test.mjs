@@ -190,3 +190,21 @@ test('summaries: headlines by kind, and the storyline gates', () => {
   assert.equal(g.closedWithoutOutcome, 0);
   assert.deepEqual(g.byOutcome, { 'rivalry: reconciled': 1 });
 });
+
+test('rules 1.0: a headline that resolves a scheme says how long it ran, and Plans afoot lists the cast\'s schemes', () => {
+  const s = story({ seen: BEAT_KINDS, baseline: { owners: { 35001: 'B', 35002: 'A' }, ranks: { A: 0, B: 0 }, removed: [] } });
+  assert.equal(s.plansAfoot(), null, 'no plans for a record without schemes');
+  const d = s.step(5, [
+    beat(5, 'contest_won', ['A', 'B'], { outcome: 'won', scheme: 4, ridings: ['35001'], owners: { 35001: 'A' }, line: 'Season 5 · Baron A of Alpha wins its claim to Kingston and the Islands against Viscount B of Beta, 9 to 7.' }),
+    beat(5, 'scheme_resolved', ['A', 'B'], { outcome: 'Claim a riding', scheme: 4, ran: 4 }),
+  ], { plans: [
+    { id: 4, house: 'A', scheme: 'Claim a riding', target_house: 'B', riding: 'Perth', turns_remaining: 2, begun: 2, committed: 9 },
+    { id: 6, house: 'Q', scheme: 'Secure the line', target_house: null, riding: null, turns_remaining: 1, begun: 5, committed: 2 },
+  ] });
+  assert.equal(d.headline.ran, 4);
+  assert.ok(d.headline.text.endsWith('The scheme (Claim a riding) ran four seasons.'), d.headline.text);
+  assert.ok(d.stops.includes('a riding passes between two houses of the cast'), 'a claim won between cast houses pauses Auto');
+  const plans = s.plansAfoot();
+  assert.deepEqual(plans.map((p) => [p.name, p.scheme, p.target, p.riding, p.turnsRemaining]),
+    [['Alpha', 'Claim a riding', 'Beta', 'Perth', 2]], 'only the cast\'s schemes');
+});

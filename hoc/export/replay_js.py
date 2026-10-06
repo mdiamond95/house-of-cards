@@ -18,7 +18,7 @@ REPLAY_JS = r"""// A frozen game, told one turn at a time.
 import { Story } from './story/dispatch.js';
 import { houseStyle } from './story/text.js';
 import {
-  MapCamera, afootHtml, dispatchHtml, escapeHtml, pauseReason, readStored, recordHtml,
+  MapCamera, afootHtml, dispatchHtml, escapeHtml, pauseReason, plansHtml, readStored, recordHtml,
   storylineHtml, stripHtml, writeStored,
 } from './story/view.js';
 
@@ -55,7 +55,7 @@ async function fetchJson(url) {
 // beats, and its prestige where the record carries it (rules 1.0).
 async function turnData(turn) {
   const entry = app.index.chunks.find((c) => c.first <= turn && turn <= c.last);
-  if (!entry) return { beats: [], prestige: null };
+  if (!entry) return { beats: [], prestige: null, plans: null };
   if (!app.chunks.has(entry.file)) {
     app.chunks.set(entry.file, fetchJson(`data/beats/${entry.file}`));
   }
@@ -63,6 +63,8 @@ async function turnData(turn) {
   return {
     beats: chunk.turns[String(turn)] || [],
     prestige: (chunk.prestige && chunk.prestige[String(turn)]) || null,
+    // Rules 1.0 `schemes`: every public scheme as the turn left them.
+    plans: chunk.plans ? (chunk.plans[String(turn)] || []) : null,
   };
 }
 
@@ -91,8 +93,8 @@ function reset() {
 async function stepTo(target) {
   let last = null;
   while (app.turn < target) {
-    const { beats, prestige } = await turnData(app.turn + 1);
-    last = app.story.step(app.turn + 1, beats, { prestige });
+    const { beats, prestige, plans } = await turnData(app.turn + 1);
+    last = app.story.step(app.turn + 1, beats, { prestige, plans });
     app.turn += 1;
   }
   return last;
@@ -128,6 +130,11 @@ function renderLabel() {
 // The Afoot panel: open storylines; the chosen one's beats, and its houses
 // marked on the map.
 function renderAfoot() {
+  // Plans afoot, above Afoot, for a record that carries schemes (rules 1.0).
+  if (app.index.schemes) {
+    el('story-plans').hidden = false;
+    el('story-plans-list').innerHTML = plansHtml(app.story.plansAfoot() || [], { unit: unitName() });
+  }
   const list = app.story.afoot();
   if (app.afoot && !app.story.lines.of(app.afoot)) app.afoot = null;
   el('story-afoot-list').innerHTML = afootHtml(list, { unit: unitName(), selected: app.afoot });

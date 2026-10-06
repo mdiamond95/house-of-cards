@@ -145,3 +145,15 @@ test('the Afoot list and a storyline told top to bottom', () => {
   assert.ok(page.includes('Closed season 9: reached first.'));
   assert.ok(page.includes('2 beats'));
 });
+
+test('Plans afoot: each scheme with its house, target and turns remaining', async () => {
+  const { plansHtml } = await import('../../web/story/view.js');
+  const html = plansHtml([
+    { name: 'Alpha', scheme: 'Claim a riding', target: 'Beta', riding: 'Perth & Co', turnsRemaining: 2, followed: true },
+    { name: 'Gamma', scheme: 'Secure the line', target: null, riding: null, turnsRemaining: 1, followed: false },
+  ]);
+  assert.ok(html.includes('class="plan followed"'));
+  assert.ok(html.includes('Beta, Perth &amp; Co'));
+  assert.ok(html.includes('2 seasons to run') && html.includes('resolves next season'));
+  assert.ok(plansHtml([]).includes('No scheme'));
+});

@@ -211,16 +211,20 @@ def test_the_play_pages_beats_are_the_databases_beats(tmp_path):
     import crosscheck
 
     seasons = 30
-    crosscheck.run_python(1867, seasons, tmp_path / "seasons")
-    conn = sqlite3.connect(tmp_path / "python.db")
-    conn.row_factory = sqlite3.Row
-    turns, _ = beats_export.turn_inputs(conn)
-    conn.close()
-    js = json.loads(_node(JS / "story_engine_inputs.mjs", "--seed", 1867, "--seasons", seasons))
-    assert len(js["inputs"]) == len(turns) == seasons
-    for (turn, data), theirs, their_beats in zip(turns, js["inputs"], js["beats"]):
-        assert _canon(data) == _canon(theirs), f"season {turn}: the beat inputs differ"
-        assert _canon(beats_export.type_turn(data)) == _canon(their_beats), f"season {turn}"
+    # Under the published rules, and under the draft 1.0 with its schemes.
+    for version in (None, "1.0"):
+        out = tmp_path / (version or "current")
+        crosscheck.run_python(1867, seasons, out / "seasons", rules_version=version)
+        conn = sqlite3.connect(out / "python.db")
+        conn.row_factory = sqlite3.Row
+        turns, _ = beats_export.turn_inputs(conn)
+        conn.close()
+        extra = ("--rules-version", version) if version else ()
+        js = json.loads(_node(JS / "story_engine_inputs.mjs", "--seed", 1867, "--seasons", seasons, *extra))
+        assert len(js["inputs"]) == len(turns) == seasons
+        for (turn, data), theirs, their_beats in zip(turns, js["inputs"], js["beats"]):
+            assert _canon(data) == _canon(theirs), f"{version}, season {turn}: the beat inputs differ"
+            assert _canon(beats_export.type_turn(data)) == _canon(their_beats), f"{version}, season {turn}"
 
 
 def test_beat_chunks_stay_under_budget_and_cover_every_turn(frozen_games):
@@ -265,3 +269,61 @@ def test_the_first_dominion_storylines_meet_the_phase_b_gates(frozen_games):
     assert gates["closedWithoutOutcome"] == 0, gates
     assert gates["lapsedPerMille"] < 200, gates
     assert set(gates["byType"]) <= {"rivalry", "union", "succession", "rise", "decline", "frontier"}
+
+
+# -------------------------------------------------- rules 1.0: schemes --
+
+
+@pytest.fixture(scope="module")
+def scheme_game(tmp_path_factory):
+    """Forty seasons under the draft rules 1.0 on a scratch Meridian world, as
+    the preview plays them, with the engine's own season records kept."""
+    import load_seed
+
+    from hoc import rules_data, scenario, sim
+
+    work = tmp_path_factory.mktemp("story-schemes")
+    conn = load_seed.build(work / "game.db", seed=scenario.blank_seed_dir(),
+                           reference_data="meridian-v1.0.3")
+    world = sim.World(conn, rules=rules_data.load_rules(version="1.0"), world_seed=1867)
+    with conn:
+        records = [world.initialise(1867)] + [world.run_season() for _ in range(39)]
+    beats_export.write_beats(conn, work / "data", title="schemes")
+    yield conn, work, records
+    conn.close()
+
+
+@needs_node
+def test_python_and_javascript_type_a_game_with_schemes_alike(scheme_game, tmp_path):
+    conn, _, _ = scheme_game
+    turns, _ = beats_export.turn_inputs(conn)
+    inputs = [data for _, data in turns]
+    path = tmp_path / "schemes.json"
+    path.write_text(json.dumps(inputs, ensure_ascii=False), encoding="utf-8")
+    js = json.loads(_node(JS / "story_type.mjs", path))
+    python = [beats_export.type_turn(data) for data in inputs]
+    for (turn, _), a, b in zip(turns, python, js):
+        assert _canon(a) == _canon(b), f"turn {turn}: the two typings disagree"
+    kinds = {beat["kind"] for beats in python for beat in beats}
+    assert {"scheme_begun", "scheme_step", "scheme_resolved"} <= kinds
+    assert not [b for beats in python for b in beats if b["kind"] == "other"]
+
+
+def test_the_exported_plans_are_the_engines_season_records(scheme_game):
+    conn, work, records = scheme_game
+    plans = beats_export.plans_by_turn(conn)
+    for record in records[1:]:
+        assert plans[record["season"]] == record["plans"], f"season {record['season']}"
+    index = json.loads((work / "data" / "beats" / "index.json").read_text(encoding="utf-8"))
+    assert index["schemes"] is True
+    chunk = json.loads((work / "data" / "beats" / index["chunks"][0]["file"]).read_text(encoding="utf-8"))
+    assert "plans" in chunk
+
+
+@needs_node
+def test_a_game_with_schemes_tells_its_resolutions_and_closes_rivalries_by_contest(scheme_game):
+    _, work, _ = scheme_game
+    report = json.loads(_node(JS / "story_report.mjs", work / "data" / "beats"))
+    outcomes = report["trial"]["rivalryOutcomes"]
+    assert set(outcomes) & {"won in a contest", "held in a contest", "ceded under a claim"}, outcomes
+    assert report["storylines"]["closedWithoutOutcome"] == 0

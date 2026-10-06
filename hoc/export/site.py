@@ -9,11 +9,12 @@ It is a generated view: nothing here is ever read back as input.
 """
 
 import html
+import shutil
 import json
 import unicodedata
 from pathlib import Path
 
-from hoc import places, scenario
+from hoc import places, rules_data, scenario
 from hoc.db import HOUSE_BLOCK_FIELDS
 from hoc.export import (
     beats as beats_export, map as map_export, play as play_export, timeline as timeline_export,
@@ -53,6 +54,22 @@ ARCHIVE_DEPTH = 2  # archive/<name>/ — how far an archived page's root is belo
 
 def archive_banner(title):
     return f"Archive — {title}"
+
+
+# Set while the draft-rules preview is being rendered (scripts/build_preview.py):
+# the draft version's name. The preview is a game played afresh on every export
+# under the draft rules, on a scratch world, and published at preview/ beside the
+# site. It is not a scenario and not a game of record, and every page says so.
+_PREVIEW = None
+PREVIEW_DIRNAME = "preview"
+
+
+def preview_banner(version):
+    return (
+        f"Draft-rules preview — rules {version} (draft). Not a game of record: it is"
+        " played afresh on a scratch world every time the site is exported, so it"
+        " changes whenever the draft does."
+    )
 
 
 __all__ = ["write_site", "DEFAULT_OUT_DIR", "SITE_DIRNAME"]
@@ -117,7 +134,14 @@ def page(title, body, depth=0, subtitle=None):
         ("climate.html", "Climate"),
         ("about.html", "About"),
     ]
-    if _ARCHIVE:
+    if _PREVIEW:
+        # The preview is two pages and a way back out.
+        nav = [
+            ("replay.html", "Replay"),
+            ("storylines.html", "Storylines"),
+            ("../index.html", "← Back to the site"),
+        ]
+    elif _ARCHIVE:
         # Out of the archive rather than deeper into it: the archived site's own
         # root is two directories below the site's. A frozen game carries no play
         # or console link — there is nothing there to run.
@@ -130,12 +154,15 @@ def page(title, body, depth=0, subtitle=None):
     else:
         nav.append((f"{ARCHIVE_DIRNAME}/index.html", "Archive"))
         nav.append(("console.html", "Console"))
+        if rules_data.draft_version() is not None:
+            nav.append((f"{PREVIEW_DIRNAME}/replay.html", "Preview (draft rules)"))
     links = "".join(
         f'<a href="{href if href.startswith("../") else up + href}">{esc(label)}</a>'
         for href, label in nav
     )
     banner = (
-        f'<p class="banner">{esc(archive_banner(_ARCHIVE_TITLE))}</p>' if _ARCHIVE else ""
+        f'<p class="banner">{esc(preview_banner(_PREVIEW))}</p>' if _PREVIEW
+        else f'<p class="banner">{esc(archive_banner(_ARCHIVE_TITLE))}</p>' if _ARCHIVE else ""
     )
     sub = f'<p class="subtitle">{subtitle}</p>' if subtitle else ""
     footer = f'<footer>{esc(_GENERATED_FROM)}</footer>' if _GENERATED_FROM else ""
@@ -355,6 +382,8 @@ def _event_season(row):
 def _game_title():
     """The title of the game these pages show: the archived game's in an
     archive, otherwise the one hoc.db holds (scenarios/current.txt)."""
+    if _PREVIEW:
+        return f"Draft-rules preview (rules {_PREVIEW})"
     return _ARCHIVE_TITLE if _ARCHIVE else scenario.title(scenario.current_name())
 
 
@@ -807,6 +836,15 @@ STORY_AFOOT = (
     "</section>\n"
 )
 
+# Plans afoot (docs/STORY_DESIGN.md Phase C2): every public scheme of a cast or
+# followed house. Hidden unless the game's record carries schemes (rules 1.0).
+STORY_PLANS = (
+    '<section id="story-plans" class="plans" aria-labelledby="plans-heading" hidden>'
+    '<h2 id="plans-heading" class="afoot-heading">Plans afoot</h2>'
+    '<ol id="story-plans-list" class="plans-list"></ol>'
+    "</section>\n"
+)
+
 
 def _replay_page(conn, features, borders):
     """archive/<name>/replay.html: a frozen game told one turn at a time, as the
@@ -839,6 +877,7 @@ def _replay_page(conn, features, borders):
         '<div class="map-toolbar">'
         '<button type="button" id="view-toggle">Show the north</button></div>\n'
         + STORY_DISPATCH
+        + STORY_PLANS
         + STORY_AFOOT
         + '<details id="story-record" class="full-record"><summary>Full record</summary>'
         '<ol id="story-record-lines" class="record-lines"></ol></details>\n'
@@ -976,6 +1015,7 @@ def _play_page(conn, features, borders, slugs):
         # The dispatch is the season as told (docs/STORY_DESIGN.md §3.2); the
         # chronicle it is told from stays, collapsed, as the full record.
         + STORY_DISPATCH
+        + STORY_PLANS
         + STORY_AFOOT
         + '<ol id="story-log" class="dispatch-log" aria-label="Earlier seasons"></ol>\n'
         '<details id="full-record" class="full-record"><summary>Full record</summary>'
@@ -2897,6 +2937,12 @@ footer { margin-top: 3rem; padding-top: 0.8rem; border-top: 1px solid var(--rule
 .dispatch-previously { font-size: 0.85rem; color: var(--muted); margin: 0.2rem 0 0.4rem; }
 .dispatch-moments { margin-top: 0.3rem; }
 .afoot { margin: 0.6rem 0; }
+.plans { margin: 0.6rem 0; }
+.plans-list { list-style: none; padding: 0; margin: 0.3rem 0; }
+.plans-list .plan { padding: 0.25rem 0; border-bottom: 1px solid var(--rule, #ddd); font-size: 0.9rem; }
+.plans-list .plan.followed { font-weight: 600; }
+.plan-house { font-family: var(--serif); }
+.plan-scheme { font-style: italic; }
 .afoot-heading { margin-top: 1rem; }
 .afoot-list { list-style: none; padding: 0; margin: 0.3rem 0; }
 .afoot-item { display: flex; flex-direction: column; align-items: flex-start; width: 100%; text-align: left;
@@ -2991,6 +3037,50 @@ def write_archive_index(out_dir, entries):
     path = archive_dir / "index.html"
     path.write_text(page("Archive", body, depth=1), encoding="utf-8")
     return path
+
+
+def write_preview(conn, version, out_dir=DEFAULT_OUT_DIR, seed=None, seasons=None):
+    """Write preview/: the draft-rules preview's Replay and Storylines pages,
+    from a scratch database played under the draft (scripts/build_preview.py).
+    Everything in preview/ is generated; it is cleared first. Returns the
+    paths written."""
+    global _PREVIEW, _GENERATED_FROM
+    site_dir = Path(out_dir) / SITE_DIRNAME / PREVIEW_DIRNAME
+    shutil.rmtree(site_dir, ignore_errors=True)
+    site_dir.mkdir(parents=True)
+    previous = _GENERATED_FROM
+    _PREVIEW = version
+    _GENERATED_FROM = (
+        f"a draft-rules preview: {seasons} seasons under rules {version} (draft), seed {seed},"
+        " played afresh on every export — not a game of record"
+    )
+    written = []
+
+    def write(path, text):
+        path.write_text(text, encoding="utf-8")
+        written.append(path)
+
+    try:
+        reference_dir = places.reference_dir_for(conn)
+        features = map_export.projected_site_features(reference_dir)
+        borders = map_export.projected_site_borders(reference_dir)
+        write(site_dir / "style.css", STYLE)
+        write(site_dir / "replay.html", _replay_page(conn, features, borders))
+        write(
+            site_dir / "replay.js",
+            REPLAY_JS
+            .replace("__SCENARIO__", json.dumps(f"preview-{version}"))
+            .replace("__UNCLAIMED_FILL__", map_export.UNCLAIMED_FILL),
+        )
+        write(site_dir / "storylines.html", _storylines_page())
+        write(site_dir / "storylines-page.js", STORYLINES_JS)
+        written.extend(beats_export.write_beats(conn, site_dir / "data", title=_game_title()))
+        written.extend(play_export.write_story_assets(site_dir, scenario.REPO_ROOT))
+        write(site_dir / ".nojekyll", "")
+    finally:
+        _PREVIEW = None
+        _GENERATED_FROM = previous
+    return written
 
 
 def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False,

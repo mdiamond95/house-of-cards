@@ -49,7 +49,17 @@ BEAT_KINDS = (
     "invest", "cultivate", "consolidate", "name_heir",
     "riding_lost", "endowment", "era_response", "other",
     "heir_wanted", "heir_of_age", "bide",
+    "scheme_begun", "scheme_step", "scheme_answered", "scheme_abandoned", "scheme_resolved",
+    "ally_joins", "ally_declines", "contest_won", "contest_lost", "fallen",
 )
+
+SCHEME_PHASES = {
+    "begun": "scheme_begun",
+    "step": "scheme_step",
+    "answered": "scheme_answered",
+    "abandoned": "scheme_abandoned",
+    "resolved": "scheme_resolved",
+}
 
 SILENT_FAILURES = (
     "Cede / swap", "Expand", "Marriage alliance", "Petition elevation",
@@ -80,6 +90,8 @@ def type_event(event, action_of):
         return ("partition", None) if d.get("nature") == "partition" else ("founding", None)
     if kind == "succession":
         nature = d.get("nature")
+        if nature == "extinction" and "taken_by" in d:
+            return "fallen", d["taken_by"]
         if nature == "extinction":
             return "removed", d.get("reason")
         if nature == "disorderly":
@@ -91,9 +103,15 @@ def type_event(event, action_of):
         if d.get("nature") == "absorption":
             return "riding_passes", "absorption"
         if len(houses) >= 2:
+            if "under_claim" in d:
+                return "riding_passes", "cession under claim"
             return "riding_passes", "purchase" if "price" in d else d.get("reason")
         return "riding_lost", d.get("reason")
     if kind == "challenge":
+        if "contest" in d:
+            if d["contest"] == "held":
+                return "contest_lost", "held"
+            return "contest_won", d["contest"]
         if d.get("outcome") == "won":
             return "riding_passes", "challenge"
         return "failed", "Challenge (11b)"
@@ -114,6 +132,8 @@ def type_event(event, action_of):
             return "quarrel", d["cause"]
         if "ceded" in d:
             return "reconciled", "cession"
+        if "peace" in d:
+            return "reconciled", "peace"
         if d.get("letter"):
             return "correspondence", d.get("marker")
         action = action_of(houses[0]) if houses else None
@@ -125,6 +145,12 @@ def type_event(event, action_of):
             "Absorb": ("failed", "Absorb"),
         }.get(action, ("other", None))
     if kind == "other":
+        scheme = d.get("scheme")
+        if isinstance(scheme, dict) and scheme.get("phase") in SCHEME_PHASES:
+            return SCHEME_PHASES[scheme["phase"]], scheme.get("name")
+        ally = d.get("ally")
+        if isinstance(ally, dict):
+            return ("ally_joins" if ally.get("joins") else "ally_declines"), ally.get("side")
         if d.get("watch") == "no_heir":
             return "heir_wanted", None
         if d.get("watch") == "heir_of_age":
@@ -138,7 +164,8 @@ def type_event(event, action_of):
     return "other", None
 
 
-def _beat(turn, seq, kind, houses, ridings, outcome, line, owners, ranks, removed):
+def _beat(turn, seq, kind, houses, ridings, outcome, line, owners, ranks, removed,
+          scheme=None, ran=None):
     """The canonical shape: empty fields left out (web/story/beats.js makeBeat)."""
     beat = {"turn": turn, "seq": seq, "kind": kind, "houses": houses}
     if ridings:
@@ -153,6 +180,10 @@ def _beat(turn, seq, kind, houses, ridings, outcome, line, owners, ranks, remove
         beat["ranks"] = ranks
     if removed:
         beat["removed"] = removed
+    if scheme is not None:
+        beat["scheme"] = scheme
+    if ran is not None:
+        beat["ran"] = ran
     return beat
 
 
@@ -195,13 +226,21 @@ def type_turn(data):
             ranks[houses[0]] = rank_index(d["to"])
 
         removed = []
-        if kind == "removed" and houses:
+        if kind in ("removed", "fallen") and houses:
             removed.append(houses[0])
+
+        scheme = ran = None
+        if isinstance(d.get("scheme"), dict):
+            scheme = d["scheme"].get("id")
+            if kind == "scheme_resolved":
+                ran = d["scheme"].get("ran")
+        elif isinstance(d.get("scheme"), int) and not isinstance(d.get("scheme"), bool):
+            scheme = d["scheme"]
         if kind == "riding_passes" and outcome == "absorption" and len(houses) > 1:
             removed.append(houses[1])
 
         beats.append(_beat(data["turn"], len(beats), kind, houses, ridings, outcome,
-                           event["line"], owners, ranks, removed))
+                           event["line"], owners, ranks, removed, scheme, ran))
 
     for row in data["actions"]:
         kind = None
@@ -389,6 +428,8 @@ def build_story(conn):
         # Whether the record carries rules 1.0's succession watch: the story
         # layer then opens and closes succession questions on its events.
         "succession_watch": _record_has(conn, "succession_watch"),
+        # Whether it carries rules 1.0's schemes: the pages then show Plans afoot.
+        "schemes": _record_has(conn, "schemes"),
     }
     return index, beats
 
@@ -420,6 +461,60 @@ def prestige_by_turn(conn):
     return dict(out)
 
 
+def plans_by_turn(conn):
+    """Rules 1.0 `schemes`: every public scheme at the end of each season
+    ({turn: [plan, ...]}), in the shape the engine writes as a season record's
+    `plans`, rebuilt from the scheme events — each step records its turns
+    remaining, so the latest event at or before a season is the scheme as that
+    season left it. Empty for a game whose record carries no schemes."""
+    if not _record_has(conn, "schemes"):
+        return {}
+    history = defaultdict(list)
+    for row in conn.execute(
+        "SELECT e.id, e.mechanical_delta FROM events e"
+        " WHERE e.kind = 'other' AND e.mechanical_delta LIKE '%\"scheme\": {%' ORDER BY e.id"
+    ):
+        delta = json.loads(row["mechanical_delta"])
+        payload = delta.get("scheme")
+        if not isinstance(payload, dict) or "phase" not in payload:
+            continue
+        house = conn.execute(
+            "SELECT house FROM event_houses WHERE event_id = ? ORDER BY rowid LIMIT 1", (row["id"],)
+        ).fetchone()["house"]
+        history[payload["id"]].append((delta["season"], payload, house))
+    last = conn.execute("SELECT MAX(season_no) AS n FROM seasons").fetchone()["n"] or 0
+    # A house leaving play ends its schemes with no event of their own: its
+    # removal is theirs.
+    removed = {
+        row["house"]: row["removed_season"] for row in conn.execute(
+            "SELECT house, removed_season FROM house_stats WHERE removed_season IS NOT NULL")
+    }
+    out = {}
+    for turn in range(1, last + 1):
+        plans = []
+        for scheme_id in sorted(history):
+            seen = [entry for entry in history[scheme_id] if entry[0] <= turn]
+            if not seen:
+                continue
+            _, payload, house = seen[-1]
+            if payload["phase"] in ("abandoned", "resolved"):
+                continue
+            if house in removed and removed[house] <= turn:
+                continue
+            plans.append({
+                "id": scheme_id,
+                "house": house,
+                "scheme": payload["name"],
+                "target_house": payload.get("target_house"),
+                "riding": payload.get("riding"),
+                "turns_remaining": payload["turns_remaining"],
+                "begun": seen[0][0],
+                "committed": payload["committed"],
+            })
+        out[turn] = plans
+    return out
+
+
 def _dumps(value):
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
 
@@ -433,6 +528,7 @@ def write_beats(conn, data_dir, title=None):
     index, beats = build_story(conn)
     index["title"] = title
     prestige = prestige_by_turn(conn)
+    plans = plans_by_turn(conn)
 
     chunks = []
     current = {}
@@ -441,6 +537,8 @@ def write_beats(conn, data_dir, title=None):
         piece = len(_dumps({str(turn): beats[turn]}).encode("utf-8"))
         if turn in prestige:
             piece += len(_dumps({str(turn): prestige[turn]}).encode("utf-8"))
+        if turn in plans:
+            piece += len(_dumps({str(turn): plans[turn]}).encode("utf-8"))
         if current and size + piece > CHUNK_BUDGET - 64:
             chunks.append(current)
             current, size = {}, 0
@@ -458,6 +556,9 @@ def write_beats(conn, data_dir, title=None):
         if held:
             # Rules 1.0 `prestige`: the standings the story layer shows.
             body["prestige"] = held
+        if plans:
+            # Rules 1.0 `schemes`: what the Plans afoot panel shows.
+            body["plans"] = {t: plans.get(int(t), []) for t in chunk}
         text = _dumps(body) + "\n"
         if len(text.encode("utf-8")) > CHUNK_BUDGET:
             raise ValueError(f"{name} is over the {CHUNK_BUDGET:,}-byte budget; one turn is too large")
