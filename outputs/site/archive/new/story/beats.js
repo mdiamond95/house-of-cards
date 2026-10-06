@@ -280,3 +280,95 @@ export function baselineFromState(state) {
   }
   return { owners, ranks, removed };
 }
+
+// ------------------------------------------------------------ one act ----
+//
+// The engine sometimes writes two or three events for what is one act. The
+// story layer tells each act once: mergeActs folds such a group into a single
+// beat that carries every part's facts — houses, ridings, board changes — with
+// `merge` naming the act, `parts` the beats it was made from, and the kind of
+// its principal part. The groups, all within one turn:
+//
+//   cession     a riding passing by cession, and the grievance it settles
+//               (riding_passes 'cession' + reconciled 'cession', same houses)
+//   partition   a cadet founded by partition, and the clean succession of the
+//               parent that caused it (partition + succession_clean of the parent)
+//   disorderly  a disorderly succession, the riding it loses to the Crown and
+//               the neighbour it falls out with (succession_disorderly +
+//               riding_lost 'disorderly succession' + quarrel 'disorderly succession')
+//   collapse    a succession, and the removal of the same house it brings on
+//               (succession_* or one of the above + removed)
+//   contest     a contested expansion: the grievance, and either the winner's
+//               expansion or the loser's failed Expand
+//
+// Everything else passes through unchanged and in order.
+
+function mergeGroup(merge, kind, parts) {
+  const houses = [];
+  const ridings = new Set();
+  const owners = {};
+  const ranks = {};
+  const removed = [];
+  for (const p of parts) {
+    for (const h of p.houses || []) if (!houses.includes(h)) houses.push(h);
+    for (const r of p.ridings || []) ridings.add(r);
+    Object.assign(owners, p.owners || {});
+    Object.assign(ranks, p.ranks || {});
+    for (const h of p.removed || []) if (!removed.includes(h)) removed.push(h);
+  }
+  const principal = parts.find((p) => p.kind === kind) || parts[0];
+  const beat = { turn: parts[0].turn, seq: parts[0].seq, kind, houses, merge, parts };
+  if (ridings.size) beat.ridings = [...ridings].sort(compareText);
+  if (principal.outcome !== undefined) beat.outcome = principal.outcome;
+  if (Object.keys(owners).length) beat.owners = owners;
+  if (Object.keys(ranks).length) beat.ranks = ranks;
+  if (removed.length) beat.removed = removed;
+  return beat;
+}
+
+const SUCCESSIONS = ['succession_clean', 'succession_disorderly'];
+
+export function mergeActs(beats) {
+  const used = new Set();
+  const out = [];
+  const after = (i, test) => {
+    for (let j = i + 1; j < beats.length; j += 1) {
+      if (!used.has(j) && test(beats[j])) return j;
+    }
+    return -1;
+  };
+  for (let i = 0; i < beats.length; i += 1) {
+    if (used.has(i)) continue;
+    const b = beats[i];
+    let merged = null;
+    const [first, second] = b.houses || [];
+    if (b.kind === 'riding_passes' && b.outcome === 'cession') {
+      const j = after(i, (x) => x.kind === 'reconciled' && x.outcome === 'cession'
+        && x.houses[0] === first && x.houses[1] === second);
+      if (j !== -1) { used.add(j); merged = mergeGroup('cession', 'riding_passes', [b, beats[j]]); }
+    } else if (b.kind === 'partition') {
+      const j = after(i, (x) => x.kind === 'succession_clean' && x.houses[0] === first);
+      if (j !== -1) { used.add(j); merged = mergeGroup('partition', 'partition', [b, beats[j]]); }
+    } else if (b.kind === 'succession_disorderly') {
+      const parts = [b];
+      for (const [kind, outcome] of [['riding_lost', 'disorderly succession'], ['quarrel', 'disorderly succession']]) {
+        const j = after(i, (x) => x.kind === kind && x.outcome === outcome && x.houses[0] === first);
+        if (j !== -1) { used.add(j); parts.push(beats[j]); }
+      }
+      if (parts.length > 1) merged = mergeGroup('disorderly', 'succession_disorderly', parts);
+    } else if (b.kind === 'quarrel' && b.outcome === 'contested expansion') {
+      let j = i + 1 < beats.length && !used.has(i + 1) && beats[i + 1].kind === 'expansion'
+        && beats[i + 1].houses[0] === second ? i + 1 : -1;
+      if (j === -1) j = after(i, (x) => x.kind === 'failed' && x.outcome === 'Expand' && x.houses[0] === first);
+      if (j !== -1) { used.add(j); merged = mergeGroup('contest', 'quarrel', [b, beats[j]]); }
+    }
+    let current = merged || b;
+    const house = (current.merge ? current.parts[0] : current).houses[0];
+    if (SUCCESSIONS.includes(current.kind) || current.merge === 'partition' || current.merge === 'disorderly') {
+      const j = after(i, (x) => x.kind === 'removed' && x.houses[0] === house);
+      if (j !== -1) { used.add(j); current = mergeGroup('collapse', 'removed', [current, beats[j]]); }
+    }
+    out.push(current);
+  }
+  return out;
+}

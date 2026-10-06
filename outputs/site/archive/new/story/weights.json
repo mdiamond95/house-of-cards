@@ -1,8 +1,9 @@
 {
-  "version": "phase-a-1",
+  "version": "phase-b-1",
   "notes": [
-    "docs/STORY_DESIGN.md section 3.1. Integers only. The story layer reads this file and nothing in either engine does.",
-    "riding_lost, endowment, era_response and other are kinds the record holds that section 3.1 does not name: a riding returned to the Crown, an endowment, a response to a Minor or Significant era event, and anything untyped."
+    "docs/STORY_DESIGN.md sections 3.1 and 3.4. Integers only; a share is [numerator, denominator]. The story layer reads this file and nothing in either engine does.",
+    "riding_lost, endowment, era_response and other are kinds the record holds that section 3.1 does not name: a riding returned to the Crown, an endowment, a response to a Minor or Significant era event, and anything untyped. Approved by the director, 6 October 2026.",
+    "At most one era response (major_response or era_response) appears in a dispatch, and one headlines only when nothing else reaches the quiet threshold."
   ],
   "kinds": {
     "removed": 100,
@@ -16,7 +17,7 @@
     "reconciled": 45,
     "founding": 40,
     "succession_clean": 30,
-    "major_response": 30,
+    "major_response": 15,
     "compact": 25,
     "expansion": 20,
     "failed": 10,
@@ -34,8 +35,6 @@
     "top_eight": 20,
     "follow_multiplier": 2,
     "first": 15,
-    "callback": 10,
-    "callback_window": 10,
     "repeat_headline": -15
   },
   "thresholds": {
@@ -48,5 +47,19 @@
   "standing": {
     "per_holding": 10,
     "per_rank": 20
+  },
+  "storylines": {
+    "escalate_per_beat": 10,
+    "escalate_max": 30,
+    "close": 25,
+    "quarrel_outside_cast": 30,
+    "lapse_turns": 15,
+    "climax_beats": 4,
+    "frontier_share": [
+      1,
+      2
+    ],
+    "afoot_max": 6,
+    "afoot_window": 10
   }
 }
