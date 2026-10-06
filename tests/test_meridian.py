@@ -130,13 +130,45 @@ def test_ridings_ids_names_and_provinces_are_ne_2026s():
     assert meridian == ne
 
 
-def test_the_map_has_one_feature_per_riding_and_only_shared_borders():
-    features = json.loads((MERIDIAN / "geometry_simplified.geojson").read_text(encoding="utf-8"))
-    ids = [f["properties"]["fed_id"] for f in features["features"]]
-    assert ids == [r["fed_id"] for r in load(MERIDIAN / "ridings.csv")]
-    borders = json.loads((MERIDIAN / "borders_shared.geojson").read_text(encoding="utf-8"))
+def _bounds(geometry):
+    polygons = [geometry["coordinates"]] if geometry["type"] == "Polygon" else geometry["coordinates"]
+    return [pt for polygon in polygons for ring in polygon for pt in ring]
+
+
+def _inside(point, geometry):
+    from shapely.geometry import Point, shape
+    return shape(geometry).contains(Point(point))
+
+
+def test_the_set_carries_no_drawing_files_of_its_own():
+    assert not list(MERIDIAN.glob("*.geojson"))
+
+
+def test_the_map_is_drawn_from_the_coast_clipped_geometry():
+    from hoc.export import map as map_export
+    ids = [r["fed_id"] for r in load(MERIDIAN / "ridings.csv")]
+    for projected in (map_export.projected_features, map_export.projected_site_features):
+        assert sorted(f["fed_id"] for f in projected(MERIDIAN)) == sorted(ids)
+    assert map_export._drawing_path(MERIDIAN, map_export.GEOMETRY_FILE) == NE / map_export.GEOMETRY_FILE
+    assert map_export._site_path(MERIDIAN, map_export.SITE_GEOMETRY_FILE, map_export.GEOMETRY_FILE) == (
+        NE / map_export.SITE_GEOMETRY_FILE
+    )
+    for name in ("geometry_simplified.geojson", "geometry_site.geojson"):
+        fc = json.loads((NE / name).read_text(encoding="utf-8"))
+        assert sorted(f["properties"]["fed_id"] for f in fc["features"]) == sorted(ids)
+        # Not the unclipped layer: nothing drawn north of 84 N, and Hudson Bay
+        # (60 N 85 W) is inside no riding.
+        assert max(pt[1] for f in fc["features"] for pt in _bounds(f["geometry"])) <= 84
+        assert not any(_inside((-85, 60), f["geometry"]) for f in fc["features"]), name
+    borders = json.loads((NE / "borders_shared.geojson").read_text(encoding="utf-8"))
     assert borders["features"]
     assert all(f["geometry"]["type"] == "LineString" for f in borders["features"])
+
+
+def test_no_engine_reads_a_drawing_file():
+    for path in [*(ROOT / "hoc").glob("*.py"), *(ROOT / "web" / "engine").glob("*.js")]:
+        text = path.read_text(encoding="utf-8")
+        assert "geojson" not in text.lower(), path
 
 
 # ------------------------------------------------------------ jurisdictions --

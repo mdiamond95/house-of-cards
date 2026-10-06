@@ -23,8 +23,7 @@ DEFAULT_OUT_DIR = REPO_ROOT / "outputs"
 GEOMETRY_FILE = "geometry_simplified.geojson"
 BORDERS_FILE = "borders_shared.geojson"
 # A more aggressively simplified pair for the site's inline map only — see
-# scripts/build_geometry.py's SITE_PATH_BYTES_BUDGET for why. A set without
-# them (meridian-v1.0.3, whose layer is already drawn coarse) uses the pair above.
+# scripts/build_geometry.py's SITE_PATH_BYTES_BUDGET for why.
 SITE_GEOMETRY_FILE = "geometry_site.geojson"
 SITE_BORDERS_FILE = "borders_site.geojson"
 
@@ -230,23 +229,36 @@ def _reference(reference_dir):
     return places.DEFAULT_REFERENCE_DIR if reference_dir is None else Path(reference_dir)
 
 
+def _drawing_path(reference_dir, name):
+    """A drawing file of the set: its own if it carries one, else the shared
+    coast-clipped file in data/reference/ (scripts/build_geometry.py). Only
+    ne-2026 has its own; meridian-v1.0.3 draws the same 343 ridings from the
+    shared files. No engine reads a drawing file, so which one a set resolves
+    to is never part of a game."""
+    path = _reference(reference_dir) / name
+    return path if path.exists() else places.DEFAULT_REFERENCE_DIR / name
+
+
 def _site_path(reference_dir, site_file, main_file):
     directory = _reference(reference_dir)
-    path = directory / site_file
-    return path if path.exists() else directory / main_file
+    for path in (directory / site_file, directory / main_file,
+                 places.DEFAULT_REFERENCE_DIR / site_file):
+        if path.exists():
+            return path
+    return places.DEFAULT_REFERENCE_DIR / main_file
 
 
 def projected_features(reference_dir=None):
     """Every riding as projected rings. Shared by the SVG map and the site map."""
     transformer = Transformer.from_crs("EPSG:4326", PROJECTION, always_xy=True)
-    return _project_features(transformer, path=_reference(reference_dir) / GEOMETRY_FILE)
+    return _project_features(transformer, path=_drawing_path(reference_dir, GEOMETRY_FILE))
 
 
 def projected_borders(reference_dir=None):
     """Riding-to-riding borders as projected lines. Shared by the SVG map and
     the site map — never the coastline."""
     transformer = Transformer.from_crs("EPSG:4326", PROJECTION, always_xy=True)
-    return _project_borders(transformer, path=_reference(reference_dir) / BORDERS_FILE)
+    return _project_borders(transformer, path=_drawing_path(reference_dir, BORDERS_FILE))
 
 
 def projected_site_features(reference_dir=None):
