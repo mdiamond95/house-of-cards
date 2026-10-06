@@ -128,10 +128,9 @@ test('a storyline headline shows its kicker, its related beats, the previous bea
   assert.ok(html.includes('<ul class="dispatch-related"><li>Alpha presses a claim and is rebuffed.</li></ul>'));
   assert.ok(html.includes('Previously, season 10: Alpha and Beta fall out.'));
   assert.ok(html.includes('reaches its climax'));
-  assert.equal(pauseReason(d, 60), 'Paused: The Alpha\u2013Beta rivalry reaches its climax. Press Auto to carry on.');
-  assert.equal(pauseReason({ pause: true, moments: [], headline: { weight: 70 } }, 60),
-    'Paused on a headline of weight 70 (the pause threshold is 60). Press Auto to carry on.');
-  assert.equal(pauseReason({ pause: false }, 60), null);
+  assert.equal(pauseReason({ pause: true, stops: ['The Alpha\u2013Beta rivalry closes'] }),
+    'Paused: The Alpha\u2013Beta rivalry closes. Press Auto to carry on.');
+  assert.equal(pauseReason({ pause: false }), null);
 });
 
 test('the Afoot list and a storyline told top to bottom', () => {

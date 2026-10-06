@@ -41,8 +41,8 @@ test('+20 when a house of the cast is involved', () => {
 
 test('+15 for the first of a kind, once', () => {
   const [a, b] = weighTurn([beat(5, 'marriage', ['A', 'B']), beat(5, 'marriage', ['C', 'D'])], createContext(), { weights });
-  assert.equal(a.total, 60);
-  assert.equal(b.total, 45);
+  assert.equal(a.total, 50);
+  assert.equal(b.total, 35);
 });
 
 test('+15 for the first riding in a province, and not again', () => {
@@ -67,6 +67,9 @@ test('storyline position: nothing to open, +10 per earlier beat to +30 to escala
   assert.equal(storylineBonus([{ role: 'close', earlier: 1 }], cfg), 25);
   assert.equal(storylineBonus([{ role: 'escalate', earlier: 1 }, { role: 'close', earlier: 9 }], cfg), 25,
     'a beat in several storylines takes the largest');
+  assert.equal(storylineBonus([{ role: 'escalate', earlier: 5, type: 'frontier' }], cfg), 0,
+    'a frontier beat takes no escalation bonus');
+  assert.equal(storylineBonus([{ role: 'close', earlier: 5, type: 'frontier' }], cfg), 25);
   const [w] = weighTurn([beat(9, 'compact', ['A', 'B'])], spent(),
     { weights, roles: [[{ role: 'escalate', earlier: 3 }]] });
   assert.deepEqual(w.mods, [['storyline', 30]]);

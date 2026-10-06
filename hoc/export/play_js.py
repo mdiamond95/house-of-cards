@@ -604,7 +604,7 @@ function autoTick() {
     return;
   }
   const d = app.lastDispatch;
-  if (d && d.pause) stopAuto(pauseReason(d, app.weights.thresholds.pause));
+  if (d && d.pause) stopAuto(pauseReason(d));
 }
 
 function startAuto() {

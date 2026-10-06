@@ -21,8 +21,9 @@
 //               cast. Escalated by every beat both take part in. Closes on a
 //               partition or absorption of either, or a falling-out between them.
 //   frontier    opens on the first riding any house holds in a province.
-//               Escalated by every riding taken there. Closes when the province
-//               is half claimed (`storylines.frontier_share`).
+//               Escalated by every unclaimed riding taken there (a riding
+//               passing between houses is not a frontier beat). Closes when the
+//               province is half claimed (`storylines.frontier_share`).
 //
 // Over all of them: a storyline with no beat for `lapse_turns` turns closes as
 // "lapsed"; a house's removal closes every storyline it is in, the removal its
@@ -133,7 +134,7 @@ export class Storylines {
       if (s.beats.some((entry) => entry.index === index && entry.turn === turn)) return;
       const earlier = s.beats.length;
       s.beats.push({ turn, beat: beats[index], index });
-      roles[index].push({ id: s.id, role, earlier });
+      roles[index].push({ id: s.id, role, earlier, type: s.type });
       touched.add(s.id);
       if (s.state === 'rising' && s.beats.length >= cfg.climax_beats && role !== 'close') {
         s.state = 'climax';
@@ -221,7 +222,9 @@ export class Storylines {
         // Frontier: the first riding in a province opens one; later ridings
         // there escalate it.
         for (const [fed, owner] of Object.entries(beat.owners || {})) {
-          if (owner === null) continue;
+          // Only unclaimed land taken counts: a riding passing from one house
+          // to another is never a frontier beat.
+          if (owner === null || board.owners[fed] !== undefined) continue;
           const province = provinceOf(fed);
           const running = this.find('frontier', province);
           if (running) {

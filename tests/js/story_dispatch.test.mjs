@@ -113,13 +113,29 @@ test('a storyline headline carries a kicker and the storyline\'s previous beat',
   assert.equal(d.previously.text, 'Alpha and Beta fall out.', 'the previously line follows the naming rule');
 });
 
-test('a cast storyline opening pauses Auto; a quiet one does not', () => {
-  const s = story({ seen: BEAT_KINDS, baseline: { owners: {}, ranks: { A: 0, B: 0 }, removed: [] } });
-  const d = s.step(3, [beat(3, 'quarrel', ['A', 'B'], { outcome: 'friction', line: 'A and B fall out.' })]);
-  assert.equal(d.pause, true);
-  assert.deepEqual(d.moments.map((m) => m.change), ['opened']);
-  const q = s.step(4, [beat(4, 'invest', ['A'])]);
-  assert.equal(q.pause, false);
+test('Auto pauses on a long cast storyline closing, a removal, a riding between cast houses, a heavy followed headline', () => {
+  const s = story({ seen: BEAT_KINDS, baseline: { owners: { 35001: 'A', 35002: 'B' }, ranks: { A: 0, B: 0 }, removed: [] } });
+  const opened = s.step(3, [beat(3, 'quarrel', ['A', 'B'], { outcome: 'friction', line: 'A and B fall out.' })]);
+  assert.equal(opened.pause, false, 'a storyline opening is shown, not paused on');
+  assert.deepEqual(opened.moments.map((m) => m.change), ['opened']);
+  s.step(4, [beat(4, 'quarrel', ['A', 'B'], { outcome: 'friction', line: 'q.' })]);
+  s.step(5, [beat(5, 'failed', ['A', 'B'], { outcome: 'Dispute' })]);
+  const closed = s.step(6, [beat(6, 'reconciled', ['A', 'B'], { line: 'A makes peace with B.' })]);
+  assert.equal(closed.pause, true);
+  assert.deepEqual(closed.stops, ['The Alpha\u2013Beta rivalry closes']);
+  const short = story({ seen: BEAT_KINDS, baseline: { owners: {}, ranks: { A: 0, B: 0 }, removed: [] } });
+  short.step(1, [beat(1, 'quarrel', ['A', 'B'], { outcome: 'friction', line: 'q.' })]);
+  assert.equal(short.step(2, [beat(2, 'reconciled', ['A', 'B'], { line: 'r.' })]).pause, false,
+    'a two-beat storyline closing does not stop Auto');
+  const passes = s.step(7, [beat(7, 'riding_passes', ['A', 'B'], { outcome: 'purchase', ridings: ['35001'], owners: { 35001: 'B' }, line: 'B buys X from A.' })]);
+  assert.ok(passes.stops.includes('a riding passes between two houses of the cast'));
+  const gone = s.step(8, [beat(8, 'removed', ['Z'], { removed: ['Z'], line: 'Z fails.' })]);
+  assert.deepEqual(gone.stops, ['Baron Z of Zeta is removed']);
+  assert.equal(s.step(9, [beat(9, 'invest', ['A'])]).pause, false);
+  const followed = story({ seen: BEAT_KINDS, follow: 'E', baseline: { owners: {}, ranks: {}, removed: [] } });
+  const heavy = followed.step(1, [beat(1, 'expansion', ['E'], { owners: { 35003: 'E' }, line: 'E takes Ottawa Centre.' })]);
+  assert.equal(heavy.headline.weight, 70);
+  assert.ok(heavy.stops[0].startsWith('a headline of weight 70 about the followed house'));
 });
 
 test('following changes the weights, never the board', () => {

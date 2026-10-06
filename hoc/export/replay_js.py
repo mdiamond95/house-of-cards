@@ -183,7 +183,7 @@ function startAuto() {
     if (app.auto === null) return;
     if (!d) { stopAuto(`The end of the record: ${unitName()} ${app.index.turns}.`); return; }
     if (d.pause) {
-      stopAuto(pauseReason(d, app.weights.thresholds.pause));
+      stopAuto(pauseReason(d));
       return;
     }
     app.auto = setTimeout(tick, AUTO_MS);

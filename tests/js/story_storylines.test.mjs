@@ -30,13 +30,13 @@ function harness({ owners = {}, ranks = {}, totals = { 35: 4, 24: 2 }, held = []
 test('a rivalry opens on a quarrel, escalates on shared beats and closes on a reconciliation', () => {
   const h = harness({ ranks: { A: 0, B: 0 } });
   const opened = h.step(1, [beat(1, 'quarrel', ['B', 'A'], { outcome: 'friction' })]);
-  assert.deepEqual(opened.roles, [[{ id: 's1', role: 'open', earlier: 0 }]]);
+  assert.deepEqual(opened.roles, [[{ id: 's1', role: 'open', earlier: 0, type: 'rivalry' }]]);
   const s = h.lines.of('s1');
   assert.deepEqual([s.type, s.houses, s.opened, s.state], ['rivalry', ['A', 'B'], 1, 'rising']);
   h.step(2, [beat(2, 'failed', ['A', 'B'], { outcome: 'Dispute' }), beat(2, 'correspondence', ['A', 'B'])]);
   assert.equal(s.beats.length, 2, 'a letter is not a storyline beat');
   const closing = h.step(3, [beat(3, 'reconciled', ['A', 'B'])]);
-  assert.deepEqual(closing.roles[0], [{ id: 's1', role: 'close', earlier: 2 }]);
+  assert.deepEqual(closing.roles[0], [{ id: 's1', role: 'close', earlier: 2, type: 'rivalry' }]);
   assert.deepEqual([s.state, s.outcome, s.closed], ['closed', 'reconciled', 3]);
   assert.equal(storylineName(s, (x) => `Place ${x}`), 'The Place A–Place B rivalry');
 });
@@ -115,8 +115,21 @@ test('a cadet inherits nothing, but the partition beat belongs to its parent\'s 
   h.step(2, [beat(2, 'quarrel', ['P', 'X'], { outcome: 'friction' })]);
   h.step(3, [beat(3, 'partition', ['P', 'C'], { owners: { 24001: 'C', 24002: 'C' }, ranks: { C: 0 } })]);
   const quebec = h.lines.all.find((s) => s.type === 'frontier');
-  assert.ok(quebec.beats.some((e) => e.beat.kind === 'partition'), 'the partition belongs to the parent\'s frontier');
+  assert.ok(!quebec.beats.some((e) => e.beat.kind === 'partition'), 'ridings passing to a cadet are no frontier beat');
   assert.ok(!quebec.houses.includes('C'), 'the cadet does not join it');
+  const decline = h.lines.all.find((s) => s.type === 'decline' && s.key === 'P');
+  assert.ok(decline.beats.some((e) => e.beat.kind === 'partition'), 'the partition belongs to the parent\'s decline');
   const rivalry = h.lines.all.find((s) => s.type === 'rivalry');
   assert.ok(!rivalry.houses.includes('C'));
+});
+
+test('a riding passing between houses is never a frontier beat', () => {
+  const h = harness({ ranks: { A: 0, B: 0 }, totals: { 24: 10 } });
+  h.step(1, [beat(1, 'expansion', ['A'], { owners: { 24001: 'A' } })]);
+  const quebec = h.lines.all.find((s) => s.type === 'frontier');
+  h.step(2, [beat(2, 'riding_passes', ['A', 'B'], { owners: { 24001: 'B' } })]);
+  assert.equal(quebec.beats.length, 1);
+  assert.ok(!quebec.houses.includes('B'));
+  h.step(3, [beat(3, 'expansion', ['B'], { owners: { 24002: 'B' } })]);
+  assert.equal(quebec.beats.length, 2);
 });
