@@ -62,6 +62,18 @@ STAT_RANGE = (0, 100)
 AMBITION_RANGE = (0, 10)
 TOTAL_RIDINGS = 343
 
+# Rules 0.9 (`atlas_jurisdiction`): every founding and every accession starts a
+# personal clock here (hard rule 5), so this is also the year at which a Crown
+# grant reads the map. A riding whose opens_year is later is closed to a new
+# house, and to any house whose own clock has not yet reached it.
+FOUNDING_YEAR = 1867
+
+# Rules 0.9 (`riding_endowments`): the middle quintile. A riding's wealth_tier
+# moves founding capital and the cost of taking it by its distance from this.
+# A reference set with no riding_stats.csv (ne-2026) reads every riding as this
+# tier, so the flag changes nothing there.
+NEUTRAL_WEALTH_TIER = 3
+
 # Action weights are carried as integers at this fixed-point scale: a base
 # weight of 6 in rules/actions.csv is 600 here, and a "+2" modifier is 200
 # (Phase 10-1). Nothing in the weighting is allowed to be a float, because a
@@ -392,6 +404,65 @@ class World:
         """Whether the version this world is playing under turns on a behaviour."""
         return self.rules.feature(name)
 
+    # -- rules 0.9: the atlas a house reads, and what its ground is worth --
+
+    def opens_year(self, fed_id):
+        """The personal year from which a riding is open to a house, from
+        riding_stats.csv. A set without the column (ne-2026) opens everything
+        at FOUNDING_YEAR."""
+        stats = self.riding_stats.get(fed_id)
+        if not stats or "opens_year" not in stats:
+            return FOUNDING_YEAR
+        return stats["opens_year"]
+
+    def riding_open(self, fed_id, personal_year):
+        """Whether a house at `personal_year` may take the riding. Always true
+        unless `atlas_jurisdiction` is on."""
+        if not self.feature("atlas_jurisdiction"):
+            return True
+        return personal_year >= self.opens_year(fed_id)
+
+    def foundable(self, fed_id):
+        """Whether the Crown may seat a new house here. A new house's clock
+        reads FOUNDING_YEAR, so this is `riding_open` at that year."""
+        return self.riding_open(fed_id, FOUNDING_YEAR)
+
+    def closed_message(self, fed_id, who, personal_year):
+        """The refusal a director sees for a closed riding: the riding, the
+        house's personal year, and the riding's opens_year."""
+        return (
+            f"{self._riding_name(fed_id)} is closed to {who}: personal year"
+            f" {personal_year} is before its opens_year {self.opens_year(fed_id)}"
+        )
+
+    def wealth_offset(self, fed_id):
+        """wealth_tier − 3 under `riding_endowments`, else 0. A set without
+        riding_stats.csv reads every riding as the neutral tier."""
+        if not self.feature("riding_endowments"):
+            return 0
+        stats = self.riding_stats.get(fed_id) or {}
+        return stats.get("wealth_tier", NEUTRAL_WEALTH_TIER) - NEUTRAL_WEALTH_TIER
+
+    def jurisdiction_name(self, fed_id, year):
+        """The name of the jurisdiction the riding lay under in `year`, from
+        riding_jurisdictions.csv, or None where the set has no spans for it.
+        Display only: the engine keys on ridings.csv's province code."""
+        for span in self.riding_jurisdictions.get(fed_id, ()):
+            if span["from_year"] <= year and (span["to_year"] is None or year <= span["to_year"]):
+                return span["name"]
+        return None
+
+    def _jurisdiction_suffix(self, fed_id, year):
+        """" (Rupert's Land)" when a riding's jurisdiction in `year` is named
+        differently from the one in force today, else "". Under
+        `atlas_jurisdiction` only, so a 0.8 chronicle line reads as it did."""
+        if not self.feature("atlas_jurisdiction"):
+            return ""
+        then = self.jurisdiction_name(fed_id, year)
+        spans = self.riding_jurisdictions.get(fed_id, ())
+        now = spans[-1]["name"] if spans else None
+        return f" ({then})" if then is not None and then != now else ""
+
     # -- persistence of the world seed --
 
     def use_rules_version(self, version):
@@ -575,6 +646,62 @@ class World:
             )
         ]
 
+    def open_expansion_targets(self, house):
+        """expansion_targets, less any riding closed to the house at its own
+        personal year (rules 0.9 `atlas_jurisdiction`). Filtered here, before
+        any weight or draw, exactly as land adjacency is — so a closed riding
+        never consumes a draw."""
+        targets = self.expansion_targets(house)
+        if not self.feature("atlas_jurisdiction"):
+            return targets
+        year = self.personal_year(house)
+        return [fed_id for fed_id in targets if self.riding_open(fed_id, year)]
+
+    def can_expand_into_open(self, house):
+        """§7's Expand precondition: an unclaimed land-adjacent riding exists —
+        under `atlas_jurisdiction`, one open to this house."""
+        if not self.feature("atlas_jurisdiction"):
+            return self.has_expansion_target(house)
+        key = ("can_expand_open", house)
+        if key not in self._turn_cache:
+            self._turn_cache[key] = bool(self.open_expansion_targets(house))
+        return self._turn_cache[key]
+
+    def founding_room(self):
+        """§10's p_found numerator: unclaimed ridings with a land neighbour —
+        under `atlas_jurisdiction`, only those the Crown may grant, so p_found
+        reaches zero when the foundable map is full."""
+        if not self.feature("atlas_jurisdiction"):
+            return self.unclaimed_land_adjacent_count()
+        return sum(
+            1 for row in self.conn.execute(
+                "SELECT r.fed_id FROM ridings r"
+                " WHERE NOT EXISTS (SELECT 1 FROM holdings h WHERE h.fed_id = r.fed_id"
+                "                   AND h.released_event_id IS NULL)"
+                "   AND EXISTS (SELECT 1 FROM adjacency a WHERE a.adjacency_type = 'land'"
+                "               AND (a.fed_id_a = r.fed_id OR a.fed_id_b = r.fed_id))"
+            )
+            if self.foundable(row["fed_id"])
+        )
+
+    def expand_refusal(self, house):
+        """Why forcing Expand on this house would be refused, or None.
+
+        Refused only when every unclaimed land neighbour is closed to it at the
+        personal year it will act in — next season's, one on from today's —
+        so the message names a closed riding, that year, and the opens_year.
+        A house with no unclaimed neighbour at all is not this refusal's
+        business: the season refuses that as it always has."""
+        if not self.feature("atlas_jurisdiction"):
+            return None
+        targets = self.expansion_targets(house)
+        if not targets:
+            return None
+        year = self.personal_year(house) + 1
+        if any(self.riding_open(fed_id, year) for fed_id in targets):
+            return None
+        return self.closed_message(targets[0], house, year)
+
     # Rules 0.8: where a house's territorial designation may come from, most
     # local first. Under 0.7 there was one source — the seat's province — so a
     # house seated in Halifax could be styled "of Kamloops"; these tiers are
@@ -709,13 +836,25 @@ class World:
         land-adjacent capacity, so settlement moves west as the east fills
         without any date driving it (§10)."""
         capacity = defaultdict(int)
-        for row in self.conn.execute(
-            "SELECT r.province, COUNT(*) AS n FROM ridings r"
-            " WHERE NOT EXISTS (SELECT 1 FROM holdings h WHERE h.fed_id = r.fed_id"
-            "                   AND h.released_event_id IS NULL)"
-            " GROUP BY r.province"
-        ):
-            capacity[PROVINCE_REGION.get(row["province"], "north")] += row["n"]
+        if self.feature("atlas_jurisdiction"):
+            # Rules 0.9: "unclaimed" means unclaimed and foundable, so a region
+            # with no seat left the Crown may grant has no room and no weight.
+            for row in self.conn.execute(
+                "SELECT r.fed_id, r.province FROM ridings r"
+                " WHERE NOT EXISTS (SELECT 1 FROM holdings h WHERE h.fed_id = r.fed_id"
+                "                   AND h.released_event_id IS NULL)"
+                " ORDER BY r.fed_id"
+            ):
+                if self.foundable(row["fed_id"]):
+                    capacity[PROVINCE_REGION.get(row["province"], "north")] += 1
+        else:
+            for row in self.conn.execute(
+                "SELECT r.province, COUNT(*) AS n FROM ridings r"
+                " WHERE NOT EXISTS (SELECT 1 FROM holdings h WHERE h.fed_id = r.fed_id"
+                "                   AND h.released_event_id IS NULL)"
+                " GROUP BY r.province"
+            ):
+                capacity[PROVINCE_REGION.get(row["province"], "north")] += row["n"]
 
         # Integer drift (rules 0.7): base * (20 + room) // 20 is the old float
         # form base * (1 + room/20) with the rounding made explicit. Regions are
@@ -748,9 +887,10 @@ class World:
             " ORDER BY r.fed_id",
             provinces,
         ).fetchall()
-        if not rows:
+        candidates = [row["fed_id"] for row in rows if self.foundable(row["fed_id"])]
+        if not candidates:
             return None
-        return rng.choice([row["fed_id"] for row in rows], purpose="founding.seat")
+        return rng.choice(candidates, purpose="founding.seat")
 
     def _draw_tag(self, rng):
         """Tag with climate fit: the Confederation ledger's sign doubles the
@@ -790,6 +930,8 @@ class World:
                 raise SimError(f"unknown riding {seat!r}")
             if mechanics._holder_of(self.conn, fed_id) is not None:
                 raise SimError(f"riding {seat!r} is already held")
+            if not self.foundable(fed_id):
+                raise SimError(self.closed_message(fed_id, "a new house", FOUNDING_YEAR))
             province = self.conn.execute(
                 "SELECT province FROM ridings WHERE fed_id = ?", (fed_id,)
             ).fetchone()["province"]
@@ -866,8 +1008,14 @@ class World:
             (house, drawn["peerage"], rank, primary, secondary, f"founded season {season}"),
         )
 
+        # Rules 0.9 `riding_endowments`: + 2*(wealth_tier - 3) of the seat,
+        # added after the draw so the draw order is the one 0.8 made.
         stats = {
-            "capital": clamp(30 + 5 * rank_index + rng.randint(1, 20, "founding.capital"), *STAT_RANGE),
+            "capital": clamp(
+                30 + 5 * rank_index + rng.randint(1, 20, "founding.capital")
+                + 2 * self.wealth_offset(fed_id),
+                *STAT_RANGE,
+            ),
             "influence": clamp(20 + 5 * rank_index + rng.randint(1, 20, "founding.influence"), *STAT_RANGE),
             "cohesion": clamp(60 + rng.randint(1, 20, "founding.cohesion"), *STAT_RANGE),
             "ambition": clamp(rng.randint(1, 10, "founding.ambition"), *AMBITION_RANGE),
@@ -903,6 +1051,19 @@ class World:
             (house, f"founded season {season}"),
         )
 
+        founding_delta = {"stats": stats, "community": community_obj.community, "tag": tag}
+        seat_jurisdiction = (
+            self.jurisdiction_name(fed_id, FOUNDING_YEAR)
+            if self.feature("atlas_jurisdiction") else None
+        )
+        if seat_jurisdiction is not None:
+            # Display only (rules 0.9): the seat's jurisdiction at the new
+            # house's personal year, in the event and in the season's log.
+            founding_delta["jurisdiction"] = seat_jurisdiction
+            self.log.append({
+                "purpose": "founding.jurisdiction",
+                "result": {"riding": self._riding_name(fed_id), "jurisdiction": seat_jurisdiction},
+            })
         event_id = self.record(
             "founding",
             f"{drawn['peerage']} founded",
@@ -910,8 +1071,9 @@ class World:
             season,
             band="confederation",
             line=f"Season {season} · {drawn['peerage']} is created, seated at "
-                 f"{self._riding_name(fed_id)}.",
-            delta={"stats": stats, "community": community_obj.community, "tag": tag},
+                 f"{self._riding_name(fed_id)}"
+                 f"{self._jurisdiction_suffix(fed_id, FOUNDING_YEAR)}.",
+            delta=founding_delta,
         )
         self.conn.execute(
             "INSERT INTO holdings (house, fed_id, seat_order, hex, acquired_event_id)"
@@ -1883,7 +2045,7 @@ class World:
         holdings = self.holding_count(house)
         legal = {"Invest", "Consolidate (rest)"}
 
-        if row["capital"] >= 40 and not row["enclosed"] and self.has_expansion_target(house):
+        if row["capital"] >= 40 and not row["enclosed"] and self.can_expand_into_open(house):
             legal.add("Expand")
         if row["capital"] >= 20:
             legal.add("Cultivate influence")
@@ -2082,11 +2244,12 @@ class World:
             self.set_stats(house, capital=-5)
             return {"action": "Expand", "success": False}
 
-        targets = self.expansion_targets(house)
+        targets = self.open_expansion_targets(house)
         if not targets:
             return {"action": "Expand", "success": False, "note": "no target"}
         fed_id = rng.choice(targets, purpose=f"expand.target.{house}")
         name = self._riding_name(fed_id)
+        year = self.personal_year(house)
 
         # Contested expansion (rules 0.6): if another house already reached for
         # this riding this season, the two roll off. The loser walks away with a
@@ -2114,14 +2277,21 @@ class World:
                 "roll": rng.two_d6(purpose=f"contest.{house}.{fed_id}"),
             }
 
+        expansion_delta = {"riding": name, "roll": roll}
+        jurisdiction = (
+            self.jurisdiction_name(fed_id, year) if self.feature("atlas_jurisdiction") else None
+        )
+        if jurisdiction is not None:
+            expansion_delta["jurisdiction"] = jurisdiction
         event_id = self.record(
             "expansion",
             f"{row['peerage']} takes {name}",
             [house],
             season,
             band=band,
-            line=f"Season {season} · {row['peerage']} takes {name}.",
-            delta={"riding": name, "roll": roll},
+            line=f"Season {season} · {row['peerage']} takes {name}"
+                 f"{self._jurisdiction_suffix(fed_id, year)}.",
+            delta=expansion_delta,
         )
         self.conn.execute(
             "INSERT INTO holdings (house, fed_id, seat_order, hex, acquired_event_id)"
@@ -2134,8 +2304,12 @@ class World:
                 event_id,
             ),
         )
-        self.set_stats(house, capital=-15)
-        return {"action": "Expand", "success": True, "riding": name}
+        # Rules 0.9 `riding_endowments`: 15 + (wealth_tier - 3) of the target.
+        self.set_stats(house, capital=-(15 + self.wealth_offset(fed_id)))
+        outcome = {"action": "Expand", "success": True, "riding": name}
+        if jurisdiction is not None:
+            outcome["jurisdiction"] = jurisdiction
+        return outcome
 
     def _grievance_from_contest(self, loser, winner, riding, season, band):
         """The house that lost a contested riding carries the grievance."""
@@ -2992,7 +3166,7 @@ class World:
         never a code change (§11).
         """
         spec = self.rules.founding["p_found"]
-        room = self.unclaimed_land_adjacent_count()
+        room = self.founding_room()
         # The only floating-point computation in the engine, and the only float
         # comparison: sqrt(room / 343) * coefficient, against rand_float().
         # IEEE-754 makes division, multiplication and sqrt exact-or-correctly-

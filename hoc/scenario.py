@@ -294,10 +294,23 @@ def require_live(name=None, root=None):
 
 def blank_seed_dir(root=None):
     """The seed directory of an autoplay scenario — header rows only, the engine
-    generates everything — for tools that need an empty world and no particular game."""
-    for name in scenario_names(root):
-        if read_manifest(name, root).get("kind") == "autoplay":
+    generates everything — for tools that need an empty world and no particular game.
+
+    One on the default reference set (ne-2026) when there is one. A seed directory
+    carries its scenario's ground with it (scripts/load_seed.py builds a scenario's
+    seed on the set its manifest names), and "no particular game" has to mean the
+    default ground, not whichever game sorts first: otherwise an empty world built
+    for a test or a cross-check silently moves to the Meridian map the day a
+    scenario on it appears. A caller that wants another set names it."""
+    autoplay = [
+        name for name in scenario_names(root)
+        if read_manifest(name, root).get("kind") == "autoplay"
+    ]
+    for name in autoplay:
+        if reference_data(name, root) == DEFAULT_REFERENCE_DATA:
             return seed_dir(name, root)
+    if autoplay:
+        return seed_dir(autoplay[0], root)
     raise ScenarioError("no autoplay scenario to take an empty seed from")
 
 

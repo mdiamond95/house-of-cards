@@ -1,0 +1,9 @@
+objective,favoured_by,satisfied_when,action_weight_bonus
+Consolidate region,any; more if 1-2 holdings,4+ contiguous holdings,Expand
+Secure succession,holder_age >= 60 and no heir,heir named and aged >= 25,Name heir
+Seek elevation,influence >= 60,rank raised,Cultivate influence; Petition elevation
+Answer a grievance,any Sig- relation,dispute won or reconciliation,Cede / swap
+Form a compact,Progressive / Mixed,◉+ relation formed,Propose compact; Marriage alliance
+Endow an institution,capital >= 70,endowment action succeeds,Endow
+Defend the seat,any incursion suffered,3 seasons without loss,Consolidate (rest); Cultivate influence
+Siege,enclosed on every side with cohesion < 40,10 seasons without losing a riding; or a protector found,Marriage alliance; Propose compact

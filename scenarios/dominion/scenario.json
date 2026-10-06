@@ -1,0 +1,11 @@
+{
+  "name": "dominion",
+  "title": "The Dominion",
+  "status": "live",
+  "kind": "autoplay",
+  "reference_data": "meridian-v1.0.3",
+  "rules_version": "0.9",
+  "seed": 1867,
+  "started_season": 1,
+  "note": "The live autoplay game, played on the Meridian world (meridian-v1.0.3) under rules 0.9, where a house reads the map at its own personal year. seed and started_season are written by `python -m hoc sim new --seed N`, which founds the first house in season 1 by the engine's own draw; until then every seed CSV holds only its header row."
+}

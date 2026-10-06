@@ -17,7 +17,7 @@ from hoc import places, scenario
 from hoc.db import HOUSE_BLOCK_FIELDS
 from hoc.export import map as map_export, play as play_export, timeline as timeline_export
 from hoc.export.play_js import PLAY_JS
-from hoc.export.turn_block import TEMPLATE as NARRATE_TEMPLATE, TONES
+from hoc.export.turn_block import TEMPLATE as NARRATE_TEMPLATE, TONES, jurisdiction_note
 from hoc.sim import STOP_CONDITIONS
 
 DEFAULT_OUT_DIR = Path(__file__).resolve().parent.parent.parent / "outputs"
@@ -168,7 +168,7 @@ def _holder(conn, house):
 
 def _holdings(conn, house):
     return conn.execute(
-        "SELECT h.seat_order, h.hex, r.name_en, r.province"
+        "SELECT h.seat_order, h.hex, h.fed_id, r.name_en, r.province"
         " FROM holdings h JOIN ridings r ON r.fed_id = h.fed_id"
         " WHERE h.house = ? AND h.released_event_id IS NULL ORDER BY h.seat_order",
         (house,),
@@ -193,14 +193,44 @@ def _riding_lookup(conn):
     """fed_id -> everything the map panel needs about a riding."""
     lookup = {}
     for row in conn.execute(
-        "SELECT r.fed_id, r.name_en, r.province, h.house, h.seat_order, hd.name AS holder"
+        "SELECT r.fed_id, r.name_en, r.province, h.house, h.seat_order, hd.name AS holder,"
+        "       c.personal_year"
         " FROM ridings r"
         " LEFT JOIN holdings h ON h.fed_id = r.fed_id AND h.released_event_id IS NULL"
         " LEFT JOIN holders hd ON hd.house = h.house AND hd.is_current = 1"
+        " LEFT JOIN clocks c ON c.house = h.house"
         " ORDER BY r.fed_id"
     ):
         lookup[row["fed_id"]] = row
     return lookup
+
+
+def _reference(conn):
+    """(riding_stats, riding_jurisdictions) of the set this database was built
+    from — both {} on a set without them (ne-2026), so every display below
+    that reads them falls back to what it showed before rules 0.9."""
+    directory = places.reference_dir_for(conn)
+    return places.riding_stats(directory), places.riding_jurisdictions(directory)
+
+
+def _jurisdiction_attrs(fed_id, row, stats, jurisdictions):
+    """The map path's data-jurisdiction and data-opens, display only.
+
+    A held riding is named by the jurisdiction it lay under at its holder's own
+    personal year (rules 0.9); an unclaimed one that opens after 1867 says
+    when, since no Crown grant may seat a house there."""
+    attrs = ""
+    if row is not None and row["house"] and row["personal_year"] is not None:
+        name = places.jurisdiction_at(jurisdictions.get(fed_id), row["personal_year"])
+        if name:
+            attrs += (
+                f' data-jurisdiction="{esc(name)}"'
+                f' data-year="{esc(row["personal_year"])}"'
+            )
+    opens = (stats.get(fed_id) or {}).get("opens_year")
+    if opens is not None and opens > 1867 and not (row is not None and row["house"]):
+        attrs += f' data-opens="{esc(opens)}"'
+    return attrs
 
 
 
@@ -316,6 +346,12 @@ def _event_season(row):
 # ------------------------------------------------------------------- pages --
 
 
+def _game_title():
+    """The title of the game these pages show: the archived game's in an
+    archive, otherwise the one hoc.db holds (scenarios/current.txt)."""
+    return _ARCHIVE_TITLE if _ARCHIVE else scenario.title(scenario.current_name())
+
+
 def _latest_season(conn):
     row = conn.execute("SELECT MAX(season_no) AS season FROM seasons").fetchone()
     return None if row is None else row["season"]
@@ -364,6 +400,7 @@ def _extent(rings_source):
 def _index(conn, features, borders, slugs):
     fills, legend = map_export.house_fills(conn, use_secondary=False)
     lookup = _riding_lookup(conn)
+    stats, jurisdictions = _reference(conn)
     height, to_svg = map_export.viewport(features, MAP_WIDTH)
 
     paths = []
@@ -387,6 +424,7 @@ def _index(conn, features, borders, slugs):
             f' data-province="{esc(province)}"'
             f' data-house="{esc(house)}" data-holder="{esc(holder)}"'
             f' data-seat="{esc(seat)}" data-slug="{esc(slugs.get(house, ""))}"'
+            f'{_jurisdiction_attrs(fed_id, row, stats, jurisdictions)}'
             f' d="{data}"/>'
         )
 
@@ -464,7 +502,7 @@ def _index(conn, features, borders, slugs):
         f'<ul id="legend" class="legend">{legend_rows}</ul>\n'
         '<script src="map.js"></script>'
     )
-    return page("The map", body, depth=0)
+    return page("The map", body, depth=0, subtitle=esc(_game_title()))
 
 
 MAP_JS = """(function () {
@@ -479,16 +517,23 @@ MAP_JS = """(function () {
     var holder = path.getAttribute('data-holder');
     var seat = path.getAttribute('data-seat');
     var slug = path.getAttribute('data-slug');
+    var jurisdiction = path.getAttribute('data-jurisdiction');
+    var year = path.getAttribute('data-year');
+    var opens = path.getAttribute('data-opens');
     var rows = [
       '<h3>' + path.getAttribute('data-riding') + '</h3>',
-      '<p class="panel-meta">' + path.getAttribute('data-province') + '</p>'
+      '<p class="panel-meta">' + path.getAttribute('data-province') +
+        (jurisdiction ? ' &middot; ' + jurisdiction + ' in personal year ' + year : '') +
+        '</p>'
     ];
     if (house) {
       rows.push('<p><a href="houses/' + slug + '.html">' + house + '</a>' +
                 (seat ? ' &middot; seat ' + seat : '') + '</p>');
       rows.push('<p class="panel-meta">' + (holder || 'holder not recovered') + '</p>');
     } else {
-      rows.push('<p class="panel-meta">Unclaimed</p>');
+      rows.push('<p class="panel-meta">Unclaimed' +
+                (opens ? ' &middot; opens to a house at personal year ' + opens : '') +
+                '</p>');
     }
     body.innerHTML = rows.join('');
     panel.hidden = false;
@@ -844,7 +889,10 @@ def _play_page(conn, features, borders, slugs):
         "Play",
         body,
         depth=0,
-        subtitle="Played on this device; saved to the repository when you say so.",
+        subtitle=(
+            f"{esc(_game_title())} &middot; played on this device; saved to the"
+            " repository when you say so."
+        ),
     )
 
 
@@ -1178,20 +1226,38 @@ def _house_page(conn, house_row, slugs):
         parts.append("</dl>")
 
     parts.append(f"<h2>Holdings <span class=\"count\">{len(holdings)}</span></h2>")
+    _, jurisdictions = _reference(conn)
+    # Rules 0.9: each riding named by the jurisdiction it lay under at this
+    # house's own personal year, where the reference set records them.
+    year = None if clock is None else clock["personal_year"]
+    show_jurisdiction = bool(jurisdictions) and year is not None
     if not holdings:
         parts.append("<p>This house holds no ridings.</p>")
     else:
         rows = "".join(
             f"<tr><td>{row['seat_order']}</td><td>{esc(row['name_en'])}</td>"
             f"<td>{esc(row['province'])}</td>"
-            f'<td><span class="swatch" style="background:{esc(row["hex"])}"></span>'
+            + (
+                f"<td>{text_or(places.jurisdiction_at(jurisdictions.get(row['fed_id']), year))}</td>"
+                if show_jurisdiction else ""
+            )
+            + f'<td><span class="swatch" style="background:{esc(row["hex"])}"></span>'
             f"<code>{esc(row['hex'])}</code></td></tr>"
             for row in holdings
         )
+        jurisdiction_head = (
+            f"<th>Jurisdiction in {esc(year)}</th>" if show_jurisdiction else ""
+        )
         parts.append(
-            '<table><thead><tr><th>Seat</th><th>Riding</th><th>Prov.</th><th>Colour</th></tr>'
+            '<table><thead><tr><th>Seat</th><th>Riding</th><th>Prov.</th>'
+            f"{jurisdiction_head}<th>Colour</th></tr>"
             f"</thead><tbody>{rows}</tbody></table>"
         )
+        if show_jurisdiction:
+            parts.append(
+                '<p class="footnote">Jurisdictions are as they stood at this house\'s own'
+                f" personal year, {esc(year)}; there is no universal calendar.</p>"
+            )
         parts.append(
             '<p class="footnote">Seat 1 is the principal seat and carries the house\'s'
             " primary colour.</p>"
@@ -1301,9 +1367,18 @@ def _ridings_page(conn, slugs):
     by_province = {}
     for row in rows:
         by_province.setdefault(row["province"], []).append(row)
+    stats, _ = _reference(conn)
 
     parts = [f'<p class="lede">All {len(rows)} ridings of the 2023 Representation Order,'
              " by province.</p>"]
+    if stats:
+        parts.append(
+            '<p class="footnote">From the Meridian riding table this game is played on.'
+            " <b>Resource tier</b> is a quintile, 1 to 5, of the riding's resource"
+            " score; nothing in the game reads it yet. <b>Opens</b> marks a riding no"
+            " house may take before its own personal year reaches that year, and no"
+            " Crown grant may seat a house on.</p>"
+        )
     for province in sorted(by_province):
         entries = by_province[province]
         held = sum(1 for row in entries if row["house"])
@@ -1320,7 +1395,20 @@ def _ridings_page(conn, slugs):
                     holder += ' <span class="seat">principal seat</span>'
             else:
                 holder = '<span class="unclaimed">unclaimed</span>'
-            items.append(f'<li><span class="riding">{esc(row["name_en"])}</span>{holder}</li>')
+            extra = ""
+            riding_stats = stats.get(row["fed_id"])
+            if riding_stats:
+                extra = (
+                    f' <span class="meta">resource tier {esc(riding_stats["resource_tier"])}'
+                    + (
+                        f' &middot; opens {esc(riding_stats["opens_year"])}'
+                        if riding_stats.get("opens_year", 1867) > 1867 else ""
+                    )
+                    + "</span>"
+                )
+            items.append(
+                f'<li><span class="riding">{esc(row["name_en"])}</span>{holder}{extra}</li>'
+            )
         parts.append(f'<ul class="ridings">{"".join(items)}</ul>')
     return page("Ridings", "\n".join(parts), depth=0)
 
@@ -1866,7 +1954,10 @@ checks its work.</p>
 
 <script src="console.js"></script>
 """
-    return page("Console", body, depth=0, subtitle="The director's controls")
+    return page(
+        "Console", body, depth=0,
+        subtitle=f"The director's controls &middot; {esc(_game_title())}",
+    )
 
 
 CONSOLE_JS = """(function () {
@@ -1877,6 +1968,7 @@ CONSOLE_JS = """(function () {
   var API = 'https://api.github.com/repos/' + REPO;
   var POLL_MS = 10000;
   var NARRATE_TEMPLATE = __NARRATE_TEMPLATE__;
+  var JURISDICTION_NOTE = __JURISDICTION_NOTE__;
   var TONES = __TONES__;
   // The game this console was built for. A frozen one is never written to; the
   // engine workflow refuses it as well (scripts/engine_command.py), so this is
@@ -2272,7 +2364,8 @@ CONSOLE_JS = """(function () {
         .replace(/\{focus\}/g, focus)
         .replace(/\{tone_description\}/g, TONES[tone])
         .replace(/\{tone\}/g, tone)
-        .replace(/\{words\}/g, words);
+        .replace(/\{words\}/g, words)
+        .replace(/\{jurisdiction\}/g, JURISDICTION_NOTE);
 
       el('narrate-block').hidden = false;
       el('narrate-block').textContent = block;
@@ -2812,6 +2905,7 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
             .replace("__REPO__", REPO_SLUG)
             .replace("__SCENARIO__", json.dumps(_scenario_for_browser(live)))
             .replace("__NARRATE_TEMPLATE__", json.dumps(NARRATE_TEMPLATE))
+            .replace("__JURISDICTION_NOTE__", json.dumps(jurisdiction_note(live)))
             .replace("__TONES__", json.dumps(TONES, ensure_ascii=False)),
         )
 

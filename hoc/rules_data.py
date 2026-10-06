@@ -77,6 +77,15 @@ FEATURE_DEFAULTS = {
     # rules 0.8. A season with no chronicle at all says so, and a house idle for
     # ten seasons is noticed once. False in 0.7, which left both silent.
     "quiet_season_line": False,
+    # rules 0.9. A house reads the map at its own personal year: a riding whose
+    # opens_year (riding_stats.csv) is later is closed to it — no Crown grant
+    # seats a house there, and no house expands into it before its own clock
+    # reaches that year. False in 0.7 and 0.8, which opened every riding.
+    "atlas_jurisdiction": False,
+    # rules 0.9. A seat's wealth_tier adds 2*(tier-3) to founding capital, and
+    # a target's adds (tier-3) to the 15 an Expand costs. False in 0.7 and 0.8,
+    # where every riding was worth the same.
+    "riding_endowments": False,
 }
 
 

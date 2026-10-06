@@ -10,16 +10,23 @@
     var holder = path.getAttribute('data-holder');
     var seat = path.getAttribute('data-seat');
     var slug = path.getAttribute('data-slug');
+    var jurisdiction = path.getAttribute('data-jurisdiction');
+    var year = path.getAttribute('data-year');
+    var opens = path.getAttribute('data-opens');
     var rows = [
       '<h3>' + path.getAttribute('data-riding') + '</h3>',
-      '<p class="panel-meta">' + path.getAttribute('data-province') + '</p>'
+      '<p class="panel-meta">' + path.getAttribute('data-province') +
+        (jurisdiction ? ' &middot; ' + jurisdiction + ' in personal year ' + year : '') +
+        '</p>'
     ];
     if (house) {
       rows.push('<p><a href="houses/' + slug + '.html">' + house + '</a>' +
                 (seat ? ' &middot; seat ' + seat : '') + '</p>');
       rows.push('<p class="panel-meta">' + (holder || 'holder not recovered') + '</p>');
     } else {
-      rows.push('<p class="panel-meta">Unclaimed</p>');
+      rows.push('<p class="panel-meta">Unclaimed' +
+                (opens ? ' &middot; opens to a house at personal year ' + opens : '') +
+                '</p>');
     }
     body.innerHTML = rows.join('');
     panel.hidden = false;

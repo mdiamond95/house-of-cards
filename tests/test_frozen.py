@@ -1,10 +1,15 @@
 """A frozen scenario is never written to — by Python, by the browser, or by a push.
 
 The game in `scenarios/new` (The First Dominion, seed 1867, seasons 1–150) is
-finished. These tests run against the repository as it actually is: no
-`live_game` fixture, because the point is that nothing is live. They prove the
-manifests say so, that every writer refuses, that the pages say so plainly, and
-that the closed record still replays byte for byte.
+finished, and so is `scenarios/legacy`. `scenarios/dominion` (The Dominion) is
+live. The manifest tests below read the repository as it actually is.
+
+The refusal tests need a world in which nothing is live — with The Dominion live,
+a writer that *should* refuse a frozen game would instead play a season of the
+live one. The `nothing_live` fixture gives them that world in memory: every real
+manifest reads as frozen, nothing on disk changes, and `_record_state` proves
+nothing was written. They prove every writer refuses, that the pages say so
+plainly, and that the closed record still replays byte for byte.
 """
 
 import io
@@ -28,6 +33,25 @@ from hoc import db, scenario  # noqa: E402
 from hoc.export import site  # noqa: E402
 
 
+def _frozen_manifests():
+    """read_manifest, with every manifest in the repository read as frozen."""
+    real = scenario.read_manifest
+
+    def read_manifest(name=None, root=None):
+        manifest = dict(real(name, root))
+        if root is None:
+            manifest["status"] = scenario.STATUS_FROZEN
+        return manifest
+
+    return read_manifest
+
+
+@pytest.fixture
+def nothing_live(monkeypatch):
+    monkeypatch.setattr(scenario, "read_manifest", _frozen_manifests())
+    assert scenario.live_name() is None
+
+
 def _record_state():
     """What a write would have changed: the record, the manifests and the database."""
     state = {}
@@ -41,14 +65,35 @@ def _record_state():
 # ---------------------------------------------------------------- manifests --
 
 
-def test_both_games_are_frozen_and_named():
+def test_two_games_are_frozen_and_the_dominion_is_live():
     assert scenario.status("legacy") == "frozen"
     assert scenario.status("new") == "frozen"
     assert scenario.title("new") == "The First Dominion"
     assert scenario.reference_data("legacy") == "ne-2026"
     assert scenario.reference_data("new") == "ne-2026"
-    assert scenario.live_name() is None
-    assert set(scenario.frozen_names()) == set(scenario.scenario_names())
+    assert scenario.live_name() == "dominion"
+    assert scenario.title("dominion") == "The Dominion"
+    assert scenario.reference_data("dominion") == "meridian-v1.0.3"
+    assert set(scenario.frozen_names()) == {"legacy", "new"}
+
+
+def test_the_dominion_began_as_the_director_asked():
+    manifest = scenario.read_manifest("dominion")
+    assert manifest["kind"] == "autoplay" and manifest["rules_version"] == "0.9"
+    assert manifest["seed"] == 1867 and manifest["started_season"] == 1
+    first = json.loads(
+        (scenario.seasons_dir("dominion") / "0001.json").read_text(encoding="utf-8")
+    )
+    assert first["kind"] == "initial" and first["seat"] is None, "the engine's own draw"
+    assert first["rules_version"] == "0.9"
+    assert scenario.current_name() == "dominion"
+
+
+def test_an_empty_world_is_built_on_the_default_ground():
+    """A tool that needs an empty world and no particular game gets the default
+    reference set, not the live game's: blank_seed_dir prefers an autoplay
+    scenario on ne-2026."""
+    assert scenario.reference_data(scenario.blank_seed_dir().parent.name) == "ne-2026"
 
 
 def test_the_existing_manifest_fields_are_kept():
@@ -97,7 +142,7 @@ def test_a_live_scenario_the_database_does_not_hold_is_refused(tmp_path):
 # ------------------------------------------------- Python writers refuse --
 
 
-def test_the_engine_workflow_refuses_to_run_seasons_on_a_frozen_game(capsys):
+def test_the_engine_workflow_refuses_to_run_seasons_on_a_frozen_game(capsys, nothing_live):
     before = _record_state()
     status = engine_command.main(["run", "--seasons", "1"])
     assert status == 1
@@ -105,7 +150,7 @@ def test_the_engine_workflow_refuses_to_run_seasons_on_a_frozen_game(capsys):
     assert _record_state() == before
 
 
-def test_the_engine_workflow_refuses_an_intervention_on_a_frozen_game(capsys):
+def test_the_engine_workflow_refuses_an_intervention_on_a_frozen_game(capsys, nothing_live):
     payload = json.dumps({"directive": "x", "operations": [], "narrative": ""})
     before = _record_state()
     assert engine_command.main(["intervene", "--payload", payload]) == 1
@@ -113,7 +158,7 @@ def test_the_engine_workflow_refuses_an_intervention_on_a_frozen_game(capsys):
     assert _record_state() == before
 
 
-def test_a_refusal_is_the_whole_summary_and_commits_nothing(capsys):
+def test_a_refusal_is_the_whole_summary_and_commits_nothing(capsys, nothing_live):
     engine_command.main(["run", "--seasons", "1"])
     out = capsys.readouterr()
     assert engine_command.COMMIT_PREFIX not in out.out
@@ -125,7 +170,7 @@ def test_a_refusal_is_the_whole_summary_and_commits_nothing(capsys):
     ["sim", "new", "--seed", "1"],
     ["apply", "scenarios/new/seasons/0001.json"],
 ])
-def test_the_command_line_refuses_to_write_to_a_frozen_game(argv, capsys):
+def test_the_command_line_refuses_to_write_to_a_frozen_game(argv, capsys, nothing_live):
     before = _record_state()
     assert cli.main(argv) == 1
     assert "no live scenario" in capsys.readouterr().err
@@ -159,7 +204,7 @@ def test_the_referee_command_line_reads_paths_on_stdin(monkeypatch):
     assert referee.main(["--refuse-frozen"]) == 0
 
 
-def test_with_no_live_scenario_the_referee_has_nothing_to_verify(capsys):
+def test_with_no_live_scenario_the_referee_has_nothing_to_verify(capsys, nothing_live):
     assert referee.main([]) == 0
     assert "no live scenario" in capsys.readouterr().out
 
@@ -190,17 +235,48 @@ def test_the_frozen_record_replays_all_150_seasons_byte_for_byte(capsys):
 @pytest.fixture(scope="module")
 def exported(tmp_path_factory):
     out = tmp_path_factory.mktemp("frozen-site")
+    patch = pytest.MonkeyPatch()
+    patch.setattr(scenario, "read_manifest", _frozen_manifests())
+    conn = db.connect()
+    site.write_site(conn, out_dir=out)
+    conn.close()
+    patch.undo()
+    return out / site.SITE_DIRNAME
+
+
+@pytest.fixture(scope="module")
+def exported_live(tmp_path_factory):
+    out = tmp_path_factory.mktemp("live-site")
     conn = db.connect()
     site.write_site(conn, out_dir=out)
     conn.close()
     return out / site.SITE_DIRNAME
 
 
+def test_the_live_game_is_playable_and_named(exported_live):
+    for name in ("index.html", "play.html", "console.html"):
+        text = (exported_live / name).read_text(encoding="utf-8")
+        assert "The Dominion" in text, name
+        assert "There is no live game." not in text, name
+    for name in ("play.js", "console.js", "engine", "data/world.json"):
+        assert (exported_live / name).exists(), name
+    shipped = sorted(p.name for p in (exported_live / "data" / "reference").iterdir())
+    assert "riding_stats.csv" in shipped and "riding_jurisdictions.csv" in shipped
+    meridian = ROOT / scenario.reference_set_dir("meridian-v1.0.3")
+    for name in shipped:
+        assert (exported_live / "data" / "reference" / name).read_bytes() == (
+            meridian / name
+        ).read_bytes(), name
+    versions = sorted(p.name for p in (exported_live / "data" / "rules" / "versions").iterdir())
+    assert versions == sorted(p.name for p in (ROOT / "rules" / "versions").iterdir())
+
+
 def test_play_and_console_say_there_is_no_live_game(exported):
     for name in ("play.html", "console.html"):
         text = (exported / name).read_text(encoding="utf-8")
         assert "There is no live game." in text, name
-        assert "The First Dominion" in text, name
+        # The game hoc.db holds, named as the last game.
+        assert scenario.title(scenario.current_name()) in text, name
         assert f'href="{site.ARCHIVE_DIRNAME}/index.html"' in text, name
         assert "<script" not in text, name
 
@@ -210,7 +286,7 @@ def test_nothing_that_could_write_is_shipped(exported):
         assert not (exported / name).exists(), name
 
 
-def test_a_previous_export_of_a_live_game_is_swept(tmp_path):
+def test_a_previous_export_of_a_live_game_is_swept(tmp_path, nothing_live):
     """A site last exported while a game was live has an engine, a world snapshot
     and a play script in it; once the game is frozen they must go."""
     site_dir = tmp_path / site.SITE_DIRNAME

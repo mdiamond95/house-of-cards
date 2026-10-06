@@ -384,6 +384,17 @@ function renderScrubber() {
 
 // -------------------------------------------------------------- the panel --
 
+// A riding's name, with the jurisdiction it lay under at `year` when that was
+// named differently from today's (rules 0.9; reference sets that record
+// jurisdictions only). Display only — the engine keys on the province code.
+function ridingLabel(world, fedId, year) {
+  const spans = world.state.map.ridingJurisdictions.get(fedId) || [];
+  const then = world.jurisdictionName(fedId, year);
+  const now = spans.length ? spans[spans.length - 1].name : null;
+  const name = world.ridingName(fedId);
+  return then !== null && then !== now ? `${name} (${then})` : name;
+}
+
 function showHouse(house) {
   const world = app.world;
   const row = world.state.houseRow(house);
@@ -410,7 +421,7 @@ function showHouse(house) {
     + (objectives.length
       ? `<p><b>Objectives</b><br>${objectives.map(escapeHtml).join('<br>')}</p>`
       : '<p class="meta">No objectives standing.</p>')
-    + `<p class="meta">${holdings.map((h) => escapeHtml(world.ridingName(h.fedId))).join(', ')}</p>`;
+    + `<p class="meta">${holdings.map((h) => escapeHtml(ridingLabel(world, h.fedId, world.personalYear(house)))).join(', ')}</p>`;
   el('panel').hidden = false;
 }
 
@@ -1043,9 +1054,12 @@ function wire() {
       const house = app.world.state.holderOfRiding(path.getAttribute('data-fed'));
       if (house) showHouse(house);
       else {
+        const opens = app.world.opensYear(path.getAttribute('data-fed'));
         el('panel-body').innerHTML =
           `<h3>${escapeHtml(path.getAttribute('data-riding'))}</h3>`
-          + '<p class="meta">Unclaimed.</p>';
+          + '<p class="meta">Unclaimed.'
+          + (opens > 1867 ? ` Opens to a house at personal year ${opens}.` : '')
+          + '</p>';
         el('panel').hidden = false;
       }
     }
