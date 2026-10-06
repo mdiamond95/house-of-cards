@@ -1,4 +1,6 @@
-"""Rules 1.0 (draft): the six mechanical flags of docs/STORY_DESIGN.md Phase C1.
+"""Rules 1.0 (draft): the six mechanical flags of docs/STORY_DESIGN.md Phase C1,
+and Phase C2's four — `schemes`, `contested_claims`, `prestige_politics` and
+`cohesion_strain` — at the end of the file.
 
 `upkeep_phase` (§4.1), `holder_traits` (§4.3), `marriage_pairing` (§4.7),
 `prestige` (§4.5), `founding_curve` (§4.6) and `succession_watch` (§4.8), each

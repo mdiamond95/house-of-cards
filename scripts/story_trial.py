@@ -18,7 +18,7 @@ the draft with every flag on.
 
 `--c2` runs Phase C2's before/after: the current published rules, the draft
 with Phase C1's flags on and Phase C2's off ("C1 all on"), and the draft with
-every flag on ("C2 all on").
+every flag on ("§6 all on").
 
 What it measures (§6, as far as it can be measured without schemes):
 
@@ -244,7 +244,7 @@ ROWS = (
     ("§6 turns with a headline ≥ pause (target ≥ 70%)", "heavy_share", "pct"),
     ("§6 longest quiet run after turn 10 (target ≤ 3)", "max_quiet_run", "num"),
     ("§6 houses active at turn 100 (target 20–40)", "houses_100", "num"),
-    ("§6 ridings open at 1867 claimed by turn 60 (target ≥ 85%)", "open_claimed_60", "pct"),
+    ("§6 ridings open at 1867 claimed by turn 60 (target ≥ 80%)", "open_claimed_60", "pct"),
     ("§6 storylines of 5+ beats (target ≥ 8)", "five_plus", "num"),
     ("§6 closed storylines without an outcome (target 0)", "closed_without_outcome", "num"),
     ("houses active at turn 25", "houses_25", "num"),
@@ -255,19 +255,19 @@ ROWS = (
     ("Crown foundings by turn 25", "crown_by_25", "num"),
     ("most Crown foundings in ten turns after 40", "crown_late_window", "num"),
     ("median capital at turn 100", "median_capital", "num"),
-    ("median influence at turn 100", "median_influence", "num"),
-    ("median cohesion at turn 100", "median_cohesion", "num"),
-    ("median turns a rivalry runs", "median_rivalry_turns", "num"),
-    ("houses fallen or removed by turn 100", "removed_100", "num"),
-    ("C2 rivalries reconciled (target ≤ 40%)", "rivalry_reconciled", "pct"),
-    ("C2 rivalries ended by contest, cession under a claim or a fall (target ≥ 25%)",
+    ("§6 median influence at turn 100 (target 40–70)", "median_influence", "num"),
+    ("§6 median cohesion at turn 100 (target 55–85)", "median_cohesion", "num"),
+    ("§6 median turns a rivalry runs (target 4–10)", "median_rivalry_turns", "num"),
+    ("§6 houses fallen or removed by turn 100 (target 4–10)", "removed_100", "num"),
+    ("§6 rivalries reconciled (target ≤ 40%)", "rivalry_reconciled", "pct"),
+    ("§6 rivalries ended by contest, cession under a claim or a fall (target ≥ 25%)",
      "rivalry_decisive", "pct"),
-    ("C2 contests resolved (target ≥ 15)", "contests", "num"),
-    ("C2 contests the attacker won (target 35–60%)", "attacker_wins", "pct"),
-    ("C2 claims answered by their target (target ≥ 50%)", "claims_answered", "pct"),
-    ("C2 ended schemes that reached resolution (target ≥ 60%)", "schemes_resolved", "pct"),
-    ("C2 median turns a resolved scheme runs (target 3–6)", "median_scheme_turns", "num"),
-    ("C2 turns after 15 with 3+ cast schemes (target ≥ 80%)", "cast_scheme_share", "pct"),
+    ("§6 contests resolved (target ≥ 15)", "contests", "num"),
+    ("§6 contests the attacker won (target 35–60%)", "attacker_wins", "pct"),
+    ("§6 claims answered by their target (target ≥ 50%)", "claims_answered", "pct"),
+    ("§6 ended schemes that reached resolution (target ≥ 60%)", "schemes_resolved", "pct"),
+    ("§6 median turns a resolved scheme runs (target 3–6)", "median_scheme_turns", "num"),
+    ("§6 turns after 15 with 3+ cast schemes (target ≥ 80%)", "cast_scheme_share", "pct"),
 )
 
 

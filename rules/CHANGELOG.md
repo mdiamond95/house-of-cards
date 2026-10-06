@@ -305,3 +305,122 @@ Numbers chosen for the draft, by trial (`scripts/story_trial.py`):
 
 Taking the four standing actions out of the pool is what moves the game: with `upkeep_phase` alone, actions aimed at another house rise from 27% to 56% and headlines at the pause threshold from 54% to 70%; with every flag on, ridings pass between houses 0.33 times a turn after turn 20 (0.13 under 0.9), storylines of five or more beats double to 20.5, and the founding curve seats 24 houses by turn 25 with 39 active at turn 100. What did not move enough is the land and the length of quarrels: only 64% of the ridings open at personal 1867 are claimed by turn 60 against §6's 85%, chapters II–V churn the top eight in 3.8 of 4 rather than every time, and rivalries settle within a turn. Those, and every target that needs schemes, are Phase C2's.
 
+### Phase C2 (draft) — schemes, contests, prestige politics and cohesion strain
+
+Four more flags, false in 0.7–0.9 and on in the draft (`docs/STORY_DESIGN.md` §4.2, §4.4, §4.5, §4.9; `rules/README.md`, "features.json"): `schemes`, `contested_claims`, `prestige_politics` and `cohesion_strain`. Two new tables: `schemes.csv`, the twelve schemes, and `schemes.json`, the utility terms, the peace wait and the contest. `upkeep.json` gains `strain`, and `traits.csv` gives Grasping +1 and Cautious −1 on a claim. The cross-check still agrees byte for byte on seeds 1867, 2 and 3 at 120 seasons under 1.0 and under 0.9, on both reference sets, and on 13 more Meridian seeds. Each flag alone also passes the cross-check at 40 seasons.
+
+Numbers chosen for the draft, by trial over seeds 1867–1876 at 100 turns:
+
+- `upkeep.json`:
+  - capital: 3 + holdings // 3 + the seat's wealth_tier − 3;
+  - influence: 1;
+  - cohesion: 3, plus 3 while below 50 (Phase C1 had 1 + holdings // 4, 1, and 0 + 3 below 40);
+  - `strain` is the §4.9 rule as stated: 3 + 2 × rank index holdings free, and older than 70.
+- `schemes.csv`, utility and steps:
+  - Open the frontier: 75, two steps of 2 capital;
+  - Claim a riding: 20, three to five steps of 5 capital and 2 influence;
+  - Counter-claim: 25, two to four steps;
+  - Secure the line: 55, two steps;
+  - Seek a protector and Make peace: two steps each;
+  - Fortify commits 8 capital a turn until the claim it answers resolves;
+  - Sue for peace and the answers' other numbers are the starting values.
+- `schemes.json`:
+  - a house answers a claim only when an answer's utility beats `answer_stand` 55;
+  - grievance 15, hostility 10 and a weaker target 10 on a claim; a seat −30;
+  - `overreach` 10;
+  - the frontier takes a second riding on a roll of 8 or more;
+  - the contest keeps §4.4's numbers exactly (committed // 10, cohesion // 25, 2 per ally, 2 for a seat, 10 cohesion to the loser, a rout at 5 against cohesion below 40, a five-turn cooldown).
+- Two rules were added to both engines while tuning, both utility terms:
+  - **overreach**: under `cohesion_strain`, a riding is worth `overreach` less to a house for each holding it has beyond its rank's free reach;
+  - **keeping to a claim**: a house already pressing a claim against its claimant does not answer with another. Without it, counter-claims answered counter-claims and half of all schemes were set aside.
+
+### The trial, C1 against C2
+
+`python scripts/story_trial.py --c2`: 100 turns on the Meridian world, seeds 1867–1876, mean (min–max) across the ten.
+
+- "1.0 C1 all on, as merged" is the all-on column of the Phase C1 table above, under C1's upkeep numbers.
+- "1.0 C1 flags, C2 tables" is today's draft with the four C2 flags off, so the weighted action draw is back, under C2's upkeep numbers.
+- "1.0 C2 all on" is the draft as it stands.
+
+A dash is a measure the configuration does not have.
+
+| metric | 0.9 | 1.0 C1 all on, as merged | 1.0 C1 flags, C2 tables | 1.0 C2 all on |
+|---|---|---|---|---|
+| §6 actions aimed at another house (target ≥ 30%) | 27% (26–29) | 57% (52–61) | 45% (43–48) | 45% (41–49) |
+| §6 riding passes per turn after 20 (target ≥ 0.33) | 0.13 (0.03–0.23) | 0.33 (0.19–0.50) | 0.63 (0.40–0.81) | 0.57 (0.44–0.68) |
+| ridings passing between houses, all turns | 10.3 (2–18) | 26.7 (15–40) | 50.8 (32–65) | 47.1 (37–55) |
+| §6 lead changes (target ≥ 4) | 12.0 (1–20) | 13.1 (6–23) | 13.9 (9–20) | 16.1 (4–25) |
+| §6 longest single lead, turns (target ≤ 50) | 36.0 (12–98) | 34.2 (19–50) | 36.3 (17–59) | 32.5 (13–84) |
+| §6 chapters II–V with top-eight churn (target 4) | 3.8 (3–4) | 3.8 (3–4) | 4.0 (4–4) | 4.0 (4–4) |
+| §6 turns with a headline ≥ pause (target ≥ 70%) | 54% (42–70) | 79% (74–83) | 85% (79–89) | 95% (93–97) |
+| §6 longest quiet run after turn 10 (target ≤ 3) | 1.5 (1–2) | 0.5 (0–1) | 0.0 (0–0) | 0.0 (0–0) |
+| §6 houses active at turn 100 (target 20–40) | 38.9 (33–50) | 38.9 (35–42) | 48.7 (43–54) | 30.1 (25–38) |
+| §6 ridings open at 1867 claimed by turn 60 (target ≥ 80%) | 38% (28–50) | 64% (54–72) | 89% (85–94) | 63% (59–72) |
+| §6 storylines of 5+ beats (target ≥ 8) | 10.5 (7–16) | 20.5 (15–24) | 31.5 (26–44) | 71.6 (62–92) |
+| §6 closed storylines without an outcome (target 0) | 0.0 (0–0) | 0.0 (0–0) | 0.0 (0–0) | 0.0 (0–0) |
+| houses active at turn 25 | 12.0 (8–17) | 23.7 (22–24) | 23.7 (23–24) | 23.1 (21–24) |
+| houses active at turn 50 | 20.8 (16–27) | 25.8 (23–27) | 29.6 (26–33) | 23.5 (21–26) |
+| ridings claimed at turn 25 | 31.4 (22–43) | 72.1 (67–78) | 105.5 (94–118) | 80.0 (74–85) |
+| ridings claimed at turn 50 | 78.6 (55–101) | 145.0 (120–160) | 228.2 (210–246) | 156.2 (137–178) |
+| ridings claimed at turn 100 | 199.7 (174–228) | 249.6 (212–282) | 319.8 (294–341) | 225.2 (208–252) |
+| Crown foundings by turn 25 | 12.1 (8–17) | 24.0 (24–24) | 24.0 (24–24) | 24.0 (24–24) |
+| most Crown foundings in ten turns after 40 | 6.2 (5–8) | 0.8 (0–1) | 0.6 (0–1) | 0.6 (0–1) |
+| median capital at turn 100 | 39.0 (36.5–41) | 43.9 (39.5–50) | 52.8 (50–59) | 95.2 (83.5–98) |
+| §6 median influence at turn 100 (target 40–70) | 55.5 (49.5–61) | 75.3 (63–87) | 97.9 (93.5–100) | 47.7 (39–57) |
+| §6 median cohesion at turn 100 (target 55–85) | 97.8 (91–100) | 96.0 (90–100) | 100.0 (100–100) | 65.8 (48–78) |
+| §6 median turns a rivalry runs (target 4–10) | 2.3 (1–3) | 0.8 (0–1) | 1.0 (1–1) | 4.4 (4–5) |
+| §6 houses fallen or removed by turn 100 (target 4–10) | 2.2 (0–6) | — | 1.7 (1–4) | 7.7 (1–12) |
+| §6 rivalries reconciled (target ≤ 40%) | — | — | — | 11% (4–21) |
+| §6 rivalries ended by contest, cession under a claim or a fall (target ≥ 25%) | — | — | — | 75% (68–82) |
+| §6 contests resolved (target ≥ 15) | — | — | — | 65.1 (53–80) |
+| §6 contests the attacker won (target 35–60%) | — | — | — | 46% (36–57) |
+| §6 claims answered by their target (target ≥ 50%) | — | — | — | 62% (55–72) |
+| §6 ended schemes that reached resolution (target ≥ 60%) | — | — | — | 81% (76–84) |
+| §6 median turns a resolved scheme runs (target 3–6) | — | — | — | 3.0 (3–3) |
+| §6 turns after 15 with 3+ cast schemes (target ≥ 80%) | — | — | — | 100% (99–100) |
+| storylines of 5+ beats: decline | 0.4 (0–3) | 3.7 (2–5) | 5.0 (3–8) | 4.4 (2–7) |
+| storylines of 5+ beats: frontier | 3.9 (3–5) | 4.0 (3–5) | 7.3 (6–8) | 4.8 (3–6) |
+| storylines of 5+ beats: rise | 3.8 (2–6) | 8.6 (6–11) | 9.9 (7–15) | 7.8 (6–11) |
+| storylines of 5+ beats: rivalry | 2.4 (0–7) | 4.2 (1–9) | 9.3 (3–16) | 51.5 (41–65) |
+| storylines of 5+ beats: succession | — | — | — | 2.1 (1–4) |
+| storylines of 5+ beats: union | — | — | — | 1.0 (0–2) |
+| headlines in: decline | 2% (0–10) | 11% (7–15) | 14% (10–20) | 4% (0–10) |
+| headlines in: frontier | 11% (4–18) | 4% (3–7) | 4% (2–6) | 2% (1–3) |
+| headlines in: none | 13% (7–19) | 11% (7–16) | 7% (4–10) | 14% (12–17) |
+| headlines in: rise | 31% (19–38) | 33% (27–47) | 34% (28–43) | 13% (8–18) |
+| headlines in: rivalry | 36% (22–53) | 34% (26–44) | 37% (25–45) | 61% (51–69) |
+| headlines in: succession | 2% (0–6) | 2% (0–6) | 1% (0–3) | 4% (1–8) |
+| headlines in: union | 5% (2–7) | 4% (0–8) | 3% (0–5) | 2% (1–3) |
+| rivalries: a house removed | 0.6 (0–2) | 0.2 (0–1) | 0.5 (0–1) | 9.3 (0–17) |
+| rivalries: a riding changed hands | 0.5 (0–1) | 1.1 (0–4) | 2.2 (0–6) | 1.2 (0–4) |
+| rivalries: ceded under a claim | — | — | — | 4.5 (2–6) |
+| rivalries: held in a contest | — | — | — | 35.2 (27–49) |
+| rivalries: lapsed | 3.6 (1–8) | 1.1 (0–3) | 3.3 (0–6) | 13.7 (7–20) |
+| rivalries: open | 9.8 (3–19) | 5.7 (4–9) | 8.8 (4–17) | 20.9 (13–29) |
+| rivalries: reconciled | 28.0 (11–52) | 58.2 (37–85) | 104.4 (71–138) | 11.6 (4–21) |
+| rivalries: settled by cession | 7.5 (2–13) | 22.8 (13–35) | 43.4 (27–57) | — |
+| rivalries: won in a contest | — | — | — | 28.8 (24–35) |
+
+Phase C2 makes quarrels last and decide land:
+
+- A rivalry runs a median of 4.4 turns, against under one in C1.
+- About 12 rivalries a game are reconciled, 11% of those that close; C1 reconciled 58 a game.
+- Three quarters end in a contest, a cession under a standing claim, or a fall.
+- A game resolves about 65 contests, the attacker winning 46%, and 62% of claims are answered.
+- Cohesion can now fall (median 66 at turn 100, against 96) and houses can fall: 7.7 a game are removed, against under two.
+
+Every §6 target is met on the mean except one:
+
+- **Land**: 63% of the ridings open at personal 1867 are claimed by turn 60, against the 80% target.
+
+Tuning stopped there rather than distort the design. The engine is what holds it back:
+
+- Opening the frontier is now a three-turn venture (two steps and a resolution), and a house takes one venture at a time.
+- Overreach makes land worth less to a house whose holdings outrun its rank, which is what keeps the strained houses alive.
+- With the same tables and the weighted action draw (the third column), the same world claims 89%.
+- Shortening the venture to one step takes the median scheme length below three turns. More capital funds constant war: one trial gave 71 contests and 10 houses left at turn 100.
+
+Two ranges are worth naming:
+
+- One seed of the ten has a single lead of 84 turns; 0.9's worst is 98.
+- Removals run from 1 to 12 a game around the 7.7 mean.
