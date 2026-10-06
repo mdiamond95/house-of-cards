@@ -20,6 +20,7 @@ Read this fully before doing anything. Sessions in this repo do not share memory
 3. Expansions require land adjacency to an existing holding. Water-only adjacency is a fallback that must be flagged, never silently accepted. Non-adjacent proposals are rejected before any narrative is written.
 4. Primary colour of a house is the colour of its principal seat, which is the first of its ridings in canonical row order. Do not use count-based or rarity rules; they break on ties.
 5. No universal calendar. Each house has its own personal clock starting at 1867. Clocks sync only on direct shared events between named houses. Global events never sync clocks. On succession the new holder's clock resets to personal 1867; biological ages are not reset.
+   This rule does not apply to a game played with rules 1.0's `world_calendar`, where one turn is one year for every house (see Rules 1.0 (draft) below).
 6. Founding grants must be evaluated for cohort fit against the current climate state before execution. This is mandatory, not advisory.
 7. Rank ladder and remaining mechanics are defined in Mechanics Sections 1–3 of the baseline workbook. Extract them in Phase 1; do not guess them.
 8. The game runs more than one era-cohort of Section 10 events in parallel (see scenarios/legacy/RECONSTRUCTION.md). Never collapse the climate ledgers into one number; always state which era-cohort a climate value belongs to.
@@ -81,9 +82,15 @@ Two flags in `rules/versions/0.9/features.json`, false in 0.7 and 0.8, with the 
 ## Rules 1.0 (draft)
 
 - `rules/versions/1.0/` is a **draft** (docs/STORY_DESIGN.md §4, Phase C1): `upkeep_phase`, `holder_traits`, `marriage_pairing`, `prestige`, `founding_curve` and `succession_watch`, each false in `FEATURE_DEFAULTS` and in 0.7–0.9, in both engines. `rules/current.txt` stays at 0.9 and no committed game plays a season under 1.0, so its tables may still be tuned; it is frozen like any version the moment one does. At most one draft version exists (`tests/test_rules_versions.py`).
+- Phase C2 added `schemes`, `contested_claims`, `prestige_politics` and `cohesion_strain`; Phase D1 adds `distinct_surnames`, `world_calendar` and `crises` (docs/STORY_DESIGN.md §4.10, §5, §5.1), on the same terms.
+  - **`world_calendar`**: one turn is one year from `game.json` (1867, 100 turns, five chapters, which are the era bands). Events fire by world year for every house; an event with a `through_year` repeats its direct effect each year. One climate ledger (`world`). The atlas is read at the world year from `riding_jurisdictions.csv`, which is not changed: a riding is in play while its sovereign is Canada, and the Crown founds only in a province. After turn 100 the engine writes the reckoning, and `hoc sim run` refuses turn 101. Personal clocks remain, as reign years, and nothing reads them.
+  - **`crises`**: a Major event is a crisis every house takes a side in; the camp with more influence carries it. It reads the world year, so it does nothing without `world_calendar`.
+  - The cross-check plays 1.0 for its 100 turns (`tests/test_crosscheck.py`, `.github/workflows/ci.yml`).
+  - The story layer reads the calendar from the beat index (`calendar`, `reckoning`): headings by year, a chapter interstitial at each chapter's end, and the reckoning after the last turn (`web/story/reckoning.js`).
+  - The preview (`scripts/build_preview.py`) is the draft's whole game, 1867–1966, with its Reckoning page.
 - The Dominion stays live on 0.9. Beginning a game under 1.0 means pointing `current.txt` at it in the same change that begins that game.
 - `tests/test_rules10.py` holds each flag; the cross-check runs under 1.0 as well as 0.9 (`tests/test_crosscheck.py`, `.github/workflows/ci.yml`).
-- `python scripts/story_trial.py --matrix` plays ten seeds of 100 turns on scratch Meridian worlds and prints the trial table recorded in `rules/CHANGELOG.md` under 1.0 (draft). It writes nothing to any scenario. `--c2` prints Phase C2's before/after table.
+- `python scripts/story_trial.py --matrix` plays ten seeds of 100 turns on scratch Meridian worlds and prints the trial table recorded in `rules/CHANGELOG.md` under 1.0 (draft). It writes nothing to any scenario. `--c2` and `--d1` print the Phase C2 and D1 comparisons; `--prepend` adds a column measured on other code. `--c2` prints Phase C2's before/after table.
 - **Phase C2** adds four flags, false in 0.7–0.9 and on in the draft (STORY_DESIGN §4.2, §4.4, §4.5, §4.9):
   - `schemes`: a house holds at most one public multi-turn scheme from `schemes.csv`, chosen by an integer utility (`schemes.json`), in place of the weighted action draw.
   - `contested_claims`: a claim resolves as a contest; a seat can be taken, and a house with none falls.
@@ -122,7 +129,7 @@ There are two implementations of the engine and they must play the same game.
 - `docs/STORY_DESIGN.md` is the design for the story game (rules 1.0). Phase A — beats, story weight, the dispatch, standings, following, the archive's Replay pages — is built, and is presentation only.
 - **Architecture rule (§3): the story layer is one implementation, in JavaScript, at `web/story/`.** It is a pure function of the game's record, runs in the browser and under node for tests, and never feeds back into either engine, so it is outside the two-engine parity contract. Anything a house's decisions depend on is engine state and belongs in both engines (§4). `web/story/` imports nothing from `web/engine/`, and neither engine imports it (`tests/test_story.py`).
 - Beats are typed from the structured record (event kind, `event_houses`, `mechanical_delta`, the holdings an event moved, the acting house's action), never from chronicle prose: by `hoc/export/beats.py` for exported and archived games and by `web/story/beats.js` for the play page. Change one, change both; `tests/test_story.py` requires them to agree.
-- `web/story/weights.json` is the story's own tuning, read by no engine. Hard rule 5 stands; the shared calendar of §5 is a flag for a future scenario only (Phase D).
+- `web/story/weights.json` is the story's own tuning, read by no engine. Hard rule 5 stands for every game but one played with `world_calendar` (§5), which the next scenario will be (Phase D2).
 
 ## Conventions
 - Canadian English spelling throughout (colour, honour, centre, defence).

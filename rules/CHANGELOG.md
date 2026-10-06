@@ -424,3 +424,121 @@ Two ranges are worth naming:
 
 - One seed of the ten has a single lead of 84 turns; 0.9's worst is 98.
 - Removals run from 1 to 12 a game around the 7.7 mean.
+
+### Phase D1 (draft) — pacing, the shared calendar, crises and the reckoning
+
+Docs: `docs/STORY_DESIGN.md` §4.10, §5, §5.1 and Phase D1 (§7). Three new flags, `distinct_surnames`, `world_calendar` and `crises`, each false in 0.7–0.9 and on in 1.0, in both engines. The cross-check agrees byte for byte on seeds 1867, 2 and 3 at 120 turns under 0.9 and at 100 turns under 1.0, and a 1.0 game resumed in the browser at turn 66 plays on identically to its reckoning.
+
+The director approved the two rules added in C2 tuning (overreach; a house keeping to its own claim), and dropped the land target: the trial now reports the share of the ridings in play that are held at turns 25, 50, 75 and 100, with no target.
+
+**Part 0, pacing.** The draft's tables, under the C2 flags:
+
+- Fewer, weightier contests. A house that lost a contest begins no claim for `contest.loser_bar` (6) turns. The pair's truce (`cooldown`) is 8 turns. A claim's step costs 10 capital, a counter-claim's 8. A contest's loser pays 30 cohesion, and committed capital counts one point per 15.
+- Scarce capital. Upkeep charges one capital for every `holdings_per_cost` (2) holdings, against a base of 3.
+- Rank that differentiates. A house at or past what its rank holds without strain values Win elevation by `elevation_at_reach` (45) more. The influence a petition needs is a table value (`elevation_influence_min`, 50).
+- Cohesion: base 2 a turn, with the strain of 3 + 2 × rank index.
+
+**Part 1, the calendar and the deck.** `game.json` holds the calendar (1867, 100 turns, five chapters) and the crisis terms. `events.csv` gains 17 events from 1931 to 1966 and a `through_year` column:
+
+- The Long Depression runs to 1879, the Great War to 1918, the Long Contraction to 1939, the Second World War to 1945.
+- Each of the four repeats its direct effect every year, so those effects are sized per year: capital −4, −3, −5 and +3. The one-off sizes (−10, −5, −15, +5), repeated, left median capital at 0 in 1936 and the table's holdings falling from 155 to 31.
+- A §7c contraction sale lands only in an event's first year. Repeated each year, it made 65 forced sales a game.
+
+The 17 events: Statute of Westminster 1931; CBC 1936; Unemployment Insurance 1940; Korean War 1950; Massey Report 1951; Pipeline Debate 1956; Diefenbaker majority 1958; St. Lawrence Seaway and Avro Arrow 1959; Bill of Rights and the Quiet Revolution 1960; Saskatchewan medicare and Trans-Canada Highway 1962; Bilingualism and Biculturalism commission 1963; Maple Leaf flag and Auto Pact 1965; Medical Care Act 1966. The Quiet Revolution is Major, and so a crisis.
+
+**Part 2, the story layer** (`web/story/weights.json` phase-d1-1):
+
+- A rise or a decline needs three turns of sustained movement in the cast.
+- The pause threshold is 90, and a storyline must have run seven beats to pause Auto on its close.
+- A contest outside the cast weighs half.
+
+### The trial (Phase D1)
+
+`python scripts/story_trial.py --d1 --prepend c2.json`: 100 turns on the Meridian world, seeds 1867–1876, mean (min–max). The columns:
+
+- **C2 all on**: the same harness run on the Phase C2 code.
+- **D1 without world_calendar**: every flag but `world_calendar` and `crises`.
+- **D1 all on**: every flag.
+
+"In play" is sovereign Canada that year under the calendar, and open by the year otherwise.
+
+| metric | 1.0: C2 all on | 1.0: D1 without world_calendar | 1.0: D1 all on |
+|---|---|---|---|
+| §6 actions aimed at another house (target ≥ 30%) | 45% (41–49) | 37% (34–40) | 34% (29–42) |
+| §6 riding passes per turn after 20 (target ≥ 0.33) | 0.57 (0.44–0.68) | 0.43 (0.26–0.61) | 0.41 (0.23–0.64) |
+| ridings passing between houses, all turns | 47.1 (37–55) | 35.7 (22–53) | 33.6 (18–52) |
+| §6 lead changes (target ≥ 4) | 16.1 (4–25) | 19.5 (10–27) | 20.4 (16–31) |
+| §6 longest single lead, turns (target ≤ 50) | 32.5 (13–84) | 27.9 (11–58) | 24.0 (14–45) |
+| §6 chapters II–V with top-eight churn (target 4) | 4.0 (4–4) | 4.0 (4–4) | 4.0 (4–4) |
+| D1 turns with a headline ≥ pause (target 40–65%) | 95% (93–97) | 53% (43–60) | 59% (55–65) |
+| §6 longest quiet run after turn 10 (target ≤ 3) | 0.0 (0–0) | 0.0 (0–0) | 0.0 (0–0) |
+| §6 houses active at turn 100 (target 20–40) | 30.1 (25–38) | 24.7 (21–28) | 23.7 (21–29) |
+| D1 ranks spanned by the top eight at turn 60 (target ≥ 3) | 2.8 (2–4) | 3.0 (2–4) | 3.2 (3–4) |
+| D1 rise and decline storylines (target ≤ 20) | 114.3 (81–141) | 15.3 (10–19) | 15.4 (9–21) |
+| D1 turns that pause Auto (target 15–30%) | 48% (43–55) | 26% (18–37) | 26% (19–32) |
+| D1 ridings in play held at turn 25 (no target) | 23% (22–25) | 23% (20–25) | 22% (18–25) |
+| D1 ridings in play held at turn 50 (no target) | 46% (40–52) | 39% (33–45) | 41% (33–49) |
+| D1 ridings in play held at turn 75 (no target) | 58% (52–66) | 42% (37–51) | 36% (28–44) |
+| D1 ridings in play held at turn 100 (no target) | 66% (61–73) | 47% (40–56) | 52% (46–58) |
+| §6 storylines of 5+ beats (target ≥ 8) | 71.6 (62–92) | 35.2 (25–42) | 35.3 (24–50) |
+| §6 closed storylines without an outcome (target 0) | 0.0 (0–0) | 0.0 (0–0) | 0.0 (0–0) |
+| houses active at turn 25 | 23.1 (21–24) | 23.3 (20–25) | 23.1 (21–24) |
+| houses active at turn 50 | 23.5 (21–26) | 23.3 (20–27) | 23.4 (20–25) |
+| ridings claimed at turn 25 | 80.0 (74–85) | 77.7 (70–85) | 73.7 (62–85) |
+| ridings claimed at turn 50 | 156.2 (137–178) | 134.4 (114–153) | 136.9 (110–164) |
+| ridings claimed at turn 100 | 225.2 (208–252) | 162.2 (138–193) | 177.3 (159–200) |
+| Crown foundings by turn 25 | 24.0 (24–24) | 24.1 (24–25) | 24.0 (24–24) |
+| most Crown foundings in ten turns after 40 | 0.6 (0–1) | 0.6 (0–1) | 0.9 (0–1) |
+| D1 median capital at turn 100 (target 30–70) | 95.2 (83.5–98) | 18.6 (12–26) | 48.9 (40–59) |
+| §6 median influence at turn 100 (target 40–70) | 47.7 (39–57) | 53.5 (47–63) | 42.2 (29–64) |
+| §6 median cohesion at turn 100 (target 55–85) | 65.8 (48–78) | 77.8 (60–93) | 83.4 (58–95) |
+| §6 median turns a rivalry runs (target 4–10) | 4.4 (4–5) | 8.2 (5–15) | 10.0 (5–15) |
+| §6 houses fallen or removed by turn 100 (target 4–10) | 7.7 (1–12) | 6.6 (1–12) | 6.7 (5–9) |
+| §6 rivalries reconciled (target ≤ 40%) | 11% (4–21) | 15% (5–26) | 14% (4–26) |
+| §6 rivalries ended by contest, cession under a claim or a fall (target ≥ 25%) | 75% (68–82) | 45% (31–61) | 47% (29–62) |
+| D1 contests resolved (target 20–35) | 65.1 (53–80) | 23.0 (12–36) | 24.3 (11–42) |
+| §6 contests the attacker won (target 35–60%) | 46% (36–57) | 57% (44–81) | 50% (26–71) |
+| §6 claims answered by their target (target ≥ 50%) | 62% (55–72) | 67% (57–75) | 60% (49–70) |
+| §6 ended schemes that reached resolution (target ≥ 60%) | 81% (76–84) | 71% (67–76) | 78% (75–84) |
+| §6 median turns a resolved scheme runs (target 3–6) | 3.0 (3–3) | 3.0 (3–3) | 3.0 (3–3) |
+| §6 turns after 15 with 3+ cast schemes (target ≥ 80%) | 100% (99–100) | 100% (99–100) | 100% (99–100) |
+| D1 crises with both camps non-empty (target ≥ 70%) | — | — | 87% (83–94) |
+| D1 crises carried by those who lead | — | — | 12% (6–22) |
+| D1 games ending with a reckoning (target 100%) | — | — | 100% (100–100) |
+| storylines of 5+ beats: decline | 4.4 (2–7) | 2.2 (1–3) | 2.7 (1–4) |
+| storylines of 5+ beats: frontier | 4.8 (3–6) | 4.3 (4–5) | 4.6 (3–6) |
+| storylines of 5+ beats: rise | 7.8 (6–11) | 1.3 (0–3) | 1.1 (0–3) |
+| storylines of 5+ beats: rivalry | 51.5 (41–65) | 24.8 (14–32) | 21.8 (15–33) |
+| storylines of 5+ beats: succession | 2.1 (1–4) | 2.6 (1–5) | 4.9 (1–9) |
+| storylines of 5+ beats: union | 1.0 (0–2) | — | 0.2 (0–1) |
+| headlines in: decline | 4% (0–10) | 4% (0–7) | 4% (1–10) |
+| headlines in: frontier | 2% (1–3) | 3% (2–4) | 2% (1–2) |
+| headlines in: none | 14% (12–17) | 23% (17–32) | 31% (21–39) |
+| headlines in: rise | 13% (8–18) | 4% (2–7) | 3% (0–7) |
+| headlines in: rivalry | 61% (51–69) | 59% (54–65) | 52% (43–62) |
+| headlines in: succession | 4% (1–8) | 6% (3–9) | 8% (4–12) |
+| headlines in: union | 2% (1–3) | 1% (0–2) | 1% (0–3) |
+| rivalries: a house removed | 9.3 (0–17) | 8.0 (2–16) | 8.1 (2–16) |
+| rivalries: a riding changed hands | 1.2 (0–4) | 4.4 (2–6) | 4.0 (2–6) |
+| rivalries: ceded under a claim | 4.5 (2–6) | 1.8 (0–5) | 1.3 (0–3) |
+| rivalries: held in a contest | 35.2 (27–49) | 9.8 (2–14) | 11.3 (6–19) |
+| rivalries: lapsed | 13.7 (7–20) | 22.2 (15–30) | 21.9 (14–27) |
+| rivalries: open | 20.9 (13–29) | 16.6 (9–28) | 10.8 (6–19) |
+| rivalries: reconciled | 11.6 (4–21) | 10.0 (4–14) | 9.2 (2–16) |
+| rivalries: won in a contest | 28.8 (24–35) | 12.5 (7–20) | 11.9 (3–22) |
+
+Every target is met on the mean with every flag on:
+
+- Part 0's: 24.3 contests, median capital 48.9, ranks spanned by the top eight at turn 60 3.2, 15.4 rises and declines a game, 59% of turns with a heavy headline, Auto pausing on 26%.
+- Every C2 target but land.
+- Both camps are non-empty in 87% of crises, 23.7 houses are active at turn 100, and every game ends with a reckoning.
+
+The ranges worth naming:
+
+- Rivalries run a median of 10.0 turns, at the top of their range.
+- Cohesion is 83.4, near the top of its range.
+- Single seeds fall outside on contests (11–42) and Auto pauses (19–32%).
+- Those who lead carry only 12% of crises. The response roll's thresholds are what decide it: Lead on a 6, Resist on a 2 or 3. They were not changed.
+
+Without the calendar, the same tables leave median capital at 18.6. The calendar's slower land and its two wars' capital are what balance the economy, so the tables are tuned for the game with it on.
+
