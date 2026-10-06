@@ -1,0 +1,52 @@
+{
+  "version": "phase-a-1",
+  "notes": [
+    "docs/STORY_DESIGN.md section 3.1. Integers only. The story layer reads this file and nothing in either engine does.",
+    "riding_lost, endowment, era_response and other are kinds the record holds that section 3.1 does not name: a riding returned to the Crown, an endowment, a response to a Minor or Significant era event, and anything untyped."
+  ],
+  "kinds": {
+    "removed": 100,
+    "riding_passes": 80,
+    "partition": 75,
+    "elevation": 60,
+    "succession_disorderly": 60,
+    "quarrel": 50,
+    "marriage": 45,
+    "dispute_won": 45,
+    "reconciled": 45,
+    "founding": 40,
+    "succession_clean": 30,
+    "major_response": 30,
+    "compact": 25,
+    "expansion": 20,
+    "failed": 10,
+    "correspondence": 5,
+    "invest": 0,
+    "cultivate": 0,
+    "consolidate": 0,
+    "name_heir": 0,
+    "riding_lost": 35,
+    "endowment": 15,
+    "era_response": 5,
+    "other": 0
+  },
+  "modifiers": {
+    "top_eight": 20,
+    "follow_multiplier": 2,
+    "first": 15,
+    "callback": 10,
+    "callback_window": 10,
+    "repeat_headline": -15
+  },
+  "thresholds": {
+    "pause": 60,
+    "quiet": 40,
+    "secondary": 20
+  },
+  "cast_size": 8,
+  "secondary_max": 3,
+  "standing": {
+    "per_holding": 10,
+    "per_rank": 20
+  }
+}
