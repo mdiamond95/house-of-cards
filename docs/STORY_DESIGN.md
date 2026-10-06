@@ -62,6 +62,29 @@ Modifiers: +20 if a top-eight house is involved; double if the followed house is
 callback (the same pair of houses shared a beat in the last ten turns); −15 if the same
 kind headlined the previous turn. Pause threshold 60; quiet threshold 40.
 
+**Phase A note, 6 October 2026.** Built as `web/story/weights.json`, tuned against The
+First Dominion (scenario `new`, 150 seasons, following no one). The starting values above
+met every limit on the first run and are the final numbers, unchanged. Alongside them:
+
+- A modifier applies only to a beat whose base weight is above zero, so the four
+  bookkeeping actions never headline. Top eight is measured at the start of the turn; a
+  first is spent by the first beat that has it, and counts once even when it is both a
+  first kind and a first province; the follow multiplier applies after the additions.
+- Secondary threshold 20, at most three secondaries; cast size 8; standing 10 per riding
+  and 20 per rank index.
+- Four kinds the record holds that the table does not name: a riding returned to the
+  Crown 35; an endowment 15; a response to a Minor or Significant era event 5; anything
+  untyped 0 (none in The First Dominion).
+
+Headlines over the 150 seasons: 144, with 6 quiet seasons, and 90 at or above the pause
+threshold. By kind: quarrel 27 (18.8%), riding passes 26 (18.1%), response to a Major
+event 14 (9.7%), expansion 11 (7.6%), marriage 11 (7.6%), dispute reconciled 9 (6.3%),
+clean succession 8 (5.6%), elevation 8 (5.6%), compact 7 (4.9%), dispute won 6 (4.2%),
+disorderly succession 5 (3.5%), Crown founding 4 (2.8%), partition 4 (2.8%), house
+removed 2 (1.4%), failed attempt 1 (0.7%), endowment 1 (0.7%). The largest kind supplies
+18.8% of headlines; no bookkeeping action headlines. `node tests/js/story_report.mjs
+<site>/data/beats` reproduces these figures.
+
 ### 3.2 The dispatch
 
 One turn on screen is: a headline (the heaviest beat, with the map zoomed to where it
