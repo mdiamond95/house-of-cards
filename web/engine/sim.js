@@ -313,6 +313,8 @@ export class World {
     this._turnCache = new Map();
     this._expansionClaims = new Map();
     this._provinceDistance = new Map();
+    // Rules 1.0 `schemes`: set while a scheme resolves through a handler.
+    this._schemeTarget = null;
 
     this.reindexRules();
   }
@@ -895,6 +897,7 @@ export class World {
         line: `Season ${season} · ${heir.name} succeeds to ${row.peerage}.`,
         delta: World.withTraits({ nature: 'clean', cause }, heirTraits),
       });
+      this.reconsiderScheme(house, season);
       return this.checkExtinction(house, season, rng);
     }
 
@@ -945,6 +948,7 @@ export class World {
       this.loseRiding(house, season, 'disorderly succession');
     }
 
+    this.reconsiderScheme(house, season);
     return this.checkExtinction(house, season, rng);
   }
 
@@ -1105,6 +1109,7 @@ export class World {
         person.diedSeason = season;
       }
     }
+    this.endSchemesOf(house, season);
   }
 
   // Lose the most recently acquired non-seat riding (§7c).
@@ -1260,7 +1265,9 @@ export class World {
   sellRiding(house, season, reason) {
     // The buyer: an adjacent house with capital >= 50, richest first, then by
     // name — the ORDER BY s.capital DESC, s.house of the original query.
-    const neighbours = this.neighbouringHouses(house);
+    // Read fresh, as hoc/sim.py's query is: a riding taken earlier in this
+    // turn (a frontier settled before a debt sale) changes who is adjacent.
+    const neighbours = this.state.neighbouringHouses(house);
     const buyers = neighbours
       .map((other) => this.houseRow(other))
       .filter((other) => other.capital >= 50)
@@ -1593,6 +1600,839 @@ export class World {
     return this.foundHouse(season, { rng });
   }
 
+  // ------------------------------------------------------------- phase C2 --
+  //
+  // docs/STORY_DESIGN.md §4.2 (`schemes`), §4.4 (`contested_claims`), §4.5
+  // (`prestige_politics`) and §4.9 (`cohesion_strain`), mirrored line for line
+  // from hoc/sim.py. Every query there that has an ORDER BY is a sort here.
+
+  strain(house) {
+    const spec = this.rules.upkeep.strain;
+    const row = this.houseRow(house);
+    const free = spec.free_holdings + spec.per_rank_index * (this.rankIndex.get(row.rank) ?? 0);
+    let loss = Math.max(0, this.holdingCount(house) - free);
+    const holder = this.holder(house);
+    if (holder !== null && holder.age > spec.holder_over) loss += 1;
+    this.log.push({ purpose: `strain.${house}`, result: loss });
+    if (loss) this.setStats(house, { cohesion: -loss });
+  }
+
+  standing(house) {
+    const row = this.houseRow(house);
+    if (this.feature('prestige') && row.prestige !== null && row.prestige !== undefined) {
+      return row.prestige;
+    }
+    return 10 * this.holdingCount(house) + 20 * (this.rankIndex.get(row.rank) ?? 0);
+  }
+
+  ranking() {
+    if (!this._turnCache.has('ranking')) {
+      const top = this.rules.schemeRules.utility.top;
+      const ranked = this.activeHouses()
+        .map((r) => [this.standing(r.house), r.house])
+        .sort((a, b) => (b[0] - a[0]) || compareStrings(a[1], b[1]));
+      const names = ranked.map(([, house]) => house);
+      this._turnCache.set('ranking', [names.length ? names[0] : null, new Set(names.slice(0, top))]);
+    }
+    return this._turnCache.get('ranking');
+  }
+
+  schemeSpec(name) {
+    return this.rules.schemes.find((s) => s.scheme === name) || null;
+  }
+
+  contestSchemes() {
+    return this.rules.schemes.filter((s) => s.resolvesAs === 'contest').map((s) => s.scheme);
+  }
+
+  activeScheme(house) {
+    let found = null;
+    for (const s of this.state.schemes) {
+      if (s.house === house && s.status === 'active' && (found === null || s.id < found.id)) found = s;
+    }
+    return found;
+  }
+
+  wealthTier(fedId) {
+    const stats = this.state.map.ridingStats.get(fedId) || {};
+    return stats.wealth_tier === undefined ? NEUTRAL_WEALTH_TIER : stats.wealth_tier;
+  }
+
+  isSeat(house, fedId) {
+    return this.state.holdings.some(
+      (h) => h.house === house && h.fedId === fedId && h.releasedEventId === null && h.seatOrder === 1,
+    );
+  }
+
+  hasTrait(house, trait) {
+    return this.holderTraitRows(house).some((t) => t.trait === trait);
+  }
+
+  claimTargets(house) {
+    const found = new Map();
+    for (const mine of this.state.holdings) {
+      if (mine.house !== house || mine.releasedEventId !== null) continue;
+      for (const neighbour of this.state.map.land(mine.fedId)) {
+        const other = this.state.holderOfRiding(neighbour);
+        if (other === null || other === house) continue;
+        if (this.state.house(other)?.status !== 'active') continue;
+        found.set(`${other}\u0000${neighbour}`, [other, neighbour]);
+      }
+    }
+    return [...found.values()].sort((a, b) => compareStrings(a[0], b[0]) || compareStrings(a[1], b[1]));
+  }
+
+  contestCooldown(a, b, season) {
+    let last = null;
+    for (const s of this.state.schemes) {
+      if (s.status !== 'resolved' || (s.outcome !== 'won' && s.outcome !== 'held')) continue;
+      if (!((s.house === a && s.targetHouse === b) || (s.house === b && s.targetHouse === a))) continue;
+      if (last === null || s.endedSeason > last) last = s.endedSeason;
+    }
+    return last !== null && season - last < this.rules.schemeRules.contest.cooldown;
+  }
+
+  lostContest(house, season, other = null) {
+    const window = this.rules.schemeRules.utility.recent_loss_turns;
+    for (const s of [...this.state.schemes].sort((x, y) => x.id - y.id)) {
+      if (s.status !== 'resolved' || (s.outcome !== 'won' && s.outcome !== 'held')) continue;
+      if (s.endedSeason < season - window) continue;
+      if (s.house !== house && s.targetHouse !== house) continue;
+      let winner;
+      if (s.house === house && s.outcome === 'held') winner = s.targetHouse;
+      else if (s.targetHouse === house && s.outcome === 'won') winner = s.house;
+      else continue;
+      if (other === null || winner === other) return true;
+    }
+    return false;
+  }
+
+  claimsOn(house, by = null) {
+    const names = new Set(this.contestSchemes());
+    return this.state.schemes
+      .filter((s) => s.status === 'active' && s.targetHouse === house && names.has(s.scheme))
+      .filter((s) => by === null || s.house === by)
+      .sort((x, y) => x.id - y.id);
+  }
+
+  relationAge(a, b, season) {
+    const made = this.relationSeason(a, b);
+    return made === null ? null : season - made;
+  }
+
+  peaceWaits(house, other, season) {
+    if (this.relationMarker(house, other) !== GRIEVANCE) return false;
+    const age = this.relationAge(house, other, season);
+    return age !== null && age < this.rules.schemeRules.peace.wait;
+  }
+
+  canNameHeir(house) {
+    const holder = this.holder(house);
+    if (holder === null || holder.age < 45) return false;
+    const existing = this.heirs(house);
+    const second = this.rules.succession.heirs;
+    if (existing.length === 0) return true;
+    return existing.length === 1
+      && existing[0].age >= second.second_heir_min_age
+      && this.holdingCount(house) >= second.second_heir_min_holdings;
+  }
+
+  matchCandidates(house) {
+    const pairing = this.feature('marriage_pairing');
+    if (!pairing && !this.unmarriedHeir(house)) return [];
+    return this.housesRelatedBy(house, new Set([FRIENDLY, COMPACT])).filter(
+      (other) => (pairing ? this.marriagePair(house, other) !== null : this.unmarriedHeir(other)),
+    );
+  }
+
+  compactCandidates(house) {
+    const row = this.houseRow(house);
+    return this.housesRelatedBy(house, new Set([FRIENDLY])).filter((other) => {
+      const tag = this.houseRow(other).tag;
+      return tag === row.tag || row.tag === 'Mixed' || tag === 'Mixed';
+    });
+  }
+
+  disputeCandidates(house, season) {
+    return this.housesRelatedBy(house, new Set([GRIEVANCE])).filter(
+      (other) => this.adjacentHoldingOf(house, other) && !this.disputeBlocked(house, other, season),
+    );
+  }
+
+  stepCost(house, spec, targetHouse) {
+    let capital = spec.stepCapital;
+    const influence = spec.stepInfluence;
+    if (spec.resolvesAs === 'contest' && targetHouse !== null) {
+      const marker = this.relationMarker(house, targetHouse);
+      if (marker === GRIEVANCE || marker === HOSTILE) {
+        capital = Math.max(0, capital - this.rules.schemeRules.utility.claim_discount);
+      }
+    }
+    return [capital, influence];
+  }
+
+  affords(house, spec, targetHouse, extraCapital = 0) {
+    const row = this.houseRow(house);
+    const [capital, influence] = this.stepCost(house, spec, targetHouse);
+    return row.capital >= capital + extraCapital && row.influence >= influence;
+  }
+
+  schemeUtility(house, spec, targetHouse, targetRiding, season) {
+    const terms = this.rules.schemeRules.utility;
+    const row = this.houseRow(house);
+    let value = spec.utility;
+    for (const objective of this.heldObjectives(house)) {
+      const o = this.objectives.get(objective);
+      if (o === undefined) continue;
+      value += terms.objective * spec.reads.filter((a) => o.actionWeightBonus.includes(a)).length;
+    }
+    for (const trait of this.holderTraitRows(house)) {
+      for (const action of spec.reads) value += (trait.actions[action] ?? 0) * terms.trait_unit;
+    }
+    const kind = spec.resolvesAs;
+    if (['contest', 'frontier', 'Purchase riding', 'Dispute'].includes(kind)) {
+      value += row.ambition * terms.ambition;
+      if (row.cohesion < terms.low_cohesion) value -= terms.low_cohesion_penalty;
+    }
+    if (targetRiding !== null && (kind === 'contest' || kind === 'frontier')) {
+      value += terms.wealth_tier * this.wealthTier(targetRiding);
+    }
+    if (kind === 'contest') {
+      const marker = this.relationMarker(house, targetHouse);
+      if (marker === GRIEVANCE) value += terms.grievance;
+      else if (marker === HOSTILE) value += terms.hostile;
+      if (this.standing(targetHouse) < this.standing(house)) value += terms.weaker_target;
+      if (this.isSeat(targetHouse, targetRiding)) value += terms.seat;
+      if (this.feature('prestige_politics')) {
+        if (this.houseRow(targetHouse).cohesion < terms.low_cohesion || this.lostContest(targetHouse, season)) {
+          value += terms.weak_target;
+        }
+        const [leader, top] = this.ranking();
+        if (targetHouse === leader && house !== leader && top.has(house)) value += terms.leader_target;
+      }
+    } else if (kind === 'Petition elevation') {
+      value += Math.max(0, Math.floor((row.influence - terms.elevation_influence_from) / 5));
+    } else if (kind === 'Name heir') {
+      const holder = this.holder(house);
+      if (holder !== null) value += Math.max(0, holder.age - terms.line_age_from);
+    } else if (kind === 'Propose compact') {
+      if (this.claimsOn(house).length > 0) value += terms.under_claim;
+      if (this.feature('prestige_politics')) {
+        const gap = this.standing(targetHouse) - this.standing(house);
+        value += Math.min(terms.protector_gap_max, Math.floor(Math.max(0, gap) / terms.protector_per_gap));
+        const [leader] = this.ranking();
+        if (targetHouse === leader) value += terms.leader_ally;
+      }
+    } else if (kind === 'Reconcile') {
+      if (
+        this.claimsOn(house, targetHouse).length > 0
+        || this.lostContest(house, season, targetHouse)
+        || row.cohesion < terms.low_cohesion
+        || this.hasTrait(house, 'Conciliator')
+      ) value += terms.peace_cause;
+    } else if (kind === 'sue') {
+      if (this.standing(house) < this.standing(targetHouse)) value += terms.weaker_target;
+      if (row.cohesion < terms.low_cohesion) value += terms.low_cohesion_penalty;
+    } else if (kind === 'fortify') {
+      if (this.isSeat(house, targetRiding)) value -= terms.seat;
+    }
+    return value;
+  }
+
+  schemeTargets(house, spec, season, claim = null) {
+    const kind = spec.resolvesAs;
+    const row = this.houseRow(house);
+    if (kind === 'contest') {
+      if (!this.feature('contested_claims')) return [];
+      const out = [];
+      for (const [other, fedId] of this.claimTargets(house)) {
+        if (claim !== null && other !== claim.house) continue;
+        const marker = this.relationMarker(house, other);
+        if (marker === KIN || marker === COMPACT) continue;
+        if (this.contestCooldown(house, other, season)) continue;
+        if (this.affords(house, spec, other)) out.push([other, fedId]);
+      }
+      return out;
+    }
+    if (kind === 'frontier') {
+      return this.openExpansionTargets(house)
+        .filter((fedId) => this.affords(house, spec, null, 15 + this.wealthOffset(fedId)))
+        .map((fedId) => [null, fedId]);
+    }
+    if (kind === 'Purchase riding') {
+      if (row.capital < 70 || !this.affords(house, spec, null)) return [];
+      return this.purchaseTargets(house).map((other) => [other, null]);
+    }
+    if (kind === 'Dispute') {
+      if (!this.affords(house, spec, null)) return [];
+      return this.disputeCandidates(house, season).map((other) => [other, null]);
+    }
+    if (kind === 'Marriage alliance') {
+      if (!this.affords(house, spec, null)) return [];
+      return this.matchCandidates(house).map((other) => [other, null]);
+    }
+    if (kind === 'Petition elevation') {
+      if (
+        row.influence >= 60 && this.holdingCount(house) >= 3
+        && (this.rankIndex.get(row.rank) ?? 0) < this.rankIndex.get('Marquis')
+        && this.affords(house, spec, null)
+      ) return [[null, null]];
+      return [];
+    }
+    if (kind === 'Propose compact') {
+      if (!this.affords(house, spec, null)) return [];
+      const mine = this.standing(house);
+      return this.compactCandidates(house)
+        .filter((other) => this.standing(other) > mine)
+        .map((other) => [other, null]);
+    }
+    if (kind === 'Name heir') {
+      return this.canNameHeir(house) && this.affords(house, spec, null) ? [[null, null]] : [];
+    }
+    if (kind === 'Reconcile') {
+      if (!this.affords(house, spec, null)) return [];
+      return this.housesRelatedBy(house, new Set([GRIEVANCE, HOSTILE]))
+        .filter((other) => !this.peaceWaits(house, other, season))
+        .map((other) => [other, null]);
+    }
+    if (kind === 'fortify') {
+      if (claim === null || !this.affords(house, spec, null)) return [];
+      return [[claim.house, claim.targetRiding]];
+    }
+    if (kind === 'sue') {
+      if (claim === null || !this.affords(house, spec, null) || this.peaceWaits(house, claim.house, season)) return [];
+      return [[claim.house, null]];
+    }
+    return [];
+  }
+
+  schemeCandidates(house, season, claim = null) {
+    const out = [];
+    this.rules.schemes.forEach((spec, index) => {
+      if (claim === null && spec.answer === 'only') return;
+      if (claim !== null && spec.answer === 'no') return;
+      for (const [targetHouse, targetRiding] of this.schemeTargets(house, spec, season, claim)) {
+        const value = this.schemeUtility(house, spec, targetHouse, targetRiding, season);
+        out.push([value, index, targetHouse || '', targetRiding || '', spec]);
+      }
+    });
+    return out;
+  }
+
+  static candidateKey(candidate) {
+    const spec = candidate[4];
+    return `${spec ? spec.scheme : 'Stand'}|${candidate[2]}|${candidate[3]}`;
+  }
+
+  chooseScheme(house, candidates, rng, purpose) {
+    const ranked = [...candidates].sort((a, b) => (b[0] - a[0]) || (a[1] - b[1])
+      || compareStrings(a[2], b[2]) || compareStrings(a[3], b[3]));
+    const top = ranked.filter((c) => c[0] > 0).slice(0, this.rules.schemeRules.choice.top);
+    if (top.length === 0) return null;
+    const key = rng.weighted(top.map((c) => [World.candidateKey(c), c[0]]), purpose);
+    return top.find((c) => World.candidateKey(c) === key);
+  }
+
+  static turnsRemaining(scheme) {
+    if (scheme.status !== 'active') return 0;
+    return scheme.stepsTotal - scheme.stepsDone + 1;
+  }
+
+  schemeEvent(scheme, phase, season, line = true, extra = null) {
+    const spec = this.schemeSpec(scheme.scheme);
+    const house = scheme.house;
+    const peerage = this.houseRow(house).peerage;
+    const target = scheme.targetHouse;
+    const targetPeerage = target ? this.houseRow(target).peerage : '';
+    const riding = scheme.targetRiding ? this.ridingName(scheme.targetRiding) : null;
+    const payload = {
+      id: scheme.id,
+      name: scheme.scheme,
+      phase,
+      turns_remaining: World.turnsRemaining(scheme),
+      committed: scheme.committedCapital + scheme.committedInfluence,
+    };
+    if (target) payload.target_house = target;
+    if (riding !== null) payload.riding = riding;
+    if (scheme.answers !== null) payload.answers = scheme.answers;
+    if (extra) Object.assign(payload, extra);
+    let text = null;
+    if (line) {
+      const template = phase === 'begun' || phase === 'answered' ? spec.begins : spec.abandons;
+      text = `Season ${season} · ${template.split('{house}').join(peerage)
+        .split('{target}').join(targetPeerage).split('{riding}').join(riding || '')}`;
+    }
+    return this.record('other', `${peerage}: ${scheme.scheme} (${phase})`,
+      [house, ...(target ? [target] : [])], season, {
+        band: this.bandFor(this.personalYear(house)),
+        line: text,
+        delta: { scheme: payload },
+      });
+  }
+
+  schemeStep(scheme, season, phase = 'step') {
+    const spec = this.schemeSpec(scheme.scheme);
+    const [capital, influence] = this.stepCost(scheme.house, spec, scheme.targetHouse);
+    this.setStats(scheme.house, { capital: -capital, influence: -influence });
+    scheme.stepsDone += 1;
+    scheme.committedCapital += capital;
+    scheme.committedInfluence += influence;
+    this.schemeEvent(scheme, phase, season, phase !== 'step');
+  }
+
+  beginScheme(house, spec, targetHouse, targetRiding, season, rng, answers = null, steps = null) {
+    let total = steps;
+    if (total === null) {
+      total = spec.stepsMin === spec.stepsMax
+        ? spec.stepsMin
+        : rng.randint(spec.stepsMin, spec.stepsMax, `scheme.steps.${house}`);
+    }
+    const scheme = this.state.addScheme({
+      house, scheme: spec.scheme, targetHouse, targetRiding, answers,
+      stepsTotal: total, begunSeason: season,
+    });
+    const phase = answers !== null ? 'answered' : 'begun';
+    this.schemeStep(scheme, season, phase);
+    const outcome = { action: spec.scheme, success: true, scheme: phase };
+    if (targetHouse) outcome.with = targetHouse;
+    if (targetRiding) outcome.riding = this.ridingName(targetRiding);
+    return outcome;
+  }
+
+  endScheme(scheme, status, outcome, season) {
+    scheme.status = status;
+    scheme.outcome = outcome;
+    scheme.endedSeason = season;
+  }
+
+  abandonScheme(scheme, season, reason) {
+    const pct = this.rules.schemeRules.choice.abandon_refund_pct;
+    this.setStats(scheme.house, {
+      capital: Math.floor((scheme.committedCapital * pct) / 100),
+      influence: Math.floor((scheme.committedInfluence * pct) / 100),
+    });
+    this.endScheme(scheme, 'abandoned', reason, season);
+    this.schemeEvent(scheme, 'abandoned', season, true, { reason });
+    const contest = new Set(this.contestSchemes());
+    const answers = this.state.schemes
+      .filter((s) => s.answers === scheme.id && s.status === 'active')
+      .sort((x, y) => x.id - y.id);
+    for (const answer of answers) {
+      if (answer.status === 'active' && !contest.has(answer.scheme)) {
+        this.abandonScheme(answer, season, 'the claim is withdrawn');
+      }
+    }
+  }
+
+  closeScheme(scheme, outcome, season) {
+    this.endScheme(scheme, 'resolved', outcome, season);
+    this.schemeEvent(scheme, 'resolved', season, false, {
+      outcome, ran: season - scheme.begunSeason + 1,
+    });
+  }
+
+  endSchemesOf(house, season) {
+    if (!this.feature('schemes')) return;
+    for (const s of this.state.schemes) {
+      if (s.house === house && s.status === 'active') this.endScheme(s, 'abandoned', 'house gone', season);
+    }
+  }
+
+  abortReason(s, season) {
+    const spec = this.schemeSpec(s.scheme);
+    const { house, targetHouse: target, targetRiding: fedId } = s;
+    if (target !== null && this.state.house(target)?.status !== 'active') return 'target gone';
+    const kind = spec.resolvesAs;
+    if (kind === 'contest') {
+      if (this.state.holderOfRiding(fedId) !== target
+        || !this.claimTargets(house).some(([o, f]) => o === target && f === fedId)) return 'target gone';
+      const marker = this.relationMarker(house, target);
+      if (marker === KIN || marker === COMPACT) return 'bound by alliance';
+      if (this.contestCooldown(house, target, season)) return 'the field is decided';
+    } else if (kind === 'frontier') {
+      if (this.state.holderOfRiding(fedId) !== null) return 'target gone';
+      if (!this.ridingOpen(fedId, this.personalYear(house))) return 'target closed';
+    } else if (kind === 'Purchase riding') {
+      if (!this.purchaseTargets(house).includes(target)) return 'target recovered';
+    } else if (kind === 'Dispute') {
+      if (!this.disputeCandidates(house, season).includes(target)) return 'quarrel ended';
+    } else if (kind === 'Marriage alliance') {
+      if (!this.matchCandidates(house).includes(target)) return 'no match';
+    } else if (kind === 'Petition elevation') {
+      if ((this.rankIndex.get(this.houseRow(house).rank) ?? 0) >= this.rankIndex.get('Marquis')
+        || this.holdingCount(house) < 3) return 'out of reach';
+    } else if (kind === 'Propose compact') {
+      if (this.relationMarker(house, target) !== FRIENDLY) return 'relation changed';
+    } else if (kind === 'Name heir') {
+      if (!this.canNameHeir(house)) return 'line secured';
+    } else if (kind === 'Reconcile') {
+      const marker = this.relationMarker(house, target);
+      if (marker !== GRIEVANCE && marker !== HOSTILE) return 'quarrel ended';
+    } else if (kind === 'fortify' || kind === 'sue') {
+      const claim = this.state.scheme(s.answers);
+      if (claim === null || claim.status !== 'active') return 'claim over';
+    }
+    if (s.stepsDone < s.stepsTotal && !this.affords(house, spec, target)) return 'funds gone';
+    return null;
+  }
+
+  reconsiderScheme(house, season) {
+    if (!this.feature('schemes')) return;
+    const s = this.activeScheme(house);
+    if (s === null) return;
+    const spec = this.schemeSpec(s.scheme);
+    const value = this.schemeUtility(house, spec, s.targetHouse, s.targetRiding, season);
+    if (value < this.rules.schemeRules.choice.abandon_below) this.abandonScheme(s, season, 'the new holder');
+  }
+
+  schemeTurn(house, season, rng) {
+    let current = this.activeScheme(house);
+    if (current !== null) {
+      const reason = this.abortReason(current, season);
+      if (reason !== null) {
+        this.abandonScheme(current, season, reason);
+        current = null;
+      }
+    }
+
+    const contest = new Set(this.contestSchemes());
+    const pending = this.state.schemes
+      .filter((s) => s.status === 'active' && s.targetHouse === house && s.considered === 0)
+      .sort((x, y) => x.id - y.id)
+      .filter((s) => contest.has(s.scheme));
+    if (pending.length > 0) {
+      const claim = pending[0];
+      for (const p of pending) p.considered = 1;
+      if (current === null || current.answers !== claim.id) {
+        const candidates = this.schemeCandidates(house, season, claim);
+        candidates.push([this.rules.schemeRules.choice.answer_stand, this.rules.schemes.length, '', '', null]);
+        const chosen = this.chooseScheme(house, candidates, rng, `scheme.answer.${house}`);
+        if (chosen !== null && chosen[4] !== null) {
+          claim.considered = 2;
+          if (current !== null) this.abandonScheme(current, season, 'set aside');
+          const spec = chosen[4];
+          let steps = null;
+          if (spec.resolvesAs === 'fortify') steps = Math.max(1, World.turnsRemaining(claim));
+          return this.beginScheme(house, spec, chosen[2] || null, chosen[3] || null, season, rng, claim.id, steps);
+        }
+      }
+    }
+
+    if (current !== null) return this.advanceScheme(current, season, rng);
+
+    const chosen = this.chooseScheme(house, this.schemeCandidates(house, season), rng, `scheme.choose.${house}`);
+    if (chosen === null) return { action: 'Bide', success: true, note: 'no scheme' };
+    return this.beginScheme(house, chosen[4], chosen[2] || null, chosen[3] || null, season, rng);
+  }
+
+  advanceScheme(s, season, rng) {
+    const spec = this.schemeSpec(s.scheme);
+    if (s.stepsDone < s.stepsTotal) {
+      this.schemeStep(s, season);
+      const outcome = { action: spec.scheme, success: true, scheme: 'step' };
+      if (s.targetHouse) outcome.with = s.targetHouse;
+      return outcome;
+    }
+    if (spec.resolvesAs === 'fortify') {
+      return { action: spec.scheme, success: true, scheme: 'holds', with: s.targetHouse };
+    }
+    return this.resolveScheme(s, season, rng);
+  }
+
+  resolveWith(house, name, season, rng, bonus) {
+    const action = this.actions.get(name);
+    const row = this.houseRow(house);
+    const band = this.bandFor(this.personalYear(house));
+    let success;
+    let roll = null;
+    if (action.target === 'auto') {
+      success = true;
+    } else {
+      roll = rng.twoD6(`resolve.${name}.${house}`);
+      const raw = action.enclosureBonus ? action.enclosureBonus.replace(/^\+/, '') : '';
+      const modifier = row.enclosed && action.enclosureBonus ? parseInt(raw || '0', 10) : 0;
+      success = roll + modifier + bonus >= action.target;
+    }
+    return this.handlerFor(name).call(this, house, season, rng, success, band, roll);
+  }
+
+  resolveScheme(s, season, rng) {
+    const spec = this.schemeSpec(s.scheme);
+    const kind = spec.resolvesAs;
+    const per = this.rules.schemeRules.contest.committed_per_point;
+    const bonus = Math.floor((s.committedCapital + s.committedInfluence) / per);
+    let outcome;
+    if (kind === 'contest') {
+      outcome = this.contest(s, season, rng);
+      this.closeScheme(s, outcome.contest, season);
+    } else if (kind === 'frontier') {
+      outcome = this.frontier(s, season, rng, bonus);
+      this.closeScheme(s, outcome.success ? 'success' : 'failure', season);
+    } else if (kind === 'sue') {
+      outcome = this.sue(s, season, rng, bonus);
+      this.closeScheme(s, outcome.success ? 'success' : 'failure', season);
+    } else {
+      this._schemeTarget = s.targetHouse;
+      try {
+        outcome = this.resolveWith(s.house, kind, season, rng, bonus);
+      } finally {
+        this._schemeTarget = null;
+      }
+      this.closeScheme(s, outcome.success ? 'success' : 'failure', season);
+    }
+    outcome.scheme = 'resolved';
+    outcome.plan = spec.scheme;
+    return outcome;
+  }
+
+  settle(house, fedId, season, band, roll, schemeId) {
+    const row = this.houseRow(house);
+    const name = this.ridingName(fedId);
+    const year = this.personalYear(house);
+    const delta = { riding: name, roll, scheme: schemeId };
+    const jurisdiction = this.feature('atlas_jurisdiction') ? this.jurisdictionName(fedId, year) : null;
+    if (jurisdiction !== null) delta.jurisdiction = jurisdiction;
+    const eventId = this.record('expansion', `${row.peerage} takes ${name}`, [house], season, {
+      band,
+      line: `Season ${season} · ${row.peerage} takes ${name}${this.jurisdictionSuffix(fedId, year)}.`,
+      delta,
+    });
+    this.state.addHolding({
+      house, fedId, seatOrder: this.nextSeatOrder(house),
+      hex: this.expansionHex(house), acquiredEventId: eventId,
+    });
+    this.setStats(house, { capital: -(15 + this.wealthOffset(fedId)) });
+    return name;
+  }
+
+  frontier(s, season, rng, bonus) {
+    const house = s.house;
+    const fedId = s.targetRiding;
+    const band = this.bandFor(this.personalYear(house));
+    const roll = rng.twoD6(`resolve.Expand.${house}`);
+    const name = this.ridingName(fedId);
+    if (roll + bonus < this.actions.get('Expand').target) return { action: 'Expand', success: false, riding: name };
+    this.settle(house, fedId, season, band, roll, s.id);
+    const outcome = { action: 'Expand', success: true, riding: name };
+    if (roll >= this.rules.schemeRules.frontier.double_on) {
+      const year = this.personalYear(house);
+      const beside = [...this.state.map.land(fedId)].sort(compareStrings)
+        .filter((n) => this.state.holderOfRiding(n) === null && this.ridingOpen(n, year));
+      if (beside.length > 0) {
+        const second = rng.choice(beside, `frontier.second.${house}`);
+        if (this.houseRow(house).capital >= 15 + this.wealthOffset(second)) {
+          outcome.second = this.settle(house, second, season, band, roll, s.id);
+        }
+      }
+    }
+    return outcome;
+  }
+
+  callAllies(party, opponent, schemeId, side, season, rng) {
+    const spec = this.rules.schemeRules.contest;
+    const partyPeerage = this.houseRow(party).peerage;
+    const joined = [];
+    for (const ally of this.housesRelatedBy(party, new Set([COMPACT, KIN]))) {
+      if (ally === opponent) continue;
+      let value = spec.ally_accept;
+      if (this.relationMarker(party, ally) === KIN) value += spec.ally_kin;
+      const bound = this.relationMarker(ally, opponent);
+      if (bound === COMPACT || bound === KIN) value += spec.ally_bound_both;
+      if (this.feature('prestige_politics')) {
+        const [leader] = this.ranking();
+        if (party === leader) value += this.rules.schemeRules.utility.leader_ally;
+      }
+      const joins = rng.chance(clamp(value, 0, 100), `contest.ally.${ally}`);
+      const allyPeerage = this.houseRow(ally).peerage;
+      const line = joins
+        ? `Season ${season} · ${allyPeerage} stands with ${partyPeerage} against ${this.houseRow(opponent).peerage}.`
+        : `Season ${season} · ${allyPeerage} declines to stand with ${partyPeerage}.`;
+      this.record('other', `${allyPeerage} ${joins ? 'joins' : 'declines'} ${partyPeerage}`,
+        [ally, party, opponent], season, {
+          band: this.bandFor(this.personalYear(ally)),
+          line,
+          delta: { ally: { scheme: schemeId, side, party, joins } },
+        });
+      if (joins) joined.push(ally);
+    }
+    return joined;
+  }
+
+  transfer(loser, winner, fedId, eventId) {
+    for (const holding of this.state.holdings) {
+      if (holding.house === loser && holding.fedId === fedId && holding.releasedEventId === null) {
+        this.state.releaseHolding(holding, eventId);
+      }
+    }
+    this.state.addHolding({
+      house: winner, fedId, seatOrder: this.nextSeatOrder(winner),
+      hex: this.expansionHex(winner), acquiredEventId: eventId,
+    });
+    this.state.renumber(loser);
+  }
+
+  fall(house, by, season, band) {
+    const row = this.houseRow(house);
+    this.record('succession', `${row.peerage} falls`, [house, by], season, {
+      band,
+      line: `Season ${season} · ${row.peerage} falls; ${this.houseRow(by).peerage} has taken its seat.`,
+      delta: { nature: 'extinction', reason: 'fell', taken_by: by },
+    });
+    this.state.house(house).status = 'removed';
+    this.state.stats(house).removedSeason = season;
+    for (const person of this.state.persons) {
+      if (person.house === house && person.alive === 1) {
+        person.alive = 0;
+        person.diedSeason = season;
+      }
+    }
+    this.endSchemesOf(house, season);
+  }
+
+  contestTotals(attacker, defender, fedId, committed, fortified, alliesA, alliesD, rollA, rollD) {
+    const spec = this.rules.schemeRules.contest;
+    const aRow = this.houseRow(attacker);
+    const dRow = this.houseRow(defender);
+    const attack = rollA + Math.floor(committed / spec.committed_per_point)
+      + (this.rankIndex.get(aRow.rank) ?? 0) + spec.per_ally * alliesA
+      + this.traitEffect(attacker, 'claim');
+    const defence = rollD + Math.floor(fortified / spec.fortified_per_point)
+      + Math.floor(dRow.cohesion / spec.cohesion_per_point) + spec.per_ally * alliesD
+      + (this.isSeat(defender, fedId) ? spec.seat_bonus : 0);
+    return [attack, defence];
+  }
+
+  contest(s, season, rng) {
+    const spec = this.rules.schemeRules.contest;
+    const attacker = s.house;
+    const defender = s.targetHouse;
+    const fedId = s.targetRiding;
+    const aRow = this.houseRow(attacker);
+    const dRow = this.houseRow(defender);
+    const band = this.bandFor(this.personalYear(attacker));
+    const name = this.ridingName(fedId);
+    const alliesA = this.callAllies(attacker, defender, s.id, 'attacker', season, rng);
+    const alliesD = this.callAllies(defender, attacker, s.id, 'defender', season, rng);
+    const forts = this.state.schemes
+      .filter((x) => x.answers === s.id && x.status === 'active' && x.scheme === 'Fortify')
+      .sort((x, y) => x.id - y.id);
+    const fort = forts.length ? forts[0] : null;
+    const fortified = fort === null ? 0 : fort.committedCapital + fort.committedInfluence;
+    const rollA = rng.twoD6(`contest.attack.${attacker}`);
+    const rollD = rng.twoD6(`contest.defend.${defender}`);
+    const [attack, defence] = this.contestTotals(
+      attacker, defender, fedId, s.committedCapital + s.committedInfluence,
+      fortified, alliesA.length, alliesD.length, rollA, rollD,
+    );
+    const cohesionBefore = dRow.cohesion;
+    let eventId;
+    let result;
+    if (attack > defence) {
+      eventId = this.record('challenge', `${aRow.peerage} takes ${name} from ${dRow.peerage}`,
+        [attacker, defender], season, {
+          band,
+          line: `Season ${season} · ${aRow.peerage} wins its claim to ${name} against ${dRow.peerage}, ${attack} to ${defence}.`,
+          delta: { contest: 'won', scheme: s.id, riding: name, attacker: attack, defender: defence },
+        });
+      this.transfer(defender, attacker, fedId, eventId);
+      this.setStats(defender, { cohesion: -spec.loss_cohesion });
+      this.tally(attacker, 1, 0);
+      this.tally(defender, 0, 1);
+      this._turnCache = new Map();
+      if (attack - defence >= spec.rout_margin && cohesionBefore < spec.rout_cohesion_below) {
+        const second = this.adjacentHoldingOf(attacker, defender);
+        if (second !== null) {
+          const secondName = this.ridingName(second);
+          const routId = this.record('challenge', `${aRow.peerage} takes ${secondName} from ${dRow.peerage}`,
+            [attacker, defender], season, {
+              band,
+              line: `Season ${season} · ${aRow.peerage} drives on and takes ${secondName} from ${dRow.peerage}.`,
+              delta: { contest: 'rout', scheme: s.id, riding: secondName },
+            });
+          this.transfer(defender, attacker, second, routId);
+          this.tally(defender, 0, 1);
+          this._turnCache = new Map();
+        }
+      }
+      result = 'won';
+    } else {
+      eventId = this.record('challenge', `${dRow.peerage} holds ${name} against ${aRow.peerage}`,
+        [attacker, defender], season, {
+          band,
+          line: `Season ${season} · ${dRow.peerage} holds ${name} against ${aRow.peerage}'s claim, ${defence} to ${attack}.`,
+          delta: { contest: 'held', scheme: s.id, riding: name, attacker: attack, defender: defence },
+        });
+      this.setStats(attacker, { cohesion: -spec.loss_cohesion });
+      this.tally(defender, 1, 0);
+      result = 'held';
+    }
+    this.setRelation(attacker, defender, HOSTILE, eventId, `contest over ${name}`);
+    this.sync(attacker, defender, eventId, season);
+    if (fort !== null) this.closeScheme(fort, result === 'won' ? 'lost' : 'held', season);
+    if (result === 'won' && this.holdingCount(defender) === 0) this.fall(defender, attacker, season, band);
+    return { action: s.scheme, success: result === 'won', with: defender, riding: name, contest: result };
+  }
+
+  sue(s, season, rng, bonus) {
+    const house = s.house;
+    const other = s.targetHouse;
+    const claim = this.state.scheme(s.answers);
+    const row = this.houseRow(house);
+    const otherRow = this.houseRow(other);
+    const band = this.bandFor(this.personalYear(house));
+    const fedId = claim.targetRiding;
+    if (
+      this.standing(house) < this.standing(other)
+      && this.state.holderOfRiding(fedId) === house
+      && !this.isSeat(house, fedId)
+    ) {
+      const name = this.ridingName(fedId);
+      const eventId = this.record('transfer', `${row.peerage} cedes ${name} to ${otherRow.peerage}`,
+        [house, other], season, {
+          band,
+          line: `Season ${season} · ${row.peerage} cedes ${name} to ${otherRow.peerage} to end its claim.`,
+          delta: { reason: 'cession', riding: name, under_claim: claim.id, scheme: claim.id },
+        });
+      this.transfer(house, other, fedId, eventId);
+      this.tally(house, 0, 1);
+      this.setRelation(house, other, RESOLVED, eventId, 'cession under a claim');
+      this.sync(house, other, eventId, season);
+      this.closeScheme(claim, 'ceded', season);
+      return { action: 'Cede / swap', success: true, with: other, riding: name };
+    }
+    const roll = rng.twoD6(`resolve.Reconcile.${house}`);
+    if (roll + bonus < this.actions.get('Reconcile').target) return { action: 'Reconcile', success: false, with: other };
+    const indemnity = Math.min(row.capital, this.rules.schemeRules.peace.indemnity_capital);
+    this.setStats(house, { capital: -indemnity });
+    this.setStats(other, { capital: indemnity });
+    const eventId = this.record('relational', `${row.peerage} buys peace from ${otherRow.peerage}`,
+      [house, other], season, {
+        band,
+        line: `Season ${season} · ${row.peerage} buys peace from ${otherRow.peerage}.`,
+        delta: { marker: RESOLVED, peace: claim.id, indemnity, scheme: claim.id },
+      });
+    this.setRelation(house, other, RESOLVED, eventId, 'peace bought');
+    this.sync(house, other, eventId, season);
+    this.closeScheme(claim, 'peace', season);
+    return { action: 'Reconcile', success: true, with: other };
+  }
+
+  plans() {
+    return this.state.schemes
+      .filter((s) => s.status === 'active')
+      .sort((x, y) => x.id - y.id)
+      .map((s) => ({
+        id: s.id,
+        house: s.house,
+        scheme: s.scheme,
+        target_house: s.targetHouse,
+        riding: s.targetRiding ? this.ridingName(s.targetRiding) : null,
+        turns_remaining: World.turnsRemaining(s),
+        begun: s.begunSeason,
+        committed: s.committedCapital + s.committedInfluence,
+      }));
+  }
+
   // ------------------------------------------------------------- friction --
 
   frictionBetween(a, b) { return this.state.frictionBetween(a, b); }
@@ -1844,6 +2684,9 @@ export class World {
       });
     }
 
+    // Rules 1.0 `schemes`: the weighted draw is not used.
+    if (this.feature('schemes')) return this.schemeTurn(house, season, rng);
+
     const legal = this.legalActions(house);
     const weights = this.actionWeights(house, legal);
     const name = rng.weighted(weights, `action.${house}`);
@@ -1899,6 +2742,8 @@ export class World {
 
   pick(rng, options, purpose) {
     if (options.length === 0) return null;
+    // Rules 1.0 `schemes`: a scheme names its target; nothing is drawn.
+    if (this._schemeTarget !== null) return options.includes(this._schemeTarget) ? this._schemeTarget : null;
     return rng.choice([...options].sort(compareStrings), purpose);
   }
 
@@ -2150,9 +2995,9 @@ export class World {
 
   doReconcile(house, season, rng, success, band) {
     const row = this.houseRow(house);
-    const other = this.pick(
-      rng, this.housesRelatedBy(house, new Set([GRIEVANCE])), `reconcile.target.${house}`,
-    );
+    // Rules 1.0 `schemes`: Make peace may end open hostility as well.
+    const quarrels = this.feature('schemes') ? new Set([GRIEVANCE, HOSTILE]) : new Set([GRIEVANCE]);
+    const other = this.pick(rng, this.housesRelatedBy(house, quarrels), `reconcile.target.${house}`);
     if (other === null || !success) return { action: 'Reconcile', success: false };
 
     const otherRow = this.houseRow(other);
@@ -2199,7 +3044,10 @@ export class World {
 
     this.setStats(other, { cohesion: -10 });
     const hardens = this.rules.friction.dispute_outcome.hardens_probability_pct;
-    const marker = rng.chance(hardens, `dispute.hardens.${house}`) ? HOSTILE : RESOLVED;
+    // Rules 1.0 `schemes`: Break a rival hardens on success.
+    const marker = this._schemeTarget !== null
+      ? HOSTILE
+      : (rng.chance(hardens, `dispute.hardens.${house}`) ? HOSTILE : RESOLVED);
     const eventId = this.record(
       'relational',
       `${row.peerage} wins a dispute with ${otherRow.peerage}`,
@@ -2426,6 +3274,7 @@ export class World {
         person.diedSeason = season;
       }
     }
+    this.endSchemesOf(other, season);
     return eventId;
   }
 
@@ -2838,6 +3687,7 @@ export class World {
 
       // Rules 1.0: upkeep before anything else in the turn, then the succession watch.
       if (this.feature('upkeep_phase')) this.upkeep(house);
+      if (this.feature('cohesion_strain')) this.strain(house);
       if (this.feature('succession_watch')) this.successionWatch(house, season);
 
       let fired = null;
@@ -2879,7 +3729,9 @@ export class World {
     // Rules 1.0 `prestige`: every active house's, once the season is done.
     const prestige = this.feature('prestige') ? this.computePrestige(season) : null;
 
-    return this.writeSeason(season, outcomes, founded, prestige);
+    // Rules 1.0 `schemes`: every public scheme, as the season left them.
+    const plans = this.feature('schemes') ? this.plans() : null;
+    return this.writeSeason(season, outcomes, founded, prestige, plans);
   }
 
   // §0.8: the two lines that fire when nothing else did. The mirror of
@@ -2940,7 +3792,7 @@ export class World {
     }
   }
 
-  writeSeason(season, outcomes, founded, prestige = null) {
+  writeSeason(season, outcomes, founded, prestige = null, plans = null) {
     this.snapshot(season);
     let housesAfter = 0;
     for (const house of this.state.houses.values()) {
@@ -2962,6 +3814,7 @@ export class World {
       ridings_after: ridingsAfter,
     };
     if (prestige !== null) record.prestige = prestige;
+    if (plans !== null) record.plans = plans;
 
     this.state.seasons.push({
       seasonNo: season,
