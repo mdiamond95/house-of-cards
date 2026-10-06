@@ -5,8 +5,10 @@
 // hoc/export/beats.py and fetched a chunk at a time as they are needed.
 
 import { Story } from './story/dispatch.js';
+import { houseStyle } from './story/text.js';
 import {
-  MapCamera, stripHtml, dispatchHtml, recordHtml, readStored, writeStored, escapeHtml,
+  MapCamera, afootHtml, dispatchHtml, escapeHtml, pauseReason, readStored, recordHtml,
+  storylineHtml, stripHtml, writeStored,
 } from './story/view.js';
 
 const SCENARIO = "legacy";
@@ -27,6 +29,9 @@ const app = {
   busy: false,
   camera: null,
   paths: [],
+  styles: {},
+  // The storyline open in the Afoot panel, if any.
+  afoot: null,
 };
 
 async function fetchJson(url) {
@@ -61,6 +66,8 @@ function reset() {
     baseline: app.index.baseline,
     follow: app.follow,
     unit: unitName(),
+    styleOf: (house) => app.styles[house] || null,
+    ridings: app.index.ridings || {},
   });
   app.turn = 0;
 }
@@ -102,9 +109,27 @@ function renderLabel() {
   el('story-next').disabled = app.turn >= total;
 }
 
+// The Afoot panel: open storylines; the chosen one's beats, and its houses
+// marked on the map.
+function renderAfoot() {
+  const list = app.story.afoot();
+  if (app.afoot && !app.story.lines.of(app.afoot)) app.afoot = null;
+  el('story-afoot-list').innerHTML = afootHtml(list, { unit: unitName(), selected: app.afoot });
+  const told = app.afoot ? app.story.tell(app.afoot) : null;
+  el('story-afoot-detail').innerHTML = told
+    ? storylineHtml(told, { unit: unitName(), link: (turn) => `#${unitName()}-${turn}` })
+    : '';
+  const houses = new Set(told ? told.houses : []);
+  const owners = app.story.board.owners;
+  for (const path of app.paths) {
+    path.classList.toggle('afoot', houses.has(owners[path.getAttribute('data-fed')]));
+  }
+}
+
 function show(d, { zoom = true } = {}) {
   paint();
   renderLabel();
+  renderAfoot();
   el('story-strip').innerHTML = stripHtml(d ? d.standings : app.story.still(), { colourOf, follow: app.follow });
   if (!d) {
     el('story-dispatch').innerHTML =
@@ -147,7 +172,7 @@ function startAuto() {
     if (app.auto === null) return;
     if (!d) { stopAuto(`The end of the record: ${unitName()} ${app.index.turns}.`); return; }
     if (d.pause) {
-      stopAuto(`Paused on a headline of weight ${d.headline.weight} (the pause threshold is ${app.weights.thresholds.pause}). Press Auto to carry on.`);
+      stopAuto(pauseReason(d, app.weights.thresholds.pause));
       return;
     }
     app.auto = setTimeout(tick, AUTO_MS);
@@ -188,7 +213,25 @@ function renderFollow() {
   if (!select.value) app.follow = null;
 }
 
+// replay.html#season-88 (or #turn-2) opens the replay at that turn: the
+// Storylines page links each beat here.
+function hashTurn() {
+  const match = /^#(?:season|turn)-(\d+)$/.exec(window.location.hash);
+  return match ? Number(match[1]) : null;
+}
+
 function wire() {
+  window.addEventListener('hashchange', () => {
+    const turn = hashTurn();
+    if (turn !== null) { stopAuto(); goTo(turn); }
+  });
+  el('story-afoot-list').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-storyline]');
+    if (!button) return;
+    const id = button.getAttribute('data-storyline');
+    app.afoot = app.afoot === id ? null : id;
+    renderAfoot();
+  });
   el('story-next').addEventListener('click', () => { stopAuto(); guarded(next); });
   el('story-auto').addEventListener('click', () => {
     if (app.auto !== null) stopAuto();
@@ -237,6 +280,9 @@ async function boot() {
     return;
   }
   app.paths = [...document.querySelectorAll('#map-fills path')];
+  for (const [house, info] of Object.entries(app.index.houses)) {
+    app.styles[house] = houseStyle({ house, ...info });
+  }
   app.camera = new MapCamera(el('map'), { borders: el('map-borders') });
   app.follow = readStored(FOLLOW_KEY);
   el('story-goto-turn').max = String(app.index.turns);
@@ -246,6 +292,8 @@ async function boot() {
   show(null);
   el('story-load').hidden = true;
   el('story-app').hidden = false;
+  const start = hashTurn();
+  if (start !== null) goTo(start);
 }
 
 boot();

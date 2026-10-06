@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  MapCamera, dispatchHtml, escapeHtml, focusBox, lerpBox, parseBox, readStored, recordHtml,
+  MapCamera, afootHtml, dispatchHtml, escapeHtml, pauseReason, storylineHtml, focusBox, lerpBox, parseBox, readStored, recordHtml,
   stripHtml, unionBox, writeStored,
 } from '../../web/story/view.js';
 
@@ -111,4 +111,38 @@ test('the camera zooms to a riding and puts the view back exactly as it found it
   camera.focus(['35001']);
   camera.back();
   assert.equal(attrs.viewBox, '-30.0 327.7 1060.0 538.5');
+});
+
+test('a storyline headline shows its kicker, its related beats, the previous beat and the moments', () => {
+  const d = {
+    turn: 13, quiet: false, pause: true,
+    headline: { beat: { kind: 'quarrel' }, weight: 70, text: 'A and B fall out.' },
+    kicker: { id: 's3', text: 'The Alpha\u2013Beta rivalry \u00b7 the second beat \u00b7 three seasons running' },
+    related: [{ text: 'Alpha presses a claim and is rebuffed.' }],
+    previously: { turn: 10, text: 'Alpha and Beta fall out.' },
+    secondary: [], ledger: null,
+    moments: [{ name: 'The Alpha\u2013Beta rivalry', change: 'climax' }],
+  };
+  const html = dispatchHtml(d);
+  assert.ok(html.indexOf('dispatch-kicker') < html.indexOf('dispatch-headline'));
+  assert.ok(html.includes('<ul class="dispatch-related"><li>Alpha presses a claim and is rebuffed.</li></ul>'));
+  assert.ok(html.includes('Previously, season 10: Alpha and Beta fall out.'));
+  assert.ok(html.includes('reaches its climax'));
+  assert.equal(pauseReason(d, 60), 'Paused: The Alpha\u2013Beta rivalry reaches its climax. Press Auto to carry on.');
+  assert.equal(pauseReason({ pause: true, moments: [], headline: { weight: 70 } }, 60),
+    'Paused on a headline of weight 70 (the pause threshold is 60). Press Auto to carry on.');
+  assert.equal(pauseReason({ pause: false }, 60), null);
+});
+
+test('the Afoot list and a storyline told top to bottom', () => {
+  const list = [{ id: 's1', name: 'The rise of Perth', state: 'climax', beats: 4, opened: 3, closed: null }];
+  const html = afootHtml(list, { selected: 's1' });
+  assert.ok(html.includes('data-storyline="s1"') && html.includes('chosen') && html.includes('since season 3'));
+  assert.equal(afootHtml([]), '<li class="meta">Nothing is afoot yet.</li>');
+  const told = { name: 'The rise of Perth', state: 'closed', outcome: 'reached first', opened: 3, closed: 9,
+    beats: [{ turn: 3, text: 'Perth takes X.' }, { turn: 9, text: 'Perth takes Y.' }] };
+  const page = storylineHtml(told, { link: (t) => `replay.html#season-${t}` });
+  assert.ok(page.includes('<a href="replay.html#season-9">Season 9</a></span> Perth takes Y.'));
+  assert.ok(page.includes('Closed season 9: reached first.'));
+  assert.ok(page.includes('2 beats'));
 });

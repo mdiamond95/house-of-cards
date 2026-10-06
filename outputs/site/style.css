@@ -294,6 +294,31 @@ footer { margin-top: 3rem; padding-top: 0.8rem; border-top: 1px solid var(--rule
 .dispatch-quiet { font-size: 1.02rem; }
 .dispatch-log { list-style: none; padding: 0; margin: 0.6rem 0 0; }
 .dispatch-log > li { border-top: 1px solid var(--rule); padding: 0.5rem 0; }
+.dispatch-kicker { margin: 0 0 0.15rem; font-size: 0.75rem; text-transform: uppercase;
+                   letter-spacing: 0.05em; color: var(--accent); }
+.dispatch-related { margin: 0.2rem 0 0.3rem; padding-left: 1rem; font-family: var(--serif);
+                    font-size: 0.95rem; border-left: 2px solid var(--rule); list-style: none; }
+.dispatch-previously { font-size: 0.85rem; color: var(--muted); margin: 0.2rem 0 0.4rem; }
+.dispatch-moments { margin-top: 0.3rem; }
+.afoot { margin: 0.6rem 0; }
+.afoot-heading { margin-top: 1rem; }
+.afoot-list { list-style: none; padding: 0; margin: 0.3rem 0; }
+.afoot-item { display: flex; flex-direction: column; align-items: flex-start; width: 100%; text-align: left;
+              font: inherit; background: #fff; border: 1px solid var(--rule); border-radius: 3px;
+              padding: 0.4rem 0.6rem; margin: 0.2rem 0; cursor: pointer; color: var(--ink); }
+.afoot-item.chosen { border-color: var(--accent); }
+.afoot-name { font-family: var(--serif); font-size: 0.95rem; }
+.afoot-detail .storyline-name { margin-top: 0.6rem; font-family: var(--serif); }
+.storyline-beats { margin: 0.3rem 0; padding-left: 1.2rem; font-size: 0.9rem; }
+.storyline-beats li { margin: 0.25rem 0; }
+.storyline-turn { font-size: 0.78rem; color: var(--muted); margin-right: 0.3rem; white-space: nowrap; }
+.storyline-outcome { font-family: var(--serif); font-style: italic; }
+.storyline { border-bottom: 1px solid var(--rule); padding: 0.35rem 0; }
+.storyline summary { cursor: pointer; }
+.storyline-title { font-family: var(--serif); }
+.lines-types { font-size: 0.85rem; }
+#map-fills path.afoot { stroke: var(--ink); stroke-width: 1.4px; vector-effect: non-scaling-stroke;
+                        paint-order: stroke; }
 .full-record { margin: 0.8rem 0; font-size: 0.88rem; }
 .full-record summary { cursor: pointer; color: var(--muted); font-size: 0.82rem; }
 .record-lines { margin: 0.4rem 0; }

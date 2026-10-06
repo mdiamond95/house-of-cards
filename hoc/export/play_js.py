@@ -35,7 +35,10 @@ import {
 // export. It reads the engine's state after each season and never writes to it.
 import { Story } from './story/dispatch.js';
 import { BEAT_KINDS, baselineFromState, inputFromState, typeTurn } from './story/beats.js';
-import { MapCamera, dispatchHtml, readStored, stripHtml, writeStored } from './story/view.js';
+import { houseStyle } from './story/text.js';
+import {
+  MapCamera, afootHtml, dispatchHtml, pauseReason, readStored, storylineHtml, stripHtml, writeStored,
+} from './story/view.js';
 
 const REPO = '__REPO__';
 const GITHUB_API = 'https://api.github.com';
@@ -192,6 +195,8 @@ const app = {
   camera: null,
   auto: null,
   follow: null,
+  // The storyline open in the Afoot panel, if any.
+  afoot: null,
 };
 
 function token() {
@@ -485,19 +490,48 @@ function playOne({ zoom = false } = {}) {
 // The story starts from the board as this page found it, so its standings are
 // exact; it cannot know which firsts the game spent before, and assumes all.
 
+// What the story names a house and a riding by, read from the live world.
+function styleOf(house) {
+  const row = app.world.state.houseRow(house);
+  return row ? houseStyle({ house, peerage: row.peerage, rank: row.rank, place: row.seatPlace }) : null;
+}
+
+function ridingNames() {
+  const names = {};
+  for (const [fed, path] of pathByFed) names[fed] = path.getAttribute('data-riding');
+  return names;
+}
+
 function newStory() {
   app.story = new Story({
     weights: app.weights,
     baseline: baselineFromState(app.world.state),
     follow: app.follow,
     seen: currentSeason() > 0 ? BEAT_KINDS : [],
+    styleOf,
+    ridings: ridingNames(),
   });
+  app.afoot = null;
   app.lastDispatch = null;
   el('story-dispatch').innerHTML =
     '<p class="dispatch-quiet">The dispatch begins with the next season played here.'
     + ' <b>Next season</b> plays one; <b>Auto</b> plays on and stops on a headline.</p>';
   el('story-log').innerHTML = '';
   renderStrip(app.story.still());
+  renderAfoot();
+}
+
+// The Afoot panel: open storylines; the chosen one's beats, its houses marked.
+function renderAfoot() {
+  if (!app.story) return;
+  if (app.afoot && !app.story.lines.of(app.afoot)) app.afoot = null;
+  el('story-afoot-list').innerHTML = afootHtml(app.story.afoot(), { selected: app.afoot });
+  const told = app.afoot ? app.story.tell(app.afoot) : null;
+  el('story-afoot-detail').innerHTML = told ? storylineHtml(told) : '';
+  const houses = new Set(told ? told.houses : []);
+  for (const [fedId, path] of pathByFed) {
+    path.classList.toggle('afoot', houses.has(app.world.state.holderOfRiding(fedId)));
+  }
 }
 
 function houseColour(house) {
@@ -522,6 +556,7 @@ function focusOf(d) {
 function tellSeason(season, { zoom = false } = {}) {
   if (!app.story) return null;
   const d = app.story.step(season, typeTurn(inputFromState(app.world.state, season)));
+  renderAfoot();
   const current = el('story-dispatch');
   if (app.lastDispatch !== null) {
     const item = document.createElement('li');
@@ -569,10 +604,7 @@ function autoTick() {
     return;
   }
   const d = app.lastDispatch;
-  if (d && d.pause) {
-    stopAuto(`Paused on a headline of weight ${d.headline.weight}`
-      + ` (the pause threshold is ${app.weights.thresholds.pause}). Press Auto to carry on.`);
-  }
+  if (d && d.pause) stopAuto(pauseReason(d, app.weights.thresholds.pause));
 }
 
 function startAuto() {
@@ -1125,6 +1157,14 @@ function wire() {
     if (app.auto !== null) stopAuto();
     else startAuto();
   });
+  el('story-afoot-list').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-storyline]');
+    if (!button) return;
+    event.stopPropagation();
+    const id = button.getAttribute('data-storyline');
+    app.afoot = app.afoot === id ? null : id;
+    renderAfoot();
+  });
   // Following changes the weights of seasons told from now on, never the game.
   el('story-follow').addEventListener('change', (event) => {
     app.follow = event.target.value || null;
@@ -1382,6 +1422,7 @@ function wireIntervene() {
       // The intervention changed the board outside any season the story told.
       app.story.rebase(baselineFromState(app.world.state));
       renderStrip(app.story.still());
+      renderAfoot();
       autosave();
       box.hidden = false;
       box.className = 'status-box good';

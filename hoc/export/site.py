@@ -19,7 +19,7 @@ from hoc.export import (
     beats as beats_export, map as map_export, play as play_export, timeline as timeline_export,
 )
 from hoc.export.play_js import PLAY_JS
-from hoc.export.replay_js import REPLAY_JS
+from hoc.export.replay_js import REPLAY_JS, STORYLINES_JS
 from hoc.export.turn_block import TEMPLATE as NARRATE_TEMPLATE, TONES, jurisdiction_note
 from hoc.sim import STOP_CONDITIONS
 
@@ -124,6 +124,7 @@ def page(title, body, depth=0, subtitle=None):
         # In its place, the Replay: the game told one turn at a time.
         nav = [entry for entry in nav if entry[0] != "play.html"]
         nav.insert(1, ("replay.html", "Replay"))
+        nav.insert(2, ("storylines.html", "Storylines"))
         nav.append((f"{up}../index.html", "← Archive"))
         nav.append((f"{up}{'../' * ARCHIVE_DEPTH}index.html", "← Back to the site"))
     else:
@@ -796,6 +797,15 @@ def _story_controls(unit, extra=""):
 
 STORY_STRIP = '<ol id="story-strip" class="standings" aria-label="Standings: the top eight"></ol>\n'
 STORY_DISPATCH = '<article id="story-dispatch" class="dispatch" aria-live="polite"></article>\n'
+# The Afoot panel (docs/STORY_DESIGN.md §3.4): open storylines; tapping one
+# shows its beats so far and marks its houses on the map.
+STORY_AFOOT = (
+    '<section class="afoot" aria-labelledby="afoot-heading">'
+    '<h2 id="afoot-heading" class="afoot-heading">Afoot</h2>'
+    '<ol id="story-afoot-list" class="afoot-list"></ol>'
+    '<div id="story-afoot-detail" class="afoot-detail" aria-live="polite"></div>'
+    "</section>\n"
+)
 
 
 def _replay_page(conn, features, borders):
@@ -829,12 +839,32 @@ def _replay_page(conn, features, borders):
         '<div class="map-toolbar">'
         '<button type="button" id="view-toggle">Show the north</button></div>\n'
         + STORY_DISPATCH
+        + STORY_AFOOT
         + '<details id="story-record" class="full-record"><summary>Full record</summary>'
         '<ol id="story-record-lines" class="record-lines"></ol></details>\n'
         "</div>\n"
         '<script type="module" src="replay.js"></script>'
     )
     return page("Replay", body, depth=0, subtitle=esc(_game_title()))
+
+
+def _storylines_page():
+    """archive/<name>/storylines.html: every storyline of a frozen game, by type,
+    each told top to bottom with a link into the Replay at each beat. Built in
+    the browser by web/story from the Replay's beat data."""
+    body = (
+        '<p class="lede prose">The threads this game ran on: every rivalry, union,'
+        " succession question, rise, decline and frontier, each from the beat that"
+        " opened it to the one that closed it. Each turn links into the Replay.</p>\n"
+        '<p id="lines-load" class="meta" role="status">Reading the record…</p>\n'
+        '<div id="lines-app" hidden>\n'
+        '<p id="lines-summary" class="meta"></p>\n'
+        '<p id="lines-types" class="lines-types"></p>\n'
+        '<div id="lines-body"></div>\n'
+        "</div>\n"
+        '<script type="module" src="storylines-page.js"></script>'
+    )
+    return page("Storylines", body, depth=0, subtitle=esc(_game_title()))
 
 
 def _scenario_for_browser(name):
@@ -946,6 +976,7 @@ def _play_page(conn, features, borders, slugs):
         # The dispatch is the season as told (docs/STORY_DESIGN.md §3.2); the
         # chronicle it is told from stays, collapsed, as the full record.
         + STORY_DISPATCH
+        + STORY_AFOOT
         + '<ol id="story-log" class="dispatch-log" aria-label="Earlier seasons"></ol>\n'
         '<details id="full-record" class="full-record"><summary>Full record</summary>'
         '<div class="feed-controls">'
@@ -2845,6 +2876,31 @@ footer { margin-top: 3rem; padding-top: 0.8rem; border-top: 1px solid var(--rule
 .dispatch-quiet { font-size: 1.02rem; }
 .dispatch-log { list-style: none; padding: 0; margin: 0.6rem 0 0; }
 .dispatch-log > li { border-top: 1px solid var(--rule); padding: 0.5rem 0; }
+.dispatch-kicker { margin: 0 0 0.15rem; font-size: 0.75rem; text-transform: uppercase;
+                   letter-spacing: 0.05em; color: var(--accent); }
+.dispatch-related { margin: 0.2rem 0 0.3rem; padding-left: 1rem; font-family: var(--serif);
+                    font-size: 0.95rem; border-left: 2px solid var(--rule); list-style: none; }
+.dispatch-previously { font-size: 0.85rem; color: var(--muted); margin: 0.2rem 0 0.4rem; }
+.dispatch-moments { margin-top: 0.3rem; }
+.afoot { margin: 0.6rem 0; }
+.afoot-heading { margin-top: 1rem; }
+.afoot-list { list-style: none; padding: 0; margin: 0.3rem 0; }
+.afoot-item { display: flex; flex-direction: column; align-items: flex-start; width: 100%; text-align: left;
+              font: inherit; background: #fff; border: 1px solid var(--rule); border-radius: 3px;
+              padding: 0.4rem 0.6rem; margin: 0.2rem 0; cursor: pointer; color: var(--ink); }
+.afoot-item.chosen { border-color: var(--accent); }
+.afoot-name { font-family: var(--serif); font-size: 0.95rem; }
+.afoot-detail .storyline-name { margin-top: 0.6rem; font-family: var(--serif); }
+.storyline-beats { margin: 0.3rem 0; padding-left: 1.2rem; font-size: 0.9rem; }
+.storyline-beats li { margin: 0.25rem 0; }
+.storyline-turn { font-size: 0.78rem; color: var(--muted); margin-right: 0.3rem; white-space: nowrap; }
+.storyline-outcome { font-family: var(--serif); font-style: italic; }
+.storyline { border-bottom: 1px solid var(--rule); padding: 0.35rem 0; }
+.storyline summary { cursor: pointer; }
+.storyline-title { font-family: var(--serif); }
+.lines-types { font-size: 0.85rem; }
+#map-fills path.afoot { stroke: var(--ink); stroke-width: 1.4px; vector-effect: non-scaling-stroke;
+                        paint-order: stroke; }
 .full-record { margin: 0.8rem 0; font-size: 0.88rem; }
 .full-record summary { cursor: pointer; color: var(--muted); font-size: 0.82rem; }
 .record-lines { margin: 0.4rem 0; }
@@ -2905,6 +2961,7 @@ def write_archive_index(out_dir, entries):
             f' &middot; {entry["held"]} ridings held</p>'
             f'<p><a href="{name}/index.html">Map</a> &middot;'
             f' <a href="{name}/replay.html">Replay</a> &middot;'
+            f' <a href="{name}/storylines.html">Storylines</a> &middot;'
             f' <a href="{name}/chronicle.html">Chronicle</a> &middot;'
             f' <a href="{name}/ridings.html">Ridings</a> &middot;'
             f' <a href="{name}/climate.html">Climate</a> &middot;'
@@ -3020,6 +3077,8 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
             .replace("__SCENARIO__", json.dumps(archive_name))
             .replace("__UNCLAIMED_FILL__", map_export.UNCLAIMED_FILL),
         )
+        write(site_dir / "storylines.html", _storylines_page())
+        write(site_dir / "storylines-page.js", STORYLINES_JS)
         written.extend(beats_export.write_beats(conn, site_dir / "data", title=_ARCHIVE_TITLE))
         written.extend(play_export.write_story_assets(site_dir, scenario.REPO_ROOT))
     write(site_dir / "ridings.html", _ridings_page(conn, slugs))

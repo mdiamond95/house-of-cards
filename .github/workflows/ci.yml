@@ -1,0 +1,50 @@
+name: CI
+
+# The checks a pull request must pass before it is merged. It reads the
+# repository and nothing else: it commits nothing, pushes nothing, deploys
+# nothing, and needs no secret. The 300-season smoke run stays in Code
+# sessions (pytest.ini), as it does in the engine workflow.
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # The suite's JS tests and the cross-check run node.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # The engine's runtime dependencies, and shapely, which the geometry
+      # checks in tests/test_meridian.py need and the engine workflow omits.
+      - name: Install the dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-engine.txt shapely
+
+      - name: The suite, without the smoke run
+        run: python -m pytest -q -m "not smoke" -p no:cacheprovider
+
+      - name: The story layer's node tests
+        run: node --test tests/js/story_*.test.mjs
+
+      # The same seeds and length as tests/test_crosscheck.py.
+      - name: The two engines play the same game
+        run: |
+          for seed in 1867 2 3; do
+            python scripts/crosscheck.py --seed "$seed" --seasons 120
+          done

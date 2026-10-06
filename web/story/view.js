@@ -56,25 +56,84 @@ export function stripHtml(rows, { nameOf = (h) => h, colourOf = () => null, foll
   }).join('');
 }
 
-// One dispatch (§3.2) as HTML: the heading, then a headline, up to three
-// secondary beats and a ledger line — or the one quiet-turn line.
+const CHANGES = { opened: 'opens', climax: 'reaches its climax', closed: 'closes' };
+
+// One dispatch (§3.2) as HTML: the heading, then a headline — with its
+// storyline's kicker, the storyline's other beats this turn and its previous
+// beat — up to three secondary beats and a ledger line; or the one quiet-turn
+// line.
 export function dispatchHtml(d, { unit = 'season' } = {}) {
-  const heading = `<h2 class="dispatch-turn">${unit === 'turn' ? 'Turn' : 'Season'} ${d.turn}</h2>`;
+  const word = unit === 'turn' ? 'Turn' : 'Season';
+  const heading = `<h2 class="dispatch-turn">${word} ${d.turn}</h2>`;
   if (d.quiet) return `${heading}<p class="dispatch-quiet">${escapeHtml(d.quietLine)}</p>`;
   const kind = d.headline.beat.kind.replace(/_/g, ' ');
+  const kicker = d.kicker
+    ? `<p class="dispatch-kicker" data-storyline="${escapeHtml(d.kicker.id)}">${escapeHtml(d.kicker.text)}</p>`
+    : '';
+  const related = d.related && d.related.length
+    ? `<ul class="dispatch-related">${d.related.map((r) => `<li>${escapeHtml(r.text)}</li>`).join('')}</ul>`
+    : '';
+  const previously = d.previously
+    ? `<p class="dispatch-previously">Previously, ${unit === 'turn' ? 'turn' : 'season'} ${d.previously.turn}: ${escapeHtml(d.previously.text)}</p>`
+    : '';
   const secondary = d.secondary.length
     ? `<ul class="dispatch-secondary">${d.secondary.map((s) => `<li>${escapeHtml(s.text)}</li>`).join('')}</ul>`
     : '';
   const ledger = d.ledger ? `<p class="dispatch-ledger">${escapeHtml(d.ledger)}</p>` : '';
-  return `${heading}<p class="dispatch-headline${d.pause ? ' pause' : ''}">${escapeHtml(d.headline.text)}</p>`
+  const moments = d.moments && d.moments.length
+    ? `<p class="dispatch-moments meta">${d.moments.map((m) => `${escapeHtml(m.name)} ${CHANGES[m.change] || m.change}`).join('; ')}.</p>`
+    : '';
+  return `${heading}${kicker}<p class="dispatch-headline${d.pause ? ' pause' : ''}">${escapeHtml(d.headline.text)}</p>`
     + `<p class="dispatch-kind meta">${escapeHtml(kind)} &middot; weight ${d.headline.weight}</p>`
-    + secondary + ledger;
+    + related + previously + secondary + ledger + moments;
+}
+
+// Why Auto stopped on this dispatch, or null.
+export function pauseReason(d, threshold) {
+  if (!d || !d.pause) return null;
+  if (d.moments && d.moments.length) {
+    return `Paused: ${d.moments.map((m) => `${m.name} ${CHANGES[m.change] || m.change}`).join('; ')}. Press Auto to carry on.`;
+  }
+  return `Paused on a headline of weight ${d.headline.weight} (the pause threshold is ${threshold}). Press Auto to carry on.`;
 }
 
 export function recordHtml(d) {
   return d.record.length
     ? d.record.map((line) => `<li>${escapeHtml(line)}</li>`).join('')
     : '<li class="meta">Nothing was written this turn.</li>';
+}
+
+function storylineMeta(s, unit) {
+  const word = unit === 'turn' ? 'turn' : 'season';
+  const span = s.closed === null || s.closed === undefined
+    ? `since ${word} ${s.opened}` : `${word}s ${s.opened}–${s.closed}`;
+  const state = s.state === 'closed' ? (s.outcome || 'closed') : s.state;
+  const n = Array.isArray(s.beats) ? s.beats.length : s.beats;
+  return `${escapeHtml(state)} &middot; ${n} beat${n === 1 ? '' : 's'} &middot; ${span}`;
+}
+
+// The Afoot panel (§3.4): open storylines, as buttons that show their beats.
+export function afootHtml(list, { unit = 'season', selected = null } = {}) {
+  if (!list.length) return '<li class="meta">Nothing is afoot yet.</li>';
+  return list.map((s) => `<li><button type="button" class="afoot-item${s.id === selected ? ' chosen' : ''}"`
+    + ` data-storyline="${escapeHtml(s.id)}"><span class="afoot-name">${escapeHtml(s.name)}</span>`
+    + `<span class="afoot-meta meta">${storylineMeta(s, unit)}</span></button></li>`).join('');
+}
+
+// A storyline told top to bottom (dispatch.js Story.tell): its beats with
+// their turns, then how it ended. `link(turn)` gives a link for a beat's turn.
+export function storylineHtml(told, { unit = 'season', link = null } = {}) {
+  const word = unit === 'turn' ? 'Turn' : 'Season';
+  const beats = told.beats.map((b) => {
+    const when = link ? `<a href="${escapeHtml(link(b.turn))}">${word} ${b.turn}</a>` : `${word} ${b.turn}`;
+    return `<li><span class="storyline-turn">${when}</span> ${escapeHtml(b.text)}</li>`;
+  }).join('');
+  const end = told.state === 'closed'
+    ? `<p class="storyline-outcome">Closed ${word.toLowerCase()} ${told.closed}: ${escapeHtml(told.outcome || 'closed')}.</p>`
+    : `<p class="storyline-outcome meta">Still ${told.state === 'climax' ? 'at its climax' : 'rising'}.</p>`;
+  return `<h3 class="storyline-name">${escapeHtml(told.name)}</h3>`
+    + `<p class="meta">${storylineMeta(told, unit)}</p>`
+    + `<ol class="storyline-beats">${beats || '<li class="meta">No beat yet.</li>'}</ol>${end}`;
 }
 
 // ----------------------------------------------------------------- boxes ----

@@ -10,9 +10,9 @@ this file holds it to:
   frozen games, and the play page's input — read from the JavaScript engine's
   in-memory tables — is the input hoc.db gives for the same world;
 * standings folded from beats are the database's board;
-* The First Dominion's headlines meet §3.1's limits (task 6): no kind supplies
-  more than 35% of them, no bookkeeping action ever headlines, and a quiet turn
-  is one line;
+* The First Dominion's headlines meet §3.1's limits: no kind supplies more than
+  35% of them, no bookkeeping action ever headlines, and a quiet turn is one
+  line — and its storylines meet the Phase B gates of §7;
 * the beat data ships in chunks of at most 500 KB.
 """
 
@@ -248,3 +248,20 @@ def test_the_first_dominion_ships_all_its_seasons_in_several_fetches(frozen_game
     assert index["turns"] == 150
     assert index["chunks"][0]["first"] == 1 and index["chunks"][-1]["last"] == 150
     assert len(index["chunks"]) >= 2, "150 seasons of beats do not fit one 500 KB fetch"
+
+
+@needs_node
+def test_the_first_dominion_storylines_meet_the_phase_b_gates(frozen_games):
+    """docs/STORY_DESIGN.md §7, Phase B: after turn 20, at least 85% of
+    headlines belong to a storyline and no more than 25% open one; at least
+    eight storylines have five or more beats; every closed storyline has an
+    outcome; and fewer than 20% of closed storylines lapse."""
+    _, work = frozen_games["new"]
+    report = json.loads(_node(JS / "story_report.mjs", work / "data" / "beats"))
+    gates = report["storylines"]
+    assert gates["inStorylinePerMille"] >= 850, gates
+    assert gates["openingPerMille"] <= 250, gates
+    assert gates["fivePlus"] >= 8, gates
+    assert gates["closedWithoutOutcome"] == 0, gates
+    assert gates["lapsedPerMille"] < 200, gates
+    assert set(gates["byType"]) <= {"rivalry", "union", "succession", "rise", "decline", "frontier"}

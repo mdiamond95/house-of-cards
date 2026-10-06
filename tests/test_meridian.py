@@ -136,6 +136,10 @@ def _bounds(geometry):
 
 
 def _inside(point, geometry):
+    # shapely is a build-time dependency (pytest.ini, `build`): the engine
+    # workflow's runner does not install it, and this check then skips rather
+    # than failing the run. PR checks install it, so it runs there.
+    pytest.importorskip("shapely")
     from shapely.geometry import Point, shape
     return shape(geometry).contains(Point(point))
 
