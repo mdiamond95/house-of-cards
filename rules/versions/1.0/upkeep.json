@@ -12,5 +12,11 @@
     "recovery_below": 40,
     "recovery": 3
   },
-  "correspondence_pct": 30
+  "correspondence_pct": 30,
+  "strain": {
+    "free_holdings": 3,
+    "per_rank_index": 2,
+    "holder_over": 70,
+    "note": "Rules 1.0 `cohesion_strain` (§4.9): each turn -1 cohesion per holding beyond free_holdings + per_rank_index x rank index, and -1 while the holder is older than holder_over."
+  }
 }

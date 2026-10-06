@@ -367,6 +367,32 @@ CREATE TABLE prestige_history (
     PRIMARY KEY (season_no, house)
 );
 
+-- Rules 1.0 `schemes` (docs/STORY_DESIGN.md §4.2): every scheme a house has
+-- begun, active or ended. A house holds at most one active scheme. Steps move
+-- capital and influence into the scheme (committed_*); `answers` names the
+-- claim an answer was begun against; `considered` marks a claim its target has
+-- had a turn to answer (1) or answered (2). Empty under every earlier version.
+CREATE TABLE schemes (
+    id                   INTEGER PRIMARY KEY,
+    house                TEXT NOT NULL REFERENCES houses(house),
+    scheme               TEXT NOT NULL,
+    target_house         TEXT,
+    target_riding        TEXT,
+    answers              INTEGER,
+    steps_total          INTEGER NOT NULL,
+    steps_done           INTEGER NOT NULL DEFAULT 0,
+    committed_capital    INTEGER NOT NULL DEFAULT 0,
+    committed_influence  INTEGER NOT NULL DEFAULT 0,
+    status               TEXT NOT NULL DEFAULT 'active'
+                         CHECK (status IN ('active', 'resolved', 'abandoned')),
+    outcome              TEXT,
+    considered           INTEGER NOT NULL DEFAULT 0,
+    begun_season         INTEGER NOT NULL,
+    ended_season         INTEGER
+);
+
+CREATE INDEX idx_schemes_house ON schemes(house, status);
+
 -- Every action drawn, whether or not it changed anything worth an event. Invest,
 -- Cultivate influence and Consolidate move only stats and so record no event;
 -- without this row a house page could not say what its holder spent a season on.

@@ -8,5 +8,9 @@
   "marriage_pairing": true,
   "prestige": true,
   "founding_curve": true,
-  "succession_watch": true
+  "succession_watch": true,
+  "schemes": true,
+  "contested_claims": true,
+  "prestige_politics": true,
+  "cohesion_strain": true
 }

@@ -52,6 +52,11 @@ export const FEATURE_DEFAULTS = {
   prestige: false,
   founding_curve: false,
   succession_watch: false,
+  // Phase C2 (docs/STORY_DESIGN.md §4.2, §4.4, §4.5, §4.9).
+  schemes: false,
+  contested_claims: false,
+  prestige_politics: false,
+  cohesion_strain: false,
 };
 
 // "Expand:+2;Dispute:-2" as an ordered object of integers (hoc/rules_data.py
@@ -233,7 +238,30 @@ export function loadRules(read, version = null) {
     features: loadFeatures(read, rulesVersion),
     traits: loadTraits(optional(read, rulesPath(rulesVersion, 'traits.csv'))),
     upkeep: JSON.parse(optional(read, rulesPath(rulesVersion, 'upkeep.json')) || '{}'),
+    // Phase C2: schemes.csv's rows in the file's order, and schemes.json.
+    schemes: loadSchemes(optional(read, rulesPath(rulesVersion, 'schemes.csv'))),
+    schemeRules: JSON.parse(optional(read, rulesPath(rulesVersion, 'schemes.json')) || '{}'),
   };
+}
+
+// schemes.csv (rules 1.0 `schemes`), in the file's own row order. A mirror of
+// hoc/rules_data.py's _load_schemes, without its validation.
+function loadSchemes(text) {
+  if (text === null) return [];
+  return parseCsvDicts(text).map((row) => ({
+    scheme: row.scheme,
+    answer: row.answer,
+    target: row.target,
+    stepsMin: toInt(row.steps_min, `schemes.${row.scheme}.steps_min`),
+    stepsMax: toInt(row.steps_max, `schemes.${row.scheme}.steps_max`),
+    stepCapital: toInt(row.step_capital, `schemes.${row.scheme}.step_capital`),
+    stepInfluence: toInt(row.step_influence, `schemes.${row.scheme}.step_influence`),
+    resolvesAs: row.resolves_as,
+    reads: String(row.reads || '').split(';').map((x) => x.trim()).filter(Boolean),
+    utility: toInt(row.utility, `schemes.${row.scheme}.utility`),
+    begins: row.begins,
+    abandons: row.abandons,
+  }));
 }
 
 // traits.csv (rules 1.0 `holder_traits`), in the file's own row order.
