@@ -81,6 +81,12 @@ export const IMPLEMENTED_ACTIONS = new Set([
 
 export const ENCLOSURE_DOUBLED = new Set(['Cultivate influence', 'Endow', 'Petition elevation']);
 
+// Rules 1.0 `upkeep_phase`: the four standing actions that automatic upkeep and
+// the automatic letter replace (hoc/sim.py UPKEEP_ACTIONS).
+export const UPKEEP_ACTIONS = new Set([
+  'Invest', 'Cultivate influence', 'Consolidate (rest)', 'Correspond',
+]);
+
 export const RESPONSE_VERB = {
   Lead: 'leads',
   Resist: 'resists',
@@ -755,10 +761,14 @@ export class World {
       removedSeason: null,
       forcedAction: null,
       quietSeasons: 0,
+      prestige: null,
+      contestsWon: 0,
+      ridingsLost: 0,
+      foundedBy: 'crown',
     });
 
     const holderAge = 40 + draws.randint(1, 30, 'founding.holder_age');
-    this.state.addPerson({
+    const founder = this.state.addPerson({
       house,
       name: `${drawn.given} ${drawn.surname}`,
       gender: drawn.gender,
@@ -766,9 +776,12 @@ export class World {
       role: 'holder',
       bornSeason: season,
     });
+    // Rules 1.0 `holder_traits`: the founding holder's two traits.
+    const traits = this.giveTraits(founder, house, draws);
     this.state.setClock(house, 1867, `founded season ${season}`);
 
     const foundingDelta = { stats, community: communityObj.community, tag: chosenTag };
+    if (traits.length > 0) foundingDelta.traits = traits;
     const seatJurisdiction = this.feature('atlas_jurisdiction')
       ? this.jurisdictionName(fedId, FOUNDING_YEAR)
       : null;
@@ -866,6 +879,7 @@ export class World {
     if (heirs.length > 0) {
       const heir = heirs[0];
       heir.role = 'holder';
+      const heirTraits = this.ensureTraits(heir, house, rng);
       let partitioned = null;
       const spec = this.rules.succession.partition;
       if (heirs.length >= spec.min_heirs && this.holdingCount(house) >= spec.min_holdings) {
@@ -879,7 +893,7 @@ export class World {
       this.record('succession', `${row.peerage}: clean succession`, [house], season, {
         band,
         line: `Season ${season} · ${heir.name} succeeds to ${row.peerage}.`,
-        delta: { nature: 'clean', cause },
+        delta: World.withTraits({ nature: 'clean', cause }, heirTraits),
       });
       return this.checkExtinction(house, season, rng);
     }
@@ -898,14 +912,15 @@ export class World {
     const generator = new NameGenerator(this.rules, rng);
     const [given, surname, gender] = generator.drawPerson(community, null, house.split(' ')[0]);
     const age = 35 + rng.randint(1, 20, 'succession.successor_age');
-    this.state.addPerson({
+    const successor = this.state.addPerson({
       house, name: `${given} ${surname}`, gender, age, role: 'holder', bornSeason: season,
     });
+    const successorTraits = this.giveTraits(successor, house, rng);
     this.state.setClock(house, 1867, `reset at disorderly accession, season ${season}`);
     this.record('succession', `${row.peerage}: disorderly succession`, [house], season, {
       band,
       line: `Season ${season} · ${row.peerage} passes in disorder to ${given} ${surname}.`,
-      delta: { nature: 'disorderly', cause },
+      delta: World.withTraits({ nature: 'disorderly', cause }, successorTraits),
     });
 
     const neighbours = this.neighbouringHouses(house);
@@ -988,9 +1003,14 @@ export class World {
       removedSeason: null,
       forcedAction: null,
       quietSeasons: 0,
+      prestige: null,
+      contestsWon: 0,
+      ridingsLost: 0,
+      foundedBy: 'partition',
     });
     junior.house = cadet;
     junior.role = 'holder';
+    this.ensureTraits(junior, cadet, rng);
     this.state.setClock(cadet, 1867, `cadet founding by partition, season ${season}`);
 
     const eventId = this.record(
@@ -1105,6 +1125,7 @@ export class World {
     });
     this.state.releaseHolding(holding, eventId);
     if (toHouse !== null) {
+      this.tally(house, 0, 1);
       this.state.addHolding({
         house: toHouse, fedId: holding.fedId,
         seatOrder: this.nextSeatOrder(toHouse), hex: this.expansionHex(toHouse),
@@ -1147,7 +1168,9 @@ export class World {
     if (row.tag === event.tag) modifier = this.rules.responses.tag_modifier.matching_tag;
     else if (World.opposing(row.tag, event.tag)) modifier = this.rules.responses.tag_modifier.opposing_tag;
     const roll = rng.die(6, `event.response.${house}`) + modifier;
-    const response = World.responseFor(roll);
+    let response = World.responseFor(roll);
+    // Rules 1.0 `holder_traits`: a steadfast holder (Zealot) never stands aside.
+    if (response === 'Neutral' && this.traitEffect(house, 'steadfast')) response = 'Resist';
 
     let deltas = null;
     if (response === 'Lead') { deltas = { influence: 5 }; this.shiftClimate(band, event, 1); }
@@ -1392,6 +1415,184 @@ export class World {
     return null;
   }
 
+  // ------------------------------------------------------------ rules 1.0 --
+  //
+  // docs/STORY_DESIGN.md §4, mirrored line for line from hoc/sim.py.
+
+  marriable(house) {
+    return this.state.persons
+      .filter((p) => p.house === house && p.alive === 1 && !p.married
+        && (p.role === 'heir' || p.role === 'heir2' || p.role === 'other'))
+      .sort((a, b) => a.id - b.id);
+  }
+
+  marriagePair(house, other) {
+    const theirsAll = this.marriable(other);
+    for (const mine of this.marriable(house)) {
+      for (const theirs of theirsAll) {
+        const genders = new Set([mine.gender, theirs.gender]);
+        if (genders.size === 2 && genders.has('m') && genders.has('f')) return [mine, theirs];
+      }
+    }
+    return null;
+  }
+
+  static traitsOf(person) {
+    return String((person && person.traits) || '').split(',').filter((t) => t);
+  }
+
+  holderTraitRows(house) {
+    if (!this.feature('holder_traits')) return [];
+    const names = World.traitsOf(this.holder(house));
+    return this.rules.traits.filter((t) => names.includes(t.trait));
+  }
+
+  traitEffect(house, effect) {
+    return this.holderTraitRows(house).reduce((sum, t) => sum + (t.effects[effect] ?? 0), 0);
+  }
+
+  drawTraits(house, rng) {
+    const names = this.rules.traits.map((t) => t.trait);
+    if (names.length === 0) return [];
+    const first = rng.choice(names, `traits.${house}`);
+    const row = this.rules.traits.find((t) => t.trait === first);
+    const rest = this.rules.traits
+      .filter((t) => t.trait !== first && !row.excludes.includes(t.trait) && !t.excludes.includes(first))
+      .map((t) => t.trait);
+    if (rest.length === 0) return [first];
+    return [first, rng.choice(rest, `traits.${house}`)];
+  }
+
+  giveTraits(person, house, rng) {
+    if (!this.feature('holder_traits')) return [];
+    const traits = this.drawTraits(house, rng);
+    person.traits = traits.join(',');
+    return traits;
+  }
+
+  ensureTraits(person, house, rng) {
+    if (!this.feature('holder_traits')) return [];
+    const held = World.traitsOf(person);
+    return held.length > 0 ? held : this.giveTraits(person, house, rng);
+  }
+
+  static withTraits(delta, traits) {
+    return traits.length > 0 ? { ...delta, traits } : delta;
+  }
+
+  upkeep(house) {
+    const spec = this.rules.upkeep;
+    const row = this.houseRow(house);
+    const holdings = this.holdings(house);
+    let capital = spec.capital.base + Math.floor(holdings.length / spec.capital.holdings_per_point);
+    if (holdings.length > 0) capital += this.wealthOffset(holdings[0].fedId);
+    let influence = spec.influence.base;
+    let cohesion = spec.cohesion.base;
+    if (row.cohesion < spec.cohesion.recovery_below) cohesion += spec.cohesion.recovery;
+    for (const trait of this.holderTraitRows(house)) {
+      capital += trait.upkeep.capital ?? 0;
+      influence += trait.upkeep.influence ?? 0;
+      cohesion += trait.upkeep.cohesion ?? 0;
+    }
+    this.log.push({ purpose: `upkeep.${house}`, result: { capital, influence, cohesion } });
+    this.setStats(house, { capital, influence, cohesion });
+  }
+
+  letterDelta(delta) {
+    return this._letterMode ? { ...delta, letter: true } : delta;
+  }
+
+  letter(house, season, rng) {
+    if (this.housesWithinReach(house).length === 0) return null;
+    if (!rng.chance(this.rules.upkeep.correspondence_pct, `letter.${house}`)) return null;
+    const roll = rng.twoD6(`resolve.Correspond.${house}`);
+    const success = roll >= this.actions.get('Correspond').target;
+    const band = this.bandFor(this.personalYear(house));
+    this._letterMode = true;
+    try {
+      return this.doCorrespond(house, season, rng, success, band, roll);
+    } finally {
+      this._letterMode = false;
+    }
+  }
+
+  recordOfAge(house, name, age, season, band) {
+    const row = this.houseRow(house);
+    this.record('other', `${row.peerage}: an heir comes of age`, [house], season, {
+      band,
+      line: `Season ${season} · ${name}, heir to ${row.peerage}, comes of age.`,
+      delta: { watch: 'heir_of_age', heir_age: age },
+    });
+  }
+
+  successionWatch(house, season) {
+    const spec = this.rules.succession.watch;
+    const holder = this.holder(house);
+    const band = this.bandFor(this.personalYear(house));
+    if (holder !== null && holder.age === spec.holder_age && this.heirs(house).length === 0) {
+      const row = this.houseRow(house);
+      this.record('other', `${row.peerage}: no heir at ${spec.holder_age}`, [house], season, {
+        band,
+        line: `Season ${season} · ${holder.name} of ${row.peerage} turns ${spec.holder_age} with no heir named.`,
+        delta: { watch: 'no_heir', age: spec.holder_age },
+      });
+    }
+    for (const heir of this.heirs(house)) {
+      if (heir.role === 'heir' && heir.age === spec.heir_of_age) {
+        this.recordOfAge(house, heir.name, heir.age, season, band);
+      }
+    }
+  }
+
+  tally(house, won, lost) {
+    if (!this.feature('prestige')) return;
+    const stats = this.state.stats(house);
+    stats.contestsWon = (stats.contestsWon || 0) + won;
+    stats.ridingsLost = (stats.ridingsLost || 0) + lost;
+  }
+
+  computePrestige(season) {
+    const out = {};
+    for (const row of this.activeHouses()) {
+      const house = row.house;
+      const stats = this.houseRow(house);
+      let ties = 0;
+      for (const r of this.state.relations) {
+        if (r.houseA !== house && r.houseB !== house) continue;
+        if (r.marker !== COMPACT && r.marker !== KIN) continue;
+        const other = r.houseA === house ? r.houseB : r.houseA;
+        if (this.state.house(other)?.status === 'active') ties += 1;
+      }
+      const value = 10 * this.holdingCount(house)
+        + 20 * (this.rankIndex.get(stats.rank) ?? 0)
+        + Math.floor(stats.influence / 5)
+        + 5 * ties
+        + 15 * (stats.contestsWon || 0)
+        - 15 * (stats.ridingsLost || 0);
+      out[house] = value;
+      this.state.stats(house).prestige = value;
+    }
+    return out;
+  }
+
+  foundingCurveRoll(season, rng) {
+    const spec = this.rules.founding.founding_curve;
+    let pct = 0;
+    for (const row of spec.schedule) {
+      if (row.through === null || season <= row.through) { pct = row.pct; break; }
+    }
+    const room = this.foundingRoom();
+    let last = null;
+    for (const stats of this.state.houseStats.values()) {
+      if (stats.foundedBy === 'crown' && (last === null || stats.foundedSeason > last)) last = stats.foundedSeason;
+    }
+    if (season > spec.late_after && last !== null && season - last < spec.late_gap) pct = 0;
+    rng.draw('founding.curve', { room, pct });
+    if (room <= 0 || pct <= 0) return null;
+    if (!rng.chance(pct, 'founding.roll')) return null;
+    return this.foundHouse(season, { rng });
+  }
+
   // ------------------------------------------------------------- friction --
 
   frictionBetween(a, b) { return this.state.frictionBetween(a, b); }
@@ -1412,6 +1613,8 @@ export class World {
     let moved = false;
     if (tags.size === 2 && tags.has('Progressive') && tags.has('Conservative')) {
       delta += spec.opposed_tags.value;
+      delta += this.traitEffect(rowA.house, 'friction');
+      delta += this.traitEffect(rowB.house, 'friction');
       moved = true;
     }
     if (rowA.enclosed || rowB.enclosed) { delta += spec.either_enclosed.value; moved = true; }
@@ -1537,6 +1740,14 @@ export class World {
     if (row.capital >= 70 && this.purchaseTargets(house).length > 0) legal.add('Purchase riding');
     if (this.absorbTargets(house).length > 0) legal.add('Absorb');
 
+    // Rules 1.0 `marriage_pairing`: legal only when a man and a woman can be paired.
+    if (this.feature('marriage_pairing')) {
+      legal.delete('Marriage alliance');
+      if (friendly.some((other) => this.marriagePair(house, other) !== null)) legal.add('Marriage alliance');
+    }
+    // Rules 1.0 `upkeep_phase`: upkeep does what these four did.
+    if (this.feature('upkeep_phase')) for (const name of UPKEEP_ACTIONS) legal.delete(name);
+
     return new Set([...legal].filter((name) => IMPLEMENTED_ACTIONS.has(name)));
   }
 
@@ -1570,6 +1781,7 @@ export class World {
     const row = this.houseRow(house);
     const holder = this.holder(house);
     const held = this.heldObjectives(house);
+    const holderTraitRows = this.holderTraitRows(house);
 
     const bonusFor = new Map();
     for (const objective of held) {
@@ -1610,6 +1822,7 @@ export class World {
       }
 
       weight += bonusFor.get(name) ?? 0;
+      for (const trait of holderTraitRows) weight += (trait.actions[name] ?? 0) * WEIGHT_SCALE;
       if (row.enclosed && ENCLOSURE_DOUBLED.has(name)) weight *= 2;
       weights.push([name, Math.max(0, weight)]);
     }
@@ -1634,7 +1847,10 @@ export class World {
     const legal = this.legalActions(house);
     const weights = this.actionWeights(house, legal);
     const name = rng.weighted(weights, `action.${house}`);
-    if (name === null) return null;
+    if (name === null) {
+      if (this.feature('upkeep_phase')) return { action: 'Bide', success: true, note: 'no legal action' };
+      return null;
+    }
     return this.resolveAction(house, name, season, rng);
   }
 
@@ -1710,6 +1926,7 @@ export class World {
         return { action: 'Expand', success: false, note: 'lost the contest', riding: name, to: rival.house };
       }
       this.grievanceFromContest(rival.house, house, name, season, band);
+      this.tally(rival.house, 0, 1);
       for (const holding of this.state.holdings) {
         if (holding.house === rival.house && holding.fedId === fedId && holding.releasedEventId === null) {
           this.state.releaseHolding(holding, holding.acquiredEventId);
@@ -1782,15 +1999,20 @@ export class World {
     const heirAge = Math.max(0, holder.age - (25 + rng.randint(1, 15, 'heir.age_gap')));
     const generator = new NameGenerator(this.rules, rng);
     const [given, surname, gender] = generator.drawPerson(row.community, null, house.split(' ')[0]);
-    this.state.addPerson({
+    const named = this.state.addPerson({
       house, name: `${given} ${surname}`, gender, age: heirAge, role, bornSeason: season,
     });
+    const heirTraits = this.giveTraits(named, house, rng);
     if (role === 'heir2') this.setStats(house, { cohesion: 3 });
     this.record('other', `${row.peerage} names an heir`, [house], season, {
       band,
       line: `Season ${season} · ${row.peerage} names ${given} ${surname}${role === 'heir2' ? ' second heir' : ' heir'}.`,
-      delta: { heir_age: heirAge, role },
+      delta: World.withTraits({ heir_age: heirAge, role }, heirTraits),
     });
+    if (role === 'heir' && this.feature('succession_watch')
+        && heirAge >= this.rules.succession.watch.heir_of_age) {
+      this.recordOfAge(house, `${given} ${surname}`, heirAge, season, band);
+    }
     return { action: 'Name heir', success: true, role };
   }
 
@@ -1867,7 +2089,7 @@ export class World {
         {
           band,
           line: `Season ${season} · a letter from ${row.peerage} gives offence to ${otherRow.peerage}.`,
-          delta: { marker: GRIEVANCE, cause: 'correspondence' },
+          delta: this.letterDelta({ marker: GRIEVANCE, cause: 'correspondence' }),
         },
       );
       this.setRelation(house, other, GRIEVANCE, eventId, 'a letter that gave offence');
@@ -1889,7 +2111,7 @@ export class World {
       {
         band,
         line: `Season ${season} · ${row.peerage} opens a correspondence with ${otherRow.peerage}.`,
-        delta: { marker },
+        delta: this.letterDelta({ marker }),
       },
     );
     this.setRelation(house, other, marker, eventId, 'correspondence');
@@ -1990,6 +2212,7 @@ export class World {
       },
     );
     this.setRelation(house, other, marker, eventId, 'dispute won');
+    this.tally(house, 1, 0);
     this.sync(house, other, eventId, season);
     this.satisfyObjective(house, 'Answer a grievance', season);
     return { action: 'Dispute', success: true, with: other, marker };
@@ -2063,6 +2286,8 @@ export class World {
       hex: this.expansionHex(house), acquiredEventId: eventId,
     });
     this.setRelation(house, other, CHALLENGED, eventId, `challenge over ${name}`);
+    this.tally(house, 1, 0);
+    this.tally(other, 0, 1);
     this.sync(house, other, eventId, season);
     return { action: 'Challenge (11b)', success: true, with: other, riding: name };
   }
@@ -2104,23 +2329,30 @@ export class World {
     });
     this.setStats(house, { capital: -40 });
     this.setStats(other, { capital: 30 });
+    this.tally(other, 0, 1);
     this.sync(house, other, eventId, season);
     return { action: 'Purchase riding', success: true, with: other, riding: name };
   }
 
   doMarriageAlliance(house, season, rng, success, band) {
     const row = this.houseRow(house);
+    const pairing = this.feature('marriage_pairing');
     const candidates = this.housesRelatedBy(house, new Set([FRIENDLY, COMPACT])).filter(
-      (other) => this.unmarriedHeir(other),
+      (other) => (pairing ? this.marriagePair(house, other) !== null : this.unmarriedHeir(other)),
     );
     const other = this.pick(rng, candidates, `marriage.target.${house}`);
-    if (other === null || !this.unmarriedHeir(house) || !success) {
+    if (other === null || !success || (!pairing && !this.unmarriedHeir(house))) {
       return { action: 'Marriage alliance', success: false };
     }
 
     const otherRow = this.houseRow(other);
-    const mine = this.unmarriedHeir(house);
-    const theirs = this.unmarriedHeir(other);
+    let mine;
+    let theirs;
+    if (pairing) [mine, theirs] = this.marriagePair(house, other);
+    else {
+      mine = this.unmarriedHeir(house);
+      theirs = this.unmarriedHeir(other);
+    }
     const eventId = this.record(
       'relational',
       `${row.peerage} and ${otherRow.peerage} are joined by marriage`,
@@ -2578,7 +2810,8 @@ export class World {
       throw new SimError('season 1 founded no house: the map has no unclaimed riding');
     }
 
-    const record = this.writeSeason(1, [], house);
+    const prestige = this.feature('prestige') ? this.computePrestige(1) : null;
+    const record = this.writeSeason(1, [], house, prestige);
     record.kind = 'initial';
     record.seat = seat;
     return record;
@@ -2603,6 +2836,10 @@ export class World {
       this._turnCache = new Map();
       if (this.houseRow(house).removedSeason !== null) continue;
 
+      // Rules 1.0: upkeep before anything else in the turn, then the succession watch.
+      if (this.feature('upkeep_phase')) this.upkeep(house);
+      if (this.feature('succession_watch')) this.successionWatch(house, season);
+
       let fired = null;
       if (this.phases.has('events')) fired = this.eraEvent(house, season, rng);
       const extraMortality = Boolean(fired && fired.extraMortality);
@@ -2624,6 +2861,8 @@ export class World {
             detail: outcome.riding ?? outcome.with ?? outcome.note ?? null,
           });
         }
+        // Rules 1.0 `upkeep_phase`: one automatic letter a turn.
+        if (this.feature('upkeep_phase')) this.letter(house, season, rng);
       }
 
       if (this.phases.has('objectives')) this.checkObjectives(house, season, rng);
@@ -2637,7 +2876,10 @@ export class World {
     // Rules 0.8: say something when nothing happened.
     if (this.feature('quiet_season_line')) this.quietSeasonLines(season);
 
-    return this.writeSeason(season, outcomes, founded);
+    // Rules 1.0 `prestige`: every active house's, once the season is done.
+    const prestige = this.feature('prestige') ? this.computePrestige(season) : null;
+
+    return this.writeSeason(season, outcomes, founded, prestige);
   }
 
   // §0.8: the two lines that fire when nothing else did. The mirror of
@@ -2671,6 +2913,7 @@ export class World {
   }
 
   foundingRoll(season, rng) {
+    if (this.feature('founding_curve')) return this.foundingCurveRoll(season, rng);
     const spec = this.rules.founding.p_found;
     const room = this.foundingRoom();
     const probability = pFound(room, TOTAL_RIDINGS, spec.coefficient);
@@ -2697,7 +2940,7 @@ export class World {
     }
   }
 
-  writeSeason(season, outcomes, founded) {
+  writeSeason(season, outcomes, founded, prestige = null) {
     this.snapshot(season);
     let housesAfter = 0;
     for (const house of this.state.houses.values()) {
@@ -2718,6 +2961,7 @@ export class World {
       houses_after: housesAfter,
       ridings_after: ridingsAfter,
     };
+    if (prestige !== null) record.prestige = prestige;
 
     this.state.seasons.push({
       seasonNo: season,
