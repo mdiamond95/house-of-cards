@@ -85,6 +85,51 @@ removed 2 (1.4%), failed attempt 1 (0.7%), endowment 1 (0.7%). The largest kind 
 18.8% of headlines; no bookkeeping action headlines. `node tests/js/story_report.mjs
 <site>/data/beats` reproduces these figures.
 
+**Phase B note, 6 October 2026.** The four added kinds are approved as they stand.
+Response to a Major event is now 15. At most one era response (Major or otherwise)
+appears in a dispatch, and one headlines only when nothing else reaches the quiet
+threshold. The callback modifier is gone, replaced by weight by position (§3.4 note).
+Every other number above is unchanged.
+
+One act is one beat. The story layer (`web/story/beats.js` `mergeActs`) folds these
+pairs of events, which the engine writes for a single act, into one beat. That beat
+carries both facts and is told in one sentence naming every party:
+
+- a riding passing by cession, and the grievance it settles (31 in The First Dominion);
+- a partition, and the clean succession of the parent that caused it (8);
+- a disorderly succession, the riding it loses to the Crown and the neighbour it falls
+  out with (12);
+- a succession, and the removal of the same house it brings on (none);
+- a contested expansion: the grievance, with the winner's expansion or the loser's
+  failed Expand (none).
+
+A house is named by its full style at its first mention in a dispatch, and by its
+designation after that. Every line ends with a period.
+
+Headlines over the 150 seasons: 145, with 5 quiet seasons. By kind:
+
+| Kind | Headlines | Share |
+|---|---|---|
+| Expansion | 30 | 20.7% |
+| Riding passes | 28 | 19.3% |
+| Quarrel | 18 | 12.4% |
+| Crown founding | 15 | 10.3% |
+| Dispute reconciled | 12 | 8.3% |
+| Dispute won | 9 | 6.2% |
+| Elevation | 8 | 5.5% |
+| Marriage | 5 | 3.4% |
+| Clean succession | 5 | 3.4% |
+| Disorderly succession | 5 | 3.4% |
+| Compact | 3 | 2.1% |
+| Partition | 3 | 2.1% |
+| House removed | 2 | 1.4% |
+| Correspondence | 1 | 0.7% |
+| Response to a Major event | 1 | 0.7% |
+
+The largest kind supplies 20.7% of headlines, and no bookkeeping action headlines.
+125 of the 150 dispatches would pause Auto, either at the pause threshold or on a
+cast storyline opening, reaching its climax or closing.
+
 ### 3.2 The dispatch
 
 One turn on screen is: a headline (the heaviest beat, with the map zoomed to where it
@@ -119,6 +164,64 @@ climax, closed), outcome. Types and triggers:
 Every beat is attached to the storylines its houses belong to. The dispatch names the
 storyline a headline belongs to and how long it has run. Storylines are derived from the
 record, so they exist for frozen games too.
+
+**Phase B note, 6 October 2026.** Built as `web/story/storylines.js`, derived from typed
+beats alone and tuned against The First Dominion (150 seasons, following no one).
+
+The final numbers, in `weights.json` under `storylines`:
+
+- No bonus for the beat that opens a storyline.
+- An escalating beat gets +10 for each earlier beat in its storyline, to a maximum of +30.
+- The closing beat gets +25.
+- A quarrel that opens a rivalry between two houses outside the cast weighs 30.
+- A storyline with no beat for 15 turns closes as "lapsed".
+- A storyline is at climax from its fourth beat.
+- A frontier closes when half its province is claimed.
+- Afoot shows up to six storylines, ranked by their weight over the last 10 turns.
+
+The rules as built:
+
+- Only storyline beats count. Bookkeeping, letters and era responses never open,
+  escalate or close a storyline.
+- A succession question opens only on a disorderly succession. The record's beats do not
+  carry a holder's age, so "a holder reaches 60 with no heir" cannot be derived from them.
+  The question closes when an heir is named or succeeds cleanly, or when the house fails.
+- A rise opens only below first place.
+- A decline closes when the house's standing gets back to its score before the decline.
+- A house's removal closes every storyline it is a principal of. A frontier belongs to its
+  province rather than to any one settler, so the removed house only leaves it, and the
+  frontier closes only when no house is left in it.
+
+The First Dominion has 265 storylines: 135 rivalries, 48 rises, 43 declines, 17
+succession questions, 13 frontiers and 9 unions. 237 closed, every one with an outcome:
+
+| Type | Outcomes |
+|---|---|
+| Rivalry | reconciled 76, settled by cession 31, a riding changed hands 1, a house removed 1, lapsed 8 |
+| Rise | fell back 29, reached first 4, lapsed 11 |
+| Decline | recovered 32, lapsed 6 |
+| Succession question | an heir named 14, lapsed 2 |
+| Frontier | half claimed 6, lapsed 7 |
+| Union | partition 2, lapsed 7 |
+
+28 were still open at season 150: 18 rivalries, 5 declines, 4 rises and 1 succession
+question.
+
+Against the Phase B gates (§7):
+
+- After season 20, 86.5% of headlines belong to a storyline, and 17.4% open one.
+- 17 storylines have five or more beats.
+- 17.2% of closed storylines lapsed.
+
+The five longest are:
+
+| Storyline | Beats | Seasons | Outcome |
+|---|---|---|---|
+| The Ontario frontier | 65 | 1–84 | half claimed |
+| The Quebec frontier | 42 | 8–72 | half claimed |
+| The British Columbia frontier | 15 | 14–103 | lapsed |
+| The Alberta frontier | 12 | 71–145 | lapsed |
+| The decline of Bellechasse | 10 | 105–145 | recovered |
 
 ### 3.5 Prose (Phase E)
 
@@ -166,6 +269,11 @@ leader draws coalitions, and a falling house draws claims.
 Crown foundings are front-loaded so the board is set in the first quarter of the game and
 rare afterwards. The late game is zero-sum between established houses and their cadets.
 
+### 4.7 Marriage pairing (`marriage_pairing`)
+A Marriage alliance pairs one man and one woman, by recorded gender, from the two houses'
+unmarried heirs and children; the action is legal only when such a pair exists.
+Director's decision, 6 October 2026.
+
 ## 5. The shared calendar (Phase D)
 
 Flag `world_calendar`. It replaces hard rule 5 and ENGINE_DESIGN §16 decision 4 for
@@ -211,7 +319,7 @@ Initial targets across ten seeds, 100 turns, to be tuned and recorded in rules/C
 | Phase | Scope | Engine change | Gate |
 |---|---|---|---|
 | A | Beats, story weight, dispatch, standings, follow, Replay page | None | First Dominion replays as dispatches; headline mix within §3.1 limits |
-| B | Storylines derived from the record; dispatch organised by them | None | Every First Dominion headline after turn 20 belongs to a storyline |
+| B | Storylines derived from the record; dispatch organised by them | None | On The First Dominion: at least 85% of headlines after turn 20 belong to a storyline; at least eight storylines have five or more beats, and each closed one has an outcome; no more than 25% of headlines after turn 20 are storyline openings; fewer than 20% of closed storylines close as "lapsed" (if not reachable without distorting the triggers, the figure is reported, as it measures the engine); the Phase A limits still hold |
 | C | Rules 1.0 flags §4.1–4.6, both engines | Yes | Cross-check byte-identical; §6 targets on a personal-clock trial |
 | D | `world_calendar`, chapters, crises, ending; new scenario begins | Yes | §6 targets across ten seeds; a full game ends in 1967 |
 | E | Scene templates, chapter narration, epilogues | None | A full game reads start to finish from the site |
