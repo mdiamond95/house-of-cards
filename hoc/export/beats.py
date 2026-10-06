@@ -236,6 +236,9 @@ def type_turn(data):
                 ran = d["scheme"].get("ran")
         elif isinstance(d.get("scheme"), int) and not isinstance(d.get("scheme"), bool):
             scheme = d["scheme"]
+        elif isinstance(d.get("ally"), dict):
+            # Phase D1: an ally answers the call of one contest, told with it.
+            scheme = d["ally"].get("scheme")
         if kind == "riding_passes" and outcome == "absorption" and len(houses) > 1:
             removed.append(houses[1])
 

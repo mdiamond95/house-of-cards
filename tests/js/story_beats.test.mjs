@@ -282,3 +282,21 @@ test('mergeActs folds a scheme\'s resolution into its act, and a claim\'s contes
   ]);
   assert.deepEqual([heir.length, heir[0].ran, heir[0].plan], [1, 2, 'Secure the line']);
 });
+
+test('Phase D1: the allies called to a contest fold into it, with their scheme', () => {
+  const input = {
+    turn: 9,
+    events: [
+      { id: 1, kind: 'other', houses: ['C', 'A', 'B'], delta: { ally: { scheme: 7, side: 'attacker', party: 'A', joins: true } }, line: 'C stands with A.' },
+      { id: 2, kind: 'other', houses: ['D', 'B', 'A'], delta: { ally: { scheme: 7, side: 'defender', party: 'B', joins: false } }, line: 'D declines.' },
+      { id: 3, kind: 'challenge', houses: ['A', 'B'], delta: { contest: 'won', scheme: 7 }, line: 'A wins.' },
+    ],
+    actions: [], holdings: [], ranks: {},
+  };
+  const typed = typeTurn(input);
+  assert.deepEqual(typed.map((b) => [b.kind, b.scheme]), [['ally_joins', 7], ['ally_declines', 7], ['contest_won', 7]]);
+  const [act] = mergeActs(typed);
+  assert.equal(act.merge, 'claim');
+  assert.deepEqual(act.houses, ['A', 'B'], 'the allies take no part in the contest\'s storylines');
+  assert.deepEqual(act.allies, [{ house: 'C', party: 'A', joins: true }, { house: 'D', party: 'B', joins: false }]);
+});

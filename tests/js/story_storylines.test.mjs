@@ -91,34 +91,80 @@ test('a succession question opens on a disorderly succession and closes when an 
   assert.deepEqual([s.beats.length, s.state, s.outcome], [3, 'closed', 'an heir named']);
 });
 
-test('a rise opens on entering the top eight below first and closes on reaching first', () => {
-  const h = harness({ ranks: { A: 1 }, owners: { 35001: 'A' } });
-  h.step(1, [beat(1, 'founding', ['B'], { owners: { 35002: 'B' }, ranks: { B: 0 } })]);
+// Five houses of 2, 4, 6, 8 and 10 ridings in Ontario, and B with `b`.
+function ladder(b) {
+  const owners = {};
+  let n = 0;
+  const give = (house, count) => {
+    for (let i = 0; i < count; i += 1) { n += 1; owners[String(35000 + n)] = house; }
+  };
+  [['A1', 2], ['A2', 4], ['A3', 6], ['A4', 8], ['A5', 10], ['B', b]].forEach(([h, c]) => give(h, c));
+  return owners;
+}
+let fresh = 36000;
+const gain = (turn, house, count) => {
+  const owners = {};
+  for (let i = 0; i < count; i += 1) { fresh += 1; owners[String(fresh)] = house; }
+  return beat(turn, 'expansion', [house], { owners });
+};
+const loss = (turn, owners, house, count) => {
+  const lost = {};
+  for (const fed of Object.keys(owners).filter((f) => owners[f] === house).slice(0, count)) {
+    lost[fed] = null;
+    delete owners[fed];
+  }
+  return beat(turn, 'riding_lost', [house], { owners: lost });
+};
+
+test('a rise opens after three turns of sustained climbing in the cast, and closes no sooner than three turns on', () => {
+  const ranks = { A1: 0, A2: 0, A3: 0, A4: 0, A5: 0, B: 0 };
+  const h = harness({ ranks, owners: ladder(1), held: ['35', '36'] });
+  h.step(1, [gain(1, 'B', 3)]);
+  h.step(2, [gain(2, 'B', 3)]);
+  assert.equal(h.lines.all.filter((s) => s.type === 'rise').length, 0, 'two turns are not a trend');
+  h.step(3, [gain(3, 'B', 3)]);
   const rise = h.lines.all.find((s) => s.type === 'rise');
-  assert.deepEqual([rise.key, rise.beats.length], ['B', 1]);
-  h.step(2, [beat(2, 'elevation', ['B'], { ranks: { B: 2 } })]);
-  assert.deepEqual([rise.state, rise.outcome], ['closed', 'reached first']);
+  assert.deepEqual([rise.key, rise.opened, rise.beats.length], ['B', 3, 1]);
+  h.step(4, [gain(4, 'B', 3)]);
+  assert.equal(rise.state, 'rising', 'first at once, but a rise does not close within two turns');
+  h.step(5, []);
+  h.step(6, []);
+  assert.deepEqual([rise.state, rise.outcome, rise.closed], ['closed', 'reached first', 6]);
 });
 
-test('a decline opens when a cast house loses a riding, and closes when it recovers', () => {
-  const h = harness({ ranks: { A: 0, B: 0 }, owners: { 35001: 'A', 35002: 'A', 35003: 'B' }, held: ['35'] });
-  h.step(1, [beat(1, 'riding_passes', ['A', 'B'], { owners: { 35002: 'B' } })]);
+test('a house merely overtaken does not decline, and a house only once each rest', () => {
+  const ranks = { A1: 0, A2: 0, A3: 0, A4: 0, A5: 0, B: 0 };
+  const h = harness({ ranks, owners: ladder(1), held: ['35', '36'] });
+  // A1 is overtaken by B three turns running, its own score unchanged.
+  for (let t = 1; t <= 4; t += 1) h.step(t, [gain(t, 'B', 3)]);
+  assert.ok(!h.lines.all.some((s) => s.type === 'decline'));
+});
+
+test('a decline opens after three turns of a cast house falling, and closes when it recovers', () => {
+  const ranks = { A1: 0, A2: 0, A3: 0, A4: 0, A5: 0, B: 0 };
+  const owners = ladder(12);
+  const h = harness({ ranks, owners: { ...owners }, held: ['35', '36'] });
+  h.step(1, [loss(1, owners, 'B', 3)]);
+  h.step(2, [loss(2, owners, 'B', 3)]);
+  h.step(3, [loss(3, owners, 'B', 3)]);
   const decline = h.lines.all.find((s) => s.type === 'decline');
-  assert.deepEqual([decline.key, decline.state, decline.mark], ['A', 'rising', 20]);
-  h.step(2, [beat(2, 'expansion', ['A'], { owners: { 35004: 'A' } })]);
+  assert.deepEqual([decline.key, decline.opened, decline.mark], ['B', 3, 120]);
+  h.step(4, [gain(4, 'B', 9)]);
+  assert.equal(decline.state, 'rising', 'recovered at once, but it does not close within two turns');
+  h.step(6, [gain(6, 'B', 1)]);
   assert.deepEqual([decline.state, decline.outcome], ['closed', 'recovered']);
 });
 
 test('a cadet inherits nothing, but the partition beat belongs to its parent\'s storylines', () => {
   const h = harness({ ranks: { P: 2, X: 0 }, owners: { 35001: 'P', 35002: 'P', 24001: 'P' }, totals: { 35: 10, 24: 10 }, held: ['35'] });
   h.step(1, [beat(1, 'expansion', ['P'], { owners: { 24002: 'P' } })]);
-  h.step(2, [beat(2, 'quarrel', ['P', 'X'], { outcome: 'friction' })]);
+  h.step(2, [beat(2, 'quarrel', ['P', 'X'], { outcome: 'friction' }), beat(2, 'succession_disorderly', ['P'], { outcome: 'death' })]);
   h.step(3, [beat(3, 'partition', ['P', 'C'], { owners: { 24001: 'C', 24002: 'C' }, ranks: { C: 0 } })]);
   const quebec = h.lines.all.find((s) => s.type === 'frontier');
   assert.ok(!quebec.beats.some((e) => e.beat.kind === 'partition'), 'ridings passing to a cadet are no frontier beat');
   assert.ok(!quebec.houses.includes('C'), 'the cadet does not join it');
-  const decline = h.lines.all.find((s) => s.type === 'decline' && s.key === 'P');
-  assert.ok(decline.beats.some((e) => e.beat.kind === 'partition'), 'the partition belongs to the parent\'s decline');
+  const question = h.lines.all.find((s) => s.type === 'succession' && s.key === 'P');
+  assert.ok(question.beats.some((e) => e.beat.kind === 'partition'), 'the partition belongs to the parent\'s succession');
   const rivalry = h.lines.all.find((s) => s.type === 'rivalry');
   assert.ok(!rivalry.houses.includes('C'));
 });

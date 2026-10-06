@@ -92,3 +92,37 @@ test('merged acts are one sentence naming every party', () => {
   assert.equal(sentence(disorderly, fresh(), ridingName),
     'Viscount Mercier de Rimouski passes in disorder to Jean Mercier; Rimouski gives up Repentigny to the Crown and falls out with Viscount Benjamin of Bellechasse.');
 });
+
+test('Phase D1: a transfer names who received the riding, and a failure says why', () => {
+  const namer = new Namer(styleOf, () => 1);
+  const ridingName = () => 'Rimouski—Témiscouata';
+  const sale = { kind: 'riding_passes', houses: ['Benjamin', 'Mercier'], ridings: ['24001'], outcome: 'contraction sale',
+    line: 'Season 4 · Viscount Benjamin of Bellechasse gives up Rimouski—Témiscouata (contraction sale).' };
+  assert.equal(sentence(sale, namer, ridingName),
+    'Viscount Benjamin of Bellechasse gives up Rimouski—Témiscouata to Viscount Mercier de Rimouski (contraction sale).');
+  const crown = { kind: 'riding_lost', houses: ['Mercier'], ridings: ['24001'], outcome: 'debt', line: 'x' };
+  assert.equal(sentence(crown, new Namer(styleOf, () => 1), ridingName),
+    'Viscount Mercier de Rimouski gives up Rimouski—Témiscouata to the Crown (debt).');
+  const gone = { kind: 'removed', houses: ['Mercier'], outcome: 'cohesion collapse', line: 'x' };
+  assert.equal(sentence(gone, new Namer(styleOf, () => 1)),
+    'Viscount Mercier de Rimouski fails, for its cohesion collapsed; its ridings return to the Crown.');
+  const heirless = { kind: 'removed', houses: ['Mercier'], outcome: 'no successor', line: 'x' };
+  assert.ok(sentence(heirless, new Namer(styleOf, () => 1)).includes('its line ended with no successor'));
+});
+
+test('Phase D1: the allies of a contest are one sentence, never a line each', () => {
+  const namer = new Namer(styleOf, () => 1);
+  const claim = {
+    merge: 'claim', kind: 'contest_won', houses: ['Benjamin', 'Mercier'],
+    parts: [{ turn: 9, kind: 'contest_won', houses: ['Benjamin', 'Mercier'], line: 'Season 9 · Viscount Benjamin of Bellechasse wins the claim.' }],
+    allies: [
+      { house: 'Benjamin 2', party: 'Benjamin', joins: true },
+      { house: 'Fitzroy-Crane', party: 'Mercier', joins: true },
+      { house: 'Letendre dit Batoche', party: 'Mercier', joins: false },
+    ],
+  };
+  const text = sentence(claim, namer);
+  assert.equal(text, "Viscount Benjamin of Bellechasse wins the claim. La Pointe-de-l'Île stood with Bellechasse,"
+    + ' and Saanich with Rimouski; one ally declined to stand.');
+  assert.equal(text.split('. ').length, 2);
+});

@@ -15,7 +15,7 @@ test('weights.json: every beat kind has an integer weight; §3.1 values and thre
   for (const kind of BOOKKEEPING) assert.equal(weights.kinds[kind], 0, kind);
   assert.equal(weights.kinds.removed, 100);
   assert.equal(weights.kinds.riding_passes, 80);
-  assert.equal(weights.thresholds.pause, 60);
+  assert.equal(weights.thresholds.pause, 90);
   assert.equal(weights.thresholds.quiet, 40);
   for (const key of Object.keys(weights.storylines)) {
     const v = weights.storylines[key];
@@ -113,4 +113,13 @@ test('weighing does not change the context it reads', () => {
   const before = JSON.stringify(ctx);
   weighTurn([beat(1, 'expansion', ['A'], { owners: { 24001: 'A' } })], ctx, { weights });
   assert.equal(JSON.stringify(ctx), before);
+});
+
+test('Phase D1: a contest decided outside the cast weighs half its base', () => {
+  const [num, den] = weights.storylines.contest_outside_cast;
+  assert.deepEqual([num, den], [1, 2]);
+  const inside = weighTurn([beat(1, 'contest_won', ['A', 'B'])], spent(), { weights, cast: new Set(['A']) });
+  const outside = weighTurn([beat(1, 'contest_won', ['A', 'B'])], spent(), { weights, cast: new Set(['Z']) });
+  assert.equal(outside[0].base, Math.floor(weights.kinds.contest_won / 2));
+  assert.equal(inside[0].base, weights.kinds.contest_won);
 });

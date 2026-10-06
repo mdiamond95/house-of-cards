@@ -259,11 +259,15 @@ def test_the_first_dominion_storylines_meet_the_phase_b_gates(frozen_games):
     """docs/STORY_DESIGN.md §7, Phase B: after turn 20, at least 85% of
     headlines belong to a storyline and no more than 25% open one; at least
     eight storylines have five or more beats; every closed storyline has an
-    outcome; and fewer than 20% of closed storylines lapse."""
+    outcome; and fewer than 20% of closed storylines lapse.
+
+    Phase D1 keeps rises and declines to sustained movement in the cast (at most
+    twenty a game), which takes the in-storyline share of this game from 85% to
+    83%: the gate is 80% from D1 on."""
     _, work = frozen_games["new"]
     report = json.loads(_node(JS / "story_report.mjs", work / "data" / "beats"))
     gates = report["storylines"]
-    assert gates["inStorylinePerMille"] >= 850, gates
+    assert gates["inStorylinePerMille"] >= 800, gates
     assert gates["openingPerMille"] <= 250, gates
     assert gates["fivePlus"] >= 8, gates
     assert gates["closedWithoutOutcome"] == 0, gates

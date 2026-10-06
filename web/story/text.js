@@ -157,9 +157,68 @@ function ridingNames(feds, ridingName) {
   return feds.map((fed) => ridingName(fed) || fed);
 }
 
+// Transfers whose engine line already names both houses (Phase D1): a sale,
+// an absorption, a cession under a standing claim and a challenge won. Any
+// other riding passing between two houses is told from its facts, so the
+// sentence says who received it.
+const NAMES_BOTH = ['purchase', 'absorption', 'cession under claim', 'challenge'];
+
+// Why a house failed, from the record's reason (Phase D1). A house that falls
+// to the house that took its seat has its own line, which names that house.
+const FAILED_BECAUSE = {
+  'no successor': 'its line ended with no successor',
+  'cohesion collapse': 'its cohesion collapsed',
+};
+
+function failure(beat, namer) {
+  const because = FAILED_BECAUSE[beat.outcome];
+  return because ? `${namer.name(beat.houses[0])} fails, for ${because}; its ridings return to the Crown`
+    : `${namer.name(beat.houses[0])} fails; its ridings return to the Crown`;
+}
+
+// A riding passing between two houses, or to the Crown, from its facts.
+function transfer(beat, namer, ridingName) {
+  const riding = listWords(ridingNames(beat.ridings || [], ridingName)) || 'a riding';
+  const reason = beat.outcome ? ` (${beat.outcome})` : '';
+  const giver = namer.name(beat.houses[0]);
+  if (beat.kind === 'riding_lost') return `${giver} gives up ${riding} to the Crown${reason}`;
+  return `${giver} gives up ${riding} to ${namer.name(beat.houses[1])}${reason}`;
+}
+
+// The allies a contest called (Phase D1), in one sentence: who stood with
+// each side, and how many declined.
+export function alliesSentence(allies, namer) {
+  const sides = new Map();
+  let declined = 0;
+  for (const a of allies) {
+    if (!a.joins) { declined += 1; continue; }
+    if (!sides.has(a.party)) sides.set(a.party, []);
+    sides.get(a.party).push(a.house);
+  }
+  const clauses = [...sides.entries()].map(([party, houses], i) => {
+    const names = listWords(houses.map((h) => namer.designation(h)));
+    return i === 0 ? `${names} stood with ${namer.designation(party)}` : `${names} with ${namer.designation(party)}`;
+  });
+  const refusals = declined
+    ? `${numberWords(declined)} ${declined === 1 ? 'ally' : 'allies'} declined to stand` : '';
+  if (!clauses.length) return capitalise(refusals);
+  return capitalise(clauses.join(', and ')) + (declined ? `; ${refusals}` : '');
+}
+
+const COUNT_WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+
+function numberWords(n) {
+  return n < COUNT_WORDS.length ? COUNT_WORDS[n] : String(n);
+}
+
 // A sentence for a beat. `ridingName(fed)` names a riding.
 export function sentence(beat, namer, ridingName = (fed) => fed) {
   if (beat.merge) return period(mergedSentence(beat, namer, ridingName));
+  if (beat.kind === 'removed' && (beat.houses || []).length) return period(failure(beat, namer));
+  if ((beat.kind === 'riding_passes' && (beat.houses || []).length >= 2 && !NAMES_BOTH.includes(beat.outcome))
+      || (beat.kind === 'riding_lost' && (beat.houses || []).length)) {
+    return period(transfer(beat, namer, ridingName));
+  }
   if (beat.line) return period(engineLine(beat, namer));
   const who = beat.houses && beat.houses.length ? namer.name(beat.houses[0]) : 'A house';
   if (beat.kind === 'failed') return `${who} ${FAILED[beat.outcome] || 'tries and fails'}.`;
@@ -212,7 +271,13 @@ function mergedSentence(beat, namer, ridingName) {
     case 'collapse': {
       const removed = part(beat, 'removed');
       const first = sentence(parts[0], namer, ridingName);
-      return `${unperiod(first)}; then ${namer.name(removed.houses[0])} fails, and its ridings return to the Crown`;
+      const because = FAILED_BECAUSE[removed.outcome];
+      return `${unperiod(first)}; then ${namer.name(removed.houses[0])} fails${because ? `, for ${because}` : ''},`
+        + ' and its ridings return to the Crown';
+    }
+    case 'claim': {
+      const told = parts.map((p) => unperiod(sentence(p, namer, ridingName))).join('; ');
+      return beat.allies && beat.allies.length ? `${told}. ${alliesSentence(beat.allies, namer)}` : told;
     }
     case 'contest': {
       const quarrel = part(beat, 'quarrel');

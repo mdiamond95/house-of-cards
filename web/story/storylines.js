@@ -15,12 +15,23 @@
 //               with no heir. Escalated by the house's successions, ridings lost
 //               and partition. Closes when an heir is named (or, with the watch,
 //               comes of age) or succeeds cleanly, or when the house fails.
-//   rise        opens when a house enters the top eight. Escalated by every
-//               beat that moves the house's own standing. Closes when it
+//   rise        opens (Phase D1) on a house of the cast whose place has not
+//               worsened in any of the last `trend_turns` turns and is at least
+//               `trend_places` better than it was before them. Escalated by
+//               every beat that moves the house's own standing. Closes when it
 //               reaches first, or drops out of the top eight.
-//   decline     opens when a top-eight house loses a riding or two places.
-//               Escalated as a rise is. Closes when its standing recovers to
-//               what it was before, or on its removal.
+//   decline     opens on a house that was of the cast `trend_turns` turns ago,
+//               whose place has not improved in any of them and is at least
+//               `trend_places` worse. Escalated as a rise is. Closes when its
+//               standing recovers to what it was before the slide, or on its
+//               removal.
+//               Each opens on a beat of that turn that moved the house's own
+//               standing. In both the house's own score moved the same way, so a house
+//               merely overtaken neither rises nor declines. Neither closes, but
+//               by a removal, within `trend_min_run` turns of opening: a close
+//               it reaches sooner waits until then. A house has one rise or
+//               decline at a time, and none for `trend_rest` turns after one
+//               closes.
 //   union       opens on a marriage or compact between two houses of the
 //               cast. Escalated by every beat both take part in. Closes on a
 //               partition or absorption of either, or a falling-out between them.
@@ -30,7 +41,7 @@
 //               province is half claimed (`storylines.frontier_share`).
 //
 // Over all of them: a storyline with no beat for `lapse_turns` turns closes as
-// "lapsed"; a house's removal closes every storyline it is in, the removal its
+// "lapsed" — a rise or decline as "levelled off" (Phase D1); a house's removal closes every storyline it is in, the removal its
 // outcome — except a frontier, which the house only leaves; and a cadet house inherits nothing from its parent's storylines —
 // the partition beat belongs to the parent's and to any it opens itself.
 //
@@ -94,11 +105,6 @@ function movesStanding(beat, house, boardBefore) {
   return (beat.removed || []).includes(house);
 }
 
-function lostRiding(beat, house, boardBefore) {
-  return Object.entries(beat.owners || {})
-    .some(([fed, owner]) => boardBefore.owners[fed] === house && owner !== house);
-}
-
 export class Storylines {
   // `provinceTotals` maps a province code to its number of ridings; `held`
   // lists the provinces in which some house already held a riding before the
@@ -112,6 +118,8 @@ export class Storylines {
     this.held = new Set(held);
     this.all = [];
     this.next = 1;
+    // Each turn's standings, newest last, as long as the trend rule needs.
+    this.history = [];
   }
 
   get open() {
@@ -269,13 +277,6 @@ export class Storylines {
           }
         }
 
-        // Decline opened by a lost riding: a top-eight house losing ground.
-        for (const house of cast) {
-          if (lostRiding(beat, house, board) && !this.find('decline', house) && !removed.includes(house)) {
-            const place = tableBefore.find((row) => row.house === house);
-            open('decline', house, [house], i, { mark: place ? place.score : 0 });
-          }
-        }
       } else if (beat.kind === 'name_heir' && a !== undefined) {
         // With the watch, naming an heir is a step; the question closes when
         // the heir comes of age. Without it, naming one is the answer.
@@ -312,30 +313,55 @@ export class Storylines {
       }
       return null;
     };
-    const placeBefore = new Map(tableBefore.map((row) => [row.house, row]));
     const placeAfter = new Map(tableAfter.map((row) => [row.house, row]));
     const size = this.weights.cast_size;
+    if (!this.history.length) this.history.push(new Map(tableBefore.map((row) => [row.house, row])));
+    this.history.push(placeAfter);
+    const span = cfg.trend_turns;
+    if (this.history.length > span + 1) this.history.shift();
+    // Phase D1: a rise or a decline is sustained movement over `trend_turns`
+    // turns, never a single turn's jolt.
+    const trend = (house, sign) => {
+      if (this.history.length < span + 1) return null;
+      const rows = this.history.map((m) => m.get(house));
+      if (rows.some((r) => !r)) return null;
+      for (let k = 1; k < rows.length; k += 1) {
+        if (sign * (rows[k - 1].place - rows[k].place) < 0) return null;
+      }
+      const first = rows[0];
+      const last = rows[rows.length - 1];
+      // The house's own standing moved the same way: not merely overtaken.
+      if (sign * (last.score - first.score) <= 0) return null;
+      return sign * (first.place - last.place) >= cfg.trend_places ? first : null;
+    };
+    // A house rests `trend_rest` turns after a rise or decline of its own closes.
+    const rested = (house) => !this.all.some((s) => (s.type === 'rise' || s.type === 'decline')
+      && s.key === house && (s.state !== 'closed' || turn - s.closed < cfg.trend_rest));
+    const ripe = (s) => turn - s.opened >= cfg.trend_min_run;
     for (const row of tableAfter.slice(0, size)) {
-      const prior = placeBefore.get(row.house);
-      // A house that enters straight at first has nowhere to rise to.
-      if ((!prior || prior.place > size) && row.place > 1 && !this.find('rise', row.house)) {
-        open('rise', row.house, [row.house], lastMover(row.house));
+      // A house that is first has nowhere to rise to.
+      const mover = lastMover(row.house);
+      if (row.place > 1 && mover !== null && rested(row.house) && trend(row.house, 1)) {
+        open('rise', row.house, [row.house], mover);
       }
     }
     for (const s of this.open) {
       const now = placeAfter.get(s.key);
-      if (s.type === 'rise' && now) {
+      if (s.type === 'rise' && now && ripe(s)) {
         if (now.place === 1) close(s, lastMover(s.key), 'reached first');
         else if (now.place > size) close(s, lastMover(s.key), 'fell back');
       }
-      if (s.type === 'decline' && now && s.opened < turn && now.score >= s.mark) {
+      if (s.type === 'decline' && now && ripe(s) && now.score >= s.mark) {
         close(s, lastMover(s.key), 'recovered');
       }
     }
-    for (const row of tableBefore.slice(0, size)) {
-      const now = placeAfter.get(row.house);
-      if (now && now.place >= row.place + 2 && !this.find('decline', row.house)) {
-        open('decline', row.house, [row.house], lastMover(row.house), { mark: row.score });
+    const castThen = this.history.length === span + 1
+      ? [...this.history[0].values()].filter((row) => row.place <= size) : [];
+    for (const row of castThen) {
+      const was = trend(row.house, -1);
+      const mover = lastMover(row.house);
+      if (was && mover !== null && rested(row.house)) {
+        open('decline', row.house, [row.house], mover, { mark: was.score });
       }
     }
     for (const s of this.open) {
@@ -354,7 +380,10 @@ export class Storylines {
     // Lapses: nothing for `lapse_turns` turns.
     for (const s of this.open) {
       const lastTurn = s.beats.length ? s.beats[s.beats.length - 1].turn : s.opened;
-      if (!touched.has(s.id) && turn - lastTurn >= cfg.lapse_turns) close(s, null, 'lapsed');
+      if (!touched.has(s.id) && turn - lastTurn >= cfg.lapse_turns) {
+        // A rise or decline that goes quiet has levelled off where it stands.
+        close(s, null, s.type === 'rise' || s.type === 'decline' ? 'levelled off' : 'lapsed');
+      }
     }
     return { roles, changes };
   }

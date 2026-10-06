@@ -237,6 +237,9 @@ export function typeTurn(input) {
       if (kind === 'scheme_resolved') ran = d.scheme.ran ?? null;
     } else if (Number.isInteger(d.scheme)) {
       scheme = d.scheme;
+    } else if (d.ally && typeof d.ally === 'object') {
+      // Phase D1: an ally answers the call of one contest, told with it.
+      scheme = d.ally.scheme ?? null;
     }
     if (kind === 'riding_passes' && outcome === 'absorption' && houses.length > 1) removed.push(houses[1]);
 
@@ -355,7 +358,11 @@ export function baselineFromState(state) {
 //   contest     a contested expansion: the grievance, and either the winner's
 //               expansion or the loser's failed Expand
 //   claim       (rules 1.0) a claim decided: the contest, the rout that may
-//               follow it, and the fall of a house left with no riding
+//               follow it, and the fall of a house left with no riding. The
+//               allies each side called (ally_joins, ally_declines, the same
+//               scheme) are carried as `allies` [{ house, party, joins }] rather
+//               than as parts, so they are told in one sentence and take no
+//               part in the contest's storylines (Phase D1)
 //
 // And before any of these, a scheme's resolution (scheme_resolved, which is
 // ledger-only) folds into the act that resolved it — the beat carrying the same
@@ -426,10 +433,23 @@ function foldResolutions(beats) {
     .filter((_, i) => !dropped.has(i));
 }
 
+const ALLY_KINDS = ['ally_joins', 'ally_declines'];
+const DECIDED = ['contest_won', 'contest_lost'];
+
 export function mergeActs(input) {
   const beats = foldResolutions(input);
   const used = new Set();
   const out = [];
+  // The allies called to each contest decided this turn, by scheme.
+  const alliesOf = new Map();
+  const decided = new Set(beats.filter((b) => DECIDED.includes(b.kind) && b.outcome !== 'rout'
+    && b.scheme !== undefined).map((b) => b.scheme));
+  beats.forEach((b, i) => {
+    if (!ALLY_KINDS.includes(b.kind) || b.scheme === undefined || !decided.has(b.scheme)) return;
+    if (!alliesOf.has(b.scheme)) alliesOf.set(b.scheme, []);
+    alliesOf.get(b.scheme).push({ house: b.houses[0], party: b.houses[1], joins: b.kind === 'ally_joins' });
+    used.add(i);
+  });
   const after = (i, test) => {
     for (let j = i + 1; j < beats.length; j += 1) {
       if (!used.has(j) && test(beats[j])) return j;
@@ -461,7 +481,11 @@ export function mergeActs(input) {
       if (rout !== -1) { used.add(rout); parts.push(beats[rout]); }
       const fall = after(i, (x) => x.kind === 'fallen' && x.houses[0] === second && x.houses[1] === first);
       if (fall !== -1) { used.add(fall); parts.push(beats[fall]); }
-      if (parts.length > 1) merged = mergeGroup('claim', fall !== -1 ? 'fallen' : b.kind, parts);
+      const allies = b.scheme !== undefined ? alliesOf.get(b.scheme) : undefined;
+      if (parts.length > 1 || allies) {
+        merged = mergeGroup('claim', fall !== -1 ? 'fallen' : b.kind, parts);
+        if (allies) merged.allies = allies;
+      }
     } else if (b.kind === 'quarrel' && b.outcome === 'contested expansion') {
       let j = i + 1 < beats.length && !used.has(i + 1) && beats[i + 1].kind === 'expansion'
         && beats[i + 1].houses[0] === second ? i + 1 : -1;
