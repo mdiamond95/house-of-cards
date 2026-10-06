@@ -126,3 +126,18 @@ test('Phase D1: the allies of a contest are one sentence, never a line each', ()
     + ' and Saanich with Rimouski; one ally declined to stand.');
   assert.equal(text.split('. ').length, 2);
 });
+
+test('Phase D1: an accession names its land, and its ridings only when they are few', async () => {
+  const { accessionSentence } = await import('../../web/story/text.js');
+  const names = { 11001: 'Cardigan', 11002: 'Charlottetown' };
+  const few = { kind: 'accession', ridings: ['11001', '11002'],
+    world: { jurisdiction: 'Prince Edward Island', status: 'province', change: 'accession' } };
+  assert.equal(accessionSentence(few, (f) => names[f]),
+    'Prince Edward Island comes under Canada as a province, opening two ridings: Cardigan and Charlottetown.');
+  const many = { kind: 'accession', ridings: Array.from({ length: 43 }, (_, i) => String(59001 + i)),
+    world: { jurisdiction: 'British Columbia', status: 'province', change: 'accession' } };
+  assert.equal(sentence(many, new Namer(styleOf)), 'British Columbia comes under Canada as a province, opening 43 ridings.');
+  const ext = { kind: 'accession', ridings: ['47001'],
+    world: { jurisdiction: 'Saskatchewan', status: 'province', change: 'extension' } };
+  assert.equal(accessionSentence(ext, () => 'Regina'), 'Saskatchewan becomes a province, and the Crown may found in one riding: Regina.');
+});

@@ -300,3 +300,23 @@ test('Phase D1: the allies called to a contest fold into it, with their scheme',
   assert.deepEqual(act.houses, ['A', 'B'], 'the allies take no part in the contest\'s storylines');
   assert.deepEqual(act.allies, [{ house: 'C', party: 'A', joins: true }, { house: 'D', party: 'B', joins: false }]);
 });
+
+test('Phase D1: a crisis, land opened and a year of a running event are typed from their deltas', () => {
+  const input = {
+    turn: 48,
+    events: [
+      { id: 1, kind: 'other', houses: [], delta: { world: 'continues', event: 'The Long Depression', year_of: 2, years: 6, year: 1875 }, line: 'L1' },
+      { id: 2, kind: 'other', houses: [], delta: { world: 'accession', jurisdiction: 'Manitoba', status: 'province', year: 1870, ridings: ['b', 'a'], fed_ids: ['46002', '46001'] }, line: 'L2' },
+      { id: 3, kind: 'societal', houses: ['A', 'B'], delta: { crisis: { lead: ['A'], resist: ['B'], exploit: [], neutral: [], carried: 'lead', influence: { lead: 9, resist: 4 } }, event: 'The Great War', years: 5, magnitude: 'Major' }, line: 'L3' },
+      { id: 4, kind: 'other', houses: [], delta: { world: 'reckoning', reckoning: {} }, line: 'L4' },
+    ],
+    actions: [], holdings: [], ranks: {},
+  };
+  const typed = typeTurn(input);
+  assert.deepEqual(typed.map((b) => [b.kind, b.outcome]), [
+    ['event_continues', 'The Long Depression'], ['accession', 'accession'], ['crisis', 'lead'], ['reckoning', 'reckoning'],
+  ]);
+  assert.deepEqual(typed[0].world, { event: 'The Long Depression', year_of: 2, years: 6 });
+  assert.deepEqual(typed[1].ridings, ['46001', '46002']);
+  assert.deepEqual(typed[2].world, { event: 'The Great War', lead: ['A'], resist: ['B'], carried: 'lead', years: 5 });
+});

@@ -211,9 +211,49 @@ function numberWords(n) {
   return n < COUNT_WORDS.length ? COUNT_WORDS[n] : String(n);
 }
 
-// A sentence for a beat. `ridingName(fed)` names a riding.
-export function sentence(beat, namer, ridingName = (fed) => fed) {
+// A crisis (Phase D1): the event, who led and who resisted — the first few of
+// each camp by name, in `order`, and how many more — who carried it, and, for
+// a crisis that runs for years, that this is the first of them.
+const CRISIS_NAMED = 3;
+
+function camp(houses, namer, order) {
+  if (!houses.length) return 'none';
+  const sorted = order(houses);
+  const named = sorted.slice(0, CRISIS_NAMED).map((h) => namer.designation(h));
+  const more = sorted.length - named.length;
+  return more > 0 ? `${named.join(', ')} and ${numberWords(more)} other${more === 1 ? '' : 's'}` : listWords(named);
+}
+
+// Land opened (Phase D1): the jurisdiction, what it became, and how many
+// ridings — named when there are few; the map shows the rest.
+const ACCESSION_NAMED = 4;
+
+export function accessionSentence(beat, ridingName) {
+  const w = beat.world;
+  const feds = beat.ridings || [];
+  const n = feds.length;
+  const names = n <= ACCESSION_NAMED ? `: ${listWords(ridingNames(feds, ridingName))}` : '';
+  const ridings = `${numberWords(n)} riding${n === 1 ? '' : 's'}`;
+  return w.change === 'extension'
+    ? `${w.jurisdiction} becomes a province, and the Crown may found in ${ridings}${names}.`
+    : `${w.jurisdiction} comes under Canada as a ${w.status}, opening ${ridings}${names}.`;
+}
+
+export function crisisSentence(beat, namer, order = (houses) => houses) {
+  const w = beat.world;
+  const carried = { lead: 'those who lead carry it', resist: 'those who resist carry it' }[w.carried]
+    || 'neither side carries it';
+  const span = w.years ? ` It is the first of ${numberWords(w.years)} years.` : '';
+  return `${w.event || 'A crisis'} divides the peerage: ${camp(w.lead, namer, order)} lead;`
+    + ` ${camp(w.resist, namer, order)} resist; ${carried}.${span}`;
+}
+
+// A sentence for a beat. `ridingName(fed)` names a riding; `order(houses)`
+// puts a crisis's camps in the order to name them (standings, in a dispatch).
+export function sentence(beat, namer, ridingName = (fed) => fed, { order } = {}) {
   if (beat.merge) return period(mergedSentence(beat, namer, ridingName));
+  if (beat.kind === 'crisis' && beat.world) return crisisSentence(beat, namer, order);
+  if (beat.kind === 'accession' && beat.world) return accessionSentence(beat, ridingName);
   if (beat.kind === 'removed' && (beat.houses || []).length) return period(failure(beat, namer));
   if ((beat.kind === 'riding_passes' && (beat.houses || []).length >= 2 && !NAMES_BOTH.includes(beat.outcome))
       || (beat.kind === 'riding_lost' && (beat.houses || []).length)) {

@@ -1863,6 +1863,10 @@ class World:
                     "influence": {"lead": weight["Lead"], "resist": weight["Resist"]},
                 },
                 "magnitude": event.magnitude, "tag": event.tag, "year": year,
+                "event": event.name,
+                # A crisis that runs for years says how many (its first is this).
+                **({"years": event.through_year - event.personal_year + 1}
+                   if event.through_year is not None else {}),
             },
         )
 

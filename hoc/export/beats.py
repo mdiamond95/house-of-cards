@@ -51,7 +51,14 @@ BEAT_KINDS = (
     "heir_wanted", "heir_of_age", "bide",
     "scheme_begun", "scheme_step", "scheme_answered", "scheme_abandoned", "scheme_resolved",
     "ally_joins", "ally_declines", "contest_won", "contest_lost", "fallen",
+    "crisis", "accession", "event_continues", "reckoning",
 )
+
+# Rules 1.0 `world_calendar`: the world's own events, by their delta's `world`.
+WORLD_KINDS = {
+    "accession": "accession", "extension": "accession",
+    "continues": "event_continues", "reckoning": "reckoning",
+}
 
 SCHEME_PHASES = {
     "begun": "scheme_begun",
@@ -120,6 +127,9 @@ def type_event(event, action_of):
     if kind == "expansion":
         return "expansion", None
     if kind == "societal":
+        # Rules 1.0 `crises`: one event for the whole crisis, both camps in it.
+        if isinstance(d.get("crisis"), dict):
+            return "crisis", d["crisis"].get("carried")
         if d.get("magnitude") == "Major":
             return "major_response", d.get("response")
         return "era_response", d.get("response")
@@ -145,6 +155,8 @@ def type_event(event, action_of):
             "Absorb": ("failed", "Absorb"),
         }.get(action, ("other", None))
     if kind == "other":
+        if d.get("world") in WORLD_KINDS:
+            return WORLD_KINDS[d["world"]], d.get("event", d["world"])
         scheme = d.get("scheme")
         if isinstance(scheme, dict) and scheme.get("phase") in SCHEME_PHASES:
             return SCHEME_PHASES[scheme["phase"]], scheme.get("name")
@@ -165,7 +177,7 @@ def type_event(event, action_of):
 
 
 def _beat(turn, seq, kind, houses, ridings, outcome, line, owners, ranks, removed,
-          scheme=None, ran=None):
+          scheme=None, ran=None, world=None):
     """The canonical shape: empty fields left out (web/story/beats.js makeBeat)."""
     beat = {"turn": turn, "seq": seq, "kind": kind, "houses": houses}
     if ridings:
@@ -184,7 +196,26 @@ def _beat(turn, seq, kind, houses, ridings, outcome, line, owners, ranks, remove
         beat["scheme"] = scheme
     if ran is not None:
         beat["ran"] = ran
+    if world is not None:
+        beat["world"] = world
     return beat
+
+
+def _world_facts(kind, d):
+    """Rules 1.0 `world_calendar` and `crises`: what a world beat carries for
+    its sentence and the pages (web/story/beats.js worldFacts)."""
+    if kind == "crisis":
+        c = d["crisis"]
+        facts = {"event": d.get("event"), "lead": c["lead"], "resist": c["resist"],
+                 "carried": c["carried"]}
+        if "years" in d:
+            facts["years"] = d["years"]
+        return facts
+    if kind == "event_continues":
+        return {"event": d["event"], "year_of": d["year_of"], "years": d["years"]}
+    if kind == "accession":
+        return {"jurisdiction": d["jurisdiction"], "status": d["status"], "change": d["world"]}
+    return None
 
 
 def type_turn(data):
@@ -241,9 +272,13 @@ def type_turn(data):
             scheme = d["ally"].get("scheme")
         if kind == "riding_passes" and outcome == "absorption" and len(houses) > 1:
             removed.append(houses[1])
+        world = _world_facts(kind, d)
+        if kind == "accession":
+            # The land it opens, for the map to show.
+            ridings = sorted(d.get("fed_ids") or [])
 
         beats.append(_beat(data["turn"], len(beats), kind, houses, ridings, outcome,
-                           event["line"], owners, ranks, removed, scheme, ran))
+                           event["line"], owners, ranks, removed, scheme, ran, world))
 
     for row in data["actions"]:
         kind = None
@@ -434,7 +469,54 @@ def build_story(conn):
         # Whether it carries rules 1.0's schemes: the pages then show Plans afoot.
         "schemes": _record_has(conn, "schemes"),
     }
+    # Rules 1.0 `world_calendar`: the calendar a turn is a year of, and the
+    # reckoning the engine wrote after the last turn, for a record with them.
+    calendar = calendar_of(conn)
+    if calendar is not None:
+        index["calendar"] = calendar
+    reckoning = reckoning_of(conn)
+    if reckoning is not None:
+        index["reckoning"] = reckoning
     return index, beats
+
+
+def calendar_of(conn):
+    """game.json's calendar for a game played with `world_calendar`: its start
+    year, its turns and its chapters. None for any other game."""
+    from hoc import rules_data
+
+    for (version,) in conn.execute(
+        "SELECT DISTINCT rules_version FROM seasons WHERE rules_version IS NOT NULL"
+        " ORDER BY rules_version"
+    ):
+        try:
+            if not rules_data.load_features(version).get("world_calendar"):
+                continue
+            game = rules_data.load_rules(version=version).game
+        except rules_data.RulesDataError:
+            continue
+        return {
+            "start_year": game["start_year"],
+            "turns": game["turns"],
+            "chapters": [
+                {key: chapter[key] for key in ("id", "name", "numeral", "start_year", "end_year")}
+                for chapter in game["chapters"]
+            ],
+        }
+    return None
+
+
+def reckoning_of(conn):
+    """The reckoning record the engine wrote after a calendar game's last turn,
+    or None."""
+    for (delta,) in conn.execute(
+        "SELECT mechanical_delta FROM events WHERE kind = 'other'"
+        " AND mechanical_delta LIKE '%\"reckoning\"%' ORDER BY id DESC"
+    ):
+        facts = json.loads(delta).get("reckoning")
+        if isinstance(facts, dict):
+            return facts
+    return None
 
 
 def _record_has(conn, flag):

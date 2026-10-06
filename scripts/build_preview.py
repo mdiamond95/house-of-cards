@@ -4,12 +4,15 @@
 
     outputs/site/preview/replay.html       the preview told one turn at a time
     outputs/site/preview/storylines.html   its storylines
+    outputs/site/preview/reckoning.html    its reckoning, for a game that ends in one
 
-docs/STORY_DESIGN.md Phase C2. While a draft rules version exists (rules/README.md,
-"A draft version": the one directory newer than rules/current.txt), every export
-plays `SEASONS` seasons of it from seed `SEED` on a scratch world built from the
-blank seed and the `REFERENCE` reference set, and renders the game with the
-archive's Replay and Storylines pages. It is not a scenario: it is written to a
+docs/STORY_DESIGN.md Phase C2, and D1. While a draft rules version exists
+(rules/README.md, "A draft version": the one directory newer than
+rules/current.txt), every export plays it from seed `SEED` on a scratch world
+built from the blank seed and the `REFERENCE` reference set — the whole game when
+the draft has a world calendar (rules 1.0 `world_calendar`: 1867 to 1966, with
+its chapters and its reckoning), else `SEASONS` seasons — and renders the game
+with the archive's Replay and Storylines pages, and its Reckoning. It is not a scenario: it is written to a
 temporary database and thrown away, it writes no season file, nothing under
 scenarios/ and nothing in hoc.db, and every page says it is a draft-rules preview
 and not a game of record. Because it is played afresh on every export, it changes
@@ -47,6 +50,14 @@ def play_preview(db_path, version, seed=SEED, seasons=SEASONS):
     return conn
 
 
+def preview_length(version):
+    """The draft's whole game under a world calendar, else SEASONS."""
+    rules = rules_data.load_rules(version=version)
+    if rules.feature("world_calendar") and rules.game:
+        return rules.game["turns"]
+    return SEASONS
+
+
 def build_preview(out_dir=site.DEFAULT_OUT_DIR, verbose=False):
     """Render the preview, or remove it when there is no draft. Returns the
     paths written."""
@@ -58,11 +69,12 @@ def build_preview(out_dir=site.DEFAULT_OUT_DIR, verbose=False):
             print("preview: no draft rules version; preview/ removed")
         return []
     with tempfile.TemporaryDirectory(prefix="hoc-preview-") as workspace:
-        conn = play_preview(Path(workspace) / "preview.db", version)
-        written = site.write_preview(conn, version, out_dir=out_dir, seed=SEED, seasons=SEASONS)
+        seasons = preview_length(version)
+        conn = play_preview(Path(workspace) / "preview.db", version, seasons=seasons)
+        written = site.write_preview(conn, version, out_dir=out_dir, seed=SEED, seasons=seasons)
         conn.close()
     if verbose:
-        print(f"preview: {SEASONS} seasons under rules {version} (draft), {len(written)} files")
+        print(f"preview: {seasons} turns under rules {version} (draft), {len(written)} files")
     return written
 
 

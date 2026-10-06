@@ -20,6 +20,11 @@ the draft with every flag on.
 with Phase C1's flags on and Phase C2's off ("C1 all on"), and the draft with
 every flag on ("§6 all on").
 
+`--d1` runs Phase D1's: the draft with every flag on but `world_calendar` and
+`crises`, and with every flag on. `--prepend FILE` puts columns saved with
+`--json` elsewhere first — the "C2 all on" column is this harness run on the
+Phase C2 code.
+
 What it measures (§6, as far as it can be measured without schemes):
 
 - the share of actions aimed at another named house;
@@ -128,7 +133,7 @@ def play_one(version, overrides, seed, turns=TURNS):
                     # in 1867 would have reached.
                     year = 1866 + season
                     feds = [r["fed_id"] for r in conn.execute("SELECT fed_id FROM ridings")]
-                    if world.feature("world_calendar"):
+                    if world.rules.features.get("world_calendar"):
                         play = {f for f in feds if world.in_play(f, year)}
                     else:
                         play = {f for f in feds if world.opens_year(f) <= year}
@@ -169,14 +174,14 @@ def play_one(version, overrides, seed, turns=TURNS):
         removed = conn.execute(
             "SELECT COUNT(*) AS n FROM houses WHERE status = 'removed'").fetchone()["n"]
         # Phase D1 `crises` and `world_calendar`.
-        crises = [json.loads(r["mechanical_delta"])["crisis"] for r in conn.execute(
+        crises = [json.loads(r["mechanical_delta"]).get("crisis") or {} for r in conn.execute(
             "SELECT mechanical_delta FROM events WHERE kind = 'societal'"
             " AND mechanical_delta LIKE '%\"crisis\"%' ORDER BY id")]
         d1 = {}
         if crises:
             d1["crisis_both_camps"] = sum(1 for c in crises if c["lead"] and c["resist"]) / len(crises)
             d1["crisis_lead_carried"] = sum(1 for c in crises if c["carried"] == "lead") / len(crises)
-        if world.feature("world_calendar"):
+        if world.rules.features.get("world_calendar"):
             d1["reckoning"] = 1 if last is not None and "reckoning" in last else 0
 
         turn_inputs, _ = beats_export.turn_inputs(conn)
@@ -377,6 +382,21 @@ def c2_compare(draft="1.0", baseline=None, seeds=SEEDS, turns=TURNS, workers=4):
         return [f.result() for f in futures]
 
 
+def d1_compare(draft="1.0", seeds=SEEDS, turns=TURNS, workers=4):
+    """Phase D1's comparison: the draft with every flag on but the shared
+    calendar (and the crises, which read it), and the draft with every flag on.
+    The third column of rules/CHANGELOG.md's table, "C2 all on", is this harness
+    run on the Phase C2 code (`--prepend`)."""
+    plan = [
+        (f"{draft}: D1 without world_calendar", draft, {"world_calendar": False, "crises": False}),
+        (f"{draft}: D1 all on", draft, {}),
+    ]
+    with ProcessPoolExecutor(max_workers=workers) as pool:
+        futures = [pool.submit(run_config, label, version, overrides, seeds, turns)
+                   for label, version, overrides in plan]
+        return [f.result() for f in futures]
+
+
 def _parse_flags(text):
     out = {}
     for part in (text or "").split(","):
@@ -395,6 +415,9 @@ def main(argv=None):
     parser.add_argument("--flags", default="", help="name=1,name=0 overrides")
     parser.add_argument("--matrix", action="store_true")
     parser.add_argument("--c2", action="store_true", help="Phase C2's before/after table")
+    parser.add_argument("--d1", action="store_true", help="Phase D1's comparison")
+    parser.add_argument("--prepend", default=None,
+                        help="a --json file of columns measured elsewhere, put first")
     parser.add_argument("--seeds", default=f"{SEEDS[0]}-{SEEDS[-1]}")
     parser.add_argument("--turns", type=int, default=TURNS)
     parser.add_argument("--markdown", default=None, help="also write the table here")
@@ -410,11 +433,15 @@ def main(argv=None):
         configs = matrix(seeds=seeds, turns=args.turns, workers=args.workers)
     elif args.c2:
         configs = c2_compare(seeds=seeds, turns=args.turns, workers=args.workers)
+    elif args.d1:
+        configs = d1_compare(seeds=seeds, turns=args.turns, workers=args.workers)
     else:
         version = args.rules_version or rules_data.current_version()
         overrides = _parse_flags(args.flags)
         label = version + (f" {args.flags}" if args.flags else "")
         configs = [run_config(label, version, overrides, seeds, args.turns)]
+    if args.prepend:
+        configs = [tuple(c) for c in json.loads(Path(args.prepend).read_text(encoding="utf-8"))] + configs
     text = table(configs)
     print(text)
     if args.markdown:

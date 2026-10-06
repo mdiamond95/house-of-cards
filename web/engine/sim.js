@@ -1414,6 +1414,9 @@ export class World {
         magnitude: event.magnitude,
         tag: event.tag,
         year,
+        event: event.name,
+        // A crisis that runs for years says how many (its first is this).
+        ...(event.throughYear !== null ? { years: event.throughYear - event.personalYear + 1 } : {}),
       },
     });
   }

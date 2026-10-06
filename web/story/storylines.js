@@ -68,6 +68,9 @@ const QUIET_KINDS = new Set([
   'major_response', 'other', 'bide',
   // Rules 1.0: a scheme's preparation steps and its resolution are ledger-only.
   'scheme_step', 'scheme_resolved',
+  // Rules 1.0 (Phase D1): the world's events are the whole peerage's, no
+  // storyline's — a crisis names most houses at once.
+  'crisis', 'accession', 'event_continues', 'reckoning',
 ]);
 
 // A claim begun, or answered with a counter-claim (rules 1.0 `schemes`): the

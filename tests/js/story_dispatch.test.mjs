@@ -120,19 +120,25 @@ test('Auto pauses on a long cast storyline closing, a removal, a riding between 
   assert.deepEqual(opened.moments.map((m) => m.change), ['opened']);
   s.step(4, [beat(4, 'quarrel', ['A', 'B'], { outcome: 'friction', line: 'q.' })]);
   s.step(5, [beat(5, 'failed', ['A', 'B'], { outcome: 'Dispute' })]);
-  s.step(6, [beat(6, 'quarrel', ['A', 'B'], { outcome: 'friction', line: 'q.' })]);
-  const closed = s.step(7, [beat(7, 'reconciled', ['A', 'B'], { line: 'A makes peace with B.' })]);
+  // A storyline pauses Auto on its close only once it has run
+  // storylines.pause_closing_beats beats.
+  let t = 6;
+  while (t < 3 + weights.storylines.pause_closing_beats - 1) {
+    s.step(t, [beat(t, 'quarrel', ['A', 'B'], { outcome: 'friction', line: 'q.' })]);
+    t += 1;
+  }
+  const closed = s.step(t, [beat(t, 'reconciled', ['A', 'B'], { line: 'A makes peace with B.' })]);
   assert.equal(closed.pause, true);
   assert.deepEqual(closed.stops, ['The Alpha\u2013Beta rivalry closes']);
   const short = story({ seen: BEAT_KINDS, baseline: { owners: {}, ranks: { A: 0, B: 0 }, removed: [] } });
   short.step(1, [beat(1, 'quarrel', ['A', 'B'], { outcome: 'friction', line: 'q.' })]);
   assert.equal(short.step(2, [beat(2, 'reconciled', ['A', 'B'], { line: 'r.' })]).pause, false,
     'a two-beat storyline closing does not stop Auto');
-  const passes = s.step(8, [beat(8, 'riding_passes', ['A', 'B'], { outcome: 'purchase', ridings: ['35001'], owners: { 35001: 'B' }, line: 'B buys X from A.' })]);
+  const passes = s.step(t + 1, [beat(t + 1, 'riding_passes', ['A', 'B'], { outcome: 'purchase', ridings: ['35001'], owners: { 35001: 'B' }, line: 'B buys X from A.' })]);
   assert.ok(passes.stops.includes('a riding passes between two houses of the cast'));
-  const gone = s.step(9, [beat(9, 'removed', ['Z'], { removed: ['Z'], line: 'Z fails.' })]);
+  const gone = s.step(t + 2, [beat(t + 2, 'removed', ['Z'], { removed: ['Z'], line: 'Z fails.' })]);
   assert.deepEqual(gone.stops, ['Baron Z of Zeta is removed']);
-  assert.equal(s.step(10, [beat(10, 'invest', ['A'])]).pause, false);
+  assert.equal(s.step(t + 3, [beat(t + 3, 'invest', ['A'])]).pause, false);
   const followed = story({ seen: BEAT_KINDS, follow: 'E', baseline: { owners: {}, ranks: {}, removed: [] } });
   const light = followed.step(1, [beat(1, 'expansion', ['E'], { owners: { 35003: 'E' }, line: 'E takes Ottawa Centre.' })]);
   assert.equal(light.headline.weight, 70);
@@ -211,4 +217,75 @@ test('rules 1.0: a headline that resolves a scheme says how long it ran, and Pla
   const plans = s.plansAfoot();
   assert.deepEqual(plans.map((p) => [p.name, p.scheme, p.target, p.riding, p.turnsRemaining]),
     [['Alpha', 'Claim a riding', 'Beta', 'Perth', 2]], 'only the cast\'s schemes');
+});
+
+// ------------------------------------------------- Phase D1: the calendar --
+
+const CALENDAR = {
+  start_year: 1867, turns: 4,
+  chapters: [
+    { id: 'one', name: 'The First', numeral: 'I', start_year: 1867, end_year: 1868 },
+    { id: 'two', name: 'The Second', numeral: 'II', start_year: 1869, end_year: 1870 },
+  ],
+};
+
+test('with a world calendar a turn is a year: the dispatch carries it and kickers count years', () => {
+  const s = story({ calendar: CALENDAR, seen: BEAT_KINDS, baseline: { owners: {}, ranks: { A: 0, B: 0 }, removed: [] } });
+  assert.equal(s.unit, 'year');
+  const first = s.step(1, [beat(1, 'quarrel', ['A', 'B'], { outcome: 'friction', line: 'Season 1 · A and B fall out.' })]);
+  assert.equal(first.year, 1867);
+  assert.ok(first.kicker.text.endsWith('opens this year'));
+  const later = s.step(2, [beat(2, 'quarrel', ['A', 'B'], { outcome: 'friction', line: 'Season 2 · q.' })]);
+  assert.ok(later.kicker.text.endsWith('one year running'));
+  assert.equal(later.previously.year, 1867);
+  const quiet = s.step(3, [beat(3, 'invest', ['A'])]);
+  assert.equal(quiet.quietLine, 'A quiet year: one house tended its estates.');
+});
+
+test('each chapter ends with an interstitial, and Auto always pauses there', () => {
+  const s = story({ calendar: CALENDAR, seen: BEAT_KINDS, baseline: { owners: { 35001: 'A' }, ranks: { A: 0, B: 0 }, removed: [] } });
+  const one = s.step(1, [beat(1, 'invest', ['A'])]);
+  assert.equal(one.chapter, null);
+  assert.equal(one.pause, false);
+  const end = s.step(2, [beat(2, 'expansion', ['B'], { owners: { 35002: 'B' }, line: 'Season 2 · B takes Perth.' })]);
+  assert.equal(end.pause, true);
+  assert.ok(end.stops.includes('the end of Chapter I, The First'));
+  assert.deepEqual([end.chapter.numeral, end.chapter.name, end.chapter.start_year, end.chapter.end_year],
+    ['I', 'The First', 1867, 1868]);
+  assert.deepEqual(end.chapter.standings.map((r) => r.house), ['A', 'B']);
+  assert.ok(Array.isArray(end.chapter.closed) && Array.isArray(end.chapter.open));
+  // The second chapter's movement is measured from where the first left off.
+  s.step(3, [beat(3, 'expansion', ['B'], { owners: { 35003: 'B' }, line: 'Season 3 · B takes Ottawa Centre.' })]);
+  const two = s.step(4, [beat(4, 'invest', ['A'])]);
+  assert.equal(two.chapter.numeral, 'II');
+  const b = two.chapter.standings.find((r) => r.house === 'B');
+  assert.deepEqual([b.place, b.was, b.move], [1, 2, 'up']);
+});
+
+test('the last turn of a calendar game carries the reckoning and pauses on it', () => {
+  const reckoning = {
+    last_year: 1870, reckoned: 1871,
+    standings: [{ place: 1, house: 'A', prestige: 30, ridings: 3, rank: 'Baron' }],
+    houses: [{ house: 'A', status: 'active', place: 1, rank: 'Baron', ridings: 3, peak_prestige: 30,
+      peak_year: 1870, contests_won: 0, contests_lost: 0, successions: 0 }],
+  };
+  const s = story({ calendar: CALENDAR, reckoning, seen: BEAT_KINDS });
+  for (let t = 1; t < 4; t += 1) assert.equal(s.step(t, []).reckoning, null);
+  const last = s.step(4, []);
+  assert.equal(last.reckoning.year, 1871);
+  assert.ok(last.stops.includes('the reckoning of 1871'));
+  assert.ok(last.reckoning.epilogues[0].text.startsWith('Baron A of Alpha comes to the reckoning first of 1'));
+});
+
+test('a crisis is one beat naming both camps, the cast first, and who carried it', () => {
+  const s = story({ calendar: CALENDAR, seen: BEAT_KINDS,
+    baseline: { owners: { 35001: 'D', 35002: 'B' }, ranks: { A: 0, B: 1, C: 0, D: 2, E: 0 }, removed: [] } });
+  const d = s.step(1, [beat(1, 'crisis', ['A', 'C', 'E', 'D', 'B'], {
+    outcome: 'resist', line: 'Season 1 · The Great War: 3 houses lead and 2 resist; those who resist carry it.',
+    world: { event: 'The Great War', lead: ['A', 'C', 'E'], resist: ['D', 'B'], carried: 'resist', years: 5 },
+  })]);
+  assert.equal(d.headline.beat.kind, 'crisis');
+  assert.equal(d.headline.text, 'The Great War divides the peerage: Alpha, Gamma and Epsilon lead;'
+    + ' Delta and Beta resist; those who resist carry it. It is the first of five years.');
+  assert.equal(d.inStoryline, false, 'a crisis belongs to no storyline');
 });

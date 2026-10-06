@@ -20,7 +20,7 @@ from hoc.export import (
     beats as beats_export, map as map_export, play as play_export, timeline as timeline_export,
 )
 from hoc.export.play_js import PLAY_JS
-from hoc.export.replay_js import REPLAY_JS, STORYLINES_JS
+from hoc.export.replay_js import RECKONING_JS, REPLAY_JS, STORYLINES_JS
 from hoc.export.turn_block import TEMPLATE as NARRATE_TEMPLATE, TONES, jurisdiction_note
 from hoc.sim import STOP_CONDITIONS
 
@@ -61,6 +61,8 @@ def archive_banner(title):
 # under the draft rules, on a scratch world, and published at preview/ beside the
 # site. It is not a scenario and not a game of record, and every page says so.
 _PREVIEW = None
+# Whether the preview game ended in a reckoning (rules 1.0 `world_calendar`).
+_PREVIEW_RECKONING = False
 PREVIEW_DIRNAME = "preview"
 
 
@@ -135,12 +137,14 @@ def page(title, body, depth=0, subtitle=None):
         ("about.html", "About"),
     ]
     if _PREVIEW:
-        # The preview is two pages and a way back out.
+        # The preview is two pages (three, with a reckoning) and a way back out.
         nav = [
             ("replay.html", "Replay"),
             ("storylines.html", "Storylines"),
             ("../index.html", "← Back to the site"),
         ]
+        if _PREVIEW_RECKONING:
+            nav.insert(2, ("reckoning.html", "Reckoning"))
     elif _ARCHIVE:
         # Out of the archive rather than deeper into it: the archived site's own
         # root is two directories below the site's. A frozen game carries no play
@@ -885,6 +889,22 @@ def _replay_page(conn, features, borders):
         '<script type="module" src="replay.js"></script>'
     )
     return page("Replay", body, depth=0, subtitle=esc(_game_title()))
+
+
+def _reckoning_page():
+    """reckoning.html (Phase D1): the final standings and an epilogue for every
+    house ever of the top eight, built in the browser from the reckoning record
+    by web/story/reckoning.js."""
+    body = (
+        '<p class="lede prose">The game ends with a reckoning: the final standings by'
+        " prestige, and for every house that ever stood among the first eight a short"
+        " epilogue built from the record's facts — its place, rank and ridings, the"
+        " year it stood highest, the contests it won and lost, and its successions.</p>\n"
+        '<p id="reckoning-load" class="meta" role="status">Reading the record…</p>\n'
+        '<div id="reckoning-body"></div>\n'
+        '<script type="module" src="reckoning-page.js"></script>'
+    )
+    return page("Reckoning", body, depth=0, subtitle=esc(_game_title()))
 
 
 def _storylines_page():
@@ -3044,14 +3064,20 @@ def write_preview(conn, version, out_dir=DEFAULT_OUT_DIR, seed=None, seasons=Non
     from a scratch database played under the draft (scripts/build_preview.py).
     Everything in preview/ is generated; it is cleared first. Returns the
     paths written."""
-    global _PREVIEW, _GENERATED_FROM
+    global _PREVIEW, _GENERATED_FROM, _PREVIEW_RECKONING
     site_dir = Path(out_dir) / SITE_DIRNAME / PREVIEW_DIRNAME
     shutil.rmtree(site_dir, ignore_errors=True)
     site_dir.mkdir(parents=True)
     previous = _GENERATED_FROM
     _PREVIEW = version
+    _PREVIEW_RECKONING = beats_export.reckoning_of(conn) is not None
+    calendar = beats_export.calendar_of(conn)
+    length = (
+        f"the whole game, {calendar['start_year']}–{calendar['start_year'] + seasons - 1},"
+        if calendar else f"{seasons} seasons"
+    )
     _GENERATED_FROM = (
-        f"a draft-rules preview: {seasons} seasons under rules {version} (draft), seed {seed},"
+        f"a draft-rules preview: {length} under rules {version} (draft), seed {seed},"
         " played afresh on every export — not a game of record"
     )
     written = []
@@ -3074,11 +3100,15 @@ def write_preview(conn, version, out_dir=DEFAULT_OUT_DIR, seed=None, seasons=Non
         )
         write(site_dir / "storylines.html", _storylines_page())
         write(site_dir / "storylines-page.js", STORYLINES_JS)
+        if _PREVIEW_RECKONING:
+            write(site_dir / "reckoning.html", _reckoning_page())
+            write(site_dir / "reckoning-page.js", RECKONING_JS)
         written.extend(beats_export.write_beats(conn, site_dir / "data", title=_game_title()))
         written.extend(play_export.write_story_assets(site_dir, scenario.REPO_ROOT))
         write(site_dir / ".nojekyll", "")
     finally:
         _PREVIEW = None
+        _PREVIEW_RECKONING = False
         _GENERATED_FROM = previous
     return written
 
