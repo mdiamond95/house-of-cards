@@ -26,8 +26,8 @@ from hoc import places, rules_data
 from hoc.export import world as world_export
 
 __all__ = [
-    "write_play_assets", "ENGINE_MODULES", "ENGINE_TOOLS", "RULES_FILES", "REFERENCE_FILES",
-    "WORLD_FILES", "reference_files",
+    "write_play_assets", "write_story_assets", "ENGINE_MODULES", "ENGINE_TOOLS", "RULES_FILES",
+    "REFERENCE_FILES", "WORLD_FILES", "STORY_FILES", "reference_files",
 ]
 
 # The engine's own modules. Copied rather than imported across directories so
@@ -42,6 +42,13 @@ ENGINE_MODULES = (
 # the *exported* modules — an export that forgot one fails the test rather than
 # surprising someone's browser.
 ENGINE_TOOLS = ("playtest.js",)
+
+# The story layer (docs/STORY_DESIGN.md §3), copied to story/ beside every page
+# that tells a game as dispatches: the play page and each archived Replay. It
+# never feeds either engine, so it ships beside the engine rather than inside it.
+STORY_FILES = (
+    "beats.js", "weight.js", "standings.js", "dispatch.js", "view.js", "weights.json",
+)
 
 # Exactly the rules tables `web/engine/rules.js` reads, per version. Listed
 # rather than globbed: a file that appears in a rules version and is not read by
@@ -72,6 +79,21 @@ def reference_files(reference_dir):
     return REFERENCE_FILES + tuple(
         name for name in WORLD_FILES if (Path(reference_dir) / name).exists()
     )
+
+
+def write_story_assets(site_dir, repo_root):
+    """Copy web/story/ into the site's story/, sweeping anything no longer in it."""
+    story_dir = Path(site_dir) / "story"
+    story_dir.mkdir(parents=True, exist_ok=True)
+    written = []
+    for name in STORY_FILES:
+        target = story_dir / name
+        shutil.copyfile(Path(repo_root) / "web" / "story" / name, target)
+        written.append(target)
+    for stale in story_dir.iterdir():
+        if stale.is_file() and stale.name not in STORY_FILES:
+            stale.unlink()
+    return written
 
 
 def write_play_assets(conn, site_dir, repo_root):
@@ -130,6 +152,7 @@ def write_play_assets(conn, site_dir, repo_root):
 
     world_path, _ = world_export.write_world(conn, site_dir / "data")
     written.append(world_path)
+    written.extend(write_story_assets(site_dir, repo_root))
 
     # Sweep engine modules from an earlier export that no longer exist, the way
     # write_site sweeps stale house pages: a module left behind is a module the
