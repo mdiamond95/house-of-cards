@@ -47,7 +47,8 @@ ENGINE_TOOLS = ("playtest.js",)
 # that tells a game as dispatches: the play page and each archived Replay. It
 # never feeds either engine, so it ships beside the engine rather than inside it.
 STORY_FILES = (
-    "beats.js", "weight.js", "standings.js", "dispatch.js", "view.js", "weights.json",
+    "beats.js", "weight.js", "standings.js", "storylines.js", "text.js", "dispatch.js",
+    "view.js", "weights.json",
 )
 
 # Exactly the rules tables `web/engine/rules.js` reads, per version. Listed

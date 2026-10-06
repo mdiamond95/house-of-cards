@@ -543,6 +543,39 @@ def test_the_replay_is_linked_from_the_archive_and_from_every_page_of_its_game(a
             assert href in page_path.read_text(encoding="utf-8"), f"{page_path.relative_to(archive_site)}"
 
 
+def test_every_frozen_game_has_a_storylines_page(archive_site):
+    listing = (archive_site / "index.html").read_text(encoding="utf-8")
+    for name in scenario.frozen_names():
+        game = archive_site / name
+        html = (game / "storylines.html").read_text(encoding="utf-8")
+        js = (game / "storylines-page.js").read_text(encoding="utf-8")
+        missing = sorted(_story_ids_reached(js) - set(re.findall(r'id="([^"]+)"', html)))
+        assert not missing, f"{name}: storylines-page.js reaches for elements the page lacks: {missing}"
+        assert '<script type="module" src="storylines-page.js"></script>' in html
+        # Built in the browser by the story layer, never by a second implementation.
+        assert "./story/dispatch.js" in js and "./story/storylines.js" in js
+        assert "replay.html#" in js, "each beat links into the Replay at its turn"
+        assert f'href="{name}/storylines.html"' in listing
+        for page_path in game.rglob("*.html"):
+            depth = len(page_path.relative_to(game).parts) - 1
+            assert f'href="{"../" * depth}storylines.html"' in page_path.read_text(encoding="utf-8"), \
+                f"{page_path.relative_to(archive_site)}"
+
+
+def test_the_replay_and_play_pages_carry_the_afoot_panel(archive_site, played_site):
+    pages = [(archive_site / name / "replay.html", archive_site / name / "replay.js")
+             for name in scenario.frozen_names()]
+    pages.append((played_site / "play.html", played_site / "play.js"))
+    for html_path, js_path in pages:
+        html = html_path.read_text(encoding="utf-8")
+        js = js_path.read_text(encoding="utf-8")
+        assert 'id="afoot-heading"' in html and ">Afoot</h2>" in html, html_path
+        for element in ("story-afoot-list", "story-afoot-detail"):
+            assert f'id="{element}"' in html and f"el('{element}')" in js, (html_path, element)
+        assert "afootHtml" in js and "storylineHtml" in js and "pauseReason" in js
+        assert "classList.toggle('afoot'" in js, "a chosen storyline marks its houses on the map"
+
+
 def test_the_live_site_has_no_replay_page(played_site):
     assert not (played_site / "replay.html").exists()
     assert 'href="replay.html"' not in (played_site / "index.html").read_text(encoding="utf-8")

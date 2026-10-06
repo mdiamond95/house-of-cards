@@ -356,17 +356,28 @@ def build_story(conn):
     """(index, {turn: beats}) for the whole game."""
     turns, baseline = turn_inputs(conn)
     beats = {turn: type_turn(data) for turn, data in turns}
+    # What the story layer names a house by (web/story/text.js houseStyle): its
+    # peerage as last written, the rank word in it, and its seat's place where
+    # the engine recorded one. The story layer derives styles and designations
+    # from these; nothing here parses them.
     houses = {}
     for row in conn.execute(
-        "SELECT h.house, h.peerage, c.primary_hex FROM houses h"
-        " JOIN v_house_colours c ON c.house = h.house ORDER BY h.house"
+        "SELECT h.house, h.peerage, h.rank, c.primary_hex, s.seat_place FROM houses h"
+        " JOIN v_house_colours c ON c.house = h.house"
+        " LEFT JOIN house_stats s ON s.house = h.house ORDER BY h.house"
     ):
-        houses[row["house"]] = {"peerage": row["peerage"], "colour": row["primary_hex"]}
+        houses[row["house"]] = {
+            "peerage": row["peerage"], "rank": row["rank"], "place": row["seat_place"],
+            "colour": row["primary_hex"],
+        }
+    ridings = {row["fed_id"]: row["name_en"]
+               for row in conn.execute("SELECT fed_id, name_en FROM ridings ORDER BY fed_id")}
     index = {
         "unit": "season" if _is_engine_game(conn) else "turn",
         "turns": len(turns),
         "baseline": baseline,
         "houses": houses,
+        "ridings": ridings,
     }
     return index, beats
 
