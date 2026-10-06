@@ -116,10 +116,25 @@ def play_one(version, overrides, seed, turns=TURNS):
         at = {}
         with conn:
             world.initialise(seed)
+            last = None
             for season in range(2, turns + 1):
-                world.run_season()
-                if season in (25, 50, 60, 100):
+                last = world.run_season()
+                if season in (25, 50, 60, 75, 100):
                     at[season] = _counts(conn)
+                if season in (25, 50, 75, 100):
+                    # Phase D1: the share of the ridings in play that year that
+                    # are held — under world_calendar, those whose sovereign is
+                    # Canada; otherwise those open by the year a house founded
+                    # in 1867 would have reached.
+                    year = 1866 + season
+                    feds = [r["fed_id"] for r in conn.execute("SELECT fed_id FROM ridings")]
+                    if world.feature("world_calendar"):
+                        play = {f for f in feds if world.in_play(f, year)}
+                    else:
+                        play = {f for f in feds if world.opens_year(f) <= year}
+                    held = {r["fed_id"] for r in conn.execute(
+                        "SELECT fed_id FROM holdings WHERE released_event_id IS NULL")}
+                    at[f"inplay{season}"] = len(held & play) / len(play)
                 if season == 60:
                     ranked = sorted((-world.standing(r["house"]), r["house"]) for r in world.active_houses())
                     top = [world.rank_index.get(world.house_row(h)["rank"], 0) for _, h in ranked[:8]]
@@ -153,6 +168,16 @@ def play_one(version, overrides, seed, turns=TURNS):
         lengths = sorted(r["ended_season"] - r["begun_season"] + 1 for r in resolved)
         removed = conn.execute(
             "SELECT COUNT(*) AS n FROM houses WHERE status = 'removed'").fetchone()["n"]
+        # Phase D1 `crises` and `world_calendar`.
+        crises = [json.loads(r["mechanical_delta"])["crisis"] for r in conn.execute(
+            "SELECT mechanical_delta FROM events WHERE kind = 'societal'"
+            " AND mechanical_delta LIKE '%\"crisis\"%' ORDER BY id")]
+        d1 = {}
+        if crises:
+            d1["crisis_both_camps"] = sum(1 for c in crises if c["lead"] and c["resist"]) / len(crises)
+            d1["crisis_lead_carried"] = sum(1 for c in crises if c["carried"] == "lead") / len(crises)
+        if world.feature("world_calendar"):
+            d1["reckoning"] = 1 if last is not None and "reckoning" in last else 0
 
         turn_inputs, _ = beats_export.turn_inputs(conn)
         # A riding passing between houses: a transfer, or (rules 1.0) a claim
@@ -197,6 +222,8 @@ def play_one(version, overrides, seed, turns=TURNS):
         "houses_25": at[25][0], "houses_50": at[50][0], "houses_100": at[100][0],
         "ridings_25": at[25][1], "ridings_50": at[50][1], "ridings_100": at[100][1],
         "open_claimed_60": at["open60"],
+        "in_play_25": at["inplay25"], "in_play_50": at["inplay50"],
+        "in_play_75": at["inplay75"], "in_play_100": at["inplay100"],
         "five_plus": story["fivePlus"],
         "rise_decline": story["byType"].get("rise", 0) + story["byType"].get("decline", 0),
         "pause_share": report["summary"]["paused"] / max(1, report["summary"]["turns"]),
@@ -213,6 +240,7 @@ def play_one(version, overrides, seed, turns=TURNS):
         "crown_late_window": late_window,
         "removed_100": removed,
         **c2,
+        **d1,
     }
 
 
@@ -253,7 +281,10 @@ ROWS = (
     ("D1 ranks spanned by the top eight at turn 60 (target ≥ 3)", "rank_span_60", "num"),
     ("D1 rise and decline storylines (target ≤ 20)", "rise_decline", "num"),
     ("D1 turns that pause Auto (target 15–30%)", "pause_share", "pct"),
-    ("§6 ridings open at 1867 claimed by turn 60 (target ≥ 80%)", "open_claimed_60", "pct"),
+    ("D1 ridings in play held at turn 25 (no target)", "in_play_25", "pct"),
+    ("D1 ridings in play held at turn 50 (no target)", "in_play_50", "pct"),
+    ("D1 ridings in play held at turn 75 (no target)", "in_play_75", "pct"),
+    ("D1 ridings in play held at turn 100 (no target)", "in_play_100", "pct"),
     ("§6 storylines of 5+ beats (target ≥ 8)", "five_plus", "num"),
     ("§6 closed storylines without an outcome (target 0)", "closed_without_outcome", "num"),
     ("houses active at turn 25", "houses_25", "num"),
@@ -277,6 +308,9 @@ ROWS = (
     ("§6 ended schemes that reached resolution (target ≥ 60%)", "schemes_resolved", "pct"),
     ("§6 median turns a resolved scheme runs (target 3–6)", "median_scheme_turns", "num"),
     ("§6 turns after 15 with 3+ cast schemes (target ≥ 80%)", "cast_scheme_share", "pct"),
+    ("D1 crises with both camps non-empty (target ≥ 70%)", "crisis_both_camps", "pct"),
+    ("D1 crises carried by those who lead", "crisis_lead_carried", "pct"),
+    ("D1 games ending with a reckoning (target 100%)", "reckoning", "pct"),
 )
 
 

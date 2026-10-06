@@ -59,6 +59,8 @@ export const FEATURE_DEFAULTS = {
   cohesion_strain: false,
   // Phase D1 (docs/STORY_DESIGN.md §4.10).
   distinct_surnames: false,
+  world_calendar: false,
+  crises: false,
 };
 
 // "Expand:+2;Dispute:-2" as an ordered object of integers (hoc/rules_data.py
@@ -212,6 +214,8 @@ export function loadRules(read, version = null) {
         };
       }),
     note: row.note,
+    // Rules 1.0 `world_calendar`: the last world year its effect repeats in.
+    throughYear: row.through_year ? toInt(row.through_year, `events.${row.name}.through_year`) : null,
   }));
 
   return {
@@ -243,6 +247,8 @@ export function loadRules(read, version = null) {
     // Phase C2: schemes.csv's rows in the file's order, and schemes.json.
     schemes: loadSchemes(optional(read, rulesPath(rulesVersion, 'schemes.csv'))),
     schemeRules: JSON.parse(optional(read, rulesPath(rulesVersion, 'schemes.json')) || '{}'),
+    // Phase D1: game.json (the calendar, chapters and crisis terms).
+    game: JSON.parse(optional(read, rulesPath(rulesVersion, 'game.json')) || '{}'),
   };
 }
 

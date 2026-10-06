@@ -280,7 +280,16 @@ CREATE TABLE house_stats (
     -- director's grant), 'partition' for a cadet line. Rules 1.0's
     -- `founding_curve` spaces Crown foundings by it; it is written under every
     -- version, being a plain fact about how the house began.
-    founded_by      TEXT
+    founded_by      TEXT,
+    -- Rules 1.0 `world_calendar` (docs/STORY_DESIGN.md §5): what the reckoning
+    -- after the last turn reads that no other table keeps in both engines — the
+    -- house's highest prestige and the first season it stood there, whether it
+    -- was ever of the top eight, and its successions. NULL and zero, and never
+    -- moved, without the flag.
+    peak_prestige   INTEGER,
+    peak_season     INTEGER,
+    top_eight       INTEGER NOT NULL DEFAULT 0,
+    successions     INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX idx_house_stats_removed ON house_stats(removed_season);

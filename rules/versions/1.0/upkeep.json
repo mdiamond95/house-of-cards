@@ -3,13 +3,13 @@
   "capital": {
     "base": 3,
     "holdings_per_point": 3,
-    "holdings_per_cost": 3
+    "holdings_per_cost": 2
   },
   "influence": {
     "base": 1
   },
   "cohesion": {
-    "base": 3,
+    "base": 2,
     "recovery_below": 50,
     "recovery": 3
   },

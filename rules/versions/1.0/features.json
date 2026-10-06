@@ -13,5 +13,7 @@
   "contested_claims": true,
   "prestige_politics": true,
   "cohesion_strain": true,
-  "distinct_surnames": true
+  "distinct_surnames": true,
+  "world_calendar": true,
+  "crises": true
 }

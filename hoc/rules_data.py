@@ -121,6 +121,15 @@ FEATURE_DEFAULTS = {
     # Phase D1. §4.10: a Crown founding never draws a surname an active house
     # bears while its community's bank has an unused one.
     "distinct_surnames": False,
+    # §5: one turn is one year (game.json). Events fire by world year for every
+    # house; one climate ledger; the chapters are the era bands; the atlas is
+    # read at the world year from riding_jurisdictions.csv; the game ends after
+    # its last turn with a reckoning. Personal clocks are display only.
+    "world_calendar": False,
+    # §5.1: a Major event is a crisis every house takes a side in; the camp
+    # with more influence carries it. Reads the world year, so it does nothing
+    # without world_calendar.
+    "crises": False,
 }
 
 
@@ -255,6 +264,9 @@ class Event:
     tag: str
     direct_effect: list
     note: str
+    # Rules 1.0 `world_calendar`: the last world year the event's direct effect
+    # repeats in; None for a one-year event and in every earlier version.
+    through_year: "int | None" = None
 
 
 @dataclass
@@ -352,6 +364,8 @@ class RulesBundle:
     # Phase C2: schemes.csv's rows, in the file's order, and schemes.json.
     schemes: list = field(default_factory=list)
     scheme_rules: dict = field(default_factory=dict)
+    # Phase D1: game.json (the calendar, chapters and crisis terms).
+    game: dict = field(default_factory=dict)
 
     def feature(self, name):
         """Whether this version turns on a named behaviour."""
@@ -583,17 +597,23 @@ def _load_events(rules_dir):
     rows = _read_csv(rules_dir / "events.csv")
     events = []
     for row in rows:
-        events.append(
-            Event(
-                personal_year=int(row["personal_year"]),
-                band=row["band"],
-                name=row["name"],
-                magnitude=row["magnitude"],
-                tag=row["tag"],
-                direct_effect=_parse_direct_effect(row["direct_effect"], row["name"]),
-                note=row["note"],
-            )
+        through = (row.get("through_year") or "").strip()
+        event = Event(
+            personal_year=int(row["personal_year"]),
+            band=row["band"],
+            name=row["name"],
+            magnitude=row["magnitude"],
+            tag=row["tag"],
+            direct_effect=_parse_direct_effect(row["direct_effect"], row["name"]),
+            note=row["note"],
+            through_year=int(through) if through else None,
         )
+        if event.through_year is not None and event.through_year <= event.personal_year:
+            raise RulesDataError(
+                f"events.csv {event.name!r}: through_year {event.through_year} is not after"
+                f" its year {event.personal_year}"
+            )
+        events.append(event)
     return events
 
 
@@ -737,6 +757,31 @@ def _load_scheme_rules(rules_dir):
     return _read_json(path) if path.exists() else {}
 
 
+def _load_game(rules_dir):
+    """Rules 1.0 `world_calendar` (docs/STORY_DESIGN.md §5): the calendar,
+    the chapters and the crisis terms. Empty for a version without game.json."""
+    path = rules_dir / "game.json"
+    if not path.exists():
+        return {}
+    game = _read_json(path)
+    for key in ("start_year", "turns"):
+        if not isinstance(game.get(key), int):
+            raise RulesDataError(f"game.json: {key} must be an integer")
+    chapters = game.get("chapters") or []
+    if not chapters:
+        raise RulesDataError("game.json: no chapters")
+    year = game["start_year"]
+    for chapter in chapters:
+        if chapter.get("start_year") != year:
+            raise RulesDataError(f"game.json: chapter {chapter.get('id')!r} does not begin in {year}")
+        if not isinstance(chapter.get("end_year"), int) or chapter["end_year"] < year:
+            raise RulesDataError(f"game.json: chapter {chapter.get('id')!r} has no proper end_year")
+        year = chapter["end_year"] + 1
+    if year != game["start_year"] + game["turns"]:
+        raise RulesDataError("game.json: the chapters do not cover the game's turns")
+    return game
+
+
 def load_rules(path=None, version=None, root=None):
     """Load and validate one version's rules tables.
 
@@ -778,6 +823,7 @@ def load_rules(path=None, version=None, root=None):
     upkeep = _load_upkeep(rules_dir)
     schemes = _load_schemes(rules_dir, action_names)
     scheme_rules = _load_scheme_rules(rules_dir)
+    game = _load_game(rules_dir)
 
     return RulesBundle(
         actions=actions,
@@ -799,4 +845,5 @@ def load_rules(path=None, version=None, root=None):
         upkeep=upkeep,
         schemes=schemes,
         scheme_rules=scheme_rules,
+        game=game,
     )

@@ -131,6 +131,11 @@ def world_snapshot(conn):
             "contestsWon": row["contests_won"],
             "ridingsLost": row["ridings_lost"],
             "foundedBy": row["founded_by"],
+            # Rules 1.0 `world_calendar`: what the reckoning reads.
+            "peakPrestige": row["peak_prestige"],
+            "peakSeason": row["peak_season"],
+            "topEight": row["top_eight"],
+            "successions": row["successions"],
         }
         for row in conn.execute("SELECT * FROM house_stats ORDER BY house")
     ]
@@ -228,7 +233,7 @@ def world_snapshot(conn):
             delta = json.loads(row["mechanical_delta"] or "{}")
         except ValueError:
             delta = {}
-        events.append({
+        entry = {
             "id": row["id"],
             "kind": row["kind"],
             "title": row["title"],
@@ -240,7 +245,11 @@ def world_snapshot(conn):
                     (row["id"],),
                 )
             ],
-        })
+        }
+        # Rules 1.0 `crises`: a crisis's camps, which compact goodwill reads.
+        if "crisis" in delta:
+            entry["crisis"] = delta["crisis"]
+        events.append(entry)
 
     # Rules 1.0 `schemes`: every scheme ever begun. The engine reads ended ones
     # too — a contest's cooldown and a recent loss look back over them.
@@ -394,14 +403,16 @@ def load_snapshot(conn, snapshot):
             "INSERT INTO house_stats (house, capital, influence, cohesion, ambition, enclosed,"
             " enclosed_since, community, region, tradition, tag, province, seat_place,"
             " founded_season, removed_season, forced_action, quiet_seasons, prestige,"
-            " contests_won, ridings_lost, founded_by)"
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            " contests_won, ridings_lost, founded_by, peak_prestige, peak_season, top_eight,"
+            " successions)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (row["house"], row["capital"], row["influence"], row["cohesion"], row["ambition"],
              row["enclosed"], row["enclosedSince"], row["community"], row["region"],
              row["tradition"], row["tag"], row["province"], row["seatPlace"],
              row["foundedSeason"], row["removedSeason"], row["forcedAction"],
              row.get("quietSeasons", 0), row.get("prestige"), row.get("contestsWon", 0),
-             row.get("ridingsLost", 0), row.get("foundedBy")),
+             row.get("ridingsLost", 0), row.get("foundedBy"), row.get("peakPrestige"),
+             row.get("peakSeason"), row.get("topEight", 0), row.get("successions", 0)),
         )
 
     # Events first: holdings and relations reference them.
@@ -410,7 +421,8 @@ def load_snapshot(conn, snapshot):
             "INSERT INTO events (id, kind, title, mechanical_delta, source, created_at)"
             " VALUES (?, ?, ?, ?, 'engine', '1970-01-01T00:00:00+00:00')",
             (row["id"], row["kind"], row["title"],
-             json.dumps({"season": row["season"]}) if row["season"] is not None else None),
+             json.dumps({"season": row["season"], **({"crisis": row["crisis"]} if "crisis" in row else {})})
+             if row["season"] is not None else None),
         )
         for house in row["houses"]:
             conn.execute(

@@ -44,7 +44,8 @@ jobs:
 
       # The same seeds and length as tests/test_crosscheck.py, under the
       # current rules and under the draft 1.0 (rules/README.md, "A draft
-      # version"), which no committed game plays yet.
+      # version"), which no committed game plays yet. A 1.0 game is a hundred
+      # turns long (game.json) and refuses a 101st.
       - name: The two engines play the same game
         run: |
           for seed in 1867 2 3; do
@@ -54,5 +55,5 @@ jobs:
       - name: The two engines play the same game under rules 1.0 (draft)
         run: |
           for seed in 1867 2 3; do
-            python scripts/crosscheck.py --seed "$seed" --seasons 120 --rules-version 1.0
+            python scripts/crosscheck.py --seed "$seed" --seasons 100 --rules-version 1.0
           done
