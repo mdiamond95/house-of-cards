@@ -15,8 +15,11 @@ from pathlib import Path
 
 from hoc import places, scenario
 from hoc.db import HOUSE_BLOCK_FIELDS
-from hoc.export import map as map_export, play as play_export, timeline as timeline_export
+from hoc.export import (
+    beats as beats_export, map as map_export, play as play_export, timeline as timeline_export,
+)
 from hoc.export.play_js import PLAY_JS
+from hoc.export.replay_js import REPLAY_JS
 from hoc.export.turn_block import TEMPLATE as NARRATE_TEMPLATE, TONES, jurisdiction_note
 from hoc.sim import STOP_CONDITIONS
 
@@ -118,7 +121,9 @@ def page(title, body, depth=0, subtitle=None):
         # Out of the archive rather than deeper into it: the archived site's own
         # root is two directories below the site's. A frozen game carries no play
         # or console link — there is nothing there to run.
+        # In its place, the Replay: the game told one turn at a time.
         nav = [entry for entry in nav if entry[0] != "play.html"]
+        nav.insert(1, ("replay.html", "Replay"))
         nav.append((f"{up}../index.html", "← Archive"))
         nav.append((f"{up}{'../' * ARCHIVE_DEPTH}index.html", "← Back to the site"))
     else:
@@ -737,6 +742,101 @@ def _map_geometry(features, borders, lookup):
     }
 
 
+def _map_svg(features, geometry, lookup):
+    """The map both story pages draw: every riding unclaimed until the page's
+    script paints it, the same projection and north/south viewBox pair as the
+    index page."""
+    to_svg = geometry["to_svg"]
+    paths = []
+    for feature in features:
+        fed_id = feature["fed_id"]
+        data = map_export.path_data(feature["rings"], to_svg, MAP_PRECISION)
+        if not data:
+            continue
+        row = lookup.get(fed_id)
+        paths.append(
+            f'<path fill="{map_export.UNCLAIMED_FILL}" data-fed="{esc(fed_id)}"'
+            f' data-riding="{esc(row["name_en"] if row else fed_id)}"'
+            f' data-province="{esc(row["province"] if row else "")}"'
+            f' d="{data}"/>'
+        )
+    return (
+        f'<svg id="map" viewBox="{geometry["south_view_box"]}" role="img"'
+        ' aria-label="Map of the 343 federal ridings, coloured by house"'
+        f' data-view-south="{geometry["south_view_box"]}"'
+        f' data-view-full="{geometry["full_view_box"]}"'
+        f' data-stroke-south="{geometry["south_stroke"]:.4f}"'
+        f' data-stroke-full="{BASE_STROKE_WIDTH}"'
+        ' xmlns="http://www.w3.org/2000/svg">'
+        '<g id="map-fills" stroke="none">' + "".join(paths) + "</g>"
+        f'<path id="map-borders" fill="none" stroke="#ffffff"'
+        f' stroke-width="{geometry["south_stroke"]:.4f}"'
+        ' stroke-linejoin="round" stroke-linecap="round" pointer-events="none"'
+        f' d="{geometry["borders"]}"/>'
+        "</svg>"
+    )
+
+
+def _story_controls(unit, extra=""):
+    """The dispatch's controls, shared by the Replay and Play pages
+    (docs/STORY_DESIGN.md §3.2–3.3): Next, Auto and follow. The standings strip
+    and the dispatch are STORY_STRIP and STORY_DISPATCH, placed by each page so
+    that on a phone the map sits between them, in view while it zooms."""
+    return (
+        '<div class="story-controls play-controls">'
+        f'<button type="button" id="story-next" class="primary">Next {esc(unit)}</button>'
+        '<button type="button" id="story-auto">Auto</button>'
+        f"{extra}"
+        '<label class="story-follow">Follow '
+        '<select id="story-follow"><option value="">no one</option></select></label>'
+        "</div>\n"
+        '<p id="story-note" class="story-note meta" role="status" hidden></p>\n'
+    )
+
+
+STORY_STRIP = '<ol id="story-strip" class="standings" aria-label="Standings: the top eight"></ol>\n'
+STORY_DISPATCH = '<article id="story-dispatch" class="dispatch" aria-live="polite"></article>\n'
+
+
+def _replay_page(conn, features, borders):
+    """archive/<name>/replay.html: a frozen game told one turn at a time, as the
+    story layer's dispatch (docs/STORY_DESIGN.md §3.2)."""
+    lookup = _riding_lookup(conn)
+    geometry = _map_geometry(features, borders, lookup)
+    unit = "season" if _latest_season(conn) else "turn"
+    body = (
+        '<p class="lede prose">The game as it was played, told one '
+        f"{esc(unit)} at a time: the headline, what else mattered, and how the"
+        " houses stand. Every word comes from the record. <b>Auto</b> runs on and"
+        " stops on a headline worth stopping for; following a house changes what"
+        " is told, never what happened.</p>\n"
+        '<p id="story-load" class="meta" role="status">Loading the record…</p>\n'
+        '<div id="story-app" hidden>\n'
+        + _story_controls(
+            unit,
+            extra=(
+                '<button type="button" id="story-start">Start again</button>'
+                '<form id="story-goto" class="story-goto">'
+                f'<label for="story-goto-turn" class="sr-only">Go to {esc(unit)}</label>'
+                '<input id="story-goto-turn" type="number" min="0" step="1" inputmode="numeric"'
+                f' placeholder="{esc(unit)}">'
+                '<button type="submit">Go</button></form>'
+            ),
+        )
+        + '<p id="story-turn" class="meta story-turn"></p>\n'
+        + STORY_STRIP
+        + '<figure class="map-figure">' + _map_svg(features, geometry, lookup) + "</figure>\n"
+        '<div class="map-toolbar">'
+        '<button type="button" id="view-toggle">Show the north</button></div>\n'
+        + STORY_DISPATCH
+        + '<details id="story-record" class="full-record"><summary>Full record</summary>'
+        '<ol id="story-record-lines" class="record-lines"></ol></details>\n'
+        "</div>\n"
+        '<script type="module" src="replay.js"></script>'
+    )
+    return page("Replay", body, depth=0, subtitle=esc(_game_title()))
+
+
 def _scenario_for_browser(name):
     """What a page that writes needs to know about the game it writes to. The
     browser's refusal to write to a frozen game reads `status`; the paths it
@@ -754,7 +854,7 @@ def _sweep_play_assets(site_dir):
         path = site_dir / name
         if path.exists():
             path.unlink()
-    for name in ("engine", "data/rules", "data/reference"):
+    for name in ("engine", "story", "data/rules", "data/reference"):
         path = site_dir / name
         if path.is_dir():
             shutil.rmtree(path)
@@ -793,38 +893,7 @@ def _no_live_page(heading, live, conn):
 def _play_page(conn, features, borders, slugs):
     """The live game, played in the browser (Phase 10-2)."""
     lookup = _riding_lookup(conn)
-    geometry = _map_geometry(features, borders, lookup)
-    to_svg = geometry["to_svg"]
-
-    paths = []
-    for feature in features:
-        fed_id = feature["fed_id"]
-        data = map_export.path_data(feature["rings"], to_svg, MAP_PRECISION)
-        if not data:
-            continue
-        row = lookup.get(fed_id)
-        paths.append(
-            f'<path fill="{map_export.UNCLAIMED_FILL}" data-fed="{esc(fed_id)}"'
-            f' data-riding="{esc(row["name_en"] if row else fed_id)}"'
-            f' data-province="{esc(row["province"] if row else "")}"'
-            f' d="{data}"/>'
-        )
-
-    svg = (
-        f'<svg id="map" viewBox="{geometry["south_view_box"]}" role="img"'
-        ' aria-label="Map of the 343 federal ridings, coloured by house"'
-        f' data-view-south="{geometry["south_view_box"]}"'
-        f' data-view-full="{geometry["full_view_box"]}"'
-        f' data-stroke-south="{geometry["south_stroke"]:.4f}"'
-        f' data-stroke-full="{BASE_STROKE_WIDTH}"'
-        ' xmlns="http://www.w3.org/2000/svg">'
-        '<g id="map-fills" stroke="none">' + "".join(paths) + "</g>"
-        f'<path id="map-borders" fill="none" stroke="#ffffff"'
-        f' stroke-width="{geometry["south_stroke"]:.4f}"'
-        ' stroke-linejoin="round" stroke-linecap="round" pointer-events="none"'
-        f' d="{geometry["borders"]}"/>'
-        "</svg>"
-    )
+    svg = _map_svg(features, _map_geometry(features, borders, lookup), lookup)
 
     speeds = "".join(
         f'<button type="button" class="speed{" chosen" if seasons == 1 else ""}"'
@@ -851,7 +920,8 @@ def _play_page(conn, features, borders, slugs):
         '<div id="play-app" hidden>\n'
         '<p id="unsaved" class="banner unsaved" hidden></p>\n'
         '<div id="play-status" class="status"></div>\n'
-        '<div class="play-controls">'
+        + _story_controls("season")
+        + '<div class="play-controls">'
         '<button type="button" id="play-toggle" class="primary">Play</button>'
         '<button type="button" id="play-step">Step</button>'
         f'<span class="speed-group" role="group" aria-label="Seasons per second">{speeds}</span>'
@@ -865,19 +935,24 @@ def _play_page(conn, features, borders, slugs):
         '<output id="play-season-label" for="play-season">season 1</output>'
         '<button type="button" id="play-undo">Undo to here</button>'
         "</div>\n"
-        '<figure class="map-figure">' + svg + "</figure>\n"
+        + STORY_STRIP
+        + '<figure class="map-figure">' + svg + "</figure>\n"
         '<div class="map-toolbar">'
         '<button type="button" id="view-toggle">Show the north</button></div>\n'
         '<div id="panel" class="panel" hidden>'
         '<button id="panel-close" type="button" aria-label="Close">×</button>'
         '<div id="panel-body"></div></div>\n'
         '<p class="hint">Tap a riding for its house. Grey ridings are unclaimed.</p>\n'
-        '<h2>The chronicle</h2>\n'
+        # The dispatch is the season as told (docs/STORY_DESIGN.md §3.2); the
+        # chronicle it is told from stays, collapsed, as the full record.
+        + STORY_DISPATCH
+        + '<ol id="story-log" class="dispatch-log" aria-label="Earlier seasons"></ol>\n'
+        '<details id="full-record" class="full-record"><summary>Full record</summary>'
         '<div class="feed-controls">'
         '<label for="feed-filter">Only</label>'
         '<select id="feed-filter"><option value="">every house</option></select>'
         "</div>\n"
-        '<ol id="feed" class="feed" aria-live="polite"></ol>\n'
+        '<ol id="feed" class="feed" aria-live="polite"></ol></details>\n'
         f"{_save_block()}\n"
         f"{_intervene_forms(conn)}\n"
         "<h2>Houses by ridings held</h2>\n"
@@ -2732,6 +2807,49 @@ pre { background: #fff; border: 1px solid var(--rule); padding: 0.6rem; overflow
 .house-list { line-height: 1.9; }
 footer { margin-top: 3rem; padding-top: 0.8rem; border-top: 1px solid var(--rule); font-size: 0.75rem; color: var(--muted); }
 
+/* The story layer (docs/STORY_DESIGN.md §3): the dispatch, the standings strip,
+   and the full record one tap away. Shared by the Replay and Play pages. */
+.story-controls { margin-top: 0.4rem; }
+.story-follow { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8rem;
+                color: var(--muted); margin-left: auto; }
+.story-follow select, .story-goto input { font: inherit; font-size: 0.85rem; padding: 0.35rem 0.4rem;
+  border: 1px solid var(--rule); background: #fff; color: var(--ink); border-radius: 3px; max-width: 11rem; }
+.story-goto { display: inline-flex; gap: 0.25rem; }
+.story-goto input { width: 5.5rem; }
+.story-note { border-left: 2px solid var(--accent); padding-left: 0.6rem; }
+.story-turn { margin: 0.3rem 0 0; }
+.standings { list-style: none; padding: 0; margin: 0.6rem 0 0; display: grid;
+             grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: 0.15rem 0.8rem;
+             font-size: 0.82rem; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+             padding: 0.4rem 0; }
+.standings:empty { display: none; }
+.standing { display: flex; align-items: center; gap: 0.3rem; white-space: nowrap; overflow: hidden; }
+.standing.followed .standing-name { font-weight: 600; text-decoration: underline; }
+.standing-place { color: var(--muted); min-width: 1rem; text-align: right; }
+.standing-move { width: 0.9rem; text-align: center; font-size: 0.7rem; color: var(--muted); }
+.move-up .standing-move { color: #2f6b2a; }
+.move-down .standing-move { color: #a04040; }
+.move-new .standing-move { color: var(--accent); }
+.standing .swatch { margin-right: 0; }
+.standing-name { overflow: hidden; text-overflow: ellipsis; }
+.standing-score { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
+.dispatch { margin: 0.7rem 0 0.2rem; min-height: 4.5rem; }
+.dispatch-turn { margin: 0 0 0.3rem; border: 0; padding: 0; font-size: 0.8rem; font-family: var(--sans);
+                 text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.dispatch-headline { font-family: var(--serif); font-size: 1.22rem; line-height: 1.35; margin: 0.2rem 0; }
+.dispatch-headline.pause { border-left: 3px solid var(--accent); padding-left: 0.6rem; }
+.dispatch-kind { margin: 0 0 0.4rem; }
+.dispatch-secondary { margin: 0.3rem 0; padding-left: 1rem; font-family: var(--serif); font-size: 0.95rem; }
+.dispatch-secondary li { margin: 0.15rem 0; }
+.dispatch-ledger, .dispatch-quiet { font-family: var(--serif); font-style: italic; color: var(--muted); }
+.dispatch-quiet { font-size: 1.02rem; }
+.dispatch-log { list-style: none; padding: 0; margin: 0.6rem 0 0; }
+.dispatch-log > li { border-top: 1px solid var(--rule); padding: 0.5rem 0; }
+.full-record { margin: 0.8rem 0; font-size: 0.88rem; }
+.full-record summary { cursor: pointer; color: var(--muted); font-size: 0.82rem; }
+.record-lines { margin: 0.4rem 0; }
+.record-lines li { margin: 0.15rem 0; }
+
 @media (min-width: 40rem) {
   main { padding: 1.5rem 2rem 5rem; }
   h1 { font-size: 2rem; }
@@ -2786,6 +2904,7 @@ def write_archive_index(out_dir, entries):
             f' &middot; {entry["active"]} active houses, {entry["removed"]} removed'
             f' &middot; {entry["held"]} ridings held</p>'
             f'<p><a href="{name}/index.html">Map</a> &middot;'
+            f' <a href="{name}/replay.html">Replay</a> &middot;'
             f' <a href="{name}/chronicle.html">Chronicle</a> &middot;'
             f' <a href="{name}/ridings.html">Ridings</a> &middot;'
             f' <a href="{name}/climate.html">Climate</a> &middot;'
@@ -2893,6 +3012,16 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
                 f"warning: the play page and its assets are {total:,} bytes, over the"
                 f" {PLAY_SIZE_BUDGET:,} budget — a phone on mobile data pays for this"
             )
+    if archive:
+        write(site_dir / "replay.html", _replay_page(conn, index_features, index_borders))
+        write(
+            site_dir / "replay.js",
+            REPLAY_JS
+            .replace("__SCENARIO__", json.dumps(archive_name))
+            .replace("__UNCLAIMED_FILL__", map_export.UNCLAIMED_FILL),
+        )
+        written.extend(beats_export.write_beats(conn, site_dir / "data", title=_ARCHIVE_TITLE))
+        written.extend(play_export.write_story_assets(site_dir, scenario.REPO_ROOT))
     write(site_dir / "ridings.html", _ridings_page(conn, slugs))
     write(site_dir / "climate.html", _climate_page(conn))
     write(site_dir / "chronicle.html", _chronicle_page(conn, slugs))

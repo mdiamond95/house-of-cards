@@ -100,6 +100,13 @@ There are two implementations of the engine and they must play the same game.
 - Nothing in either engine may use a float, a language's sort order, a hash table's iteration order, or a locale. `docs/DETERMINISM.md` is the contract; read it before changing anything that draws.
 - `web/engine/` is plain ES modules with no build step and no dependencies. An import of anything but a relative path or a `node:` builtin breaks the browser, and a test guards it.
 
+## Story layer
+
+- `docs/STORY_DESIGN.md` is the design for the story game (rules 1.0). Phase A — beats, story weight, the dispatch, standings, following, the archive's Replay pages — is built, and is presentation only.
+- **Architecture rule (§3): the story layer is one implementation, in JavaScript, at `web/story/`.** It is a pure function of the game's record, runs in the browser and under node for tests, and never feeds back into either engine, so it is outside the two-engine parity contract. Anything a house's decisions depend on is engine state and belongs in both engines (§4). `web/story/` imports nothing from `web/engine/`, and neither engine imports it (`tests/test_story.py`).
+- Beats are typed from the structured record (event kind, `event_houses`, `mechanical_delta`, the holdings an event moved, the acting house's action), never from chronicle prose: by `hoc/export/beats.py` for exported and archived games and by `web/story/beats.js` for the play page. Change one, change both; `tests/test_story.py` requires them to agree.
+- `web/story/weights.json` is the story's own tuning, read by no engine. Hard rule 5 stands; the shared calendar of §5 is a flag for a future scenario only (Phase D).
+
 ## Conventions
 - Canadian English spelling throughout (colour, honour, centre, defence).
 - Narrative for a turn is about 500 words, rich prose, not bullet lists; the runner warns above 550 words and refuses above 600.

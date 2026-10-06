@@ -423,6 +423,7 @@ def test_the_play_page_and_its_assets_stay_under_the_download_budget(played_site
     ]
     files += [played_site / "data" / "reference" / name for name in play_export.REFERENCE_FILES]
     files += [played_site / "data" / "world.json"]
+    files += [played_site / "story" / name for name in play_export.STORY_FILES]
 
     raw = sum(path.stat().st_size for path in files)
     compressed = sum(len(gzip.compress(path.read_bytes())) for path in files)
@@ -481,3 +482,96 @@ def test_the_play_pages_own_path_through_the_engine_matches_python(played_site, 
         python_record.pop("engine")
         js_record.pop("engine")
         assert python_record == js_record, f"season {season} differs from the Python engine"
+
+
+# ------------------------------------------------------ the story layer ------
+#
+# Phase A of docs/STORY_DESIGN.md: every frozen game has a Replay page that
+# tells it one turn at a time as dispatches, and the play page tells each
+# season it plays the same way, with the chronicle kept, collapsed, as the
+# full record.
+
+
+@pytest.fixture(scope="module")
+def archive_site(tmp_path_factory):
+    sys_path = str(ROOT / "scripts")
+    import sys
+
+    if sys_path not in sys.path:
+        sys.path.insert(0, sys_path)
+    import build_archive
+
+    tmp = tmp_path_factory.mktemp("archive-story")
+    build_archive.build_archive(out_dir=tmp)
+    return tmp / site.SITE_DIRNAME / site.ARCHIVE_DIRNAME
+
+
+def _story_ids_reached(js):
+    return set(re.findall(r"el\('([^']+)'\)", js))
+
+
+def test_every_frozen_game_has_a_replay_page(archive_site):
+    from hoc.export import play as play_export
+
+    for name in scenario.frozen_names():
+        game = archive_site / name
+        html = (game / "replay.html").read_text(encoding="utf-8")
+        js = (game / "replay.js").read_text(encoding="utf-8")
+        missing = sorted(_story_ids_reached(js) - set(re.findall(r'id="([^"]+)"', html)))
+        assert not missing, f"{name}: replay.js reaches for elements the page lacks: {missing}"
+        assert '<script type="module" src="replay.js"></script>' in html
+        assert 'id="map-fills"' in html and "data-view-south" in html
+        assert json.dumps(name) in js, "the replay remembers a followed house per game"
+        for file_name in play_export.STORY_FILES:
+            assert (game / "story" / file_name).read_bytes() == (
+                ROOT / "web" / "story" / file_name
+            ).read_bytes(), f"{name}: story/{file_name} differs from web/story/"
+        index = json.loads((game / "data" / "beats" / "index.json").read_text(encoding="utf-8"))
+        assert index["chunks"], name
+        for chunk in index["chunks"]:
+            assert (game / "data" / "beats" / chunk["file"]).stat().st_size <= 500_000
+
+
+def test_the_replay_is_linked_from_the_archive_and_from_every_page_of_its_game(archive_site):
+    listing = (archive_site / "index.html").read_text(encoding="utf-8")
+    for name in scenario.frozen_names():
+        assert f'href="{name}/replay.html"' in listing, f"the archive index does not link {name}'s replay"
+        game = archive_site / name
+        for page_path in game.rglob("*.html"):
+            depth = len(page_path.relative_to(game).parts) - 1
+            href = f'href="{"../" * depth}replay.html"'
+            assert href in page_path.read_text(encoding="utf-8"), f"{page_path.relative_to(archive_site)}"
+
+
+def test_the_live_site_has_no_replay_page(played_site):
+    assert not (played_site / "replay.html").exists()
+    assert 'href="replay.html"' not in (played_site / "index.html").read_text(encoding="utf-8")
+
+
+def test_the_play_page_leads_with_the_dispatch_and_keeps_the_chronicle_as_the_full_record(played_site):
+    html = (played_site / "play.html").read_text(encoding="utf-8")
+    js = (played_site / "play.js").read_text(encoding="utf-8")
+    for element in ("story-next", "story-auto", "story-follow", "story-strip", "story-dispatch",
+                    "story-log", "story-note"):
+        assert f'id="{element}"' in html, element
+    record = re.search(r'<details id="full-record"([^>]*)>(.*?)</details>', html, re.DOTALL)
+    assert record, "the chronicle is not in a Full record <details>"
+    assert "open" not in record.group(1), "the full record is collapsed until asked for"
+    assert "<summary>Full record</summary>" in record.group(2)
+    assert 'id="feed"' in record.group(2) and 'id="feed-filter"' in record.group(2)
+    assert html.index('id="story-dispatch"') < html.index('id="full-record"')
+    # Every existing control is still on the page and still wired.
+    for control in ("play-toggle", "play-step", "play-season", "play-undo", "save", "iv-apply",
+                    "view-toggle", "feed-filter"):
+        assert f'id="{control}"' in html and f"el('{control}')" in js, control
+    assert "./story/dispatch.js" in js and "./story/beats.js" in js
+    assert "inputFromState" in js and "typeTurn" in js
+
+
+def test_the_story_layer_is_copied_into_the_played_site(played_site):
+    from hoc.export import play as play_export
+
+    for name in play_export.STORY_FILES:
+        assert (played_site / "story" / name).read_bytes() == (
+            ROOT / "web" / "story" / name
+        ).read_bytes(), f"story/{name} differs from web/story/"
