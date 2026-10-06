@@ -613,3 +613,87 @@ def test_the_story_layer_is_copied_into_the_played_site(played_site):
         assert (played_site / "story" / name).read_bytes() == (
             ROOT / "web" / "story" / name
         ).read_bytes(), f"story/{name} differs from web/story/"
+
+
+# ------------------------------------------- Phase C2: the draft preview --
+#
+# docs/STORY_DESIGN.md Phase C2. While a draft rules version exists, every
+# export plays it on a scratch world and publishes the game at preview/ with
+# the Replay and Storylines pages; every page says it is a draft-rules preview,
+# not a game of record. The Plans afoot panel sits above Afoot on the replay
+# and play pages, for a record that carries schemes.
+
+
+@pytest.fixture(scope="module")
+def preview_site(tmp_path_factory):
+    import sys
+
+    sys_path = str(ROOT / "scripts")
+    if sys_path not in sys.path:
+        sys.path.insert(0, sys_path)
+    import build_preview
+
+    tmp = tmp_path_factory.mktemp("preview")
+    written = build_preview.build_preview(out_dir=tmp)
+    assert written, "a draft version exists, so the preview is built"
+    return tmp / site.SITE_DIRNAME / site.PREVIEW_DIRNAME
+
+
+def test_the_preview_has_a_replay_and_a_storylines_page_and_says_it_is_a_draft(preview_site):
+    from hoc import rules_data
+    from hoc.export import play as play_export
+
+    draft = rules_data.draft_version()
+    for name, script in (("replay.html", "replay.js"), ("storylines.html", "storylines-page.js")):
+        html = (preview_site / name).read_text(encoding="utf-8")
+        js = (preview_site / script).read_text(encoding="utf-8")
+        missing = sorted(_story_ids_reached(js) - set(re.findall(r'id="([^"]+)"', html)))
+        assert not missing, f"{script} reaches for elements {name} lacks: {missing}"
+        assert f"Draft-rules preview — rules {draft} (draft). Not a game of record" in html
+        assert "not a game of record" in html
+        assert 'href="../index.html"' in html, "the preview links back to the site"
+    for file_name in play_export.STORY_FILES:
+        assert (preview_site / "story" / file_name).read_bytes() == (ROOT / "web" / "story" / file_name).read_bytes()
+    index = json.loads((preview_site / "data" / "beats" / "index.json").read_text(encoding="utf-8"))
+    assert index["turns"] == 100 and index["schemes"] is True
+    for chunk in index["chunks"]:
+        body = json.loads((preview_site / "data" / "beats" / chunk["file"]).read_text(encoding="utf-8"))
+        assert "plans" in body and "prestige" in body
+
+
+def test_the_preview_writes_nothing_to_any_scenario_or_season_record(preview_site, tmp_path):
+    import hashlib
+    import build_preview
+
+    def fingerprint():
+        files = sorted((ROOT / "scenarios").rglob("*")) + [ROOT / "hoc.db"]
+        return {str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in files if p.is_file()}
+
+    before = fingerprint()
+    build_preview.build_preview(out_dir=tmp_path)
+    assert fingerprint() == before, "building the preview changed the record"
+    assert not list(preview_site.rglob("[0-9][0-9][0-9][0-9].json")), "no season file is published"
+
+
+def test_the_preview_is_in_the_site_nav_while_a_draft_exists(built):
+    for page_name in TOP_LEVEL_PAGES:
+        text = (built / page_name).read_text(encoding="utf-8")
+        assert 'href="preview/replay.html">Preview (draft rules)</a>' in text, page_name
+
+
+def test_plans_afoot_sits_above_afoot_on_the_replay_and_play_pages(preview_site, played_site, archive_site):
+    pages = [(preview_site / "replay.html", preview_site / "replay.js"),
+             (played_site / "play.html", played_site / "play.js")]
+    pages += [(archive_site / name / "replay.html", archive_site / name / "replay.js")
+              for name in scenario.frozen_names()]
+    for html_path, js_path in pages:
+        html = html_path.read_text(encoding="utf-8")
+        js = js_path.read_text(encoding="utf-8")
+        assert '<section id="story-plans" class="plans" aria-labelledby="plans-heading" hidden>' in html
+        assert ">Plans afoot</h2>" in html
+        assert html.index('id="story-plans"') < html.index('id="afoot-heading"'), html_path
+        assert "el('story-plans-list')" in js and "plansHtml" in js, js_path
+    # Shown only for a record that carries schemes: the archived games do not.
+    for name in scenario.frozen_names():
+        index = json.loads((archive_site / name / "data" / "beats" / "index.json").read_text(encoding="utf-8"))
+        assert index["schemes"] is False, name

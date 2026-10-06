@@ -25,6 +25,7 @@ from hoc.export import dump, map as map_export, site, workbook  # noqa: E402
 from hoc.turn import TurnError, apply_turn, intervention_turn_id  # noqa: E402
 
 import build_archive  # noqa: E402  (same directory; imported after sys.path setup)
+import build_preview  # noqa: E402
 import load_seed  # noqa: E402
 
 
@@ -167,6 +168,7 @@ def rebuild(db_path, export=True, name=None, verbose=True, seasons_out=None):
         map_export.write_maps(conn)
         site.write_site(conn)
         build_archive.build_archive()
+        build_preview.build_preview()
     return conn
 
 

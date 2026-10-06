@@ -25,10 +25,12 @@ const weights = JSON.parse(readFileSync(weightsPath, 'utf8'));
 const index = JSON.parse(readFileSync(path.join(dir, 'index.json'), 'utf8'));
 const byTurn = {};
 const prestige = {};
+const plans = {};
 for (const chunk of index.chunks) {
   const body = JSON.parse(readFileSync(path.join(dir, chunk.file), 'utf8'));
   Object.assign(byTurn, body.turns);
   Object.assign(prestige, body.prestige || {});
+  Object.assign(plans, body.plans || {});
 }
 const turns = [];
 for (let turn = 1; turn <= index.turns; turn += 1) turns.push([turn, byTurn[String(turn)] || []]);
@@ -40,7 +42,10 @@ const story = new Story({
   styleOf: (h) => styles[h] || null, ridings: index.ridings || {},
   watch: Boolean(index.succession_watch),
 });
-const dispatches = turns.map(([turn, beats]) => story.step(turn, beats, { prestige: prestige[String(turn)] || null }));
+const dispatches = turns.map(([turn, beats]) => story.step(turn, beats, {
+  prestige: prestige[String(turn)] || null,
+  plans: index.schemes ? (plans[String(turn)] || []) : null,
+}));
 const quietAreOneLine = dispatches.every((d) => !d.quiet
   || (d.headline === null && d.secondary.length === 0 && d.ledger === null && typeof d.quietLine === 'string'));
 
@@ -98,6 +103,18 @@ const chapterChurn = CHAPTERS.slice(1).filter(([first, last]) => last <= dispatc
   return [...began].some((h) => !ended.has(h));
 });
 
+// Phase C2: after turn 15, the share of turns with at least three public
+// schemes involving a house of the cast (its own scheme, or one aimed at it).
+let castSchemeShare = null;
+if (index.schemes) {
+  const later = dispatches.filter((d) => d.turn > 15);
+  const busy = later.filter((d) => {
+    const cast = new Set(d.standings.map((r) => r.house));
+    return (plans[String(d.turn)] || []).filter((p) => cast.has(p.house) || cast.has(p.target_house)).length >= 3;
+  }).length;
+  castSchemeShare = later.length ? busy / later.length : 0;
+}
+
 const lines = Number(option('lines', 0));
 const show = (d) => {
   if (d.quiet) return `${d.turn} ${d.quietLine}`;
@@ -125,6 +142,7 @@ process.stdout.write(JSON.stringify({
     medianRivalryTurns,
     fivePlusByType,
     chapterChurn,
+    castSchemeShare,
   },
   board,
   sample: dispatches.slice(0, lines).map(show),

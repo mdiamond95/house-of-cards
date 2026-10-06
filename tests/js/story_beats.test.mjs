@@ -218,3 +218,67 @@ test('rules 1.0 records: automatic letters, the succession watch and a house tha
   assert.deepEqual(beats.map((b) => b.kind), ['bide']);
   for (const kind of ['heir_wanted', 'heir_of_age', 'bide']) assert.ok(BEAT_KINDS.includes(kind));
 });
+
+test('rules 1.0 schemes and contests: each event types to its beat, with the scheme it belongs to', () => {
+  const scheme = (phase, extra = {}) => ({ id: 7, name: 'Claim a riding', phase, turns_remaining: 2, committed: 9, ...extra });
+  const cases = [
+    [ev('other', ['A', 'B'], { scheme: scheme('begun') }), 'scheme_begun', 'Claim a riding'],
+    [ev('other', ['A', 'B'], { scheme: scheme('step') }), 'scheme_step', 'Claim a riding'],
+    [ev('other', ['B', 'A'], { scheme: scheme('answered', { name: 'Fortify' }) }), 'scheme_answered', 'Fortify'],
+    [ev('other', ['A', 'B'], { scheme: scheme('abandoned', { reason: 'funds gone' }) }), 'scheme_abandoned', 'Claim a riding'],
+    [ev('other', ['A', 'B'], { scheme: scheme('resolved', { outcome: 'won', ran: 4 }) }), 'scheme_resolved', 'Claim a riding'],
+    [ev('other', ['C', 'A', 'B'], { ally: { scheme: 7, side: 'attacker', party: 'A', joins: true } }), 'ally_joins', 'attacker'],
+    [ev('other', ['C', 'A', 'B'], { ally: { scheme: 7, side: 'defender', party: 'B', joins: false } }), 'ally_declines', 'defender'],
+    [ev('challenge', ['A', 'B'], { contest: 'won', scheme: 7, riding: 'X' }), 'contest_won', 'won'],
+    [ev('challenge', ['A', 'B'], { contest: 'rout', scheme: 7, riding: 'Y' }), 'contest_won', 'rout'],
+    [ev('challenge', ['A', 'B'], { contest: 'held', scheme: 7, riding: 'X' }), 'contest_lost', 'held'],
+    [ev('succession', ['B', 'A'], { nature: 'extinction', reason: 'fell', taken_by: 'A' }), 'fallen', 'A'],
+    [ev('transfer', ['B', 'A'], { reason: 'cession', riding: 'X', under_claim: 7, scheme: 7 }), 'riding_passes', 'cession under claim'],
+    [ev('relational', ['B', 'A'], { marker: '~', peace: 7, indemnity: 10, scheme: 7 }), 'reconciled', 'peace'],
+  ];
+  for (const [event, kind, outcome] of cases) {
+    const typed = typeEvent(event, none);
+    assert.deepEqual([typed.kind, typed.outcome], [kind, outcome], JSON.stringify(event));
+    assert.ok(BEAT_KINDS.includes(kind));
+  }
+  const beats = typeTurn({
+    turn: 9,
+    events: [
+      { id: 1, kind: 'challenge', houses: ['A', 'B'], delta: { contest: 'won', scheme: 7, riding: 'X' }, line: 'A wins.' },
+      { id: 2, kind: 'succession', houses: ['B', 'A'], delta: { nature: 'extinction', reason: 'fell', taken_by: 'A' }, line: 'B falls.' },
+      { id: 3, kind: 'other', houses: ['A', 'B'], delta: { scheme: scheme('resolved', { outcome: 'won', ran: 4 }) }, line: null },
+    ],
+    actions: [],
+    holdings: [
+      { event: 1, fed: '35001', house: 'B', change: 'released' },
+      { event: 1, fed: '35001', house: 'A', change: 'acquired' },
+    ],
+    ranks: {},
+  });
+  assert.equal(beats[0].scheme, 7);
+  assert.deepEqual(beats[1].removed, ['B']);
+  assert.deepEqual([beats[2].scheme, beats[2].ran], [7, 4]);
+});
+
+test('mergeActs folds a scheme\'s resolution into its act, and a claim\'s contest, rout and fall into one', () => {
+  const won = { turn: 9, seq: 0, kind: 'contest_won', houses: ['A', 'B'], outcome: 'won', scheme: 7, owners: { 35001: 'A' }, line: 'A wins X.' };
+  const rout = { turn: 9, seq: 1, kind: 'contest_won', houses: ['A', 'B'], outcome: 'rout', scheme: 7, owners: { 35002: 'A' }, line: 'A takes Y.' };
+  const fall = { turn: 9, seq: 2, kind: 'fallen', houses: ['B', 'A'], outcome: 'A', removed: ['B'], line: 'B falls.' };
+  const fortify = { turn: 9, seq: 3, kind: 'scheme_resolved', houses: ['B', 'A'], outcome: 'Fortify', scheme: 8, ran: 2 };
+  const resolved = { turn: 9, seq: 4, kind: 'scheme_resolved', houses: ['A', 'B'], outcome: 'Claim a riding', scheme: 7, ran: 4 };
+  const merged = mergeActs([won, rout, fall, fortify, resolved]);
+  assert.equal(merged.length, 1);
+  const [act] = merged;
+  assert.deepEqual([act.merge, act.kind, act.ran, act.plan], ['claim', 'fallen', 4, 'Claim a riding']);
+  assert.deepEqual(act.removed, ['B']);
+  assert.deepEqual(act.owners, { 35001: 'A', 35002: 'A' });
+  // A resolution with no act of its own stays a ledger beat.
+  const alone = mergeActs([{ turn: 3, seq: 0, kind: 'scheme_resolved', houses: ['Q'], outcome: 'Secure the line', scheme: 2, ran: 2 }]);
+  assert.equal(alone[0].kind, 'scheme_resolved');
+  // An act found by house when it carries no scheme id: an heir named.
+  const heir = mergeActs([
+    { turn: 3, seq: 0, kind: 'name_heir', houses: ['Q'], outcome: 'heir', line: 'Q names H heir.' },
+    { turn: 3, seq: 1, kind: 'scheme_resolved', houses: ['Q'], outcome: 'Secure the line', scheme: 2, ran: 2 },
+  ]);
+  assert.deepEqual([heir.length, heir[0].ran, heir[0].plan], [1, 2, 'Secure the line']);
+});

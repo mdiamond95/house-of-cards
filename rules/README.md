@@ -46,7 +46,29 @@ Rules 1.0 (draft; `docs/STORY_DESIGN.md` §4) adds six, false in 0.7–0.9 and o
 - `founding_curve` — Crown foundings follow `founding.json`'s `founding_curve` schedule of integer per cents in place of `p_found`, and after `late_after` never fall within `late_gap` seasons of the last. Partition is unaffected.
 - `succession_watch` — an event when a holder turns 60 with no heir named, and one when an heir comes of age (`succession.json` `watch`).
 
-`traits.csv` and `upkeep.json` are new in 1.0; `founding.json` gains `founding_curve` and `succession.json` gains `watch`. Both loaders read a version without them as having none.
+Phase C2 (§4.2, §4.4, §4.5, §4.9) adds four more, false in 0.7–0.9 and on in 1.0:
+
+- `schemes` — the weighted action draw is not used. A house holds at most one public scheme (`schemes.csv`). On its turn it takes that scheme's next step, each step committing capital or influence. A house without a scheme begins one, chosen by an integer utility from its situation, objectives, holder traits, the target riding's wealth tier and (with `prestige_politics`) prestige, by a seeded draw among the three highest. A house with nothing to choose bides.
+  - A house that is the target of a claim may, on its next turn, set its scheme aside and answer it: Fortify, Seek a protector, Sue for peace or Counter-claim. It answers only when an answer beats `choice.answer_stand`. A house already pressing a claim against its claimant keeps to that claim.
+  - A grievance cannot be reconciled in its first `peace.wait` turns.
+  - A scheme is abandoned when its target is gone, its funds run out, or a new holder scores it below `choice.abandon_below`; an abandoned scheme returns `abandon_refund_pct` of its stake.
+  - Every begin, step, answer, abandonment and resolution is an event with its turns remaining, and each season record carries `plans`, the public schemes as the season left them.
+  - The existing action handlers stay the resolution primitives. Break a rival hardens on success, and Make peace may also end open hostility.
+- `contested_claims` — a Claim resolves as a contest:
+  - The attacker rolls 2d6 + committed // 10 + rank index + 2 per ally + the holder's claim trait. The defender rolls 2d6 + fortified // 10 + cohesion // 25 + 2 per ally + 2 for a seat (`schemes.json` `contest`). Ties go to the defender.
+  - The loser loses its stake and 10 cohesion.
+  - A seat can be taken, and a house left with no riding falls, naming the house that took its seat.
+  - A win by 5 against cohesion below 40 takes a second riding.
+  - The pair is then hostile and may not contest again for 5 turns.
+  - Allies (compact or kin) are each asked on a per-cent utility test, and a refusal is recorded.
+  - Without this flag no claim is offered.
+- `prestige_politics` — houses read prestige:
+  - the leader is a poorer ally and, for the top eight, a richer target;
+  - a house that lost a contest in the last 10 turns, or has cohesion below 40, draws claims;
+  - a protector is sought above, the gap adding utility.
+- `cohesion_strain` — each turn −1 cohesion per holding beyond `upkeep.json` `strain` (3 + 2 × rank index), and −1 while the holder is over 70. Recovery comes only from upkeep. Under it, each holding past that reach makes another riding worth `utility.overreach` less to the house.
+
+`traits.csv` and `upkeep.json` are new in 1.0, and so are `schemes.csv` and `schemes.json`. `founding.json` gains `founding_curve`, `succession.json` gains `watch`, and `upkeep.json` gains `strain`. Every loader reads a version without them as having none.
 
 ## The tables
 
@@ -65,7 +87,19 @@ Machine-readable transcription of `docs/ENGINE_DESIGN.md`'s numeric tables, load
 - **given_names.csv** — given names by naming tradition and gender. Columns: `tradition` (matches a `communities.naming_tradition` value); `gender` (`m` or `f`); `name`.
 - **surnames.csv** — surnames by community. Columns: `community` (matches a `communities.community` value); `surname`.
 - **traits.csv** (1.0) — one row per holder trait. Columns: `trait`; `actions` (`Action:+2;Action:-2`, weight shifts in units of WEIGHT_SCALE); `upkeep` (`influence:+1`); `excludes` (traits it never occurs with, named both ways); `effect` (`steadfast`, `friction:+1`); `note`.
-- **upkeep.json** (1.0) — the automatic upkeep's integers and the automatic letter's chance (`upkeep_phase`).
+- **upkeep.json** (1.0) — the automatic upkeep's integers, the automatic letter's chance (`upkeep_phase`), and `strain` (`cohesion_strain`).
+- **schemes.csv** (1.0, Phase C2) — one row per scheme, in the order utility ties are broken. Columns:
+  - `scheme`;
+  - `answer`: `no` for a scheme a house chooses, `only` for an answer to a claim, `also` for both;
+  - `target`: `house`, `riding`, `both` or `none`;
+  - `steps_min`, `steps_max`;
+  - `step_capital`, `step_influence`: what each step commits;
+  - `resolves_as`: an action handler, or one of the primitives `contest`, `frontier`, `fortify`, `sue`;
+  - `reads`: the actions whose trait and objective shifts the utility takes;
+  - `utility`: the base;
+  - `begins`, `abandons`: the chronicle's templates, naming only `{house}`, `{target}` and `{riding}`;
+  - `note`.
+- **schemes.json** (1.0, Phase C2) — `choice` (top, abandon_below, abandon_refund_pct, answer_stand), `utility` (every term of the integer utility), `peace` (wait, indemnity_capital), `contest` (§4.4's numbers and the ally test), `frontier` (double_on).
 - **features.json** — the named behaviour booleans described above.
 - **CHANGELOG.md** — one entry per rules version, with the metric that motivated it. Not inside a version directory: it is the history of all of them.
 

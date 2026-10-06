@@ -83,7 +83,17 @@ Two flags in `rules/versions/0.9/features.json`, false in 0.7 and 0.8, with the 
 - `rules/versions/1.0/` is a **draft** (docs/STORY_DESIGN.md §4, Phase C1): `upkeep_phase`, `holder_traits`, `marriage_pairing`, `prestige`, `founding_curve` and `succession_watch`, each false in `FEATURE_DEFAULTS` and in 0.7–0.9, in both engines. `rules/current.txt` stays at 0.9 and no committed game plays a season under 1.0, so its tables may still be tuned; it is frozen like any version the moment one does. At most one draft version exists (`tests/test_rules_versions.py`).
 - The Dominion stays live on 0.9. Beginning a game under 1.0 means pointing `current.txt` at it in the same change that begins that game.
 - `tests/test_rules10.py` holds each flag; the cross-check runs under 1.0 as well as 0.9 (`tests/test_crosscheck.py`, `.github/workflows/ci.yml`).
-- `python scripts/story_trial.py --matrix` plays ten seeds of 100 turns on scratch Meridian worlds and prints the trial table recorded in `rules/CHANGELOG.md` under 1.0 (draft). It writes nothing to any scenario.
+- `python scripts/story_trial.py --matrix` plays ten seeds of 100 turns on scratch Meridian worlds and prints the trial table recorded in `rules/CHANGELOG.md` under 1.0 (draft). It writes nothing to any scenario. `--c2` prints Phase C2's before/after table.
+- **Phase C2** adds four flags, false in 0.7–0.9 and on in the draft (STORY_DESIGN §4.2, §4.4, §4.5, §4.9):
+  - `schemes`: a house holds at most one public multi-turn scheme from `schemes.csv`, chosen by an integer utility (`schemes.json`), in place of the weighted action draw.
+  - `contested_claims`: a claim resolves as a contest; a seat can be taken, and a house with none falls.
+  - `prestige_politics`: houses read prestige.
+  - `cohesion_strain`: cohesion falls with holdings beyond a rank's reach.
+- The action handlers stay the schemes' resolution primitives. A scheme's events carry `{"scheme": {...}}` in their delta, and each season record carries `plans`. The world snapshot (`hoc/export/world.py`) carries the schemes table.
+- The story layer types scheme, ally, contest and fall beats (`hoc/export/beats.py` and `web/story/beats.js`, which must agree), and shows **Plans afoot** for a record with schemes.
+- **The draft-rules preview.** On every export, `scripts/build_preview.py` plays 100 seasons of the draft (seed 1867) on a scratch Meridian world and publishes them at `outputs/site/preview/` (Replay and Storylines), linked as "Preview (draft rules)".
+  - It is not a scenario: it writes no season file, nothing under `scenarios/` and nothing in `hoc.db`, and every page says it is not a game of record.
+  - It disappears when no draft version exists.
 
 ## Playing (Phase 10-2)
 

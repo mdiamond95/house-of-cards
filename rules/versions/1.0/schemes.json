@@ -1,0 +1,56 @@
+{
+  "note": "Rules 1.0 `schemes`, `contested_claims` and `prestige_politics` (docs/STORY_DESIGN.md §4.2, §4.4, §4.5). Every number is an integer. schemes.csv holds the schemes themselves; this file the terms of the choice, the waiting period before peace, and the contest.",
+  "choice": {
+    "top": 3,
+    "abandon_below": 10,
+    "abandon_refund_pct": 50,
+    "answer_stand": 55
+  },
+  "utility": {
+    "objective": 20,
+    "trait_unit": 10,
+    "ambition": 2,
+    "wealth_tier": 6,
+    "low_cohesion": 40,
+    "low_cohesion_penalty": 30,
+    "grievance": 15,
+    "hostile": 10,
+    "weaker_target": 10,
+    "seat": -30,
+    "claim_discount": 2,
+    "peace_cause": 50,
+    "under_claim": 40,
+    "protector_per_gap": 10,
+    "protector_gap_max": 30,
+    "line_age_from": 45,
+    "elevation_influence_from": 60,
+    "weak_target": 20,
+    "recent_loss_turns": 10,
+    "leader_target": 25,
+    "leader_ally": -25,
+    "top": 8,
+    "overreach": 10
+  },
+  "peace": {
+    "wait": 3,
+    "indemnity_capital": 10
+  },
+  "contest": {
+    "committed_per_point": 10,
+    "fortified_per_point": 10,
+    "cohesion_per_point": 25,
+    "per_ally": 2,
+    "seat_bonus": 2,
+    "loss_cohesion": 10,
+    "rout_margin": 5,
+    "rout_cohesion_below": 40,
+    "cooldown": 5,
+    "ally_accept": 50,
+    "ally_kin": 15,
+    "ally_bound_both": -100,
+    "ally_quarrel": -30
+  },
+  "frontier": {
+    "double_on": 8
+  }
+}

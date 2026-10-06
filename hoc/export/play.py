@@ -62,12 +62,12 @@ RULES_FILES = (
     "responses.json", "succession.json", "features.json",
     # Rules 1.0 (draft): absent from earlier versions, so a page reading a
     # version without them treats a 404 as "none" (OPTIONAL_RULES_FILES).
-    "traits.csv", "upkeep.json",
+    "traits.csv", "upkeep.json", "schemes.csv", "schemes.json",
 )
 
 # Tables a version may lack: the play page reads their absence as none, the way
 # hoc/rules_data.py and web/engine/rules.js do.
-OPTIONAL_RULES_FILES = ("traits.csv", "upkeep.json")
+OPTIONAL_RULES_FILES = ("traits.csv", "upkeep.json", "schemes.csv", "schemes.json")
 
 # The reference tables `web/engine/adjacency.js` reads. places_by_riding and
 # riding_tokens joined them at rules 0.8, for the designation draw. Every

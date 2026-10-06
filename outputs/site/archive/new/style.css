@@ -301,6 +301,12 @@ footer { margin-top: 3rem; padding-top: 0.8rem; border-top: 1px solid var(--rule
 .dispatch-previously { font-size: 0.85rem; color: var(--muted); margin: 0.2rem 0 0.4rem; }
 .dispatch-moments { margin-top: 0.3rem; }
 .afoot { margin: 0.6rem 0; }
+.plans { margin: 0.6rem 0; }
+.plans-list { list-style: none; padding: 0; margin: 0.3rem 0; }
+.plans-list .plan { padding: 0.25rem 0; border-bottom: 1px solid var(--rule, #ddd); font-size: 0.9rem; }
+.plans-list .plan.followed { font-weight: 600; }
+.plan-house { font-family: var(--serif); }
+.plan-scheme { font-style: italic; }
 .afoot-heading { margin-top: 1rem; }
 .afoot-list { list-style: none; padding: 0; margin: 0.3rem 0; }
 .afoot-item { display: flex; flex-direction: column; align-items: flex-start; width: 100%; text-align: left;

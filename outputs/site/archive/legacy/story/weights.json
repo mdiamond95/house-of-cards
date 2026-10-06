@@ -1,10 +1,11 @@
 {
-  "version": "phase-c1-1",
+  "version": "phase-c2-1",
   "notes": [
     "docs/STORY_DESIGN.md sections 3.1 and 3.4. Integers only; a share is [numerator, denominator]. The story layer reads this file and nothing in either engine does.",
     "riding_lost, endowment, era_response and other are kinds the record holds that section 3.1 does not name: a riding returned to the Crown, an endowment, a response to a Minor or Significant era event, and anything untyped. Approved by the director, 6 October 2026.",
     "At most one era response (major_response or era_response) appears in a dispatch, and one headlines only when nothing else reaches the quiet threshold.",
-    "heir_wanted, heir_of_age and bide are rules 1.0's: a holder turning sixty with no heir named, an heir coming of age (succession_watch), and a house with no legal action (upkeep_phase)."
+    "heir_wanted, heir_of_age and bide are rules 1.0's: a holder turning sixty with no heir named, an heir coming of age (succession_watch), and a house with no legal action (upkeep_phase).",
+    "scheme_begun, scheme_step, scheme_answered, scheme_abandoned, scheme_resolved, ally_joins, ally_declines, contest_won, contest_lost and fallen are rules 1.0's (Phase C2): a scheme's public events, the allies a contest calls, a claim decided, and a house falling to the house that took its seat. A preparation step and a resolution are ledger-only; a resolution folds into the act it ends (beats.js mergeActs)."
   ],
   "kinds": {
     "removed": 100,
@@ -33,7 +34,17 @@
     "other": 0,
     "heir_wanted": 25,
     "heir_of_age": 20,
-    "bide": 0
+    "bide": 0,
+    "scheme_begun": 40,
+    "scheme_step": 0,
+    "scheme_answered": 45,
+    "scheme_abandoned": 10,
+    "scheme_resolved": 0,
+    "ally_joins": 25,
+    "ally_declines": 15,
+    "contest_won": 90,
+    "contest_lost": 90,
+    "fallen": 110
   },
   "modifiers": {
     "top_eight": 20,
@@ -66,5 +77,9 @@
     "afoot_max": 6,
     "afoot_window": 10,
     "pause_closing_beats": 4
-  }
+  },
+  "claim_schemes": [
+    "Claim a riding",
+    "Counter-claim"
+  ]
 }

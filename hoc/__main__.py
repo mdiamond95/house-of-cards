@@ -36,6 +36,8 @@ def _export_all(conn, out_dir=None):
     # The archive is rebuilt on every export, from its own scenario, so the
     # frozen playthrough and the live game can never drift apart.
     written.append(_build_archive(**kwargs))
+    # The draft-rules preview, played afresh (docs/STORY_DESIGN.md Phase C2).
+    written.append(_build_preview(**kwargs))
     return written
 
 
@@ -45,6 +47,14 @@ def _build_archive(out_dir=None):
 
     build_archive.build_archive(**({} if out_dir is None else {"out_dir": out_dir}))
     return Path(out_dir or site.DEFAULT_OUT_DIR) / site.SITE_DIRNAME / site.ARCHIVE_DIRNAME
+
+
+def _build_preview(out_dir=None):
+    sys.path.insert(0, str(db.PACKAGE_ROOT.parent / "scripts"))
+    import build_preview
+
+    build_preview.build_preview(**({} if out_dir is None else {"out_dir": out_dir}))
+    return Path(out_dir or site.DEFAULT_OUT_DIR) / site.SITE_DIRNAME / site.PREVIEW_DIRNAME
 
 
 def _refuse_unless_live():

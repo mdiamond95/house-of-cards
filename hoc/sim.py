@@ -1235,6 +1235,7 @@ class World:
                 line=f"Season {season} · {heir['name']} succeeds to {row['peerage']}.",
                 delta=self._with_traits({"nature": "clean", "cause": cause}, heir_traits),
             )
+            self._reconsider_scheme(house, season)
             return self._check_extinction(house, season, rng)
 
         # Disorderly: no heir named.
@@ -1295,6 +1296,7 @@ class World:
         ):
             self._lose_riding(house, season, reason="disorderly succession")
 
+        self._reconsider_scheme(house, season)
         return self._check_extinction(house, season, rng)
 
 
@@ -1499,6 +1501,7 @@ class World:
             "UPDATE persons SET alive = 0, died_season = ? WHERE house = ? AND alive = 1",
             (season, house),
         )
+        self._end_schemes_of(house, season)
 
     def _lose_riding(self, house, season, reason, to_house=None):
         """Lose the most recently acquired non-seat riding (§7c). The seat is
@@ -2137,6 +2140,1001 @@ class World:
             return None
         return self.found_house(season, rng=rng)
 
+    # ------------------------------------------------------------- phase C2 --
+    #
+    # docs/STORY_DESIGN.md §4.2 (`schemes`), §4.4 (`contested_claims`), §4.5
+    # (`prestige_politics`) and §4.9 (`cohesion_strain`). Every behaviour is
+    # behind its flag and mirrored line for line in web/engine/sim.js. A scheme
+    # is a row of the schemes table; its rules are a row of schemes.csv and the
+    # numbers in schemes.json.
+
+    # Set while a scheme resolves through an action handler: `_pick` then
+    # takes the scheme's named target instead of drawing one, and a Dispute
+    # pressed as Break a rival hardens on success.
+    _scheme_target = None
+
+    def _strain(self, house):
+        """Rules 1.0 `cohesion_strain` (§4.9): -1 cohesion for each holding
+        beyond free_holdings + per_rank_index x rank index, and -1 while the
+        holder is older than holder_over."""
+        spec = self.rules.upkeep["strain"]
+        row = self.house_row(house)
+        free = spec["free_holdings"] + spec["per_rank_index"] * self.rank_index.get(row["rank"], 0)
+        loss = max(0, self.holding_count(house) - free)
+        holder = self.holder(house)
+        if holder is not None and holder["age"] > spec["holder_over"]:
+            loss += 1
+        self.log.append({"purpose": f"strain.{house}", "result": loss})
+        if loss:
+            self.set_stats(house, cohesion=-loss)
+
+    def standing(self, house):
+        """What a house is worth to the others: its prestige as last computed
+        under `prestige`, else 10 per holding and 20 per rank index."""
+        row = self.house_row(house)
+        if self.feature("prestige") and row["prestige"] is not None:
+            return row["prestige"]
+        return 10 * self.holding_count(house) + 20 * self.rank_index.get(row["rank"], 0)
+
+    def _ranking(self):
+        """(the leader, the top houses) by standing, ties by name. Cached for
+        the house's turn; read only before anything in the turn moves."""
+        if "ranking" not in self._turn_cache:
+            top = self.rules.scheme_rules["utility"]["top"]
+            ranked = sorted((-self.standing(r["house"]), r["house"]) for r in self.active_houses())
+            names = [house for _, house in ranked]
+            self._turn_cache["ranking"] = (names[0] if names else None, set(names[:top]))
+        return self._turn_cache["ranking"]
+
+    def _scheme_spec(self, name):
+        return next((s for s in self.rules.schemes if s.scheme == name), None)
+
+    def _contest_schemes(self):
+        return [s.scheme for s in self.rules.schemes if s.resolves_as == "contest"]
+
+    def active_scheme(self, house):
+        return self.conn.execute(
+            "SELECT * FROM schemes WHERE house = ? AND status = 'active' ORDER BY id LIMIT 1",
+            (house,),
+        ).fetchone()
+
+    def _scheme(self, scheme_id):
+        return self.conn.execute("SELECT * FROM schemes WHERE id = ?", (scheme_id,)).fetchone()
+
+    def _wealth_tier(self, fed_id):
+        stats = self.riding_stats.get(fed_id) or {}
+        return stats.get("wealth_tier", NEUTRAL_WEALTH_TIER)
+
+    def _is_seat(self, house, fed_id):
+        row = self.conn.execute(
+            "SELECT seat_order FROM holdings WHERE house = ? AND fed_id = ?"
+            " AND released_event_id IS NULL",
+            (house, fed_id),
+        ).fetchone()
+        return row is not None and row["seat_order"] == 1
+
+    def _has_trait(self, house, trait):
+        return any(t.trait == trait for t in self._holder_trait_rows(house))
+
+    def _claim_targets(self, house):
+        """Every (house, fed_id) another active house holds land-adjacent to
+        one of this house's ridings, by house and then fed_id."""
+        return [
+            (row["house"], row["fed_id"])
+            for row in self.conn.execute(
+                "SELECT DISTINCT theirs.house AS house, theirs.fed_id AS fed_id FROM holdings mine"
+                " JOIN adjacency a ON a.adjacency_type = 'land'"
+                "   AND (a.fed_id_a = mine.fed_id OR a.fed_id_b = mine.fed_id)"
+                " JOIN holdings theirs ON theirs.released_event_id IS NULL"
+                "   AND theirs.fed_id = CASE WHEN a.fed_id_a = mine.fed_id"
+                "                            THEN a.fed_id_b ELSE a.fed_id_a END"
+                " JOIN houses h ON h.house = theirs.house AND h.status = 'active'"
+                " WHERE mine.house = ? AND mine.released_event_id IS NULL"
+                "   AND theirs.house <> ?"
+                " ORDER BY theirs.house, theirs.fed_id",
+                (house, house),
+            )
+        ]
+
+    def _contest_cooldown(self, house_a, house_b, season):
+        """Whether the pair met in a contest within schemes.json's cooldown."""
+        row = self.conn.execute(
+            "SELECT MAX(ended_season) AS n FROM schemes WHERE status = 'resolved'"
+            " AND outcome IN ('won', 'held')"
+            " AND ((house = ? AND target_house = ?) OR (house = ? AND target_house = ?))",
+            (house_a, house_b, house_b, house_a),
+        ).fetchone()
+        cooldown = self.rules.scheme_rules["contest"]["cooldown"]
+        return row["n"] is not None and season - row["n"] < cooldown
+
+    def _lost_contest(self, house, season, other=None):
+        """Whether the house lost a contest (to `other`, if named) within
+        utility.recent_loss_turns."""
+        window = self.rules.scheme_rules["utility"]["recent_loss_turns"]
+        for row in self.conn.execute(
+            "SELECT house, target_house, outcome FROM schemes WHERE status = 'resolved'"
+            " AND outcome IN ('won', 'held') AND ended_season >= ?"
+            " AND (house = ? OR target_house = ?) ORDER BY id",
+            (season - window, house, house),
+        ):
+            if row["house"] == house and row["outcome"] == "held":
+                winner = row["target_house"]
+            elif row["target_house"] == house and row["outcome"] == "won":
+                winner = row["house"]
+            else:
+                continue
+            if other is None or winner == other:
+                return True
+        return False
+
+    def _claims_on(self, house, by=None):
+        """Active claims (contest schemes) against this house, by id."""
+        names = self._contest_schemes()
+        if not names:
+            return []
+        marks = ",".join("?" for _ in names)
+        rows = self.conn.execute(
+            f"SELECT * FROM schemes WHERE status = 'active' AND target_house = ?"
+            f" AND scheme IN ({marks}) ORDER BY id",
+            (house, *names),
+        ).fetchall()
+        return [r for r in rows if by is None or r["house"] == by]
+
+    def _relation_age(self, house_a, house_b, season):
+        made = self._relation_season(house_a, house_b)
+        return None if made is None else season - made
+
+    def _peace_waits(self, house, other, season):
+        """A grievance cannot be reconciled or settled in its first turns."""
+        if self.relation_marker(house, other) != GRIEVANCE:
+            return False
+        age = self._relation_age(house, other, season)
+        return age is not None and age < self.rules.scheme_rules["peace"]["wait"]
+
+    def _can_name_heir(self, house):
+        """§7's Name heir precondition, as legal_actions states it."""
+        holder = self.holder(house)
+        if holder is None or holder["age"] < 45:
+            return False
+        existing = self.heirs(house)
+        second = self.rules.succession["heirs"]
+        if not existing:
+            return True
+        return (
+            len(existing) == 1
+            and existing[0]["age"] >= second["second_heir_min_age"]
+            and self.holding_count(house) >= second["second_heir_min_holdings"]
+        )
+
+    def _match_candidates(self, house):
+        """The houses a Marriage alliance could bind this one to now."""
+        pairing = self.feature("marriage_pairing")
+        if not pairing and not self._unmarried_heir(house):
+            return []
+        return [
+            other for other in self.houses_related_by(house, {FRIENDLY, COMPACT})
+            if (self._marriage_pair(house, other) if pairing else self._unmarried_heir(other))
+        ]
+
+    def _compact_candidates(self, house):
+        row = self.house_row(house)
+        return [
+            other for other in self.houses_related_by(house, {FRIENDLY})
+            if self.house_row(other)["tag"] == row["tag"]
+            or "Mixed" in (row["tag"], self.house_row(other)["tag"])
+        ]
+
+    def _dispute_candidates(self, house, season):
+        return [
+            other for other in self.houses_related_by(house, {GRIEVANCE})
+            if self._adjacent_holding_of(house, other)
+            and not self._dispute_blocked(house, other, season)
+        ]
+
+    def _step_cost(self, house, spec, target_house):
+        """(capital, influence) one step commits. A claim on a house this one
+        already has a quarrel with costs less (utility.claim_discount)."""
+        capital, influence = spec.step_capital, spec.step_influence
+        if spec.resolves_as == "contest" and target_house is not None \
+                and self.relation_marker(house, target_house) in (GRIEVANCE, HOSTILE):
+            capital = max(0, capital - self.rules.scheme_rules["utility"]["claim_discount"])
+        return capital, influence
+
+    def _affords(self, house, spec, target_house, extra_capital=0):
+        row = self.house_row(house)
+        capital, influence = self._step_cost(house, spec, target_house)
+        return row["capital"] >= capital + extra_capital and row["influence"] >= influence
+
+    def scheme_utility(self, house, spec, target_house, target_riding, season):
+        """Rules 1.0 `schemes` (§4.2): one scheme's integer utility for this
+        house, from its situation, objectives, holder traits, the target
+        riding's wealth tier and, under `prestige_politics`, prestige."""
+        terms = self.rules.scheme_rules["utility"]
+        row = self.house_row(house)
+        value = spec.utility
+        for objective in self.held_objectives(house):
+            o = self.objectives.get(objective)
+            if o is None:
+                continue
+            value += terms["objective"] * sum(1 for a in spec.reads if a in o.action_weight_bonus)
+        for trait in self._holder_trait_rows(house):
+            for action in spec.reads:
+                value += trait.actions.get(action, 0) * terms["trait_unit"]
+        kind = spec.resolves_as
+        if kind in ("contest", "frontier", "Purchase riding", "Dispute"):
+            value += row["ambition"] * terms["ambition"]
+            if row["cohesion"] < terms["low_cohesion"]:
+                value -= terms["low_cohesion_penalty"]
+        if kind in ("contest", "frontier", "Purchase riding") and self.feature("cohesion_strain"):
+            # Overreach: under strain, every holding beyond what the rank holds
+            # without cost makes another riding less worth having.
+            strain = self.rules.upkeep["strain"]
+            free = strain["free_holdings"] + strain["per_rank_index"] * self.rank_index.get(row["rank"], 0)
+            value -= terms["overreach"] * max(0, self.holding_count(house) - free)
+        if target_riding is not None and kind in ("contest", "frontier"):
+            value += terms["wealth_tier"] * self._wealth_tier(target_riding)
+        if kind == "contest":
+            marker = self.relation_marker(house, target_house)
+            if marker == GRIEVANCE:
+                value += terms["grievance"]
+            elif marker == HOSTILE:
+                value += terms["hostile"]
+            if self.standing(target_house) < self.standing(house):
+                value += terms["weaker_target"]
+            if self._is_seat(target_house, target_riding):
+                value += terms["seat"]
+            if self.feature("prestige_politics"):
+                if self.house_row(target_house)["cohesion"] < terms["low_cohesion"] \
+                        or self._lost_contest(target_house, season):
+                    value += terms["weak_target"]
+                leader, top = self._ranking()
+                if target_house == leader and house != leader and house in top:
+                    value += terms["leader_target"]
+        elif kind == "Petition elevation":
+            value += max(0, (row["influence"] - terms["elevation_influence_from"]) // 5)
+        elif kind == "Name heir":
+            holder = self.holder(house)
+            if holder is not None:
+                value += max(0, holder["age"] - terms["line_age_from"])
+        elif kind == "Propose compact":
+            if self._claims_on(house):
+                value += terms["under_claim"]
+            if self.feature("prestige_politics"):
+                gap = self.standing(target_house) - self.standing(house)
+                value += min(terms["protector_gap_max"], max(0, gap) // terms["protector_per_gap"])
+                leader, _ = self._ranking()
+                if target_house == leader:
+                    value += terms["leader_ally"]
+        elif kind == "Reconcile":
+            if (
+                self._claims_on(house, by=target_house)
+                or self._lost_contest(house, season, target_house)
+                or row["cohesion"] < terms["low_cohesion"]
+                or self._has_trait(house, "Conciliator")
+            ):
+                value += terms["peace_cause"]
+        elif kind == "sue":
+            if self.standing(house) < self.standing(target_house):
+                value += terms["weaker_target"]
+            if row["cohesion"] < terms["low_cohesion"]:
+                value += terms["low_cohesion_penalty"]
+        elif kind == "fortify":
+            if self._is_seat(house, target_riding):
+                value -= terms["seat"]
+        return value
+
+    def _scheme_targets(self, house, spec, season, claim=None):
+        """The (target house, target riding) pairs a scheme could be begun
+        on now, in a fixed order; empty when it cannot be begun at all."""
+        kind = spec.resolves_as
+        row = self.house_row(house)
+        if kind == "contest":
+            if not self.feature("contested_claims"):
+                return []
+            out = []
+            for other, fed_id in self._claim_targets(house):
+                if claim is not None and other != claim["house"]:
+                    continue
+                if self.relation_marker(house, other) in (KIN, COMPACT):
+                    continue
+                if self._contest_cooldown(house, other, season):
+                    continue
+                if self._affords(house, spec, other):
+                    out.append((other, fed_id))
+            return out
+        if kind == "frontier":
+            return [
+                (None, fed_id) for fed_id in self.open_expansion_targets(house)
+                if self._affords(house, spec, None, 15 + self.wealth_offset(fed_id))
+            ]
+        if kind == "Purchase riding":
+            if row["capital"] < 70 or not self._affords(house, spec, None):
+                return []
+            return [(other, None) for other in self._purchase_targets(house)]
+        if kind == "Dispute":
+            if not self._affords(house, spec, None):
+                return []
+            return [(other, None) for other in self._dispute_candidates(house, season)]
+        if kind == "Marriage alliance":
+            if not self._affords(house, spec, None):
+                return []
+            return [(other, None) for other in self._match_candidates(house)]
+        if kind == "Petition elevation":
+            if (
+                row["influence"] >= 60 and self.holding_count(house) >= 3
+                and self.rank_index.get(row["rank"], 0) < self.rank_index["Marquis"]
+                and self._affords(house, spec, None)
+            ):
+                return [(None, None)]
+            return []
+        if kind == "Propose compact":
+            if not self._affords(house, spec, None):
+                return []
+            mine = self.standing(house)
+            return [
+                (other, None) for other in self._compact_candidates(house)
+                if self.standing(other) > mine
+            ]
+        if kind == "Name heir":
+            return [(None, None)] if self._can_name_heir(house) and self._affords(house, spec, None) else []
+        if kind == "Reconcile":
+            if not self._affords(house, spec, None):
+                return []
+            return [
+                (other, None) for other in self.houses_related_by(house, {GRIEVANCE, HOSTILE})
+                if not self._peace_waits(house, other, season)
+            ]
+        if kind == "fortify":
+            if claim is None or not self._affords(house, spec, None):
+                return []
+            return [(claim["house"], claim["target_riding"])]
+        if kind == "sue":
+            if claim is None or not self._affords(house, spec, None) \
+                    or self._peace_waits(house, claim["house"], season):
+                return []
+            return [(claim["house"], None)]
+        return []
+
+    def _scheme_candidates(self, house, season, claim=None):
+        """(utility, row index, target house, target riding, spec) for every
+        scheme the house could begin now — or, given a claim against it, every
+        answer it could make."""
+        out = []
+        for index, spec in enumerate(self.rules.schemes):
+            if claim is None and spec.answer == "only":
+                continue
+            if claim is not None and spec.answer == "no":
+                continue
+            for target_house, target_riding in self._scheme_targets(house, spec, season, claim):
+                value = self.scheme_utility(house, spec, target_house, target_riding, season)
+                out.append((value, index, target_house or "", target_riding or "", spec))
+        return out
+
+    @staticmethod
+    def _candidate_key(candidate):
+        spec = candidate[4]
+        return f"{spec.scheme if spec else 'Stand'}|{candidate[2]}|{candidate[3]}"
+
+    def _choose_scheme(self, house, candidates, rng, purpose):
+        """A seeded weighted draw among the three highest utilities (ties by
+        schemes.csv row order, then target), weighted by utility."""
+        ranked = sorted(candidates, key=lambda c: (-c[0], c[1], c[2], c[3]))
+        top = [c for c in ranked if c[0] > 0][: self.rules.scheme_rules["choice"]["top"]]
+        if not top:
+            return None
+        key = rng.weighted([(self._candidate_key(c), c[0]) for c in top], purpose=purpose)
+        return next(c for c in top if self._candidate_key(c) == key)
+
+    def _turns_remaining(self, scheme):
+        if scheme["status"] != "active":
+            return 0
+        return scheme["steps_total"] - scheme["steps_done"] + 1
+
+    def _scheme_event(self, scheme_id, phase, season, line=True, extra=None):
+        """Every begin, step, answer, abandonment and resolution is an event
+        with its turns remaining; a step and a resolution write no line."""
+        s = self._scheme(scheme_id)
+        spec = self._scheme_spec(s["scheme"])
+        house = s["house"]
+        peerage = self.house_row(house)["peerage"]
+        target = s["target_house"]
+        target_peerage = self.house_row(target)["peerage"] if target else ""
+        riding = self._riding_name(s["target_riding"]) if s["target_riding"] else None
+        payload = {
+            "id": scheme_id,
+            "name": s["scheme"],
+            "phase": phase,
+            "turns_remaining": self._turns_remaining(s),
+            "committed": s["committed_capital"] + s["committed_influence"],
+        }
+        if target:
+            payload["target_house"] = target
+        if riding is not None:
+            payload["riding"] = riding
+        if s["answers"] is not None:
+            payload["answers"] = s["answers"]
+        if extra:
+            payload.update(extra)
+        text = None
+        if line:
+            template = spec.begins if phase in ("begun", "answered") else spec.abandons
+            text = f"Season {season} · " + (
+                template.replace("{house}", peerage)
+                .replace("{target}", target_peerage)
+                .replace("{riding}", riding or "")
+            )
+        return self.record(
+            "other",
+            f"{peerage}: {s['scheme']} ({phase})",
+            [house] + ([target] if target else []),
+            season,
+            band=self.band_for(self.personal_year(house)),
+            line=text,
+            delta={"scheme": payload},
+        )
+
+    def _scheme_step(self, scheme_id, season, phase="step"):
+        s = self._scheme(scheme_id)
+        spec = self._scheme_spec(s["scheme"])
+        capital, influence = self._step_cost(s["house"], spec, s["target_house"])
+        self.set_stats(s["house"], capital=-capital, influence=-influence)
+        self.conn.execute(
+            "UPDATE schemes SET steps_done = steps_done + 1,"
+            " committed_capital = committed_capital + ?,"
+            " committed_influence = committed_influence + ? WHERE id = ?",
+            (capital, influence, scheme_id),
+        )
+        self._scheme_event(scheme_id, phase, season, line=phase != "step")
+
+    def _begin_scheme(self, house, spec, target_house, target_riding, season, rng,
+                      answers=None, steps=None):
+        if steps is None:
+            steps = spec.steps_min if spec.steps_min == spec.steps_max else rng.randint(
+                spec.steps_min, spec.steps_max, f"scheme.steps.{house}"
+            )
+        cursor = self.conn.execute(
+            "INSERT INTO schemes (house, scheme, target_house, target_riding, answers,"
+            " steps_total, begun_season) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (house, spec.scheme, target_house, target_riding, answers, steps, season),
+        )
+        phase = "answered" if answers is not None else "begun"
+        self._scheme_step(cursor.lastrowid, season, phase=phase)
+        outcome = {"action": spec.scheme, "success": True, "scheme": phase}
+        if target_house:
+            outcome["with"] = target_house
+        if target_riding:
+            outcome["riding"] = self._riding_name(target_riding)
+        return outcome
+
+    def _end_scheme(self, scheme_id, status, outcome, season):
+        self.conn.execute(
+            "UPDATE schemes SET status = ?, outcome = ?, ended_season = ? WHERE id = ?",
+            (status, outcome, season, scheme_id),
+        )
+
+    def _abandon_scheme(self, scheme_id, season, reason):
+        """Abandon a scheme, returning abandon_refund_pct of what it holds, and
+        with it any answer begun against it."""
+        s = self._scheme(scheme_id)
+        pct = self.rules.scheme_rules["choice"]["abandon_refund_pct"]
+        self.set_stats(
+            s["house"],
+            capital=s["committed_capital"] * pct // 100,
+            influence=s["committed_influence"] * pct // 100,
+        )
+        self._end_scheme(scheme_id, "abandoned", reason, season)
+        self._scheme_event(scheme_id, "abandoned", season, extra={"reason": reason})
+        for answer in self.conn.execute(
+            "SELECT id, scheme FROM schemes WHERE answers = ? AND status = 'active' ORDER BY id",
+            (scheme_id,),
+        ).fetchall():
+            if answer["scheme"] not in self._contest_schemes():
+                self._abandon_scheme(answer["id"], season, "the claim is withdrawn")
+
+    def _close_scheme(self, scheme_id, outcome, season):
+        """A scheme reaching its resolution: recorded, ledger-only, with how
+        many turns it ran."""
+        s = self._scheme(scheme_id)
+        self._end_scheme(scheme_id, "resolved", outcome, season)
+        self._scheme_event(
+            scheme_id, "resolved", season, line=False,
+            extra={"outcome": outcome, "ran": season - s["begun_season"] + 1},
+        )
+
+    def _end_schemes_of(self, house, season):
+        """A house leaving play ends its schemes; the removal is their event."""
+        if not self.feature("schemes"):
+            return
+        self.conn.execute(
+            "UPDATE schemes SET status = 'abandoned', outcome = 'house gone', ended_season = ?"
+            " WHERE house = ? AND status = 'active'",
+            (season, house),
+        )
+
+    def _abort_reason(self, s, season):
+        """Why a scheme can no longer go on, or None."""
+        spec = self._scheme_spec(s["scheme"])
+        house, target, fed_id = s["house"], s["target_house"], s["target_riding"]
+        if target is not None and self.house_row(target)["status"] != "active":
+            return "target gone"
+        kind = spec.resolves_as
+        if kind == "contest":
+            if mechanics._holder_of(self.conn, fed_id) != target \
+                    or (target, fed_id) not in self._claim_targets(house):
+                return "target gone"
+            if self.relation_marker(house, target) in (KIN, COMPACT):
+                return "bound by alliance"
+            if self._contest_cooldown(house, target, season):
+                return "the field is decided"
+        elif kind == "frontier":
+            if mechanics._holder_of(self.conn, fed_id) is not None:
+                return "target gone"
+            if not self.riding_open(fed_id, self.personal_year(house)):
+                return "target closed"
+        elif kind == "Purchase riding":
+            if target not in self._purchase_targets(house):
+                return "target recovered"
+        elif kind == "Dispute":
+            if target not in self._dispute_candidates(house, season):
+                return "quarrel ended"
+        elif kind == "Marriage alliance":
+            if target not in self._match_candidates(house):
+                return "no match"
+        elif kind == "Petition elevation":
+            if self.rank_index.get(self.house_row(house)["rank"], 0) >= self.rank_index["Marquis"] \
+                    or self.holding_count(house) < 3:
+                return "out of reach"
+        elif kind == "Propose compact":
+            if self.relation_marker(house, target) != FRIENDLY:
+                return "relation changed"
+        elif kind == "Name heir":
+            if not self._can_name_heir(house):
+                return "line secured"
+        elif kind == "Reconcile":
+            if self.relation_marker(house, target) not in (GRIEVANCE, HOSTILE):
+                return "quarrel ended"
+        elif kind in ("fortify", "sue"):
+            claim = self._scheme(s["answers"])
+            if claim is None or claim["status"] != "active":
+                return "claim over"
+        if s["steps_done"] < s["steps_total"] and not self._affords(house, spec, target):
+            return "funds gone"
+        return None
+
+    def _reconsider_scheme(self, house, season):
+        """A succession re-evaluates the house's scheme under the new holder."""
+        if not self.feature("schemes"):
+            return
+        s = self.active_scheme(house)
+        if s is None:
+            return
+        spec = self._scheme_spec(s["scheme"])
+        value = self.scheme_utility(house, spec, s["target_house"], s["target_riding"], season)
+        if value < self.rules.scheme_rules["choice"]["abandon_below"]:
+            self._abandon_scheme(s["id"], season, "the new holder")
+
+    def _scheme_turn(self, house, season, rng):
+        """Rules 1.0 `schemes`: a house's turn in place of the action draw."""
+        current = self.active_scheme(house)
+        if current is not None:
+            reason = self._abort_reason(current, season)
+            if reason is not None:
+                self._abandon_scheme(current["id"], season, reason)
+                current = None
+
+        pending = self.conn.execute(
+            "SELECT * FROM schemes WHERE status = 'active' AND target_house = ?"
+            " AND considered = 0 ORDER BY id",
+            (house,),
+        ).fetchall()
+        pending = [p for p in pending if p["scheme"] in self._contest_schemes()]
+        if pending:
+            claim = pending[0]
+            for p in pending:
+                self.conn.execute("UPDATE schemes SET considered = 1 WHERE id = ?", (p["id"],))
+            # A house already pressing a claim against its claimant keeps to it:
+            # its own claim is its answer, and setting it aside for another
+            # would only trade one claim for the next.
+            engaged = (
+                current is not None and current["target_house"] == claim["house"]
+                and current["scheme"] in self._contest_schemes()
+            )
+            if not engaged and (current is None or current["answers"] != claim["id"]):
+                candidates = self._scheme_candidates(house, season, claim=claim)
+                stand = self.rules.scheme_rules["choice"]["answer_stand"]
+                candidates.append((stand, len(self.rules.schemes), "", "", None))
+                chosen = self._choose_scheme(house, candidates, rng, f"scheme.answer.{house}")
+                if chosen is not None and chosen[4] is not None:
+                    self.conn.execute(
+                        "UPDATE schemes SET considered = 2 WHERE id = ?", (claim["id"],)
+                    )
+                    if current is not None:
+                        self._abandon_scheme(current["id"], season, "set aside")
+                    spec = chosen[4]
+                    steps = None
+                    if spec.resolves_as == "fortify":
+                        steps = max(1, self._turns_remaining(claim))
+                    return self._begin_scheme(
+                        house, spec, chosen[2] or None, chosen[3] or None, season, rng,
+                        answers=claim["id"], steps=steps,
+                    )
+
+        if current is not None:
+            return self._advance_scheme(current, season, rng)
+
+        chosen = self._choose_scheme(
+            house, self._scheme_candidates(house, season), rng, f"scheme.choose.{house}"
+        )
+        if chosen is None:
+            return {"action": "Bide", "success": True, "note": "no scheme"}
+        return self._begin_scheme(house, chosen[4], chosen[2] or None, chosen[3] or None, season, rng)
+
+    def _advance_scheme(self, s, season, rng):
+        spec = self._scheme_spec(s["scheme"])
+        if s["steps_done"] < s["steps_total"]:
+            self._scheme_step(s["id"], season)
+            outcome = {"action": spec.scheme, "success": True, "scheme": "step"}
+            if s["target_house"]:
+                outcome["with"] = s["target_house"]
+            return outcome
+        if spec.resolves_as == "fortify":
+            return {"action": spec.scheme, "success": True, "scheme": "holds",
+                    "with": s["target_house"]}
+        return self._resolve_scheme(s, season, rng)
+
+    def _resolve_with(self, house, name, season, rng, bonus):
+        """resolve_action with a bonus from what the scheme committed."""
+        action = self.actions[name]
+        row = self.house_row(house)
+        band = self.band_for(self.personal_year(house))
+        if action.target == "auto":
+            success, roll = True, None
+        else:
+            roll = rng.two_d6(purpose=f"resolve.{name}.{house}")
+            modifier = int(action.enclosure_bonus.lstrip("+") or 0) \
+                if row["enclosed"] and action.enclosure_bonus else 0
+            success = roll + modifier + bonus >= action.target
+        handler = getattr(self, f"_do_{_slug(name)}")
+        return handler(house, season, rng, success, band, roll)
+
+    def _resolve_scheme(self, s, season, rng):
+        spec = self._scheme_spec(s["scheme"])
+        kind = spec.resolves_as
+        per = self.rules.scheme_rules["contest"]["committed_per_point"]
+        bonus = (s["committed_capital"] + s["committed_influence"]) // per
+        if kind == "contest":
+            outcome = self._contest(s, season, rng)
+            self._close_scheme(s["id"], outcome["contest"], season)
+        elif kind == "frontier":
+            outcome = self._frontier(s, season, rng, bonus)
+            self._close_scheme(s["id"], "success" if outcome["success"] else "failure", season)
+        elif kind == "sue":
+            outcome = self._sue(s, season, rng, bonus)
+            self._close_scheme(s["id"], "success" if outcome["success"] else "failure", season)
+        else:
+            self._scheme_target = s["target_house"]
+            try:
+                outcome = self._resolve_with(s["house"], kind, season, rng, bonus)
+            finally:
+                self._scheme_target = None
+            self._close_scheme(s["id"], "success" if outcome.get("success") else "failure", season)
+        outcome["scheme"] = "resolved"
+        outcome["plan"] = spec.scheme
+        return outcome
+
+    def _settle(self, house, fed_id, season, band, roll, scheme_id):
+        """Take an unclaimed riding: the record Expand writes, at Expand's cost."""
+        row = self.house_row(house)
+        name = self._riding_name(fed_id)
+        year = self.personal_year(house)
+        delta = {"riding": name, "roll": roll, "scheme": scheme_id}
+        jurisdiction = (
+            self.jurisdiction_name(fed_id, year) if self.feature("atlas_jurisdiction") else None
+        )
+        if jurisdiction is not None:
+            delta["jurisdiction"] = jurisdiction
+        event_id = self.record(
+            "expansion",
+            f"{row['peerage']} takes {name}",
+            [house],
+            season,
+            band=band,
+            line=f"Season {season} · {row['peerage']} takes {name}"
+                 f"{self._jurisdiction_suffix(fed_id, year)}.",
+            delta=delta,
+        )
+        self.conn.execute(
+            "INSERT INTO holdings (house, fed_id, seat_order, hex, acquired_event_id)"
+            " VALUES (?, ?, ?, ?, ?)",
+            (house, fed_id, mechanics._next_seat_order(self.conn, house),
+             mechanics._expansion_hex(self.conn, house), event_id),
+        )
+        self.set_stats(house, capital=-(15 + self.wealth_offset(fed_id)))
+        return name
+
+    def _land_neighbours(self, fed_id):
+        return [
+            row["fed_id"] for row in self.conn.execute(
+                "SELECT CASE WHEN fed_id_a = ? THEN fed_id_b ELSE fed_id_a END AS fed_id"
+                " FROM adjacency WHERE adjacency_type = 'land' AND (fed_id_a = ? OR fed_id_b = ?)"
+                " ORDER BY fed_id",
+                (fed_id, fed_id, fed_id),
+            )
+        ]
+
+    def _frontier(self, s, season, rng, bonus):
+        """Open the frontier: Expand on the named riding; a roll at or above
+        frontier.double_on takes a second open riding beside it."""
+        house, fed_id = s["house"], s["target_riding"]
+        band = self.band_for(self.personal_year(house))
+        roll = rng.two_d6(purpose=f"resolve.Expand.{house}")
+        name = self._riding_name(fed_id)
+        if roll + bonus < self.actions["Expand"].target:
+            return {"action": "Expand", "success": False, "riding": name}
+        self._settle(house, fed_id, season, band, roll, s["id"])
+        outcome = {"action": "Expand", "success": True, "riding": name}
+        if roll >= self.rules.scheme_rules["frontier"]["double_on"]:
+            year = self.personal_year(house)
+            beside = [
+                n for n in self._land_neighbours(fed_id)
+                if mechanics._holder_of(self.conn, n) is None and self.riding_open(n, year)
+            ]
+            if beside:
+                second = rng.choice(beside, purpose=f"frontier.second.{house}")
+                if self.house_row(house)["capital"] >= 15 + self.wealth_offset(second):
+                    outcome["second"] = self._settle(house, second, season, band, roll, s["id"])
+        return outcome
+
+    def _call_allies(self, party, opponent, scheme_id, side, season, rng):
+        """Houses bound to `party` by compact or kin, asked in name order; each
+        joins on a per-cent utility test, and a refusal is recorded too."""
+        spec = self.rules.scheme_rules["contest"]
+        party_peerage = self.house_row(party)["peerage"]
+        joined = []
+        for ally in self.houses_related_by(party, {COMPACT, KIN}):
+            if ally == opponent:
+                continue
+            value = spec["ally_accept"]
+            if self.relation_marker(party, ally) == KIN:
+                value += spec["ally_kin"]
+            if self.relation_marker(ally, opponent) in (COMPACT, KIN):
+                value += spec["ally_bound_both"]
+            if self.feature("prestige_politics"):
+                leader, _ = self._ranking()
+                if party == leader:
+                    value += self.rules.scheme_rules["utility"]["leader_ally"]
+            joins = rng.chance(clamp(value, 0, 100), purpose=f"contest.ally.{ally}")
+            ally_peerage = self.house_row(ally)["peerage"]
+            line = (
+                f"Season {season} · {ally_peerage} stands with {party_peerage}"
+                f" against {self.house_row(opponent)['peerage']}."
+                if joins else
+                f"Season {season} · {ally_peerage} declines to stand with {party_peerage}."
+            )
+            self.record(
+                "other",
+                f"{ally_peerage} {'joins' if joins else 'declines'} {party_peerage}",
+                [ally, party, opponent],
+                season,
+                band=self.band_for(self.personal_year(ally)),
+                line=line,
+                delta={"ally": {"scheme": scheme_id, "side": side, "party": party, "joins": joins}},
+            )
+            if joins:
+                joined.append(ally)
+        return joined
+
+    def _transfer(self, loser, winner, fed_id, event_id):
+        """Move one riding between houses under an event; the loser's seats
+        renumber, so a lost seat passes to its next riding (hard rule 4)."""
+        self.conn.execute(
+            "UPDATE holdings SET released_event_id = ? WHERE house = ? AND fed_id = ?"
+            " AND released_event_id IS NULL",
+            (event_id, loser, fed_id),
+        )
+        self.conn.execute(
+            "INSERT INTO holdings (house, fed_id, seat_order, hex, acquired_event_id)"
+            " VALUES (?, ?, ?, ?, ?)",
+            (winner, fed_id, mechanics._next_seat_order(self.conn, winner),
+             mechanics._expansion_hex(self.conn, winner), event_id),
+        )
+        self._renumber(loser)
+
+    def _fall(self, house, by, season, band):
+        """A house with no ridings left falls, naming the house that took its seat."""
+        row = self.house_row(house)
+        self.record(
+            "succession",
+            f"{row['peerage']} falls",
+            [house, by],
+            season,
+            band=band,
+            line=f"Season {season} · {row['peerage']} falls; "
+                 f"{self.house_row(by)['peerage']} has taken its seat.",
+            delta={"nature": "extinction", "reason": "fell", "taken_by": by},
+        )
+        self.conn.execute("UPDATE houses SET status = 'removed' WHERE house = ?", (house,))
+        self.conn.execute(
+            "UPDATE house_stats SET removed_season = ? WHERE house = ?", (season, house)
+        )
+        self.conn.execute(
+            "UPDATE persons SET alive = 0, died_season = ? WHERE house = ? AND alive = 1",
+            (season, house),
+        )
+        self._end_schemes_of(house, season)
+
+    def contest_totals(self, attacker, defender, fed_id, committed, fortified, allies_a, allies_d,
+                       roll_a, roll_d):
+        """Rules 1.0 `contested_claims` (§4.4): the two totals of a contest."""
+        spec = self.rules.scheme_rules["contest"]
+        a_row, d_row = self.house_row(attacker), self.house_row(defender)
+        attack = (
+            roll_a + committed // spec["committed_per_point"]
+            + self.rank_index.get(a_row["rank"], 0) + spec["per_ally"] * allies_a
+            + self._trait_effect(attacker, "claim")
+        )
+        defence = (
+            roll_d + fortified // spec["fortified_per_point"]
+            + d_row["cohesion"] // spec["cohesion_per_point"] + spec["per_ally"] * allies_d
+            + (spec["seat_bonus"] if self._is_seat(defender, fed_id) else 0)
+        )
+        return attack, defence
+
+    def _contest(self, s, season, rng):
+        """Resolve a claim. Higher total wins, ties to the defender; the loser
+        loses what it committed and loss_cohesion; a win by rout_margin over
+        a house below rout_cohesion_below takes a second riding; a house left
+        with no riding falls; the pair is hostile and may not contest again
+        for the cooldown."""
+        spec = self.rules.scheme_rules["contest"]
+        attacker, defender, fed_id = s["house"], s["target_house"], s["target_riding"]
+        a_row, d_row = self.house_row(attacker), self.house_row(defender)
+        band = self.band_for(self.personal_year(attacker))
+        name = self._riding_name(fed_id)
+        allies_a = self._call_allies(attacker, defender, s["id"], "attacker", season, rng)
+        allies_d = self._call_allies(defender, attacker, s["id"], "defender", season, rng)
+        fort = self.conn.execute(
+            "SELECT * FROM schemes WHERE answers = ? AND status = 'active' AND scheme = 'Fortify'"
+            " ORDER BY id LIMIT 1",
+            (s["id"],),
+        ).fetchone()
+        fortified = 0 if fort is None else fort["committed_capital"] + fort["committed_influence"]
+        roll_a = rng.two_d6(purpose=f"contest.attack.{attacker}")
+        roll_d = rng.two_d6(purpose=f"contest.defend.{defender}")
+        attack, defence = self.contest_totals(
+            attacker, defender, fed_id, s["committed_capital"] + s["committed_influence"],
+            fortified, len(allies_a), len(allies_d), roll_a, roll_d,
+        )
+        cohesion_before = d_row["cohesion"]
+        totals = {"attacker": attack, "defender": defence}
+        if attack > defence:
+            event_id = self.record(
+                "challenge",
+                f"{a_row['peerage']} takes {name} from {d_row['peerage']}",
+                [attacker, defender],
+                season,
+                band=band,
+                line=f"Season {season} · {a_row['peerage']} wins its claim to {name}"
+                     f" against {d_row['peerage']}, {attack} to {defence}.",
+                delta={"contest": "won", "scheme": s["id"], "riding": name, **totals},
+            )
+            self._transfer(defender, attacker, fed_id, event_id)
+            self.set_stats(defender, cohesion=-spec["loss_cohesion"])
+            self._tally(attacker, won=1)
+            self._tally(defender, lost=1)
+            self._turn_cache = {}
+            if attack - defence >= spec["rout_margin"] and cohesion_before < spec["rout_cohesion_below"]:
+                second = self._adjacent_holding_of(attacker, defender)
+                if second is not None:
+                    second_name = self._riding_name(second)
+                    rout_id = self.record(
+                        "challenge",
+                        f"{a_row['peerage']} takes {second_name} from {d_row['peerage']}",
+                        [attacker, defender],
+                        season,
+                        band=band,
+                        line=f"Season {season} · {a_row['peerage']} drives on and takes"
+                             f" {second_name} from {d_row['peerage']}.",
+                        delta={"contest": "rout", "scheme": s["id"], "riding": second_name},
+                    )
+                    self._transfer(defender, attacker, second, rout_id)
+                    self._tally(defender, lost=1)
+                    self._turn_cache = {}
+            result = "won"
+        else:
+            event_id = self.record(
+                "challenge",
+                f"{d_row['peerage']} holds {name} against {a_row['peerage']}",
+                [attacker, defender],
+                season,
+                band=band,
+                line=f"Season {season} · {d_row['peerage']} holds {name} against"
+                     f" {a_row['peerage']}'s claim, {defence} to {attack}.",
+                delta={"contest": "held", "scheme": s["id"], "riding": name, **totals},
+            )
+            self.set_stats(attacker, cohesion=-spec["loss_cohesion"])
+            self._tally(defender, won=1)
+            result = "held"
+        self.set_relation(attacker, defender, HOSTILE, event_id, f"contest over {name}")
+        self._sync(attacker, defender, event_id, season)
+        if fort is not None:
+            self._close_scheme(fort["id"], "lost" if result == "won" else "held", season)
+        if result == "won" and self.holding_count(defender) == 0:
+            self._fall(defender, attacker, season, band)
+        return {"action": s["scheme"], "success": result == "won", "with": defender,
+                "riding": name, "contest": result}
+
+    def _sue(self, s, season, rng, bonus):
+        """Sue for peace: the weaker side cedes the claimed riding, unless it
+        is its seat; otherwise the house buys peace at the indemnity, on
+        Reconcile's roll. Either way the claim ends."""
+        house, other = s["house"], s["target_house"]
+        claim = self._scheme(s["answers"])
+        row, other_row = self.house_row(house), self.house_row(other)
+        band = self.band_for(self.personal_year(house))
+        fed_id = claim["target_riding"]
+        if (
+            self.standing(house) < self.standing(other)
+            and mechanics._holder_of(self.conn, fed_id) == house
+            and not self._is_seat(house, fed_id)
+        ):
+            name = self._riding_name(fed_id)
+            event_id = self.record(
+                "transfer",
+                f"{row['peerage']} cedes {name} to {other_row['peerage']}",
+                [house, other],
+                season,
+                band=band,
+                line=f"Season {season} · {row['peerage']} cedes {name} to"
+                     f" {other_row['peerage']} to end its claim.",
+                delta={"reason": "cession", "riding": name, "under_claim": claim["id"],
+                       "scheme": claim["id"]},
+            )
+            self._transfer(house, other, fed_id, event_id)
+            self._tally(house, lost=1)
+            self.set_relation(house, other, RESOLVED, event_id, "cession under a claim")
+            self._sync(house, other, event_id, season)
+            self._close_scheme(claim["id"], "ceded", season)
+            return {"action": "Cede / swap", "success": True, "with": other, "riding": name}
+        roll = rng.two_d6(purpose=f"resolve.Reconcile.{house}")
+        if roll + bonus < self.actions["Reconcile"].target:
+            return {"action": "Reconcile", "success": False, "with": other}
+        indemnity = min(row["capital"], self.rules.scheme_rules["peace"]["indemnity_capital"])
+        self.set_stats(house, capital=-indemnity)
+        self.set_stats(other, capital=indemnity)
+        event_id = self.record(
+            "relational",
+            f"{row['peerage']} buys peace from {other_row['peerage']}",
+            [house, other],
+            season,
+            band=band,
+            line=f"Season {season} · {row['peerage']} buys peace from {other_row['peerage']}.",
+            delta={"marker": RESOLVED, "peace": claim["id"], "indemnity": indemnity,
+                   "scheme": claim["id"]},
+        )
+        self.set_relation(house, other, RESOLVED, event_id, "peace bought")
+        self._sync(house, other, event_id, season)
+        self._close_scheme(claim["id"], "peace", season)
+        return {"action": "Reconcile", "success": True, "with": other}
+
+    def _plans(self):
+        """Every public scheme at the end of a season, for the record."""
+        return [
+            {
+                "id": s["id"],
+                "house": s["house"],
+                "scheme": s["scheme"],
+                "target_house": s["target_house"],
+                "riding": self._riding_name(s["target_riding"]) if s["target_riding"] else None,
+                "turns_remaining": self._turns_remaining(s),
+                "begun": s["begun_season"],
+                "committed": s["committed_capital"] + s["committed_influence"],
+            }
+            for s in self.conn.execute(
+                "SELECT * FROM schemes WHERE status = 'active' ORDER BY id"
+            ).fetchall()
+        ]
+
 
     # ------------------------------------------------------------- friction --
     #
@@ -2478,6 +3476,10 @@ class World:
                 {"forced_by": "director", "action": forced, "refused": "not legal this season"},
             )
 
+        # Rules 1.0 `schemes`: the weighted draw is not used.
+        if self.feature("schemes"):
+            return self._scheme_turn(house, season, rng)
+
         legal = self.legal_actions(house)
         weights = self.action_weights(house, legal)
         name = rng.weighted(weights, purpose=f"action.{house}")
@@ -2698,6 +3700,9 @@ class World:
     def _pick(self, rng, options, purpose):
         if not options:
             return None
+        # Rules 1.0 `schemes`: a scheme names its target; nothing is drawn.
+        if self._scheme_target is not None:
+            return self._scheme_target if self._scheme_target in options else None
         return rng.choice(sorted(options), purpose=purpose)
 
     def _do_correspond(self, house, season, rng, success, band, roll):
@@ -2785,8 +3790,10 @@ class World:
 
     def _do_reconcile(self, house, season, rng, success, band, roll):
         row = self.house_row(house)
+        # Rules 1.0 `schemes`: Make peace may end open hostility as well.
+        quarrels = {GRIEVANCE, HOSTILE} if self.feature("schemes") else {GRIEVANCE}
         other = self._pick(
-            rng, self.houses_related_by(house, {GRIEVANCE}), f"reconcile.target.{house}"
+            rng, self.houses_related_by(house, quarrels), f"reconcile.target.{house}"
         )
         if other is None or not success:
             return {"action": "Reconcile", "success": False}
@@ -2835,7 +3842,11 @@ class World:
         # §7: the grievance either resolves or hardens into open hostility, which
         # is what makes a Challenge legal later.
         hardens = self.rules.friction["dispute_outcome"]["hardens_probability_pct"]
-        marker = HOSTILE if rng.chance(hardens, purpose=f"dispute.hardens.{house}") else RESOLVED
+        if self._scheme_target is not None:
+            # Rules 1.0 `schemes`: Break a rival hardens on success.
+            marker = HOSTILE
+        else:
+            marker = HOSTILE if rng.chance(hardens, purpose=f"dispute.hardens.{house}") else RESOLVED
         event_id = self.record(
             "relational",
             f"{row['peerage']} wins a dispute with {other_row['peerage']}",
@@ -3082,6 +4093,7 @@ class World:
             "UPDATE persons SET alive = 0, died_season = ? WHERE house = ? AND alive = 1",
             (season, other),
         )
+        self._end_schemes_of(other, season)
         return event_id
 
     def _do_cede_swap(self, house, season, rng, success, band, roll):
@@ -3365,6 +4377,8 @@ class World:
             # succession watch.
             if self.feature("upkeep_phase"):
                 self._upkeep(house)
+            if self.feature("cohesion_strain"):
+                self._strain(house)
             if self.feature("succession_watch"):
                 self._succession_watch(house, season)
 
@@ -3418,7 +4432,9 @@ class World:
         prestige = self._compute_prestige(season) if self.feature("prestige") else None
 
         # 10. The season record.
-        return self._write_season(season, outcomes, founded, prestige=prestige)
+        # Rules 1.0 `schemes`: every public scheme, as the season left them.
+        plans = self._plans() if self.feature("schemes") else None
+        return self._write_season(season, outcomes, founded, prestige=prestige, plans=plans)
 
     # A house that has done nothing worth recording for this many consecutive
     # seasons is noticed once. Ten is long enough that it is a fact about the
@@ -3537,7 +4553,7 @@ class World:
                     out.append({"operation": operation, "title": row["title"], **entry})
         return out
 
-    def _write_season(self, season, outcomes, founded, prestige=None):
+    def _write_season(self, season, outcomes, founded, prestige=None, plans=None):
         self._snapshot(season)
         houses_after = self.conn.execute(
             "SELECT COUNT(*) AS n FROM houses WHERE status = 'active'"
@@ -3564,6 +4580,8 @@ class World:
         }
         if prestige is not None:
             record["prestige"] = prestige
+        if plans is not None:
+            record["plans"] = plans
 
         path = self._write_season_file(season, record)
 

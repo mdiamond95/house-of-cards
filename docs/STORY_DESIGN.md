@@ -175,6 +175,28 @@ The five kinds with one headline each are correspondence, endowment, response to
 event, riding lost and clean succession. The largest kind supplies 20.3% of headlines,
 and no bookkeeping action headlines.
 
+**Phase C2 note, 6 October 2026.** Rules 1.0's schemes and contests add ten kinds:
+
+| Kind | Weight | What it is |
+|---|---|---|
+| scheme_begun | 40 | a house begins a public scheme |
+| scheme_answered | 45 | a house answers a claim against it |
+| scheme_abandoned | 10 | a scheme given up |
+| scheme_step | 0 | a preparation step (ledger-only) |
+| scheme_resolved | 0 | a scheme's end, folded into the act that ended it |
+| ally_joins | 25 | an ally stands with a party to a contest |
+| ally_declines | 15 | an ally refuses |
+| contest_won | 90 | a claim carried, the riding taken (or a rout) |
+| contest_lost | 90 | a claim held off |
+| fallen | 110 | a house with no riding left, fallen to the house that took its seat |
+
+A scheme's resolution folds into the act that resolved it: the beat with the same scheme
+id, else that house's act that turn. A claim's contest, its rout and the defender's fall
+are one act. A headline that resolves a scheme ends "The scheme (…) ran N seasons." A
+claim won between two houses of the cast pauses Auto, as a riding passing between them
+does. On ten seeds of the draft at 100 turns, 95% of turns headline at or above the pause
+threshold, and rivalries supply 61% of headlines, against 36% under 0.9.
+
 ### 3.2 The dispatch
 
 One turn on screen is: a headline (the heaviest beat, with the map zoomed to where it
@@ -293,6 +315,19 @@ On The First Dominion the Phase B gates still hold:
 The storyline counts by type and outcome, and the five longest, are as in the Phase B
 note, except that the Ontario frontier has 64 beats and the Quebec frontier 40.
 
+**Phase C2 note, 6 October 2026.** A claim (Claim a riding, or a Counter-claim given in
+answer) belongs to the two houses' rivalry and opens one if none runs. Every scheme
+event, answer and ally between them escalates it; preparation steps do not. A rivalry
+now also closes when:
+
+- a contest is decided between them ("won in a contest", "held in a contest");
+- the weaker side cedes the claimed riding ("ceded under a claim");
+- one of them falls.
+
+**Plans afoot** sits above Afoot on the replay and play pages, for a game whose record
+carries schemes. It lists every public scheme of a cast or followed house, with its target
+and turns remaining.
+
 ### 3.5 Prose (Phase E)
 
 Per-turn scenes come from deterministic templates keyed on storyline type, beat kind and
@@ -340,6 +375,67 @@ Dynastic match, Win elevation, Open the frontier, Secure the line. A house choos
 integer utility from its situation, objectives and holder traits, with a seeded draw among
 the top three. A house that is the target of a visible scheme may answer it.
 
+**Phase C2 note, 6 October 2026.** Built in both engines (rules 1.0, draft) as
+`schemes.csv` and `schemes.json`, behind `schemes`. With it the weighted action draw is not
+used.
+
+How a house takes its turn:
+
+- A house holds at most one scheme. Each turn it takes that scheme's next step, each step
+  committing capital or influence.
+- When a scheme's steps are done, it resolves on the house's next turn, through the
+  existing action handler or the contest.
+- A house without a scheme begins one, by the integer utility and a seeded draw among the
+  three highest, or bides.
+
+Every begin, step, answer, abandonment and resolution is an event with its turns
+remaining. Each season record carries `plans`.
+
+The schemes, with their final numbers:
+
+| Scheme | Utility | Steps | Each step | Resolves as |
+|---|---|---|---|---|
+| Claim a riding | 20 | 3–5 | 5 capital, 2 influence | contest (§4.4) |
+| Open the frontier | 75 | 2 | 2 capital | Expand on the named riding; a roll of 8+ takes a second beside it |
+| Buy out a neighbour | 30 | 1–2 | 3 influence | Purchase riding |
+| Break a rival | 30 | 1–2 | 3 influence | Dispute, hardening to hostility on success |
+| Dynastic match | 25 | 2 | 2 influence | Marriage alliance |
+| Win elevation | 20 | 2–3 | 5 capital | Petition elevation |
+| Seek a protector | 15 | 2 | 2 influence | Propose compact, with a friendly house above |
+| Secure the line | 55 | 2 | 1 capital | Name heir |
+| Make peace | 5 | 2 | 2 influence | Reconcile (open hostility as well as grievance) |
+| Fortify (answer) | 35 | until the claim resolves | 8 capital | adds to the defence |
+| Sue for peace (answer) | 20 | 1 | 3 influence | the weaker side cedes the claimed riding; the stronger buys peace for 10 capital |
+| Counter-claim (answer) | 25 | 2–4 | 5 capital, 2 influence | contest |
+
+The utility:
+
+- Every term is in `schemes.json` `utility`.
+- The base is adjusted by:
+  - 20 per held objective favouring the action the scheme reads;
+  - 10 per point of each holder trait on it;
+  - 2 per point of ambition, for a scheme that takes land or presses a quarrel;
+  - −30 below cohesion 40.
+- A claim or frontier adds 6 per wealth tier of the target riding.
+- A claim adds 15 for a grievance or 10 for hostility, and 10 for a weaker target. It
+  takes −30 for a seat, and its steps cost 2 capital less against a house it already
+  quarrels with.
+- Make peace adds 50 only with cause: a claim on the house, a recent contest lost to the
+  target, cohesion below 40, or a Conciliator holder.
+- Overreach, under `cohesion_strain`: −10 for each holding past the rank's free reach,
+  on any scheme that would add a riding.
+
+Peace and answers:
+
+- A grievance cannot be reconciled in its first 3 turns.
+- A house answers a claim only when an answer's utility beats 55. One already pressing a
+  claim against its claimant keeps to it.
+- A scheme is abandoned when its target or its funds are gone, returning half its stake. A
+  succession re-scores it under the new holder, abandoning it below 10.
+
+On ten seeds, 81% of ended schemes reach resolution, and the median resolved scheme runs
+3 turns.
+
 ### 4.3 Traits (`holder_traits`)
 Each holder draws two traits at accession from a rules table (for example Cautious,
 Grasping, Pious, Reformer, Dynast, Litigious). Traits shift scheme utilities and crisis
@@ -370,6 +466,31 @@ A claim on a neighbour's riding resolves as 2d6 plus committed capital, influenc
 allies on each side. The loser pays; the riding can change hands; a seat can be lost; a
 house with no ridings falls. Quarrels are no longer a precondition for every contest.
 
+**Phase C2 note, 6 October 2026.** Built behind `contested_claims` with exactly these
+numbers:
+
+- the attacker rolls 2d6 + committed // 10 + rank index + 2 per ally + the holder's claim
+  trait (Grasping +1, Cautious −1);
+- the defender rolls 2d6 + fortified // 10 + cohesion // 25 + 2 per ally + 2 for its seat;
+- ties go to the defender.
+
+After a contest:
+
+- The winner takes or keeps the riding; the loser loses its stake and 10 cohesion.
+- A win by 5 or more against cohesion below 40 takes a second adjacent riding.
+- A house left with no riding falls, and the record names the house that took its seat.
+- The pair is hostile, and may not contest again for 5 turns.
+
+Allies are the compact and kin of each side, asked in name order. Each joins on a
+per-cent test: 50, +15 for kin, −100 for one bound to both sides, and −25 for joining the
+prestige leader under `prestige_politics`. A refusal is recorded as an event.
+
+Without this flag no claim is offered at all. On ten seeds:
+
+- a game resolves 65 contests (53–80), and the attacker wins 46%;
+- 62% of claims are answered by their target;
+- 7.7 houses fall or are removed.
+
 ### 4.5 Prestige (`prestige`)
 An integer score per house from holdings, rank, influence, alliances and contests won.
 It is the standings, it is what the game is scored on at the end, and houses read it: the
@@ -389,6 +510,22 @@ of:
 
 Nothing in the engine reads it yet; houses reading it is Phase C2. Where a record carries
 it, the story layer's standings use it.
+
+**Phase C2 note, 6 October 2026.** Houses read prestige behind `prestige_politics`, as
+utility terms:
+
+- **The leader as a target.** A claim on the prestige leader by another top-eight house
+  gains 25.
+- **The weak draw claims.** A claim on a house that lost a contest in the last 10 turns,
+  or has cohesion below 40, gains 20.
+- **Protectors are sought above.** A protector must stand above the house. Seeking one
+  gains 1 per 10 points of prestige gap, up to 30, and 40 more while the house is under
+  a claim.
+- **The leader is a poorer ally.** Courting the leader as a protector costs 25, and so
+  does an ally's test to join the leader.
+
+Standing is the house's prestige as last computed, or, without `prestige`, 10 per holding
+and 20 per rank index.
 
 ### 4.6 A smaller table (`founding_curve`)
 Crown foundings are front-loaded so the board is set in the first quarter of the game and
@@ -417,6 +554,23 @@ heir comes of age at 25, or is named already of age. The story layer opens a suc
 question on the first and closes it on the second, for games whose record carries them.
 Phase C1, 6 October 2026.
 
+### 4.9 Cohesion strain (`cohesion_strain`)
+Cohesion must be able to fall. Each turn a house loses 1 cohesion for each holding beyond
+3 + 2 × its rank index, and 1 more while its holder is over 70; the contest and
+succession losses stand. Cohesion recovers only as `upkeep.json` gives it. Schemes spend
+influence, so influence has a sink.
+
+**Phase C2 note, 6 October 2026.** Built as `upkeep.json`'s `strain`, behind
+`cohesion_strain`, with the numbers above.
+
+- Recovery is 3 a turn, and 6 below cohesion 50.
+- Overreach (§4.2) makes another riding worth less to a house past its reach. Without
+  it, houses outgrew their rank, their cohesion collapsed at succession and their land
+  went back to the Crown: in one trial only 10 houses were left at turn 100.
+
+On ten seeds, median cohesion at turn 100 is 66 (48–78) and median influence 48 (39–57),
+against 96 and 75 in Phase C1.
+
 ## 5. The shared calendar (Phase D)
 
 Flag `world_calendar`. It replaces hard rule 5 and ENGINE_DESIGN §16 decision 4 for
@@ -443,19 +597,62 @@ scenarios played with the flag on, and for no other.
 
 ## 6. Story targets (replace ENGINE_DESIGN §17 for rules 1.0)
 
-Initial targets across ten seeds, 100 turns, to be tuned and recorded in rules/CHANGELOG.md:
+Targets across ten seeds (1867–1876), 100 turns, on the Meridian world, measured by
+`scripts/story_trial.py` and recorded in rules/CHANGELOG.md. Phase C2 merged its own
+targets into the list. The figure after each is the draft 1.0 with every flag on, as the
+Phase C2 trial measured it, mean (min–max). **Met** means met on the mean.
 
-- At least 30% of actions are aimed at another named house.
-- After turn 20, a riding passes between houses at least once every three turns on average.
-- The prestige lead changes at least four times; no house leads for more than 50 turns.
-- In every chapter after the first, at least one house that began it in the top eight
-  ends it outside the top eight or removed.
-- At least 70% of turns have a headline at or above the pause threshold; never more than
-  three quiet turns in a row after turn 10.
-- At least 60% of schemes reach resolution; median scheme length is three to six turns.
-- 20 to 40 houses are active at turn 100; at least 85% of in-play ridings are claimed by
-  turn 60.
-- At least eight storylines of five or more beats per game, each closed with an outcome.
+Action and land:
+
+- At least 30% of actions are aimed at another named house. **Met**: 45% (41–49).
+- After turn 20, a riding passes between houses at least once every three turns on
+  average. **Met**: 0.57 a turn (0.44–0.68).
+- 20 to 40 houses are active at turn 100. **Met**: 30.1 (25–38).
+- 4 to 10 houses have fallen or been removed by turn 100. **Met**: 7.7 (1–12).
+- At least 80% of the ridings in play (open at personal 1867) are claimed by turn 60.
+  **Not met**: 63% (59–72). One frontier venture takes three turns, and overreach slows
+  the houses that most want land. With the same tables and the weighted draw, 89% are
+  claimed (rules/CHANGELOG.md, Phase C2).
+
+The lead and the chapters:
+
+- The prestige lead changes at least four times. **Met**: 16.1 (4–25).
+- No house leads for more than 50 turns. **Met on the mean**: 32.5. One seed of ten has a
+  lead of 84 turns; 0.9's worst is 98.
+- In every chapter after the first, a house that began it in the top eight ends it
+  outside or removed. **Met**: 4 of 4 on every seed.
+
+Headlines and storylines:
+
+- At least 70% of turns have a headline at or above the pause threshold. **Met**: 95%.
+- Never more than three quiet turns in a row after turn 10. **Met**: none.
+- At least eight storylines of five or more beats per game. **Met**: 71.6.
+- Every closed storyline has an outcome. **Met**: none without one.
+
+Quarrels:
+
+- The median rivalry runs 4 to 10 turns. **Met**: 4.4 (4–5).
+- At most 40% of rivalries are reconciled. **Met**: 11% (4–21).
+- At least 25% end in a contest, a cession under a standing claim, or a house's fall.
+  **Met**: 75% (68–82).
+
+Contests and claims:
+
+- At least 15 contests are resolved per game. **Met**: 65.1 (53–80).
+- The attacker wins 35–60% of them. **Met**: 46% (36–57).
+- At least half of claims are answered by their target. **Met**: 62% (55–72).
+
+Schemes:
+
+- At least 60% of schemes reach resolution. **Met**: 81% (76–84).
+- The median scheme runs three to six turns. **Met**: 3.
+- After turn 15, at least three public schemes involve a cast house in at least 80% of
+  turns. **Met**: 100%.
+
+The economy:
+
+- Median cohesion at turn 100 is 55–85. **Met**: 65.8 (48–78).
+- Median influence at turn 100 is 40–70. **Met**: 47.7 (39–57).
 
 ## 7. Phases
 
@@ -464,6 +661,6 @@ Initial targets across ten seeds, 100 turns, to be tuned and recorded in rules/C
 | A | Beats, story weight, dispatch, standings, follow, Replay page | None | First Dominion replays as dispatches; headline mix within §3.1 limits |
 | B | Storylines derived from the record; dispatch organised by them | None | On The First Dominion: at least 85% of headlines after turn 20 belong to a storyline; at least eight storylines have five or more beats, and each closed one has an outcome; no more than 25% of headlines after turn 20 are storyline openings; fewer than 20% of closed storylines close as "lapsed" (if not reachable without distorting the triggers, the figure is reported, as it measures the engine); the Phase A limits still hold |
 | C1 | Rules 1.0's mechanical flags (§4.1, §4.3, §4.5–§4.8) as a draft version, both engines; the trial harness | Yes | Every flag in both engines, false before 1.0; cross-check byte-identical on seeds 1867, 2 and 3 at 120 turns under 1.0 and the current version; the baseline trial table (current / each flag alone / all on) recorded in rules/CHANGELOG.md |
-| C2 | Schemes (§4.2), contested claims (§4.4), houses reading prestige | Yes | §6 targets on a personal-clock trial |
+| C2 | Schemes (§4.2), contested claims (§4.4), houses reading prestige (§4.5), cohesion strain (§4.9) as draft flags; beats, Plans afoot and the draft-rules preview; the trial's C2 measures | Yes | §6 targets on a personal-clock trial: every one met on the mean except land claimed by turn 60 (63% against 80%), reported with what holds it back; the before/after table (C1 against C2 all on) recorded in rules/CHANGELOG.md. Built 6 October 2026 |
 | D | `world_calendar`, chapters, crises, ending; new scenario begins | Yes | §6 targets across ten seeds; a full game ends in 1967 |
 | E | Scene templates, chapter narration, epilogues | None | A full game reads start to finish from the site |

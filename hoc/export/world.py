@@ -242,6 +242,29 @@ def world_snapshot(conn):
             ],
         })
 
+    # Rules 1.0 `schemes`: every scheme ever begun. The engine reads ended ones
+    # too — a contest's cooldown and a recent loss look back over them.
+    schemes = [
+        {
+            "id": row["id"],
+            "house": row["house"],
+            "scheme": row["scheme"],
+            "targetHouse": row["target_house"],
+            "targetRiding": row["target_riding"],
+            "answers": row["answers"],
+            "stepsTotal": row["steps_total"],
+            "stepsDone": row["steps_done"],
+            "committedCapital": row["committed_capital"],
+            "committedInfluence": row["committed_influence"],
+            "status": row["status"],
+            "outcome": row["outcome"],
+            "considered": row["considered"],
+            "begunSeason": row["begun_season"],
+            "endedSeason": row["ended_season"],
+        }
+        for row in conn.execute("SELECT * FROM schemes ORDER BY id")
+    ]
+
     climate = [
         {
             "id": row["id"],
@@ -309,6 +332,7 @@ def world_snapshot(conn):
             "events": next_id("events"),
             "climate": next_id("climate"),
             "houseActions": next_id("house_actions"),
+            "schemes": next_id("schemes"),
         },
         "houses": houses,
         "houseStats": stats,
@@ -321,6 +345,7 @@ def world_snapshot(conn):
         "climate": climate,
         "friction": friction,
         "seasons": seasons,
+        "schemes": schemes,
     }
 
 
@@ -438,6 +463,17 @@ def load_snapshot(conn, snapshot):
             "INSERT INTO friction (house_a, house_b, value) VALUES (?, ?, ?)",
             (row["houseA"], row["houseB"], row["value"]),
         )
+    for row in snapshot.get("schemes", []):
+        conn.execute(
+            "INSERT INTO schemes (id, house, scheme, target_house, target_riding, answers,"
+            " steps_total, steps_done, committed_capital, committed_influence, status, outcome,"
+            " considered, begun_season, ended_season)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (row["id"], row["house"], row["scheme"], row["targetHouse"], row["targetRiding"],
+             row["answers"], row["stepsTotal"], row["stepsDone"], row["committedCapital"],
+             row["committedInfluence"], row["status"], row["outcome"], row["considered"],
+             row["begunSeason"], row["endedSeason"]),
+        )
     for row in snapshot["seasons"]:
         conn.execute(
             "INSERT INTO seasons (season_no, seed, houses_after, ridings_after,"
@@ -508,6 +544,13 @@ def _park_counters(conn, snapshot):
             " VALUES (?, ?, ?, '~', 'engine')",
             (nxt["relations"] - 1, snapshot["houses"][0]["house"],
              snapshot["houses"][1]["house"]),
+        )
+    if any_house is not None and "schemes" in nxt:
+        park(
+            "schemes", nxt["schemes"] - 1,
+            "INSERT INTO schemes (id, house, scheme, steps_total, status, begun_season)"
+            " VALUES (?, ?, 'id placeholder', 1, 'abandoned', 0)",
+            (nxt["schemes"] - 1, any_house),
         )
     park(
         "climate", nxt["climate"] - 1,

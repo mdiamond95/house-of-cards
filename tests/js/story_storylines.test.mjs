@@ -148,3 +148,30 @@ test('with the succession watch, a question opens at sixty with no heir and clos
   old.step(2, [beat(2, 'name_heir', ['A'], { outcome: 'heir' })]);
   assert.equal(old.lines.all[0].outcome, 'an heir named', 'a game without the watch still closes on naming');
 });
+
+test('rules 1.0: a claim opens the pair\'s rivalry, and a contest, a cession under it or a fall closes it', () => {
+  const h = harness({ owners: { 35001: 'B', 35002: 'B' }, ranks: { A: 0, B: 0 } });
+  h.step(1, [beat(1, 'scheme_begun', ['A', 'B'], { outcome: 'Claim a riding', scheme: 1 })]);
+  const s = h.lines.all[0];
+  assert.deepEqual([s.type, s.houses], ['rivalry', ['A', 'B']]);
+  h.step(2, [beat(2, 'scheme_step', ['A', 'B'], { outcome: 'Claim a riding', scheme: 1 })]);
+  assert.equal(s.beats.length, 1, 'a preparation step is ledger-only');
+  h.step(3, [beat(3, 'scheme_answered', ['B', 'A'], { outcome: 'Fortify', scheme: 2 }),
+    beat(3, 'ally_joins', ['C', 'A', 'B'], { outcome: 'attacker' })]);
+  assert.equal(s.beats.length, 3, 'an answer and an ally escalate it');
+  h.step(4, [beat(4, 'contest_lost', ['A', 'B'], { outcome: 'held', scheme: 1 })]);
+  assert.deepEqual([s.state, s.outcome], ['closed', 'held in a contest']);
+  // Not every scheme between two houses opens a rivalry: a match does not.
+  h.step(5, [beat(5, 'scheme_begun', ['A', 'B'], { outcome: 'Dynastic match', scheme: 3 })]);
+  assert.equal(h.lines.open.filter((x) => x.type === 'rivalry').length, 0);
+  h.step(6, [beat(6, 'scheme_answered', ['B', 'A'], { outcome: 'Counter-claim', scheme: 4 })]);
+  const counter = h.lines.open.find((x) => x.type === 'rivalry');
+  h.step(7, [beat(7, 'riding_passes', ['A', 'B'], { outcome: 'cession under claim', ridings: ['35009'], owners: {} })]);
+  assert.equal(counter.outcome, 'ceded under a claim');
+  h.step(8, [beat(8, 'scheme_begun', ['A', 'B'], { outcome: 'Claim a riding', scheme: 5 })]);
+  const last = h.lines.open.find((x) => x.type === 'rivalry');
+  const won = beat(9, 'contest_won', ['A', 'B'], { outcome: 'won', scheme: 5 });
+  const fell = beat(9, 'fallen', ['B', 'A'], { outcome: 'A', removed: ['B'] });
+  h.step(9, [{ ...fell, houses: ['A', 'B'], merge: 'claim', parts: [won, fell] }]);
+  assert.equal(last.outcome, 'won in a contest');
+});

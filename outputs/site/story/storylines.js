@@ -4,10 +4,12 @@
 // `beats` are [{ turn, beat }] in order, `state` is 'rising', 'climax' or
 // 'closed', and `opened`/`closed` are turns. Types, triggers and closes:
 //
-//   rivalry     opens on a quarrel between two houses. Every later beat both
+//   rivalry     opens on a quarrel between two houses, or (rules 1.0) on a
+//               claim one lays to the other's riding. Every later beat both
 //               take part in escalates it. Closes on a reconciliation, a
 //               dispute carried to a settlement, a riding passing between
-//               them, or the removal of either.
+//               them, a contest decided between them, a cession under a
+//               standing claim, or the removal of either.
 //   succession  opens on a disorderly succession, or — for a game whose record
 //               carries rules 1.0's succession watch — on a holder turning sixty
 //               with no heir. Escalated by the house's successions, ridings lost
@@ -53,7 +55,19 @@ export const PROVINCES = {
 const QUIET_KINDS = new Set([
   'invest', 'cultivate', 'consolidate', 'name_heir', 'correspondence', 'era_response',
   'major_response', 'other', 'bide',
+  // Rules 1.0: a scheme's preparation steps and its resolution are ledger-only.
+  'scheme_step', 'scheme_resolved',
 ]);
+
+// A claim begun, or answered with a counter-claim (rules 1.0 `schemes`): the
+// pair it sets at odds, which a rivalry storyline then holds.
+function claimPair(beat, names) {
+  if (beat.kind !== 'scheme_begun' && beat.kind !== 'scheme_answered') return null;
+  if (!names.includes(beat.outcome) || (beat.houses || []).length < 2) return null;
+  return [beat.houses[0], beat.houses[1]];
+}
+
+const CONTESTS = ['contest_won', 'contest_lost', 'fallen'];
 
 function storyBeat(beat) {
   return !QUIET_KINDS.has(beat.kind);
@@ -178,7 +192,11 @@ export class Storylines {
             const settles = beat.kind === 'reconciled' || beat.merge === 'cession'
               || (beat.kind === 'dispute_won' && beat.outcome === '~');
             if (settles) close(s, i, beat.merge === 'cession' ? 'settled by cession' : 'reconciled');
-            else if (beat.kind === 'riding_passes') close(s, i, 'a riding changed hands');
+            else if (CONTESTS.includes(beat.kind)) {
+              close(s, i, beat.kind === 'contest_lost' ? 'held in a contest' : 'won in a contest');
+            } else if (beat.kind === 'riding_passes' && beat.outcome === 'cession under claim') {
+              close(s, i, 'ceded under a claim');
+            } else if (beat.kind === 'riding_passes') close(s, i, 'a riding changed hands');
             else attach(s, i, 'escalate');
           } else if (quarrel && pairKey(...quarrel) === s.key) {
             close(s, i, 'a falling-out');
@@ -196,6 +214,12 @@ export class Storylines {
           const key = pairKey(...quarrel);
           if (!this.find('rivalry', key)) open('rivalry', key, [...quarrel].sort(compareText), i);
         }
+        // A claim belongs to the two houses' rivalry, and opens one if none runs.
+        const claim = claimPair(beat, this.weights.claim_schemes || []);
+        if (claim) {
+          const key = pairKey(...claim);
+          if (!this.find('rivalry', key)) open('rivalry', key, [...claim].sort(compareText), i);
+        }
         if ((beat.kind === 'marriage' || beat.kind === 'compact') && a !== undefined && b !== undefined
             && cast.has(a) && cast.has(b)) {
           const key = pairKey(a, b);
@@ -210,7 +234,7 @@ export class Storylines {
             close(running, i, 'an heir came of age');
           } else if (beat.kind === 'succession_clean' || beat.merge === 'partition') {
             close(running, i, 'an heir succeeded');
-          } else if (['succession_disorderly', 'riding_lost', 'partition', 'removed', 'heir_wanted'].includes(beat.kind)
+          } else if (['succession_disorderly', 'riding_lost', 'partition', 'removed', 'fallen', 'heir_wanted'].includes(beat.kind)
                      && houses.includes(running.key)) {
             attach(running, i, 'escalate');
           }

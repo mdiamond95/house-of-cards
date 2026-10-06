@@ -1,6 +1,6 @@
 trait,actions,upkeep,excludes,effect,note
-Grasping,Expand:+2;Purchase riding:+2;Challenge (11b):+2,,Cautious,,Reaches for land.
-Cautious,Expand:-2;Dispute:-2;Name heir:+2,,Grasping,,Holds what it has and secures the line.
+Grasping,Expand:+2;Purchase riding:+2;Challenge (11b):+2,,Cautious,claim:+1,Reaches for land.
+Cautious,Expand:-2;Dispute:-2;Name heir:+2,,Grasping,claim:-1,Holds what it has and secures the line.
 Litigious,Dispute:+2;Reconcile:-2,,Conciliator,,Presses every claim.
 Conciliator,Reconcile:+2;Propose compact:+2;Cede / swap:+2,,Litigious,,Settles and binds.
 Dynast,Marriage alliance:+2;Name heir:+2,,,,Thinks in generations.

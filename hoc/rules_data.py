@@ -105,6 +105,19 @@ FEATURE_DEFAULTS = {
     # §4.8: an event when a holder turns sixty with no heir, and one when an
     # heir comes of age.
     "succession_watch": False,
+    # Phase C2. §4.2: a house holds at most one public multi-turn scheme
+    # (schemes.csv) chosen by integer utility, in place of the weighted
+    # action draw; a house that is the target of a claim may answer it.
+    "schemes": False,
+    # §4.4: a Claim resolves as a contest of 2d6 plus commitments, rank,
+    # allies and cohesion; seats can be taken and a house with none falls.
+    "contested_claims": False,
+    # §4.5: houses read prestige — the leader is a poorer ally and a richer
+    # target, the weak draw claims, and protectors are sought above.
+    "prestige_politics": False,
+    # §4.9: cohesion falls with holdings beyond a rank's reach and with an
+    # old holder, and recovers only through upkeep.
+    "cohesion_strain": False,
 }
 
 
@@ -127,6 +140,18 @@ def available_versions(root=None):
     if not base.is_dir():
         return []
     return sorted(p.name for p in base.iterdir() if p.is_dir())
+
+
+def _version_key(version):
+    return tuple(int(part) for part in version.split("."))
+
+
+def draft_version(root=None):
+    """The draft rules version — the one directory newer than current.txt —
+    or None when there is none (rules/README.md, "A draft version")."""
+    current = _version_key(current_version(root))
+    newer = [v for v in available_versions(root) if _version_key(v) > current]
+    return max(newer, key=_version_key) if newer else None
 
 
 def version_dir(version, root=None):
@@ -272,6 +297,32 @@ class Trait:
 
 
 @dataclass
+class Scheme:
+    """One row of schemes.csv (rules 1.0, `schemes`). `answer` is "no" for a
+    scheme a house chooses for itself, "only" for an answer to a claim, and
+    "also" for both; `reads` the actions whose trait and objective shifts the
+    scheme's utility takes; `resolves_as` the action handler (or one of the
+    scheme primitives: contest, frontier, fortify, sue) it ends in."""
+    scheme: str
+    answer: str
+    target: str
+    steps_min: int
+    steps_max: int
+    step_capital: int
+    step_influence: int
+    resolves_as: str
+    reads: list
+    utility: int
+    begins: str
+    abandons: str
+
+
+SCHEME_PRIMITIVES = ("contest", "frontier", "fortify", "sue")
+SCHEME_TARGETS = ("house", "riding", "both", "none")
+SCHEME_ANSWERS = ("no", "only", "also")
+
+
+@dataclass
 class RulesBundle:
     actions: list
     objectives: list
@@ -295,6 +346,9 @@ class RulesBundle:
     # an empty list and an empty dict.
     traits: list = field(default_factory=list)
     upkeep: dict = field(default_factory=dict)
+    # Phase C2: schemes.csv's rows, in the file's order, and schemes.json.
+    schemes: list = field(default_factory=list)
+    scheme_rules: dict = field(default_factory=dict)
 
     def feature(self, name):
         """Whether this version turns on a named behaviour."""
@@ -581,7 +635,7 @@ def probability_for_age(mortality, age):
     raise RulesDataError(f"no mortality band covers age {age}")
 
 
-TRAIT_EFFECTS = ("steadfast", "friction")
+TRAIT_EFFECTS = ("steadfast", "friction", "claim")
 UPKEEP_STATS = ("capital", "influence", "cohesion")
 
 
@@ -640,6 +694,46 @@ def _load_upkeep(rules_dir):
     return _read_json(path) if path.exists() else {}
 
 
+def _load_schemes(rules_dir, action_names):
+    path = rules_dir / "schemes.csv"
+    if not path.exists():
+        return []
+    out = []
+    for row in _read_csv(path):
+        where = f"schemes.csv {row['scheme']!r}"
+        try:
+            numbers = {
+                key: int(row[key]) for key in (
+                    "steps_min", "steps_max", "step_capital", "step_influence", "utility",
+                )
+            }
+        except ValueError:
+            raise RulesDataError(f"{where}: a number column is not an integer")
+        if row["answer"] not in SCHEME_ANSWERS:
+            raise RulesDataError(f"{where}: answer {row['answer']!r} is not one of {SCHEME_ANSWERS}")
+        if row["target"] not in SCHEME_TARGETS:
+            raise RulesDataError(f"{where}: target {row['target']!r} is not one of {SCHEME_TARGETS}")
+        if row["resolves_as"] not in action_names and row["resolves_as"] not in SCHEME_PRIMITIVES:
+            raise RulesDataError(f"{where}: resolves_as {row['resolves_as']!r} is no action")
+        if not 1 <= numbers["steps_min"] <= numbers["steps_max"]:
+            raise RulesDataError(f"{where}: steps_min and steps_max must satisfy 1 <= min <= max")
+        reads = [x.strip() for x in (row["reads"] or "").split(";") if x.strip()]
+        for action in reads:
+            if action not in action_names:
+                raise RulesDataError(f"{where}: reads unknown action {action!r}")
+        out.append(Scheme(
+            scheme=row["scheme"], answer=row["answer"], target=row["target"],
+            resolves_as=row["resolves_as"], reads=reads,
+            begins=row["begins"], abandons=row["abandons"], **numbers,
+        ))
+    return out
+
+
+def _load_scheme_rules(rules_dir):
+    path = rules_dir / "schemes.json"
+    return _read_json(path) if path.exists() else {}
+
+
 def load_rules(path=None, version=None, root=None):
     """Load and validate one version's rules tables.
 
@@ -679,6 +773,8 @@ def load_rules(path=None, version=None, root=None):
     surnames = _load_surnames(rules_dir)
     traits = _load_traits(rules_dir, action_names)
     upkeep = _load_upkeep(rules_dir)
+    schemes = _load_schemes(rules_dir, action_names)
+    scheme_rules = _load_scheme_rules(rules_dir)
 
     return RulesBundle(
         actions=actions,
@@ -698,4 +794,6 @@ def load_rules(path=None, version=None, root=None):
         features=features,
         traits=traits,
         upkeep=upkeep,
+        schemes=schemes,
+        scheme_rules=scheme_rules,
     )

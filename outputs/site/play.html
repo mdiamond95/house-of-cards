@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header><a class="wordmark" href="index.html">House of Cards</a><nav><a href="index.html">Map</a><a href="play.html">Play</a><a href="ridings.html">Ridings</a><a href="chronicle.html">Chronicle</a><a href="climate.html">Climate</a><a href="about.html">About</a><a href="archive/index.html">Archive</a><a href="console.html">Console</a></nav></header>
+<header><a class="wordmark" href="index.html">House of Cards</a><nav><a href="index.html">Map</a><a href="play.html">Play</a><a href="ridings.html">Ridings</a><a href="chronicle.html">Chronicle</a><a href="climate.html">Climate</a><a href="about.html">About</a><a href="archive/index.html">Archive</a><a href="console.html">Console</a><a href="preview/replay.html">Preview (draft rules)</a></nav></header>
 <main>
 
 <h1>Play</h1>
@@ -29,6 +29,7 @@
 <div id="panel" class="panel" hidden><button id="panel-close" type="button" aria-label="Close">×</button><div id="panel-body"></div></div>
 <p class="hint">Tap a riding for its house. Grey ridings are unclaimed.</p>
 <article id="story-dispatch" class="dispatch" aria-live="polite"></article>
+<section id="story-plans" class="plans" aria-labelledby="plans-heading" hidden><h2 id="plans-heading" class="afoot-heading">Plans afoot</h2><ol id="story-plans-list" class="plans-list"></ol></section>
 <section class="afoot" aria-labelledby="afoot-heading"><h2 id="afoot-heading" class="afoot-heading">Afoot</h2><ol id="story-afoot-list" class="afoot-list"></ol><div id="story-afoot-detail" class="afoot-detail" aria-live="polite"></div></section>
 <ol id="story-log" class="dispatch-log" aria-label="Earlier seasons"></ol>
 <details id="full-record" class="full-record"><summary>Full record</summary><div class="feed-controls"><label for="feed-filter">Only</label><select id="feed-filter"><option value="">every house</option></select></div>
