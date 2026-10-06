@@ -256,6 +256,49 @@ pre { background: #fff; border: 1px solid var(--rule); padding: 0.6rem; overflow
 .house-list { line-height: 1.9; }
 footer { margin-top: 3rem; padding-top: 0.8rem; border-top: 1px solid var(--rule); font-size: 0.75rem; color: var(--muted); }
 
+/* The story layer (docs/STORY_DESIGN.md §3): the dispatch, the standings strip,
+   and the full record one tap away. Shared by the Replay and Play pages. */
+.story-controls { margin-top: 0.4rem; }
+.story-follow { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8rem;
+                color: var(--muted); margin-left: auto; }
+.story-follow select, .story-goto input { font: inherit; font-size: 0.85rem; padding: 0.35rem 0.4rem;
+  border: 1px solid var(--rule); background: #fff; color: var(--ink); border-radius: 3px; max-width: 11rem; }
+.story-goto { display: inline-flex; gap: 0.25rem; }
+.story-goto input { width: 5.5rem; }
+.story-note { border-left: 2px solid var(--accent); padding-left: 0.6rem; }
+.story-turn { margin: 0.3rem 0 0; }
+.standings { list-style: none; padding: 0; margin: 0.6rem 0 0; display: grid;
+             grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: 0.15rem 0.8rem;
+             font-size: 0.82rem; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+             padding: 0.4rem 0; }
+.standings:empty { display: none; }
+.standing { display: flex; align-items: center; gap: 0.3rem; white-space: nowrap; overflow: hidden; }
+.standing.followed .standing-name { font-weight: 600; text-decoration: underline; }
+.standing-place { color: var(--muted); min-width: 1rem; text-align: right; }
+.standing-move { width: 0.9rem; text-align: center; font-size: 0.7rem; color: var(--muted); }
+.move-up .standing-move { color: #2f6b2a; }
+.move-down .standing-move { color: #a04040; }
+.move-new .standing-move { color: var(--accent); }
+.standing .swatch { margin-right: 0; }
+.standing-name { overflow: hidden; text-overflow: ellipsis; }
+.standing-score { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
+.dispatch { margin: 0.7rem 0 0.2rem; min-height: 4.5rem; }
+.dispatch-turn { margin: 0 0 0.3rem; border: 0; padding: 0; font-size: 0.8rem; font-family: var(--sans);
+                 text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.dispatch-headline { font-family: var(--serif); font-size: 1.22rem; line-height: 1.35; margin: 0.2rem 0; }
+.dispatch-headline.pause { border-left: 3px solid var(--accent); padding-left: 0.6rem; }
+.dispatch-kind { margin: 0 0 0.4rem; }
+.dispatch-secondary { margin: 0.3rem 0; padding-left: 1rem; font-family: var(--serif); font-size: 0.95rem; }
+.dispatch-secondary li { margin: 0.15rem 0; }
+.dispatch-ledger, .dispatch-quiet { font-family: var(--serif); font-style: italic; color: var(--muted); }
+.dispatch-quiet { font-size: 1.02rem; }
+.dispatch-log { list-style: none; padding: 0; margin: 0.6rem 0 0; }
+.dispatch-log > li { border-top: 1px solid var(--rule); padding: 0.5rem 0; }
+.full-record { margin: 0.8rem 0; font-size: 0.88rem; }
+.full-record summary { cursor: pointer; color: var(--muted); font-size: 0.82rem; }
+.record-lines { margin: 0.4rem 0; }
+.record-lines li { margin: 0.15rem 0; }
+
 @media (min-width: 40rem) {
   main { padding: 1.5rem 2rem 5rem; }
   h1 { font-size: 2rem; }

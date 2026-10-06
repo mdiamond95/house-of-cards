@@ -17,6 +17,11 @@ import {
   recordFiles, commitRecord, boundRecords, missingSeasons, replayRecordsStepwise,
   rebuiltMatches, reviveRecords,
 } from './engine/record.js';
+// The story layer (docs/STORY_DESIGN.md §3): web/story/, copied to story/ on
+// export. It reads the engine's state after each season and never writes to it.
+import { Story } from './story/dispatch.js';
+import { BEAT_KINDS, baselineFromState, inputFromState, typeTurn } from './story/beats.js';
+import { MapCamera, dispatchHtml, readStored, stripHtml, writeStored } from './story/view.js';
 
 const REPO = 'mdiamond95/house-of-cards';
 const GITHUB_API = 'https://api.github.com';
@@ -31,6 +36,10 @@ const TOKEN_KEY = 'hoc-token';
 const RULES_FILES = ["actions.csv", "communities.csv", "denylist.csv", "events.csv", "given_names.csv", "mortality.csv", "objectives.csv", "places.csv", "surnames.csv", "eras.json", "founding.json", "friction.json", "responses.json", "succession.json", "features.json"];
 const REFERENCE_FILES = ["ridings.csv", "adjacency.csv", "places_by_riding.csv", "riding_tokens.csv", "riding_stats.csv", "riding_jurisdictions.csv"];
 const UNCLAIMED_FILL = '#E5E5E5';
+const FOLLOW_KEY = `hoc-story-follow:${SCENARIO.name}`;
+// Auto plays a season this often and stops on a headline at or above the pause
+// threshold (story/weights.json).
+const AUTO_MS = 1600;
 const DB_NAME = 'house-of-cards-play';
 const DB_STORE = 'worlds';
 
@@ -160,6 +169,15 @@ const app = {
   // True while a save is in flight, so a second press is ignored without
   // disabling the button.
   saving: false,
+  // The story layer: its weights, the Story telling this game, the dispatch
+  // of the last season told, the map camera, Auto's timer and the house being
+  // followed (a camera choice, remembered in localStorage when it can be).
+  weights: null,
+  story: null,
+  lastDispatch: null,
+  camera: null,
+  auto: null,
+  follow: null,
 };
 
 function token() {
@@ -418,6 +436,7 @@ function renderAll({ flash = false } = {}) {
   renderStatus();
   renderLegend();
   renderHouseFilter();
+  renderFollow();
   renderInterveneHouses();
   renderUnsaved();
   renderScrubber();
@@ -433,15 +452,121 @@ function stopsHit(record) {
   return [...hit].filter((name) => app.stopOn.has(name)).sort();
 }
 
-function playOne() {
+function playOne({ zoom = false } = {}) {
   const record = app.world.runSeason();
   const stopped = stopsHit(record);
   app.playedRecords.push(record);
   app.viewing = record.season;
   appendFeed(record.season, record.chronicle, { stopped });
   renderAll({ flash: true });
+  tellSeason(record.season, { zoom });
   autosave();
   return stopped;
+}
+
+// ------------------------------------------------------------ the story -----
+//
+// Each season played here is told as a dispatch: typed beats from the engine's
+// in-memory tables (story/beats.js), weighed and chosen by story/dispatch.js.
+// The story starts from the board as this page found it, so its standings are
+// exact; it cannot know which firsts the game spent before, and assumes all.
+
+function newStory() {
+  app.story = new Story({
+    weights: app.weights,
+    baseline: baselineFromState(app.world.state),
+    follow: app.follow,
+    seen: currentSeason() > 0 ? BEAT_KINDS : [],
+  });
+  app.lastDispatch = null;
+  el('story-dispatch').innerHTML =
+    '<p class="dispatch-quiet">The dispatch begins with the next season played here.'
+    + ' <b>Next season</b> plays one; <b>Auto</b> plays on and stops on a headline.</p>';
+  el('story-log').innerHTML = '';
+  renderStrip(app.story.still());
+}
+
+function houseColour(house) {
+  const [primary] = app.world.houseColours(house);
+  return primary || null;
+}
+
+function renderStrip(rows) {
+  el('story-strip').innerHTML = stripHtml(rows, { colourOf: houseColour, follow: app.follow });
+}
+
+// The headline's ridings, or every riding its houses hold when it moved none.
+function focusOf(d) {
+  if (!d || d.quiet) return [];
+  if (d.zoom.length) return d.zoom;
+  const houses = new Set(d.headline.beat.houses || []);
+  return Object.entries(app.story.board.owners)
+    .filter(([, house]) => houses.has(house))
+    .map(([fed]) => fed);
+}
+
+function tellSeason(season, { zoom = false } = {}) {
+  if (!app.story) return null;
+  const d = app.story.step(season, typeTurn(inputFromState(app.world.state, season)));
+  const current = el('story-dispatch');
+  if (app.lastDispatch !== null) {
+    const item = document.createElement('li');
+    item.innerHTML = current.innerHTML;
+    el('story-log').prepend(item);
+    while (el('story-log').children.length > 30) el('story-log').removeChild(el('story-log').lastChild);
+  }
+  current.innerHTML = dispatchHtml(d);
+  app.lastDispatch = d;
+  renderStrip(d.standings);
+  if (zoom && app.camera) app.camera.focus(focusOf(d));
+  return d;
+}
+
+function storyNote(text) {
+  const box = el('story-note');
+  box.hidden = !text;
+  box.textContent = text || '';
+}
+
+function renderFollow() {
+  const select = el('story-follow');
+  const names = app.world.state.activeHouseNames();
+  select.innerHTML = '<option value="">no one</option>'
+    + names.map((h) => `<option>${escapeHtml(h)}</option>`).join('');
+  select.value = app.follow && names.includes(app.follow) ? app.follow : '';
+}
+
+function stopAuto(reason = '') {
+  if (app.auto !== null) window.clearInterval(app.auto);
+  app.auto = null;
+  el('story-auto').textContent = 'Auto';
+  el('story-auto').classList.remove('playing');
+  storyNote(reason);
+}
+
+function autoTick() {
+  if (app.viewing !== currentSeason()) {
+    stopAuto('Auto stopped: the scrubber is behind the head of the game.');
+    return;
+  }
+  const stopped = playOne({ zoom: true });
+  if (stopped.length) {
+    stopAuto(`Stopped: ${stopped.join(', ')}.`);
+    return;
+  }
+  const d = app.lastDispatch;
+  if (d && d.pause) {
+    stopAuto(`Paused on a headline of weight ${d.headline.weight}`
+      + ` (the pause threshold is ${app.weights.thresholds.pause}). Press Auto to carry on.`);
+  }
+}
+
+function startAuto() {
+  pause();
+  storyNote('');
+  el('story-auto').textContent = 'Pause';
+  el('story-auto').classList.add('playing');
+  app.auto = window.setInterval(autoTick, AUTO_MS);
 }
 
 let runRemaining = 0;
@@ -466,12 +591,14 @@ function tick() {
 
 function play() {
   if (app.timer !== null) return;
+  stopAuto();
   el('play-toggle').textContent = 'Pause';
   el('play-toggle').classList.add('playing');
   app.timer = window.setInterval(tick, Math.round(1000 / app.speed));
 }
 
 function pause() {
+  if (app.auto !== null) stopAuto();
   if (app.timer !== null) window.clearInterval(app.timer);
   app.timer = null;
   runRemaining = 0;
@@ -860,6 +987,11 @@ async function boot() {
   if (!worldResponse.ok) throw new Error(`could not load the world (${worldResponse.status})`);
   const committed = await worldResponse.json();
 
+  const weightsResponse = await fetch('story/weights.json');
+  if (!weightsResponse.ok) {
+    throw new Error(`could not load the story weights (${weightsResponse.status})`);
+  }
+  app.weights = await weightsResponse.json();
   app.rules = loadRules(read, rulesVersion);
   // REFERENCE_FILES is the set this game was built on, as the exporter
   // shipped it: the riding_stats/jurisdictions tables are read when it has them.
@@ -925,6 +1057,9 @@ async function boot() {
   }
 
   indexPaths();
+  app.follow = readStored(FOLLOW_KEY);
+  app.camera = new MapCamera(el('map'), { borders: el('map-borders') });
+  newStory();
   wire();
   // A restored game has a history; show it. Anything the autosave could not
   // keep is rebuilt on demand by the save path, and the feed says so rather
@@ -966,6 +1101,22 @@ function wire() {
   el('play-step').addEventListener('click', () => {
     pause();
     if (app.viewing === currentSeason()) playOne();
+  });
+  el('story-next').addEventListener('click', () => {
+    pause();
+    if (app.viewing === currentSeason()) playOne({ zoom: true });
+    else storyNote('The scrubber is behind the head of the game: return to it, or Undo to here.');
+  });
+  el('story-auto').addEventListener('click', () => {
+    if (app.auto !== null) stopAuto();
+    else startAuto();
+  });
+  // Following changes the weights of seasons told from now on, never the game.
+  el('story-follow').addEventListener('change', (event) => {
+    app.follow = event.target.value || null;
+    writeStored(FOLLOW_KEY, app.follow);
+    if (app.story) app.story.follow = app.follow;
+    renderStrip(app.lastDispatch ? app.lastDispatch.standings : app.story.still());
   });
   for (const button of document.querySelectorAll('.speed')) {
     button.addEventListener('click', () => {
@@ -1055,6 +1206,7 @@ function wire() {
   const viewToggle = el('view-toggle');
   const map = el('map');
   viewToggle.addEventListener('click', () => {
+    if (app.camera) app.camera.reset();
     const showingSouth = map.getAttribute('viewBox') === map.getAttribute('data-view-south');
     map.setAttribute(
       'viewBox',
@@ -1129,6 +1281,7 @@ async function rewindTo(target) {
   renderFeedFromRecords();
   indexPaths();
   renderAll({ flash: false });
+  newStory();
   await autosave();
   progress.hidden = true;
   el('play-app').hidden = false;
@@ -1212,6 +1365,9 @@ function wireIntervene() {
       item.innerHTML = `<h3>Season ${currentSeason()} · director</h3><p>${escapeHtml(feedLine)}</p>`;
       el('feed').prepend(item);
       renderAll({ flash: true });
+      // The intervention changed the board outside any season the story told.
+      app.story.rebase(baselineFromState(app.world.state));
+      renderStrip(app.story.still());
       autosave();
       box.hidden = false;
       box.className = 'status-box good';
