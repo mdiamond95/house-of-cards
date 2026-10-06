@@ -71,11 +71,21 @@ function assetUrl(logical) {
   return logical.startsWith('rules/') ? `data/${logical}` : logical;
 }
 
+// Rules tables a version may lack (hoc/export/play.py OPTIONAL_RULES_FILES):
+// a 404 for one is the version saying it has none, and the loader reads it so.
+const OPTIONAL_RULES_FILES = __OPTIONAL_RULES_FILES__;
+
 async function fetchAll(paths, onProgress) {
   const contents = new Map();
   let done = 0;
   for (const logical of paths) {
     const response = await fetch(assetUrl(logical));
+    const optional = OPTIONAL_RULES_FILES.some((name) => logical.endsWith(`/${name}`));
+    if (!response.ok && optional && response.status === 404) {
+      done += 1;
+      onProgress(done, paths.length);
+      continue;
+    }
     if (!response.ok) throw new Error(`could not load ${logical} (${response.status})`);
     contents.set(logical, await response.text());
     done += 1;

@@ -11,8 +11,8 @@ let seq = 0;
 const beat = (turn, kind, houses, extra = {}) => ({ turn, seq: seq++, kind, houses, ...extra });
 
 // Steps a tracker the way dispatch.js does, keeping the board alongside.
-function harness({ owners = {}, ranks = {}, totals = { 35: 4, 24: 2 }, held = [] } = {}) {
-  const lines = new Storylines({ weights, provinceTotals: totals, held });
+function harness({ owners = {}, ranks = {}, totals = { 35: 4, 24: 2 }, held = [], watch = false } = {}) {
+  const lines = new Storylines({ weights, provinceTotals: totals, held, watch });
   let board = { owners, ranks, removed: [] };
   return {
     lines,
@@ -132,4 +132,19 @@ test('a riding passing between houses is never a frontier beat', () => {
   assert.ok(!quebec.houses.includes('B'));
   h.step(3, [beat(3, 'expansion', ['B'], { owners: { 24002: 'B' } })]);
   assert.equal(quebec.beats.length, 2);
+});
+
+test('with the succession watch, a question opens at sixty with no heir and closes when an heir comes of age', () => {
+  const h = harness({ ranks: { A: 0 }, watch: true });
+  h.step(1, [beat(1, 'heir_wanted', ['A'])]);
+  const s = h.lines.all.find((x) => x.type === 'succession');
+  assert.deepEqual([s.key, s.state], ['A', 'rising']);
+  h.step(2, [beat(2, 'name_heir', ['A'], { outcome: 'heir' })]);
+  assert.equal(s.state, 'rising', 'naming an heir is a step, not the answer, when the watch is recorded');
+  h.step(9, [beat(9, 'heir_of_age', ['A'])]);
+  assert.deepEqual([s.state, s.outcome, s.beats.length], ['closed', 'an heir came of age', 3]);
+  const old = harness({ ranks: { A: 0 } });
+  old.step(1, [beat(1, 'succession_disorderly', ['A'], { outcome: 'death' })]);
+  old.step(2, [beat(2, 'name_heir', ['A'], { outcome: 'heir' })]);
+  assert.equal(old.lines.all[0].outcome, 'an heir named', 'a game without the watch still closes on naming');
 });
