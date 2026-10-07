@@ -16,8 +16,9 @@
 //              seat       a founding, succession, elevation or fall, at the seat
 //              bond       a match, compact or peace: a solid line between seats
 //              strife     a quarrel or dispute: a broken line between seats
-//              crisis     every standing house's seat marked by its camp
-//                         (lead, resist, aside); the camera takes the whole table
+//              crisis     every standing house's camp (lead, resist, aside):
+//                         the page tints each camp's holdings with a pattern
+//                         (Phase V2); the camera takes the whole table
 //              accession  land coming under Canada: its ridings, opened
 //   schemes  the public schemes afoot of the cast and the followed house that
 //            have a target, as faint arrows (intent, before it resolves)
@@ -208,6 +209,12 @@ export function markOf(entry, ctx, { headline = false } = {}) {
     Object.assign(mark, {
       type: 'crisis', glyph: 'crisis', label: b.world.carried === 'lead' ? 'led' : b.world.carried === 'resist' ? 'resisted' : 'divided',
       camps: { lead, resist, aside, carried: b.world.carried || null },
+      // Phase V2: each camp's houses, whose holdings the page tints by camp.
+      campHouses: {
+        lead: [...(b.world.lead || [])],
+        resist: [...(b.world.resist || [])],
+        aside: ctx.standing.filter((h) => !sided.has(h)),
+      },
     });
     mark.ground = uniq([...lead, ...resist, ...aside]);
     mark.groundKind = 'table';

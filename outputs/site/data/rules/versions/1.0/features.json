@@ -15,5 +15,6 @@
   "cohesion_strain": true,
   "distinct_surnames": true,
   "world_calendar": true,
-  "crises": true
+  "crises": true,
+  "round_record": true
 }

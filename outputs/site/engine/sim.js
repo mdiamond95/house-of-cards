@@ -315,6 +315,10 @@ export class World {
     this.noticed = new Set();
     // Rules 1.0 `world_calendar`: the season being played, or null between seasons.
     this._playingSeason = null;
+    // Rules 1.0 `round_record`: the part of the round being played ("world", a
+    // house, or "close"), stamped on every event recorded; null when the flag
+    // is off and between seasons.
+    this._part = null;
     this._turnCache = new Map();
     this._expansionClaims = new Map();
     this._provinceDistance = new Map();
@@ -556,6 +560,9 @@ export class World {
   // into mechanical_delta because the events table has no season column.
   record(kind, title, houses, season, { band = null, line = null, delta = null } = {}) {
     const payload = { season };
+    // Rules 1.0 `round_record`: the part of the round the event was recorded
+    // in. It is set by the season loop and read by nothing here.
+    if (this._part !== null) payload.part = this._part;
     if (delta) Object.assign(payload, delta);
     const eventId = this.state.recordEvent({
       kind,
@@ -4042,6 +4049,10 @@ export class World {
     this.noticed = new Set();
     const rng = this.rngFor(1);
     this._playingSeason = 1;
+    // Rules 1.0 `round_record`: turn 1 is the first founding alone, which is
+    // the Crown's, in the close; no house has a turn.
+    const roundRecord = this.feature('round_record');
+    this._part = roundRecord ? 'close' : null;
     let record;
     try {
       const house = this.foundHouse(1, { seat, rng });
@@ -4051,9 +4062,10 @@ export class World {
 
       const prestige = this.feature('prestige') ? this.computePrestige(1) : null;
       if (this.feature('world_calendar')) this.trackStanding(1, prestige);
-      record = this.writeSeason(1, [], house, prestige);
+      record = this.writeSeason(1, [], house, prestige, null, null, roundRecord ? [] : null);
     } finally {
       this._playingSeason = null;
+      this._part = null;
     }
     record.kind = 'initial';
     record.seat = seat;
@@ -4075,6 +4087,7 @@ export class World {
       return this.playSeason(season);
     } finally {
       this._playingSeason = null;
+      this._part = null;
     }
   }
 
@@ -4083,6 +4096,11 @@ export class World {
     this.chronicle = [];
     this.noticed = new Set();
     const rng = this.rngFor(season);
+    // Rules 1.0 `round_record`: every event says which part of the round it was
+    // recorded in, and the season record keeps the playing order. Neither is
+    // read by any decision.
+    const roundRecord = this.feature('round_record');
+    this._part = roundRecord ? 'world' : null;
 
     if (this.phases.has('clocks')) this.ageEveryone();
 
@@ -4096,8 +4114,11 @@ export class World {
 
     const outcomes = [];
     this._expansionClaims = new Map();
-    for (const row of this.activeHouses()) {
+    const playing = this.activeHouses();
+    const order = roundRecord ? playing.map((row) => row.house) : null;
+    for (const row of playing) {
       const house = row.house;
+      if (roundRecord) this._part = house;
       this._turnCache = new Map();
       if (this.houseRow(house).removedSeason !== null) continue;
 
@@ -4136,6 +4157,7 @@ export class World {
     }
 
     let founded = null;
+    if (roundRecord) this._part = 'close';
     if (this.phases.has('founding')) founded = this.foundingRoll(season, rng);
     if (this.phases.has('enclosure')) this.recomputeEnclosure(season);
 
@@ -4164,7 +4186,7 @@ export class World {
 
     // Rules 1.0 `schemes`: every public scheme, as the season left them.
     const plans = this.feature('schemes') ? this.plans() : null;
-    return this.writeSeason(season, outcomes, founded, prestige, plans, reckoning);
+    return this.writeSeason(season, outcomes, founded, prestige, plans, reckoning, order);
   }
 
   // §0.8: the two lines that fire when nothing else did. The mirror of
@@ -4225,7 +4247,8 @@ export class World {
     }
   }
 
-  writeSeason(season, outcomes, founded, prestige = null, plans = null, reckoning = null) {
+  writeSeason(season, outcomes, founded, prestige = null, plans = null, reckoning = null,
+    order = null) {
     this.snapshot(season);
     let housesAfter = 0;
     for (const house of this.state.houses.values()) {
@@ -4250,6 +4273,7 @@ export class World {
     if (plans !== null) record.plans = plans;
     if (this.feature('world_calendar')) record.year = this.rules.game.start_year + season - 1;
     if (reckoning !== null) record.reckoning = reckoning;
+    if (order !== null) record.order = order;
 
     this.state.seasons.push({
       seasonNo: season,
