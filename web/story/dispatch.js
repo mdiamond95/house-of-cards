@@ -40,6 +40,13 @@
 // those left open — and Auto always pauses there; after the last turn it
 // carries the reckoning (reckoning.js) and pauses there too.
 //
+// Phase V2 adds the round (round.js). For a record that says which part of
+// the year every beat was played in (rules 1.0 `round_record`), `step` is
+// handed the year's playing order and its deck, and the dispatch carries
+// `round`: the world's turn, each house's in order, and the close, every
+// house turn with its card. The Story keeps each house's last turns and names
+// its allies and rivals for the house sheet.
+//
 // Pure: no DOM, no engine, no clock, no randomness.
 
 import { BOOKKEEPING, compareText, mergeActs } from './beats.js';
@@ -47,7 +54,8 @@ import { reckoningView } from './reckoning.js';
 import { createContext, weighTurn, advance, provinceOf } from './weight.js';
 import { emptyBoard, copyBoard, applyBeats, table, movement } from './standings.js';
 import { Storylines, storylineName } from './storylines.js';
-import { Namer, sentence } from './text.js';
+import { Namer, rankForm, sentence } from './text.js';
+import { buildRound, houseCard, houseSheet } from './round.js';
 
 const SMALL = [
   'no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
@@ -180,6 +188,10 @@ export class Story {
     });
     // The standings as the current chapter began, for its interstitial.
     this.chapterStart = { turn: 1, table: this.standings };
+    // Phase V2: the public schemes before the last turn, and each house's
+    // turns as the round told them, newest last ({ turn, year, text }).
+    this.plansBefore = null;
+    this.turnsOf = new Map();
   }
 
   // The world year of a turn, or null for a game without a calendar.
@@ -228,7 +240,11 @@ export class Story {
 
   // `prestige`, for a record that carries it (rules 1.0), is each house's
   // prestige at the end of this turn: the standings use it.
-  step(turn, rawBeats, { prestige = null, plans = null } = {}) {
+  //
+  // `playing` and `deck` (Phase V2, rules 1.0 `round_record`) are the year's
+  // playing order and the events its world's turn announces; with them the
+  // dispatch carries the year's `round`.
+  step(turn, rawBeats, { prestige = null, plans = null, playing = null, deck = [] } = {}) {
     const w = this.weights;
     const beats = mergeActs(rawBeats);
     const before = this.standings;
@@ -256,7 +272,11 @@ export class Story {
     this.board = boardAfter;
     this.standings = after;
     this.turn = turn;
-    if (plans !== null) this.plans = plans;
+    const plansBefore = this.plans;
+    if (plans !== null) {
+      this.plansBefore = plansBefore;
+      this.plans = plans;
+    }
 
     const namer = this.namer(boardAfter.ranks);
     // A crisis names its camps' houses in standings order, the cast first.
@@ -398,9 +418,32 @@ export class Story {
       }
     }
 
+    // Phase V2: the year as a round, for a record that keeps its order.
+    let round = null;
+    if (playing !== null) {
+      const every = [chosen.headline, ...chosen.related, ...chosen.secondary, ...chosen.rest].filter(Boolean);
+      const entries = every.map((entry) => {
+        const alone = sentence(entry.beat, this.namer(boardAfter.ranks), (fed) => this.ridingName(fed), { order });
+        return { beat: entry.beat, weight: entry.weight, mods: entry.mods, text: alone, alone };
+      });
+      round = buildRound({
+        turn, entries, playing, deck, board: boardBefore, thresholds: w.thresholds,
+      });
+      round.parts.forEach((part, i) => {
+        if (part.kind !== 'house') return;
+        part.card = houseCard(part, round.parts.slice(0, i), {
+          turn, plans: this.plans, plansBefore, placeOf: (h) => this.placeOf(h),
+        });
+        const list = this.turnsOf.get(part.house) || [];
+        list.push({ turn, year, text: part.card.did });
+        this.turnsOf.set(part.house, list.slice(-5));
+      });
+    }
+
     return {
       turn,
       year,
+      round,
       chapter,
       reckoning,
       quiet: chosen.quiet,
@@ -496,6 +539,41 @@ export class Story {
         turnsRemaining: p.turns_remaining,
         followed: Boolean(this.follow && p.house === this.follow),
       }));
+  }
+
+  // A house's allies and rivals now (Phase V2): the other houses of its open
+  // unions and rivalries, by designation.
+  relationsOf(house) {
+    const allies = new Set();
+    const rivals = new Set();
+    for (const s of this.lines.open) {
+      if (!s.houses.includes(house)) continue;
+      const into = s.type === 'union' ? allies : s.type === 'rivalry' ? rivals : null;
+      if (!into) continue;
+      for (const h of s.houses) if (h !== house) into.add(h);
+    }
+    const list = (set) => [...set].sort(compareText).map((h) => this.placeOf(h));
+    return { allies: list(allies), rivals: list(rivals) };
+  }
+
+  // A house's sheet as the story stands (Phase V2): `people` is the record's
+  // holders and heirs of the house, `last` the game's last turn.
+  sheet(house, { people = [], last = this.turn } = {}) {
+    const row = this.standings.find((r) => r.house === house) || null;
+    const style = this.styleOf(house);
+    const ridings = Object.values(this.board.owners).filter((h) => h === house).length;
+    const { allies, rivals } = this.relationsOf(house);
+    return {
+      ...houseSheet({
+        house, turn: this.turn, last, people,
+        rank: style ? rankForm(this.board.ranks[house] || 0, style.female) : null,
+        ridings, prestige: row ? row.score : null, place: row ? row.place : null, of: this.standings.length,
+        plans: this.plans, plansBefore: this.plansBefore, allies, rivals,
+        history: this.turnsOf.get(house) || [], placeOf: (h) => this.placeOf(h),
+      }),
+      name: this.namer().style(house),
+      removed: this.board.removed.includes(house),
+    };
   }
 
   summary(s, score = null) {
