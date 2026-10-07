@@ -955,22 +955,48 @@ def _map_view_svg(features, geometry, lookup):
     defs = (
         '<defs><pattern id="mv-closed" patternUnits="userSpaceOnUse" width="1" height="1">'
         '<rect width="1000" height="1000" fill="#d9d4c7"/>'
-        '<path d="M0,0 L1,1" stroke="#a49c8a" stroke-width="1.1" vector-effect="non-scaling-stroke"/>'
-        "</pattern></defs>"
+        '<path data-diagonal="1" d="M0,0 L1,1" stroke="#a49c8a" stroke-width="1.1"'
+        ' vector-effect="non-scaling-stroke"/>'
+        "</pattern>"
+        + "".join(_camp_pattern(camp, scaled) for camp in _CAMP_TINTS for scaled in (True, False))
+        + "</defs>"
     )
     outlines = '<g id="mv-outlines" fill="none" pointer-events="none"></g>'
     return svg[:head] + defs + svg[head:-len("</svg>")] + outlines + "</svg>"
 
 
+# A crisis's camps (Phase V2): each camp's holdings are tinted with a colour
+# and a pattern, so a camp never rests on colour alone. Drawn on a 9-pixel
+# tile; the page scales the map's copy so the tile keeps its size on screen,
+# and the legend's swatches use the fixed copy.
+_CAMP_TINTS = {
+    "lead": ("rgba(47,107,42,0.42)", '<path d="M-1,10 L10,-1 M-1,1 L1,-1 M8,10 L10,8" stroke="#1f4d1b" stroke-width="1.7"/>'),
+    "resist": ("rgba(91,63,143,0.42)", '<circle cx="4.5" cy="4.5" r="1.7" fill="#3c2766"/>'),
+    "aside": ("rgba(138,132,120,0.30)", '<path d="M0,4.5 L9,4.5" stroke="#6b665c" stroke-width="1.2"/>'),
+}
+
+
+def _camp_pattern(camp, scaled):
+    fill, motif = _CAMP_TINTS[camp]
+    pid = f"mv-tint-{camp}" if scaled else f"mv-tint-{camp}-swatch"
+    unit = ' data-unit="1"' if scaled else ""
+    return (
+        f'<pattern id="{pid}" patternUnits="userSpaceOnUse" width="9" height="9">'
+        f'<g{unit}><rect width="9" height="9" fill="{fill}"/>{motif}</g></pattern>'
+    )
+
+
 def _replay_map_page(conn, features, borders):
     """replay.html: the Replay as a map (docs/STORY_DESIGN.md §3.6, Phase V).
 
-    The map fills the screen; the year, the chapter and a scrubber sit over it
-    at the top, the controls at the bottom, the standings in a strip that
-    opens, and Plans afoot, Afoot, the dispatch and the full record in a drawer
-    that is closed until asked for. Events are marks on the map with cards
-    (web/story/marks.js); the camera follows the headline until a gesture
-    frees it (web/story/camera.js). Built by replay.js (hoc/export/replay_js.py).
+    The map fills the screen; the year, the chapter, a scrubber and (Phase V2,
+    for a game told round by round) the turn-order strip sit over it at the
+    top, the turn's card and the controls at the bottom, the standings in a
+    strip that opens, a sheet for any house, and Plans afoot, Afoot, the
+    dispatch and the full record in a drawer that is closed until asked for.
+    Events are marks on the map with cards (web/story/marks.js); the camera
+    follows the turn until a gesture frees it (web/story/camera.js). Built by
+    replay.js (hoc/export/replay_js.py).
     """
     lookup = _riding_lookup(conn)
     geometry = _map_geometry(features, borders, lookup)
@@ -1001,12 +1027,16 @@ def _replay_map_page(conn, features, borders):
         ' aria-expanded="false" aria-controls="mv-menu">&#9776;</button>'
         '<div class="mv-when"><span id="mv-year" class="mv-year"></span>'
         '<span id="mv-chapter" class="mv-chapter"></span></div>'
+        '<button type="button" id="mv-drawer-button" class="mv-more" aria-expanded="false"'
+        ' aria-controls="mv-drawer">More<span id="mv-more-count" class="mv-more-count"></span></button>'
         '<button type="button" id="mv-standings-toggle" class="mv-standings-toggle"'
         ' aria-expanded="false" aria-controls="mv-standings">Standings</button>'
         "</div>"
         f'<input id="mv-scrub" class="mv-scrub" type="range" min="0" max="0" value="0" step="1"'
         f' aria-label="Go to a {esc(unit)}">'
         f"{tag}"
+        # Phase V2: the turn-order strip, for a game told round by round.
+        '<ol id="mv-round" class="mv-round" aria-label="The year\'s turns, in playing order" hidden></ol>'
         '<div id="mv-chips" class="mv-chips" aria-live="polite"></div>'
         '<div id="mv-standings" class="mv-standings" hidden>'
         '<ol id="story-strip" class="mv-standings-list" aria-label="Standings: the top eight"></ol>'
@@ -1014,15 +1044,22 @@ def _replay_map_page(conn, features, borders):
         "</select></label></div>"
         "</header>\n"
         '<footer class="mv-bottom">'
+        '<button type="button" id="mv-recentre" class="mv-recentre" hidden>Recentre</button>'
+        # The turn's own card, docked above the controls at its natural height.
+        '<section id="mv-turn" class="mv-turn" aria-live="polite" hidden></section>'
         '<p id="story-note" class="mv-note" role="status" hidden></p>'
         '<div class="mv-controls">'
-        '<button type="button" id="mv-recentre" class="mv-recentre" hidden>Recentre</button>'
-        f'<button type="button" id="story-next" class="primary">Next {esc(unit)}</button>'
+        '<button type="button" id="story-next" class="primary">Next</button>'
+        '<button type="button" id="mv-next-year">Next year</button>'
         '<button type="button" id="story-auto">Auto</button>'
         '<button type="button" id="mv-speed" class="mv-speed" aria-label="Auto speed">1&times;</button>'
-        '<button type="button" id="mv-drawer-button" aria-expanded="false" aria-controls="mv-drawer">'
-        'More<span id="mv-more-count" class="mv-more-count"></span></button>'
+        '<button type="button" id="mv-quiet" class="mv-quiet" aria-pressed="false"'
+        ' title="Quiet turns: show or skip">Quiet: show</button>'
         "</div></footer>\n"
+        '<aside id="mv-sheet" class="mv-sheet" aria-label="A house" hidden>'
+        '<div class="mv-drawer-head"><span class="mv-drawer-title">The house</span>'
+        '<button type="button" id="mv-sheet-close">Close</button></div>'
+        '<div id="mv-sheet-body" class="mv-sheet-body"></div></aside>\n'
         '<aside id="mv-drawer" class="mv-drawer" aria-label="The year in full" hidden>'
         '<div class="mv-drawer-head"><span class="mv-drawer-title">In full</span>'
         '<button type="button" id="mv-drawer-close">Close</button></div>'
