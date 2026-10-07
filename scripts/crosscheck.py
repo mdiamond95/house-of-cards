@@ -10,7 +10,17 @@ is that it agrees with the first. "Agrees" is defined here and nowhere else:
 are expected to differ about is removed.
 
 That field is `engine.impl`, which names the implementation that wrote the file.
-Everything else — every draw, every chronicle line, every stat — must match. The
+Everything else — every draw, every chronicle line, every stat — must match.
+
+The events each engine recorded are compared as well (`engine_events`), in
+the same canonical bytes: every engine event in the order recorded, with its
+kind, title, line, houses and mechanical delta, the `part` of rules 1.0's
+`round_record` among them. A season file says what was drawn; the events say
+what the story layer is told, so they are held to the same standard. An
+event's row id is not part of it: a director's intervention records a wrapper
+event of its own, which the Python turn runner allocates before the
+operations it carries and the JavaScript engine after them, so the numbering
+after an intervention differs while the events, compared by position, do not. The
 comparison is deliberately a byte comparison of canonical JSON rather than a
 structural diff: a structural diff has to decide for itself which differences
 matter, and that decision is exactly the thing that would quietly let the two
@@ -92,8 +102,66 @@ def _apply_script(conn, world, script, after_season):
         shutil.rmtree(directory, ignore_errors=True)
 
 
+def engine_events(conn):
+    """Every event the Python engine recorded, in order, in the shape `cli.js
+    --events` writes: kind, title, line, houses in recorded order, and the
+    delta."""
+    houses = {}
+    for row in conn.execute("SELECT event_id, house FROM event_houses ORDER BY rowid"):
+        houses.setdefault(row["event_id"], []).append(row["house"])
+    return [
+        {
+            "kind": row["kind"],
+            "title": row["title"],
+            "narrative": row["narrative"],
+            "houses": houses.get(row["id"], []),
+            "delta": json.loads(row["mechanical_delta"]) if row["mechanical_delta"] else None,
+        }
+        for row in conn.execute(
+            "SELECT id, kind, title, narrative, mechanical_delta FROM events"
+            " WHERE source = 'engine' ORDER BY id"
+        )
+    ]
+
+
+def _season_of(event):
+    delta = event.get("delta")
+    return delta.get("season") if isinstance(delta, dict) else None
+
+
+def compare_events(python_path, js_path, after=0):
+    """(season, unified diff) for the first season whose events differ, or [].
+    `after` compares only the events of later seasons: a world resumed from a
+    snapshot holds the earlier ones in the snapshot's projection only."""
+    from hoc.sim import canonical_json
+
+    def load(path):
+        events = json.loads(path.read_text(encoding="utf-8"))
+        return [e for e in events if (_season_of(e) or 0) > after]
+
+    py_events = load(python_path)
+    js_events = load(js_path)
+    if canonical_json(py_events) == canonical_json(js_events):
+        return []
+    season_of = _season_of
+
+    for index in range(max(len(py_events), len(js_events))):
+        py_event = py_events[index] if index < len(py_events) else None
+        js_event = js_events[index] if index < len(js_events) else None
+        if py_event == js_event:
+            continue
+        season = season_of(py_event or js_event)
+        py_text = json.dumps(py_event, sort_keys=True, ensure_ascii=False, indent=1) + "\n"
+        js_text = json.dumps(js_event, sort_keys=True, ensure_ascii=False, indent=1) + "\n"
+        return [(season, f"event #{index + 1} differs:\n" + "".join(difflib.unified_diff(
+            py_text.splitlines(keepends=True), js_text.splitlines(keepends=True),
+            fromfile="python/events", tofile="javascript/events",
+        )))]
+    return []
+
+
 def run_python(seed, seasons, out_dir, seat=None, phases=None, script=(), resume_from=None,
-               rules_version=None, reference_data=None):
+               rules_version=None, reference_data=None, events_path=None):
     """Play `seasons` seasons with the Python engine, writing season files.
 
     `resume_from` is a season count to play *first* without writing anything —
@@ -119,11 +187,15 @@ def run_python(seed, seasons, out_dir, seat=None, phases=None, script=(), resume
         for season in range(2, seasons + 1):
             world.run_season()
             _apply_script(conn, world, script, season)
+    if events_path is not None:
+        from hoc.sim import canonical_json
+
+        events_path.write_text(canonical_json(engine_events(conn)), encoding="utf-8")
     conn.close()
 
 
 def run_js(seed, seasons, out_dir, seat=None, phases=None, resume=None, interventions=None,
-           rules_version=None, reference_data=None):
+           rules_version=None, reference_data=None, events_path=None):
     """Play the same seasons with the JavaScript engine."""
     if not JS_CLI.exists():
         raise CrosscheckUnavailable(
@@ -151,6 +223,8 @@ def run_js(seed, seasons, out_dir, seat=None, phases=None, resume=None, interven
         command += ["--reference", scenario.reference_set_dir(reference_data).as_posix()]
     if seat:
         command += ["--seat", seat]
+    if events_path is not None:
+        command += ["--events", str(events_path)]
     if phases:
         command += ["--phases", ",".join(phases)]
     result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
@@ -251,6 +325,10 @@ def crosscheck_resume(seed, snapshot_at, seasons, keep=None, script=(), rules_ve
             for season in range(snapshot_at + 1, snapshot_at + seasons + 1):
                 world.run_season()
                 _apply_script(conn, world, script, season)
+        from hoc.sim import canonical_json
+
+        py_events = workspace / "python-events.json"
+        py_events.write_text(canonical_json(engine_events(conn)), encoding="utf-8")
         conn.close()
 
         script_path = None
@@ -258,9 +336,11 @@ def crosscheck_resume(seed, snapshot_at, seasons, keep=None, script=(), rules_ve
             script_path = workspace / "interventions.json"
             script_path.write_text(json.dumps(list(script), ensure_ascii=False), encoding="utf-8")
 
+        js_events = workspace / "javascript-events.json"
         run_js(seed, seasons, js_dir, resume=snapshot_path, interventions=script_path,
-               rules_version=rules_version, reference_data=reference_data)
-        return _compare_range(python_dir, js_dir, snapshot_at + 1, snapshot_at + seasons)
+               rules_version=rules_version, reference_data=reference_data, events_path=js_events)
+        return (_compare_range(python_dir, js_dir, snapshot_at + 1, snapshot_at + seasons)
+                or compare_events(py_events, js_events, after=snapshot_at))
     finally:
         if keep is None:
             shutil.rmtree(workspace, ignore_errors=True)
@@ -307,11 +387,14 @@ def crosscheck(seed, seasons, seat=None, keep=None, phases=None, script=(), rule
         if script:
             script_path = workspace / "interventions.json"
             script_path.write_text(json.dumps(list(script), ensure_ascii=False), encoding="utf-8")
+        py_events, js_events = workspace / "python-events.json", workspace / "javascript-events.json"
         run_python(seed, seasons, python_dir, seat=seat, phases=phases, script=script,
-                   rules_version=rules_version, reference_data=reference_data)
+                   rules_version=rules_version, reference_data=reference_data,
+                   events_path=py_events)
         run_js(seed, seasons, js_dir, seat=seat, phases=phases, interventions=script_path,
-               rules_version=rules_version, reference_data=reference_data)
-        return compare(python_dir, js_dir, seasons)
+               rules_version=rules_version, reference_data=reference_data,
+               events_path=js_events)
+        return compare(python_dir, js_dir, seasons) or compare_events(py_events, js_events)
     finally:
         if keep is None:
             shutil.rmtree(workspace, ignore_errors=True)
