@@ -263,9 +263,12 @@ export class Story {
     const placeOf = new Map(after.map((row) => [row.house, row.place]));
     const order = (houses) => [...houses].sort((a, b) => (placeOf.get(a) ?? Infinity) - (placeOf.get(b) ?? Infinity)
       || compareText(a, b));
+    // `alone` is the beat told with nobody yet named, for the map view's card
+    // (Phase V), where a beat is read on its own rather than after the headline.
     const told = (entry) => ({
       beat: entry.beat, weight: entry.weight, mods: entry.mods,
       text: sentence(entry.beat, namer, (fed) => this.ridingName(fed), { order }),
+      alone: sentence(entry.beat, this.namer(boardAfter.ranks), (fed) => this.ridingName(fed), { order }),
     });
 
     let headline = null;
@@ -305,6 +308,21 @@ export class Story {
       }
     }
     const secondary = chosen.secondary.map(told);
+    // Phase V: every other beat at or above the secondary threshold, told, for
+    // the map view (marks.js), which draws the heaviest few and counts the rest.
+    const others = chosen.quiet ? []
+      : chosen.rest.filter((entry) => entry.weight >= w.thresholds.secondary).map(told);
+    // The world's events still running this year, for the map view's standing
+    // chip ("The Great War, year 3 of 5"): an event_continues beat, or a crisis
+    // that opens one.
+    const running = [];
+    for (const beat of beats) {
+      if (beat.kind === 'event_continues' && beat.world) {
+        running.push({ event: beat.world.event, year: beat.world.year_of, years: beat.world.years });
+      } else if (beat.kind === 'crisis' && beat.world && (beat.world.years ?? 1) > 1) {
+        running.push({ event: beat.world.event, year: 1, years: beat.world.years });
+      }
+    }
 
     const notable = chosen.rest.filter((entry) => entry.weight >= w.thresholds.secondary).length;
     let ledger = null;
@@ -391,6 +409,11 @@ export class Story {
       previously,
       related,
       secondary,
+      others,
+      running,
+      // The board before and after the turn, for the map view.
+      boardBefore,
+      board: boardAfter,
       ledger,
       quietLine,
       pause: stops.length > 0,
