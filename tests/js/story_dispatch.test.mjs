@@ -322,7 +322,7 @@ test('Phase V2: a year handed its playing order is told as a round, with a card 
   const b = d.round.parts[2];
   assert.equal(b.pace, 'quiet');
   assert.equal(b.card.did, 'It kept to its estates.');
-  assert.ok(b.card.era, 'its answer to the year\'s event is its quiet line');
+  assert.equal(b.card.tags.length, 1, 'its answer to the year\'s event is a tag');
   assert.ok(b.card.doneTo, 'the claim begun in its rival\'s turn was done to it');
   // The sheet: rank, ridings, place, scheme, the rivalry, its last turns.
   const sheet = s.sheet('A', { people: [['Alice A', 'f', 'holder', 1, null, 40, 1]], last: 10 });
@@ -334,4 +334,22 @@ test('Phase V2: a year handed its playing order is told as a round, with a card 
   assert.equal(sheet.history.length, 1);
   // A year without the order is told as before, with no round.
   assert.equal(story().step(1, []).round, null);
+});
+
+test('Phase V3: the round carries the year\'s counts, the headline\'s pace and a tag for each answer', () => {
+  const s = story({ seen: BEAT_KINDS, baseline: { owners: { 35001: 'A', 35002: 'B' }, ranks: { A: 0, B: 1 }, removed: [] } });
+  const d = s.step(3, [
+    beat(3, 'era_response', ['B'], { outcome: 'Resist', part: 'B', world: { event: 'Laurier Elected' } }),
+    beat(3, 'expansion', ['A'], {
+      part: 'A', ridings: ['35003'], owners: { 35003: 'A' }, line: 'Season 3 · Baron A of Alpha sets out to open Ottawa Centre.',
+    }),
+  ], { plans: null, playing: ['A', 'B'], deck: [{ name: 'Laurier Elected', magnitude: 'Significant', crisis: false, years: 1 }] });
+  assert.equal(d.round.countLine, '1 riding taken');
+  assert.equal(d.round.headlinePace, 'routine', 'a riding taken is a routine headline: counts lead');
+  const [, a, b] = d.round.parts;
+  assert.equal(a.pace, 'routine');
+  assert.equal(b.pace, 'quiet');
+  assert.deepEqual(b.card.tags.map((t) => [t.event, t.word]), [['Laurier Elected', 'resists']]);
+  assert.equal(a.card.didFull, 'Baron A of Alpha sets out to open Ottawa Centre.');
+  assert.equal(a.card.did, 'Sets out to open Ottawa Centre.', 'the card sentence starts at the verb');
 });

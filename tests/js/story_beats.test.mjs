@@ -320,3 +320,21 @@ test('Phase D1: a crisis, land opened and a year of a running event are typed fr
   assert.deepEqual(typed[1].ridings, ['46001', '46002']);
   assert.deepEqual(typed[2].world, { event: 'The Great War', lead: ['A'], resist: ['B'], carried: 'lead', years: 5 });
 });
+
+test('Phase V3: a house\'s response to an ordinary event carries the event\'s name, from its title', () => {
+  const input = {
+    turn: 12,
+    events: [
+      { id: 1, kind: 'societal', houses: ['A'], delta: { magnitude: 'Significant', response: 'Resist' }, line: 'L1', title: 'National Policy' },
+      { id: 2, kind: 'societal', houses: ['B'], delta: { magnitude: 'Major', response: 'Lead' }, line: 'L2', title: 'Riel Rebellion' },
+      { id: 3, kind: 'societal', houses: ['C'], delta: { magnitude: 'Minor', response: 'Neutral' }, line: 'L3' },
+    ],
+    actions: [], holdings: [], ranks: {},
+  };
+  const typed = typeTurn(input);
+  assert.deepEqual(typed.map((b) => [b.kind, b.outcome, b.world]), [
+    ['era_response', 'Resist', { event: 'National Policy' }],
+    ['major_response', 'Lead', { event: 'Riel Rebellion' }],
+    ['era_response', 'Neutral', undefined],
+  ]);
+});

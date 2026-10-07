@@ -9,6 +9,10 @@
 //
 //   * Next walks one year turn by turn: the world, each house in the engine's
 //     order, the close; the strip follows, its current chip in view;
+//   * Phase V3, four paces: in 1896 a quiet turn never moves the camera, a
+//     routine one flies, a card says the name once (its sentences start at the
+//     verb), an answer to the year's event is a tag and the close counts the
+//     year; and Auto holds each pace for the time weights.json says;
 //   * Next year plays the rest of the round and stops at the close;
 //   * a chip opens its house's sheet, and so does a row of the standings;
 //   * Auto stops on the first turn that should stop it (a pause-weight turn);
@@ -191,6 +195,72 @@ async function gesture(page, cdp, size, label, mouse) {
   }
 }
 
+// Phase V3: the four paces on 1896's walk. A quiet turn leaves the camera
+// where it was, a routine one flies; a card carries the peerage once (its
+// sentences start at the verb); an answer to the year's event is a tag; the
+// close counts the year.
+async function paces(page, turns, label) {
+  const houses = turns.filter((t) => t.p.kind === 'house');
+  const quiet = houses.filter((t) => t.p.pace === 'quiet');
+  const routine = houses.filter((t) => t.p.pace === 'routine');
+  check(`${label}: 1896 has quiet and routine turns`, quiet.length > 0 && routine.length > 0,
+    JSON.stringify([quiet.length, routine.length]));
+  check(`${label}: a quiet turn leaves the camera where it was`, quiet.every((t) => !t.moved),
+    JSON.stringify(quiet.filter((t) => t.moved).map((t) => t.p.id)));
+  const flew = routine.filter((t) => t.moved);
+  check(`${label}: a routine turn moves the camera`, flew.length >= Math.ceil(routine.length / 2),
+    `${flew.length} of ${routine.length}`);
+  check(`${label}: the kicker says quiet only for a quiet turn`, houses.every((t) => /quiet/i.test(t.card.kicker) === (t.p.pace === 'quiet')),
+    JSON.stringify(houses.filter((t) => /quiet/i.test(t.card.kicker) !== (t.p.pace === 'quiet')).map((t) => t.p.id)));
+  const once = houses.every((t) => {
+    const peerage = t.card.title;
+    return peerage && t.card.text.every((line) => !line.includes(peerage));
+  });
+  check(`${label}: a card says the house's name once, in its header`, once,
+    JSON.stringify(houses.filter((t) => t.card.text.some((line) => line.includes(t.card.title))).map((t) => [t.card.title, t.card.text])));
+  check(`${label}: a card's first sentence starts at the verb`,
+    houses.every((t) => !t.card.text[0] || !/^(Baron|Baroness|Viscount|Viscountess|Earl|Countess|Marquis|Marchioness|Duke|Duchess|House) /.test(t.card.text[0])
+      || t.p.pace === 'quiet'),
+    JSON.stringify(houses.map((t) => t.card.text[0]).filter(Boolean).slice(0, 5)));
+  const tagged = houses.filter((t) => t.card.tags.length);
+  check(`${label}: an answer to the year's event is a tag`, tagged.length > 0
+    && tagged.every((t) => /\S · (leads|resists|exploits|neutral)$/.test(t.card.tags[0])), JSON.stringify(tagged.map((t) => t.card.tags).slice(0, 3)));
+  check(`${label}: no card has a sentence for the year's event`, houses.every((t) => t.card.text.every((line) => !/ meets /.test(line))));
+  const close = turns[turns.length - 1];
+  check(`${label}: the close counts the year`, close.p.kind === 'close' && close.card.text.some((line) => /^The year in brief\. /.test(line)
+    && /\d+ (ridings?|contests?|successions?|elevations?|houses?)/.test(line + close.card.text.join(' '))), JSON.stringify(close.card.text));
+  check(`${label}: a count of zero is left out`, !close.card.text.some((line) => /(^|[ ·])0 (ridings?|contests?|successions?|elevations?|houses?)/.test(line)));
+  // Auto holds each pace as long as the table says.
+  const weights = await (await fetch(`${base}/story/weights.json`)).json();
+  await open(page, 30);
+  while ((await page.textContent('#mv-speed')).trim() !== '1×') await page.click('#mv-speed');
+  if ((await page.textContent('#mv-quiet')).includes('skip')) await page.click('#mv-quiet');
+  await R(page, () => {
+    window.__log = [];
+    let last = null;
+    const poll = () => {
+      const p = window.hocReplay.part();
+      const key = p ? `${window.hocReplay.turn()}:${p.step}` : null;
+      if (key !== last) { last = key; window.__log.push({ key, at: performance.now(), pace: p && p.pace, hold: window.hocReplay.holdMs() }); }
+      requestAnimationFrame(poll);
+    };
+    poll();
+  });
+  await page.click('#story-auto');
+  await page.waitForFunction(() => window.__log.length >= 9, null, { timeout: 60000 });
+  await page.click('#story-auto');
+  const log = await R(page, () => window.__log);
+  const dwells = log.slice(1, -1).map((entry, i) => ({ pace: entry.pace, hold: entry.hold, ms: log[i + 2].at - entry.at }));
+  const table = weights.pace.hold_ms;
+  check(`${label}: Auto's holds are the table's`, dwells.length >= 6 && dwells.every((d) => d.hold === table[d.pace]),
+    JSON.stringify(dwells));
+  check(`${label}: Auto holds each pace for its time`, dwells.every((d) => d.ms >= table[d.pace] - 40 && d.ms <= table[d.pace] + 450),
+    JSON.stringify(dwells.map((d) => [d.pace, Math.round(d.ms)])));
+  const seen = new Set(dwells.map((d) => d.pace));
+  check(`${label}: the timed turns include a quiet and a routine one`, seen.has('quiet') && seen.has('routine'), JSON.stringify([...seen]));
+  await page.waitForFunction(() => !window.hocReplay.busy());
+}
+
 async function viewport(browser, size, label) {
   const mouse = size.width >= 1200;
   const context = await browser.newContext({
@@ -210,10 +280,21 @@ async function viewport(browser, size, label) {
     order[0] === 'world' && order[order.length - 1] === 'close' && order.length > 3, JSON.stringify(order));
   const walked = [(await part(page)).id];
   let stripOk = true;
+  const turns = [];
   for (let i = 1; i < order.length; i += 1) {
+    const viewBefore = await R(page, () => window.hocReplay.view());
     await next(page);
     const p = await part(page);
     walked.push(p.id);
+    turns.push({
+      p, moved: moved(viewBefore, await R(page, () => window.hocReplay.view())),
+      card: await R(page, () => ({
+        title: (document.querySelector('#mv-turn .mv-card-title') || {}).textContent || null,
+        text: [...document.querySelectorAll('#mv-turn .mv-card-text')].map((n) => n.textContent),
+        kicker: (document.querySelector('#mv-turn .mv-card-kicker') || {}).textContent || '',
+        tags: [...document.querySelectorAll('#mv-turn .mv-tag')].map((n) => n.textContent),
+      })),
+    });
     const strip = await R(page, () => {
       const box = document.querySelector('#mv-round').getBoundingClientRect();
       const current = document.querySelector('#mv-round [aria-current="step"]');
@@ -239,6 +320,8 @@ async function viewport(browser, size, label) {
   await page.waitForFunction(() => window.hocReplay.part() && window.hocReplay.part().kind === 'close' && !window.hocReplay.busy(),
     null, { timeout: 30000 });
   check(`${label}: Next year stops at the close`, (await R(page, () => window.hocReplay.turn())) === 31);
+  await paces(page, turns, label);
+  await open(page, 31);
 
   // A chip opens its house's sheet; a row of the standings does too.
   const chip = await page.$('#mv-round [data-house]');

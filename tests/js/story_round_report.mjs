@@ -62,8 +62,9 @@ for (let turn = 1; turn <= index.turns; turn += 1) {
   rounds.push(d.round);
 }
 const minutes = (ms) => Math.round(ms / 600) / 100;
-const shown = autoLength(rounds, { skipQuiet: false, follow });
-const skipped = autoLength(rounds, { skipQuiet: true, follow });
+const hold = weights.pace.hold_ms;
+const shown = autoLength(rounds, { hold, skipQuiet: false, follow });
+const skipped = autoLength(rounds, { hold, skipQuiet: true, follow });
 process.stdout.write(JSON.stringify({
   turns: index.turns,
   round: Boolean(index.round),
