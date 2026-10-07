@@ -1368,7 +1368,7 @@ export class World {
       if (row.tag === event.tag) modifier = this.rules.responses.tag_modifier.matching_tag;
       else if (World.opposing(row.tag, event.tag)) modifier = this.rules.responses.tag_modifier.opposing_tag;
       const roll = rng.die(6, `crisis.response.${house}`) + modifier;
-      let response = World.responseFor(roll);
+      let response = this.crisisResponseFor(roll);
       if (response === 'Neutral' && this.traitEffect(house, 'steadfast')) response = 'Resist';
       camps[response].push(house);
       if (response === 'Exploit') this.setStats(house, { capital: 10, influence: -5 });
@@ -1516,6 +1516,18 @@ export class World {
       (houseTag === 'Progressive' && eventTag === 'Conservative') ||
       (houseTag === 'Conservative' && eventTag === 'Progressive')
     );
+  }
+
+  // A crisis side by game.json crises.response, whose thresholds are
+  // symmetric between Lead and Resist; a version without them takes the
+  // event response roll's (Lead only on a 6).
+  crisisResponseFor(roll) {
+    const terms = this.rules.game.crises.response;
+    if (terms === undefined) return World.responseFor(roll);
+    if (roll >= terms.lead_from) return 'Lead';
+    if (roll <= terms.resist_to) return 'Resist';
+    if (roll >= terms.exploit_from) return 'Exploit';
+    return 'Neutral';
   }
 
   static responseFor(roll) {
@@ -2214,8 +2226,7 @@ export class World {
     if (kind === 'Petition elevation') {
       const least = this.rules.schemeRules.utility.elevation_influence_min ?? 60;
       if (
-        row.influence >= least && this.holdingCount(house) >= 3
-        && (this.rankIndex.get(row.rank) ?? 0) < this.rankIndex.get('Marquis')
+        row.influence >= least && this.mayPetition(house)
         && this.affords(house, spec, null)
       ) return [[null, null]];
       return [];
@@ -2401,8 +2412,7 @@ export class World {
     } else if (kind === 'Marriage alliance') {
       if (!this.matchCandidates(house).includes(target)) return 'no match';
     } else if (kind === 'Petition elevation') {
-      if ((this.rankIndex.get(this.houseRow(house).rank) ?? 0) >= this.rankIndex.get('Marquis')
-        || this.holdingCount(house) < 3) return 'out of reach';
+      if (!this.mayPetition(house)) return 'out of reach';
     } else if (kind === 'Propose compact') {
       if (this.relationMarker(house, target) !== FRIENDLY) return 'relation changed';
     } else if (kind === 'Name heir') {
@@ -2500,11 +2510,45 @@ export class World {
     return this.handlerFor(name).call(this, house, season, rng, success, band, roll);
   }
 
+  // schemes.json `elevation`: the highest rank a petition reaches, the
+  // holdings it needs (holdings_from + holdings_per_rank x rank index), and
+  // one point on its roll per bonus_per_holdings holdings beyond that. A
+  // version without it petitions up to Marquis on 3 holdings.
+  elevationTerms() {
+    const terms = this.rules.schemeRules.elevation ?? {};
+    return {
+      highest: terms.highest ?? 'Marquis',
+      holdingsFrom: terms.holdings_from ?? 3,
+      holdingsPerRank: terms.holdings_per_rank ?? 0,
+      bonusPerHoldings: terms.bonus_per_holdings ?? 0,
+    };
+  }
+
+  petitionHoldings(house) {
+    const terms = this.elevationTerms();
+    return terms.holdingsFrom + terms.holdingsPerRank * (this.rankIndex.get(this.houseRow(house).rank) ?? 0);
+  }
+
+  // Rules 1.0 `schemes`: whether a house's rank and holdings let it seek the
+  // next rank.
+  mayPetition(house) {
+    const { highest } = this.elevationTerms();
+    return (this.rankIndex.get(this.houseRow(house).rank) ?? 0) < this.rankIndex.get(highest)
+      && this.holdingCount(house) >= this.petitionHoldings(house);
+  }
+
+  petitionBonus(house) {
+    const per = this.elevationTerms().bonusPerHoldings;
+    if (!per) return 0;
+    return Math.floor(Math.max(0, this.holdingCount(house) - this.petitionHoldings(house)) / per);
+  }
+
   resolveScheme(s, season, rng) {
     const spec = this.schemeSpec(s.scheme);
     const kind = spec.resolvesAs;
     const per = this.rules.schemeRules.contest.committed_per_point;
-    const bonus = Math.floor((s.committedCapital + s.committedInfluence) / per);
+    let bonus = Math.floor((s.committedCapital + s.committedInfluence) / per);
+    if (kind === 'Petition elevation') bonus += this.petitionBonus(s.house);
     let outcome;
     if (kind === 'contest') {
       outcome = this.contest(s, season, rng);

@@ -9,7 +9,7 @@
     "base": 1
   },
   "cohesion": {
-    "base": 2,
+    "base": 1,
     "recovery_below": 50,
     "recovery": 3
   },
