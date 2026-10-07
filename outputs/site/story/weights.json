@@ -7,7 +7,8 @@
     "heir_wanted, heir_of_age and bide are rules 1.0's: a holder turning sixty with no heir named, an heir coming of age (succession_watch), and a house with no legal action (upkeep_phase).",
     "scheme_begun, scheme_step, scheme_answered, scheme_abandoned, scheme_resolved, ally_joins, ally_declines, contest_won, contest_lost and fallen are rules 1.0's (Phase C2): a scheme's public events, the allies a contest calls, a claim decided, and a house falling to the house that took its seat. A preparation step and a resolution are ledger-only; a resolution folds into the act it ends (beats.js mergeActs).",
     "Phase D1: a rise or a decline opens only for a house of the cast after trend_turns turns of sustained movement of at least trend_places places, and closes no sooner than trend_min_run turns after opening (but by a removal). A contest decided between houses outside the cast weighs its base times contest_outside_cast. The allies a contest called are told in one sentence with it.",
-    "crisis, accession, event_continues and reckoning are rules 1.0's world events (Phase D1): a crisis with both camps, land coming under Canada or becoming a province, a further year of an event still running, and the reckoning after the last turn. They belong to no storyline."
+    "crisis, accession, event_continues and reckoning are rules 1.0's world events (Phase D1): a crisis with both camps, land coming under Canada or becoming a province, a further year of an event still running, and the reckoning after the last turn. They belong to no storyline.",
+    "Phase V3: `pace` classifies a house's turn by what happened in it, not by the yearly headline weights alone. `kinds` lists the beat kinds of each pace above quiet (a kind in no list is quiet: a house that kept to its estates, a scheme's middle step, a letter, a response to an ordinary event, a failed attempt); a beat at or above thresholds.pause is a pause whatever its kind. A turn takes its heaviest beat's pace. `hold_ms` is how long Auto shows a turn at 1x and `flight_ms` how long the camera takes to reach it (a quiet turn never moves it). `responses` is the glyph and word of the tag a house's answer to the year's event wears."
   ],
   "kinds": {
     "removed": 100,
@@ -95,5 +96,72 @@
   "claim_schemes": [
     "Claim a riding",
     "Counter-claim"
-  ]
+  ],
+  "pace": {
+    "kinds": {
+      "pause": [
+        "removed",
+        "fallen",
+        "crisis",
+        "reckoning"
+      ],
+      "notable": [
+        "riding_passes",
+        "contest_won",
+        "contest_lost",
+        "dispute_won",
+        "succession_clean",
+        "succession_disorderly",
+        "elevation",
+        "quarrel",
+        "reconciled",
+        "partition",
+        "founding"
+      ],
+      "routine": [
+        "expansion",
+        "riding_lost",
+        "scheme_begun",
+        "scheme_answered",
+        "scheme_abandoned",
+        "name_heir",
+        "heir_of_age",
+        "heir_wanted",
+        "compact",
+        "marriage",
+        "ally_joins",
+        "accession"
+      ]
+    },
+    "hold_ms": {
+      "quiet": 400,
+      "routine": 1100,
+      "notable": 3000,
+      "pause": 3000
+    },
+    "flight_ms": {
+      "quiet": 0,
+      "routine": 500,
+      "notable": 700,
+      "pause": 700
+    },
+    "responses": {
+      "Lead": {
+        "glyph": "▲",
+        "word": "leads"
+      },
+      "Resist": {
+        "glyph": "▼",
+        "word": "resists"
+      },
+      "Exploit": {
+        "glyph": "◆",
+        "word": "exploits"
+      },
+      "Neutral": {
+        "glyph": "○",
+        "word": "neutral"
+      }
+    }
+  }
 }

@@ -126,6 +126,45 @@ export class Namer {
   }
 }
 
+// A sentence told on its own house's card (Phase V3): the card's header carries
+// the peerage, so the sentence starts at the verb and does not say the name
+// again. "Baron Ritchie of Frontenac Islands sets out to open Cumberland—
+// Colchester." becomes "Sets out to open Cumberland—Colchester."; a sentence
+// with two houses for its subject, "X and Y enter into a compact.", becomes
+// "Enters into a compact with Y."; and a mention of the house elsewhere in the
+// sentence ("heir to Baron Ritchie of Frontenac Islands") becomes "the house".
+// Other houses in the sentence keep their names, and a sentence that does not
+// name the house is returned as it is.
+const JOINT = {
+  'enter into': (rest, other) => `Enters into${rest.replace(/\.$/, '')} with ${other}.`,
+  'fall out': (rest, other) => `Falls out with ${other}${rest}`,
+};
+
+const escapeRe = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+export function verbFirst(text, house, styleOf = () => null) {
+  const s = styleOf(house);
+  const names = [`House ${surnameOf(house)}`];
+  if (s) for (const forms of RANK_LADDER) for (const form of forms) names.push(`${form} ${s.title}`);
+  names.sort((a, b) => b.length - a.length);
+  const self = names.find((name) => text.includes(name));
+  if (!self) return text;
+  const joint = (other, verb, tail) => JOINT[verb](tail, other);
+  if (text.startsWith(`${self} `)) {
+    const rest = text.slice(self.length + 1);
+    // Two houses for the subject, this one first.
+    const both = rest.match(/^and (.+?) (enter into|fall out)\b(.*)$/);
+    if (both) return joint(both[1], both[2], both[3]);
+    return capitalise(rest.split(self).join('the house'));
+  }
+  // Two houses for the subject, this one second.
+  const second = text.match(new RegExp(`^(.+?) and ${escapeRe(self)} (enter into|fall out)\\b(.*)$`));
+  if (second) return joint(second[1], second[2], second[3]);
+  const letter = text.match(new RegExp(`^A letter from ${escapeRe(self)} gives offence to (.+)\\.$`));
+  if (letter) return `Gives offence to ${letter[1]} by letter.`;
+  return text.split(self).join('the house');
+}
+
 export function capitalise(text) {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }

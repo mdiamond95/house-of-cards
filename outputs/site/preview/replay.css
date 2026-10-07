@@ -141,6 +141,9 @@ body.mapview { background: #c9d8e1; }
 .mv-turn { position: relative; margin: 0 auto 8px; max-width: 640px; max-height: 38dvh; overflow: auto;
   background: #fff; border-radius: 10px; padding: 9px 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.16);
   border: 1px solid rgba(0,0,0,0.08); font-size: 0.9rem; text-align: left; }
+.mv-card-tags { margin: 0.35rem 0 0; display: flex; flex-wrap: wrap; gap: 4px; }
+.mv-tag { display: inline-block; padding: 1px 7px; border: 1px solid var(--rule, #c9c2b0); border-radius: 10px;
+  font-size: 0.72rem; color: var(--muted); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .mv-card-quiet { margin: 0.25rem 0 0; font-size: 0.82rem; color: var(--muted); font-family: var(--serif); }
 .mv-card-scheme { margin: 0.3rem 0 0; font-size: 0.86rem; font-family: var(--serif); font-style: italic; }
 .mv-card-facts { margin: 0.35rem 0 0; font-size: 0.76rem; color: var(--muted); }

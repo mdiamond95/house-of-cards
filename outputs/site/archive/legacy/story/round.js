@@ -12,10 +12,13 @@
 //
 //   buildRound   one year's round: its parts in playing order, each with its
 //                told beats, its weight, its pace and the board after it
-//   paceOf       quiet, notable or pause, from a part's heaviest beat
+//   entryPace    quiet, routine, notable or pause, from what a beat is
+//                (weights.json `pace`); a part takes its heaviest beat's
 //   stopsAuto    whether a part stops Auto (its pace, or the followed house)
 //   autoMs       how long Auto shows a part, at a speed, quiet turns shown or
 //                skipped; autoLength sums a game
+//   yearCounts, countLine
+//                what the year did, in counts, for the close
 //   stripOf      the turn-order strip: each chip's state
 //   houseCard    what a house's turn says: what it did, what was done to it,
 //                where its scheme stands, and its ridings, rank and place
@@ -27,25 +30,61 @@
 
 import { compareText } from './beats.js';
 import { applyBeats } from './standings.js';
+import { verbFirst } from './text.js';
 
-export const PACES = ['quiet', 'notable', 'pause'];
+// Four paces (Phase V3), lowest first. Which beat kinds belong to which, how
+// long Auto shows each and how long the camera takes to reach it are in
+// weights.json (`pace`), not here.
+//   quiet    a house kept to its estates, a scheme's middle step, a letter, a
+//            response to an ordinary event: no camera move, a pulse at the seat
+//   routine  land gained or given up without a contest, a scheme begun,
+//            answered or abandoned, an heir named or come of age, a compact or
+//            a match: the camera flies there
+//   notable  a contest decided, a riding passing between houses, a succession,
+//            an elevation, a quarrel or a reconciliation, a partition, a founding
+//   pause    a fall or removal, a crisis, a chapter close, the reckoning, and
+//            any beat at the pause weight: Auto stops
+export const PACES = ['quiet', 'routine', 'notable', 'pause'];
 
 export const ERA_RESPONSES = ['era_response', 'major_response'];
 
-// How long Auto shows a part at 1×, in ms. A quiet turn is its one line for
-// under half a second; a notable one is a camera flight of under a second and
-// a hold of two and a half. A pause-weight turn is shown as a notable one and
-// then Auto stops. Next year plays a round's remaining turns at QUICK_MS each.
-export const PACE_MS = { quiet: 450, notable: 3200, pause: 3200 };
-export const FLIGHT_MS = 700;
+// Next year plays a round's remaining turns at QUICK_MS each.
 export const QUICK_MS = 260;
 
-// The pace of a weight: below the quiet threshold, at or above the pause
-// threshold, or between.
-export function paceOf(weight, thresholds) {
-  if (weight >= thresholds.pause) return 'pause';
-  if (weight >= thresholds.quiet) return 'notable';
-  return 'quiet';
+const RANK = { quiet: 0, routine: 1, notable: 2, pause: 3 };
+
+export function paceRank(pace) {
+  return RANK[pace];
+}
+
+function higher(a, b) {
+  return RANK[b] > RANK[a] ? b : a;
+}
+
+const KIND_PACES = new WeakMap();
+
+// weights.json's `pace.kinds` as a Map kind -> pace.
+function kindTable(pace) {
+  let table = KIND_PACES.get(pace);
+  if (!table) {
+    table = new Map();
+    for (const name of ['routine', 'notable', 'pause']) {
+      for (const kind of pace.kinds[name] || []) table.set(kind, name);
+    }
+    KIND_PACES.set(pace, table);
+  }
+  return table;
+}
+
+// The pace of one told beat ({ beat, weight }): pause at or above the pause
+// weight, else by what the beat is; a merged act takes its heaviest part's.
+export function entryPace(entry, { pace, thresholds }) {
+  if (entry.weight >= thresholds.pause) return 'pause';
+  const table = kindTable(pace);
+  const beat = entry.beat;
+  let best = table.get(beat.kind) || 'quiet';
+  if (beat.merge) for (const p of beat.parts) best = higher(best, table.get(p.kind) || 'quiet');
+  return best;
 }
 
 function heavier(a, b) {
@@ -65,11 +104,18 @@ function bySeq(a, b) {
 //   { id, kind: 'world' | 'house' | 'close', house, entries (in record
 //     order), weight, pace, boardBefore, board, gone, deck }
 // `gone` marks a house removed earlier in the year, before its turn came.
-// The world's turn is at least notable when it announces anything, and the
-// close at least notable: it carries the standings and the year in brief.
+// The world's turn is at least routine when it announces anything. The close
+// carries the standings and the year in brief, and is shown as long as the
+// year's headline merits (at least routine, at most notable: the turn that made
+// the headline has stopped Auto already); one that ends a chapter or the
+// game (`closing`) is a pause. `counts` is
+// what the year did (yearCounts) and `headlinePace` the pace of the year's
+// headline, which the close uses to decide which to lead with.
 // `stray` lists entries whose part is not in the round (none, for a record
 // written with round_record; the tests hold it to that).
-export function buildRound({ turn, entries, playing, deck = [], board, thresholds }) {
+export function buildRound({
+  turn, entries, playing, deck = [], board, thresholds, pace, closing = false, headlinePace = 'quiet',
+}) {
   const groups = new Map([['world', []], ...playing.map((h) => [h, []]), ['close', []]]);
   const stray = [];
   for (const entry of entries) {
@@ -84,20 +130,63 @@ export function buildRound({ turn, entries, playing, deck = [], board, threshold
     const kind = id === 'world' || id === 'close' ? id : 'house';
     const sorted = [...list].sort(bySeq);
     const weight = sorted.reduce((m, e) => Math.max(m, e.weight), 0);
-    let pace = paceOf(weight, thresholds);
-    if (pace === 'quiet' && ((kind === 'world' && (deck.length || sorted.length)) || kind === 'close')) {
-      pace = 'notable';
-    }
+    let partPace = sorted.reduce((m, e) => higher(m, entryPace(e, { pace, thresholds })), 'quiet');
+    if (kind === 'world' && (deck.length || sorted.length)) partPace = higher(partPace, 'routine');
+    if (kind === 'close') partPace = closing ? 'pause' : higher(higher(partPace, 'routine'), headlinePace === 'pause' ? 'notable' : headlinePace);
     const boardBefore = current;
     current = applyBeats(current, sorted.map((e) => e.beat));
     const gone = kind === 'house' && removedSoFar.has(id) && !sorted.length;
     for (const h of current.removed) removedSoFar.add(h);
     parts.push({
-      id, kind, house: kind === 'house' ? id : null, entries: sorted, weight, pace,
+      id, kind, house: kind === 'house' ? id : null, entries: sorted, weight, pace: partPace,
       boardBefore, board: current, gone, deck: kind === 'world' ? deck : [],
     });
   }
-  return { turn, parts, stray };
+  const counts = yearCounts(entries, board.owners);
+  return { turn, parts, stray, counts, countLine: countLine(counts), headlinePace };
+}
+
+// What the year did, from the round just played: [{ key, n, text }], nothing
+// at zero, in the order a reader would weigh them. Ridings are counted by the
+// moves the record gives, a founding's own ground aside; a riding that moves
+// twice counts twice. `owners` is the board before the year.
+export function yearCounts(entries, owners = {}) {
+  const held = { ...owners };
+  const n = { taken: 0, hands: 0, contests: 0, successions: 0, elevations: 0, founded: 0, fallen: 0 };
+  const ordered = [...entries].sort(bySeq);
+  for (const { beat } of ordered) {
+    for (const leaf of beat.merge ? beat.parts : [beat]) {
+      const seating = leaf.kind === 'founding' || leaf.kind === 'partition';
+      for (const [fed, to] of Object.entries(leaf.owners || {})) {
+        const from = held[fed] || null;
+        if (!seating && to) {
+          if (!from) n.taken += 1;
+          else if (from !== to) n.hands += 1;
+        }
+        held[fed] = to || null;
+      }
+      if (['contest_won', 'contest_lost', 'dispute_won'].includes(leaf.kind) && leaf.outcome !== 'rout') n.contests += 1;
+      if (leaf.kind === 'succession_clean' || leaf.kind === 'succession_disorderly') n.successions += 1;
+      if (leaf.kind === 'elevation') n.elevations += 1;
+      if (seating) n.founded += 1;
+      if (leaf.kind === 'removed' || leaf.kind === 'fallen') n.fallen += 1;
+    }
+  }
+  const plural = (count, one, many) => `${count} ${count === 1 ? one : many}`;
+  return [
+    ['taken', plural(n.taken, 'riding taken', 'ridings taken')],
+    ['hands', plural(n.hands, 'riding changing hands', 'ridings changing hands')],
+    ['contests', plural(n.contests, 'contest decided', 'contests decided')],
+    ['successions', plural(n.successions, 'succession', 'successions')],
+    ['elevations', plural(n.elevations, 'elevation', 'elevations')],
+    ['founded', plural(n.founded, 'house founded', 'houses founded')],
+    ['fallen', plural(n.fallen, 'house fallen', 'houses fallen')],
+  ].filter(([key]) => n[key] > 0).map(([key, text]) => ({ key, n: n[key], text }));
+}
+
+// The counts as one line: "3 ridings taken · 1 contest decided".
+export function countLine(counts) {
+  return counts.map((c) => c.text).join(' · ');
 }
 
 // Whether a part stops Auto: a pause-weight turn, and for a followed house its
@@ -109,24 +198,25 @@ export function stopsAuto(part, { follow = null } = {}) {
   return part.entries.some((e) => (e.beat.houses || []).includes(follow));
 }
 
-// How long Auto shows a part, in ms, at `speed` (1, 2 or 4). A quiet house turn
-// takes no time at all when quiet turns are skipped.
-export function autoMs(part, { skipQuiet = false, speed = 1 } = {}) {
+// How long Auto shows a part, in ms, at `speed` (1, 2 or 4), from weights.json's
+// `pace.hold_ms` (`hold`). A quiet house turn takes no time at all when quiet
+// turns are skipped.
+export function autoMs(part, { hold, skipQuiet = false, speed = 1 }) {
   if (part.pace === 'quiet' && skipQuiet && part.kind === 'house') return 0;
-  return Math.round(PACE_MS[part.pace] / speed);
+  return Math.round(hold[part.pace] / speed);
 }
 
 // The whole game on Auto: total ms, parts shown, and the stops a reader would
 // have to press on through. `rounds` are buildRound results, in order.
-export function autoLength(rounds, { skipQuiet = false, speed = 1, follow = null } = {}) {
+export function autoLength(rounds, { hold, skipQuiet = false, speed = 1, follow = null }) {
   let ms = 0;
   let shown = 0;
   let stops = 0;
-  const byPace = { quiet: 0, notable: 0, pause: 0 };
+  const byPace = { quiet: 0, routine: 0, notable: 0, pause: 0 };
   for (const round of rounds) {
     for (const part of round.parts) {
       byPace[part.pace] += 1;
-      const t = autoMs(part, { skipQuiet, speed });
+      const t = autoMs(part, { hold, skipQuiet, speed });
       if (t > 0) shown += 1;
       ms += t;
       if (stopsAuto(part, { follow })) stops += 1;
@@ -219,29 +309,93 @@ function actorOf(beat) {
   return (first.houses || [])[0];
 }
 
-// What a house's turn says (the card): what it did this year (its heaviest
-// act of its own turn), what was done to it (the heaviest beat of an earlier
-// turn this year that names it and is not its own), its answer to the year's
-// event as a quiet line, and where its scheme stands. `before` are the parts
-// played before this one this year.
-export function houseCard(part, before, { turn, plans, plansBefore, placeOf = (h) => h } = {}) {
+// The heaviest of a list of entries by what they are, then by weight, then
+// record order; null for none.
+function heaviestBy(list, options) {
+  let best = null;
+  let bestRank = -1;
+  for (const e of list) {
+    const rank = RANK[entryPace(e, options)];
+    if (best === null || rank > bestRank || (rank === bestRank && (e.weight > best.weight
+      || (e.weight === best.weight && e.beat.seq < best.beat.seq)))) {
+      best = e;
+      bestRank = rank;
+    }
+  }
+  return best;
+}
+
+// A house's answer to the year's event, as a tag: the event's name and the
+// response in one word, with a glyph (weights.json `pace.responses`). Not a
+// sentence and not a mark on the map.
+function tagOf(entry, responses) {
+  const response = entry.beat.outcome ?? 'Neutral';
+  const r = responses[response] || { glyph: '○', word: String(response).toLowerCase() };
+  const world = entry.beat.world || {};
+  return { event: world.event || null, response, word: r.word, glyph: r.glyph };
+}
+
+// A crisis's camp for one house, in words (the crisis is an event of the
+// world's turn, which names its camps): "Leads in the Great War crisis."
+function campLine(crisis, house) {
+  const w = crisis.beat.world;
+  const name = w.event ? `the ${w.event.replace(/^(The|A|An) /, '')} crisis` : 'the crisis';
+  if ((w.lead || []).includes(house)) return `Leads in ${name}.`;
+  if ((w.resist || []).includes(house)) return `Resists in ${name}.`;
+  return `Stands aside in ${name}.`;
+}
+
+// What a house's turn says (the card): what it did this year (its heaviest act
+// of its own turn, by what it was), what was done to it (the heaviest beat of
+// an earlier turn this year that names it and is not its own), its answers to
+// the year's events as tags, its camp in a crisis in words, and where its
+// scheme stands. Its other acts of the turn at the routine pace or above
+// (`also`, at most two) are told after the first. `before` are the parts played before this one this year.
+//
+// A card carries the house's peerage in its header, so `did` starts at the verb
+// ("Sets out to open Cumberland—Colchester."); other houses in the sentence
+// keep their names, and the house itself, where a sentence must name it, is
+// "the house" (text.js verbFirst). `didFull` is the whole sentence, for the text Replay, the
+// drawer and the house sheet.
+export function houseCard(part, before, {
+  turn, plans, plansBefore, placeOf = (h) => h, styleOf = () => null, pace, thresholds, responses = {},
+} = {}) {
   const house = part.house;
-  const own = part.entries.filter((e) => !ERA_RESPONSES.includes(e.beat.kind) && e.weight > 0);
-  const did = heaviest(own.filter((e) => actorOf(e.beat) === house)) || heaviest(own);
-  const era = part.entries.find((e) => ERA_RESPONSES.includes(e.beat.kind)) || null;
+  const options = { pace, thresholds };
+  const own = part.entries.filter((e) => !ERA_RESPONSES.includes(e.beat.kind)
+    && (e.weight > 0 || RANK[entryPace(e, options)] > 0));
+  const mine = own.filter((e) => actorOf(e.beat) === house);
+  const did = heaviestBy(mine, options) || heaviestBy(own, options);
+  // The turn's other acts at the routine pace or above, which the map draws a
+  // mark for, so each is told: at most two, heaviest first.
+  const also = own.filter((e) => e !== did && RANK[entryPace(e, options)] > 0)
+    .sort((a, b) => RANK[entryPace(b, options)] - RANK[entryPace(a, options)] || b.weight - a.weight || a.beat.seq - b.beat.seq)
+    .slice(0, 2);
+  const tags = part.entries.filter((e) => ERA_RESPONSES.includes(e.beat.kind)).map((e) => tagOf(e, responses));
   const doneTo = heaviest(before
     .filter((p) => p.kind === 'house')
     .flatMap((p) => p.entries)
     .filter((e) => e.weight > 0 && (e.beat.houses || []).includes(house) && actorOf(e.beat) !== house));
+  const camps = part.gone ? [] : before
+    .filter((p) => p.kind === 'world')
+    .flatMap((p) => p.entries)
+    .filter((e) => e.beat.kind === 'crisis' && e.beat.world)
+    .map((e) => campLine(e, house));
   let lead;
-  if (part.gone) lead = 'Its turn did not come: the house had fallen earlier in the year.';
-  else if (did) lead = did.alone || did.text;
-  else lead = 'It kept to its estates.';
+  let leadFull;
+  if (part.gone) lead = leadFull = 'Its turn did not come: the house had fallen earlier in the year.';
+  else if (did) {
+    leadFull = did.alone || did.text;
+    lead = verbFirst(leadFull, house, styleOf);
+  } else lead = leadFull = 'It kept to its estates.';
   return {
     house,
     did: lead,
-    doneTo: doneTo ? (doneTo.alone || doneTo.text) : null,
-    era: era && era !== did ? (era.alone || era.text) : null,
+    didFull: leadFull,
+    also: part.gone ? [] : also.map((e) => verbFirst(e.alone || e.text, house, styleOf)),
+    doneTo: doneTo ? verbFirst(doneTo.alone || doneTo.text, house, styleOf) : null,
+    tags,
+    camps,
     scheme: part.gone ? null : schemeLine(house, turn, plans, plansBefore, placeOf),
   };
 }
