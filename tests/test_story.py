@@ -240,8 +240,9 @@ def test_beat_chunks_stay_under_budget_and_cover_every_turn(frozen_games):
             assert chunk["first"] == expected, f"{name}: a gap before {chunk}"
             expected = chunk["last"] + 1
         assert expected - 1 == index["turns"], name
+        # The chunks, the index, and the map view's atlas (Phase V): nothing else.
         assert sorted(p.name for p in directory.iterdir()) == sorted(
-            ["index.json", *(c["file"] for c in index["chunks"])]
+            ["index.json", "atlas.json", *(c["file"] for c in index["chunks"])]
         )
 
 

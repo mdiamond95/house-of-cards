@@ -726,3 +726,80 @@ def test_the_preview_is_the_whole_calendar_game_with_its_reckoning(preview_site)
     assert report["chapters"] == [[1885, "I", True], [1913, "II", True], [1929, "III", True],
                                   [1945, "IV", True], [1966, "V", True]]
     assert report["reckoning"] is True
+
+
+# ------------------------------------------------- Phase V: the map view --
+#
+# docs/STORY_DESIGN.md §3.6. replay.html is the Replay as a map: the map fills
+# the screen, events are marks with cards, and the camera follows the headline.
+# The text Replay stays at replay-text.html, linked from the nav. The map view
+# reads each house's seat over the game (data/beats/atlas.json) and fetches the
+# fuller geometry (data/map-detail.json) when the camera comes close.
+
+
+def _map_view_pages(preview_site, archive_site):
+    games = [preview_site] + [archive_site / name for name in scenario.frozen_names()]
+    return games
+
+
+def test_the_replay_is_the_map_view_and_the_text_replay_stays(preview_site, archive_site):
+    for game in _map_view_pages(preview_site, archive_site):
+        html = (game / "replay.html").read_text(encoding="utf-8")
+        js = (game / "replay.js").read_text(encoding="utf-8")
+        assert 'id="mv-stage"' in html and 'href="replay.css"' in html, game
+        assert '<script type="module" src="replay.js"></script>' in html
+        assert 'viewport-fit=cover' in html
+        assert "./story/marks.js" in js and "./story/camera.js" in js
+        missing = sorted(_story_ids_reached(js) - set(re.findall(r'id="([^"]+)"', html)))
+        assert not missing, f"{game}: replay.js reaches for elements the page lacks: {missing}"
+        # The drawer is closed by default; the bars and the standings strip are there.
+        assert '<aside id="mv-drawer" class="mv-drawer" aria-label="The year in full" hidden>' in html
+        assert 'id="mv-standings" class="mv-standings" hidden' in html
+        assert html.index('id="story-plans"') < html.index('id="afoot-heading"')
+        text_html = (game / "replay-text.html").read_text(encoding="utf-8")
+        text_js = (game / "replay-text.js").read_text(encoding="utf-8")
+        assert '<script type="module" src="replay-text.js"></script>' in text_html
+        missing = sorted(_story_ids_reached(text_js) - set(re.findall(r'id="([^"]+)"', text_html)))
+        assert not missing, f"{game}: replay-text.js reaches for elements the page lacks: {missing}"
+        for page_path in game.glob("*.html"):
+            assert 'href="replay-text.html">Replay (text)</a>' in page_path.read_text(encoding="utf-8"), page_path
+
+
+def test_the_map_view_ships_its_atlas_and_its_fuller_map(preview_site, archive_site):
+    for game in _map_view_pages(preview_site, archive_site):
+        html = (game / "replay.html").read_text(encoding="utf-8")
+        inline = set(re.findall(r'data-fed="(\d+)"', html))
+        detail = json.loads((game / "data" / "map-detail.json").read_text(encoding="utf-8"))
+        assert set(detail["fills"]) == inline and len(inline) == 343, game
+        assert detail["borders"].startswith("M")
+        atlas = json.loads((game / "data" / "beats" / "atlas.json").read_text(encoding="utf-8"))
+        index = json.loads((game / "data" / "beats" / "index.json").read_text(encoding="utf-8"))
+        assert set(atlas["seats"]) <= set(index["houses"])
+        for house, changes in atlas["seats"].items():
+            turns = [turn for turn, _ in changes]
+            assert turns == sorted(set(turns)), house
+            assert all(fed is None or fed in inline for _, fed in changes), house
+        # Land not yet under Canada is drawn closed only for a calendar game.
+        assert ("jurisdictions" in atlas) == ("calendar" in index), game
+    preview_atlas = json.loads((preview_site / "data" / "beats" / "atlas.json").read_text(encoding="utf-8"))
+    assert len(preview_atlas["jurisdictions"]) == 343
+
+
+def test_a_seat_history_ends_at_the_seat_the_record_holds(tmp_path):
+    import sys
+
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import build_preview
+    from hoc import rules_data
+    from hoc.export import beats as beats_export
+
+    conn = build_preview.play_preview(tmp_path / "p.db", rules_data.draft_version(), seasons=40)
+    history = beats_export.seat_history(conn)
+    last = conn.execute("SELECT MAX(season_no) AS n FROM seasons").fetchone()["n"]
+    now = {row["house"]: row["fed_id"] for row in conn.execute(
+        "SELECT house, fed_id FROM holdings WHERE seat_order = 1 AND released_event_id IS NULL")}
+    told = {house: changes[-1][1] for house, changes in history.items() if changes[-1][1] is not None}
+    assert told == now
+    for house, changes in history.items():
+        assert all(turn <= last for turn, _ in changes)
+    conn.close()

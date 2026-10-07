@@ -20,7 +20,9 @@ from hoc.export import (
     beats as beats_export, map as map_export, play as play_export, timeline as timeline_export,
 )
 from hoc.export.play_js import PLAY_JS
-from hoc.export.replay_js import RECKONING_JS, REPLAY_JS, STORYLINES_JS
+from hoc.export.replay_js import (
+    RECKONING_JS, REPLAY_CSS, REPLAY_JS, REPLAY_TEXT_JS, STORYLINES_JS,
+)
 from hoc.export.turn_block import TEMPLATE as NARRATE_TEMPLATE, TONES, jurisdiction_note
 from hoc.sim import STOP_CONDITIONS
 
@@ -125,8 +127,9 @@ def swatch(hex_value, label):
     )
 
 
-def page(title, body, depth=0, subtitle=None):
-    """The shared shell. `depth` is how many directories deep the page sits."""
+def _nav(depth=0):
+    """The site's nav links and banner, as (links HTML, banner HTML), for a
+    page `depth` directories deep: the shared shell's and the map view's."""
     up = "../" * depth
     nav = [
         ("index.html", "Map"),
@@ -137,14 +140,15 @@ def page(title, body, depth=0, subtitle=None):
         ("about.html", "About"),
     ]
     if _PREVIEW:
-        # The preview is two pages (three, with a reckoning) and a way back out.
+        # The preview is three pages (four, with a reckoning) and a way back out.
         nav = [
             ("replay.html", "Replay"),
+            ("replay-text.html", "Replay (text)"),
             ("storylines.html", "Storylines"),
             ("../index.html", "← Back to the site"),
         ]
         if _PREVIEW_RECKONING:
-            nav.insert(2, ("reckoning.html", "Reckoning"))
+            nav.insert(3, ("reckoning.html", "Reckoning"))
     elif _ARCHIVE:
         # Out of the archive rather than deeper into it: the archived site's own
         # root is two directories below the site's. A frozen game carries no play
@@ -152,7 +156,8 @@ def page(title, body, depth=0, subtitle=None):
         # In its place, the Replay: the game told one turn at a time.
         nav = [entry for entry in nav if entry[0] != "play.html"]
         nav.insert(1, ("replay.html", "Replay"))
-        nav.insert(2, ("storylines.html", "Storylines"))
+        nav.insert(2, ("replay-text.html", "Replay (text)"))
+        nav.insert(3, ("storylines.html", "Storylines"))
         nav.append((f"{up}../index.html", "← Archive"))
         nav.append((f"{up}{'../' * ARCHIVE_DEPTH}index.html", "← Back to the site"))
     else:
@@ -168,6 +173,13 @@ def page(title, body, depth=0, subtitle=None):
         f'<p class="banner">{esc(preview_banner(_PREVIEW))}</p>' if _PREVIEW
         else f'<p class="banner">{esc(archive_banner(_ARCHIVE_TITLE))}</p>' if _ARCHIVE else ""
     )
+    return links, banner
+
+
+def page(title, body, depth=0, subtitle=None):
+    """The shared shell. `depth` is how many directories deep the page sits."""
+    up = "../" * depth
+    links, banner = _nav(depth)
     sub = f'<p class="subtitle">{subtitle}</p>' if subtitle else ""
     footer = f'<footer>{esc(_GENERATED_FROM)}</footer>' if _GENERATED_FROM else ""
     return (
@@ -851,8 +863,10 @@ STORY_PLANS = (
 
 
 def _replay_page(conn, features, borders):
-    """archive/<name>/replay.html: a frozen game told one turn at a time, as the
-    story layer's dispatch (docs/STORY_DESIGN.md §3.2)."""
+    """replay-text.html: a game told one turn at a time as the story layer's
+    dispatch (docs/STORY_DESIGN.md §3.2), in a column of text with a small map.
+    Phase V made the map view (replay.html, _replay_map_page) the Replay; this
+    page stays, linked from the nav as "Replay (text)"."""
     lookup = _riding_lookup(conn)
     geometry = _map_geometry(features, borders, lookup)
     # Rules 1.0 `world_calendar`: a turn is a year, and the go-to box takes one.
@@ -893,9 +907,144 @@ def _replay_page(conn, features, borders):
         + '<details id="story-record" class="full-record"><summary>Full record</summary>'
         '<ol id="story-record-lines" class="record-lines"></ol></details>\n'
         "</div>\n"
-        '<script type="module" src="replay.js"></script>'
+        '<script type="module" src="replay-text.js"></script>'
     )
-    return page("Replay", body, depth=0, subtitle=esc(_game_title()))
+    return page("Replay (text)", body, depth=0, subtitle=esc(_game_title()))
+
+
+# The map view's own geometry (docs/STORY_DESIGN.md §3.6): the page draws the
+# site's coarse map inline for its first paint, and fetches the fuller one
+# (data/map-detail.json) the first time the camera comes closer than this many
+# map units across — at the site's whole-number coordinates a city's ridings
+# snap to a grid of five-kilometre squares, and the coarse topology folds the
+# island of Montreal.
+MAP_DETAIL_BELOW = 220
+MAP_DETAIL_PRECISION = 1
+
+
+def _map_detail(features, borders, geometry):
+    """data/map-detail.json: every riding's path and the shared borders at the
+    fuller simplification, in the inline map's own coordinates."""
+    to_svg = geometry["to_svg"]
+    fills = {}
+    for feature in features:
+        data = map_export.path_data(feature["rings"], to_svg, MAP_DETAIL_PRECISION)
+        if data:
+            fills[feature["fed_id"]] = data
+    return json.dumps(
+        {"fills": fills, "borders": map_export.border_path_data(borders, to_svg, MAP_DETAIL_PRECISION)},
+        separators=(",", ":"), sort_keys=True,
+    ) + "\n"
+
+
+def _short_banner():
+    """The few words the map view keeps on screen to say what this game is."""
+    if _PREVIEW:
+        return f"Draft rules {_PREVIEW} · not a game of record"
+    if _ARCHIVE:
+        return "Archive · frozen"
+    return ""
+
+
+def _map_view_svg(features, geometry, lookup):
+    """The story pages' map, with what the map view adds inside it: the
+    hatching it draws land not yet under Canada with (its size kept on screen
+    by the page), and the group its outlines are drawn in, above the borders."""
+    svg = _map_svg(features, geometry, lookup)
+    head = svg.index(">") + 1
+    defs = (
+        '<defs><pattern id="mv-closed" patternUnits="userSpaceOnUse" width="1" height="1">'
+        '<rect width="1000" height="1000" fill="#d9d4c7"/>'
+        '<path d="M0,0 L1,1" stroke="#a49c8a" stroke-width="1.1" vector-effect="non-scaling-stroke"/>'
+        "</pattern></defs>"
+    )
+    outlines = '<g id="mv-outlines" fill="none" pointer-events="none"></g>'
+    return svg[:head] + defs + svg[head:-len("</svg>")] + outlines + "</svg>"
+
+
+def _replay_map_page(conn, features, borders):
+    """replay.html: the Replay as a map (docs/STORY_DESIGN.md §3.6, Phase V).
+
+    The map fills the screen; the year, the chapter and a scrubber sit over it
+    at the top, the controls at the bottom, the standings in a strip that
+    opens, and Plans afoot, Afoot, the dispatch and the full record in a drawer
+    that is closed until asked for. Events are marks on the map with cards
+    (web/story/marks.js); the camera follows the headline until a gesture
+    frees it (web/story/camera.js). Built by replay.js (hoc/export/replay_js.py).
+    """
+    lookup = _riding_lookup(conn)
+    geometry = _map_geometry(features, borders, lookup)
+    calendar = beats_export.calendar_of(conn)
+    unit = "year" if calendar else "season" if _latest_season(conn) else "turn"
+    links, banner = _nav(0)
+    short = _short_banner()
+    tag = f'<p class="mv-tag">{esc(short)}</p>' if short else ""
+    footer = f'<p class="meta">{esc(_GENERATED_FROM)}</p>' if _GENERATED_FROM else ""
+    return (
+        "<!doctype html>\n"
+        '<html lang="en">\n<head>\n'
+        '<meta charset="utf-8">\n'
+        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+        "<title>Replay — House of Cards</title>\n"
+        '<link rel="stylesheet" href="style.css">\n'
+        '<link rel="stylesheet" href="replay.css">\n'
+        "</head>\n<body class=\"mapview\">\n"
+        '<div id="mv" class="mv" hidden>\n'
+        '<div id="mv-stage" class="mv-stage">'
+        '<div id="mv-layer" class="mv-layer">' + _map_view_svg(features, geometry, lookup) + "</div>"
+        '<svg id="mv-marks" class="mv-marks" xmlns="http://www.w3.org/2000/svg"></svg>'
+        '<div id="mv-card" class="mv-card" role="dialog" aria-live="polite" hidden></div>'
+        "</div>\n"
+        '<header class="mv-top">'
+        '<div class="mv-topline">'
+        '<button type="button" id="mv-menu-button" class="mv-icon" aria-label="Menu"'
+        ' aria-expanded="false" aria-controls="mv-menu">&#9776;</button>'
+        '<div class="mv-when"><span id="mv-year" class="mv-year"></span>'
+        '<span id="mv-chapter" class="mv-chapter"></span></div>'
+        '<button type="button" id="mv-standings-toggle" class="mv-standings-toggle"'
+        ' aria-expanded="false" aria-controls="mv-standings">Standings</button>'
+        "</div>"
+        f'<input id="mv-scrub" class="mv-scrub" type="range" min="0" max="0" value="0" step="1"'
+        f' aria-label="Go to a {esc(unit)}">'
+        f"{tag}"
+        '<div id="mv-chips" class="mv-chips" aria-live="polite"></div>'
+        '<div id="mv-standings" class="mv-standings" hidden>'
+        '<ol id="story-strip" class="mv-standings-list" aria-label="Standings: the top eight"></ol>'
+        '<label class="mv-follow">Follow <select id="story-follow"><option value="">no one</option>'
+        "</select></label></div>"
+        "</header>\n"
+        '<footer class="mv-bottom">'
+        '<p id="story-note" class="mv-note" role="status" hidden></p>'
+        '<div class="mv-controls">'
+        '<button type="button" id="mv-recentre" class="mv-recentre" hidden>Recentre</button>'
+        f'<button type="button" id="story-next" class="primary">Next {esc(unit)}</button>'
+        '<button type="button" id="story-auto">Auto</button>'
+        '<button type="button" id="mv-speed" class="mv-speed" aria-label="Auto speed">1&times;</button>'
+        '<button type="button" id="mv-drawer-button" aria-expanded="false" aria-controls="mv-drawer">'
+        'More<span id="mv-more-count" class="mv-more-count"></span></button>'
+        "</div></footer>\n"
+        '<aside id="mv-drawer" class="mv-drawer" aria-label="The year in full" hidden>'
+        '<div class="mv-drawer-head"><span class="mv-drawer-title">In full</span>'
+        '<button type="button" id="mv-drawer-close">Close</button></div>'
+        + STORY_DISPATCH
+        + STORY_PLANS
+        + STORY_AFOOT
+        + '<details id="story-record" class="full-record"><summary>Full record</summary>'
+        '<ol id="story-record-lines" class="record-lines"></ol></details>'
+        "</aside>\n"
+        '<nav id="mv-menu" class="mv-menu" aria-label="Site" hidden>'
+        f'<a class="wordmark" href="index.html">House of Cards</a>'
+        f'<p class="mv-game">{esc(_game_title())}</p>{banner}'
+        f'<div class="mv-links">{links}</div>{footer}'
+        '<button type="button" id="mv-menu-close">Close</button></nav>\n'
+        '<section id="mv-full" class="mv-full" aria-live="polite" hidden>'
+        '<div id="mv-full-body" class="mv-full-body"></div>'
+        '<button type="button" id="mv-full-continue" class="primary">Continue</button></section>\n'
+        "</div>\n"
+        '<p id="story-load" class="mv-load" role="status">Loading the record…</p>\n'
+        '<script type="module" src="replay.js"></script>\n'
+        "</body>\n</html>\n"
+    )
 
 
 def _reckoning_page():
@@ -3066,6 +3215,39 @@ def write_archive_index(out_dir, entries):
     return path
 
 
+def _write_replay(conn, site_dir, features, borders, reference_dir, key, write):
+    """The Replay (the map view, Phase V) and the Replay (text), with what they
+    load: their scripts, the map view's stylesheet and its fuller geometry.
+    `key` names the game for the followed house each page remembers."""
+    lookup = _riding_lookup(conn)
+    geometry = _map_geometry(features, borders, lookup)
+    write(site_dir / "replay.html", _replay_map_page(conn, features, borders))
+    write(
+        site_dir / "replay.js",
+        REPLAY_JS
+        .replace("__SCENARIO__", json.dumps(key))
+        .replace("__UNCLAIMED_FILL__", map_export.UNCLAIMED_FILL)
+        .replace("__DETAIL_BELOW__", str(MAP_DETAIL_BELOW)),
+    )
+    write(site_dir / "replay.css", REPLAY_CSS)
+    (site_dir / "data").mkdir(parents=True, exist_ok=True)
+    write(
+        site_dir / "data" / "map-detail.json",
+        _map_detail(
+            map_export.projected_features(reference_dir),
+            map_export.projected_borders(reference_dir),
+            geometry,
+        ),
+    )
+    write(site_dir / "replay-text.html", _replay_page(conn, features, borders))
+    write(
+        site_dir / "replay-text.js",
+        REPLAY_TEXT_JS
+        .replace("__SCENARIO__", json.dumps(key))
+        .replace("__UNCLAIMED_FILL__", map_export.UNCLAIMED_FILL),
+    )
+
+
 def write_preview(conn, version, out_dir=DEFAULT_OUT_DIR, seed=None, seasons=None):
     """Write preview/: the draft-rules preview's Replay and Storylines pages,
     from a scratch database played under the draft (scripts/build_preview.py).
@@ -3098,13 +3280,7 @@ def write_preview(conn, version, out_dir=DEFAULT_OUT_DIR, seed=None, seasons=Non
         features = map_export.projected_site_features(reference_dir)
         borders = map_export.projected_site_borders(reference_dir)
         write(site_dir / "style.css", STYLE)
-        write(site_dir / "replay.html", _replay_page(conn, features, borders))
-        write(
-            site_dir / "replay.js",
-            REPLAY_JS
-            .replace("__SCENARIO__", json.dumps(f"preview-{version}"))
-            .replace("__UNCLAIMED_FILL__", map_export.UNCLAIMED_FILL),
-        )
+        _write_replay(conn, site_dir, features, borders, reference_dir, f"preview-{version}", write)
         write(site_dir / "storylines.html", _storylines_page())
         write(site_dir / "storylines-page.js", STORYLINES_JS)
         if _PREVIEW_RECKONING:
@@ -3212,13 +3388,7 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
                 f" {PLAY_SIZE_BUDGET:,} budget — a phone on mobile data pays for this"
             )
     if archive:
-        write(site_dir / "replay.html", _replay_page(conn, index_features, index_borders))
-        write(
-            site_dir / "replay.js",
-            REPLAY_JS
-            .replace("__SCENARIO__", json.dumps(archive_name))
-            .replace("__UNCLAIMED_FILL__", map_export.UNCLAIMED_FILL),
-        )
+        _write_replay(conn, site_dir, index_features, index_borders, reference_dir, archive_name, write)
         write(site_dir / "storylines.html", _storylines_page())
         write(site_dir / "storylines-page.js", STORYLINES_JS)
         written.extend(beats_export.write_beats(conn, site_dir / "data", title=_ARCHIVE_TITLE))
