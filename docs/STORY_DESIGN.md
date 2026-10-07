@@ -336,6 +336,132 @@ facts in the record (hard rule 1). Claude writes one narrative per chapter and a
 per cast house, through the existing Narrate block, fed storyline records rather than raw
 season logs. No workflow calls a model.
 
+### 3.6 The map view (Phase V)
+
+The director's review of the preview (7 October 2026): still not engaging, and a visual
+problem. The game is spatial and the Replay was a column of text with a small map that
+visited an event and snapped back. Phase V makes the map the page. It is presentation
+only: no engine, rules or record change, and the dispatch, weights and storylines are
+those of §3.1–§3.4.
+
+Layout (`replay.html`; portrait phone first, 390 × 844, and an iPad either way round):
+
+- The map fills the viewport (100dvh).
+- Over it at the top: the year, the chapter and a thin turn scrubber; a tag saying what
+  the game is (an archive, or the draft preview, not a game of record); and the chips.
+- At the bottom: Next year, Auto with its speeds (1×, 2×, 4×) and, in free mode, Recentre.
+- The standings are a collapsed strip (the top three's colours and the leader) that opens
+  to a single-column list naming each house "Surname of Place" (its peerage less its rank
+  word), with the follow menu. This is how a reader tells Robinson of Hamilton from a
+  house named Hamilton.
+- The dispatch, Plans afoot, Afoot and the full record are in a drawer, closed by
+  default; a count on its button says how many beats the map left off.
+- The site's links are behind a menu button.
+- The text Replay stays, at `replay-text.html`, linked from the nav as "Replay (text)".
+
+The stage:
+
+- The inline SVG of 343 ridings, as before, with no new dependency.
+- One finger pans, two pinch, a double tap zooms in two-fold; on a desktop the wheel zooms
+  and the mouse drags. The view is kept within limits: never narrower than 3 map units
+  (a downtown riding fills the screen), never wider than the whole map with a margin, and
+  its centre never off the map.
+- During a gesture or a flight the drawn map moves by a CSS transform, and the SVG's
+  viewBox is set when the movement ends.
+- Borders and outlines use a non-scaling stroke. Marks, lines and labels are drawn in
+  screen pixels, so all of them keep their size at every zoom.
+
+Geometry. The site's inline map has whole-number coordinates on a 1,000-unit-wide map, so
+a city's ridings snap to a grid of about five-kilometre squares; Toronto spans six units.
+Its coarser topology also folds the island of Montreal. The map view therefore draws the
+coarse map for its first paint and fetches `data/map-detail.json` (the fuller simplified
+geometry at one decimal, in the same coordinates) the first time the camera comes closer
+than 220 units across. Page weight of the preview's Replay, measured on export (raw,
+then gzipped as a server sends it):
+
+| | Before | After |
+|---|---|---|
+| Page, script and stylesheets | 357 KB (102 KB) | 400 KB (114 KB) |
+| Story modules | 119 KB (39 KB) | 149 KB (50 KB) |
+| Seat history and jurisdictions (`atlas.json`) | none | 34 KB (2 KB) |
+| The first chunk of beats and the index, unchanged | 510 KB (57 KB) | 510 KB (57 KB) |
+| Fuller map, on the first close zoom | none | 1,400 KB (401 KB) |
+
+On first load the page grows from about 198 KB to 223 KB gzipped. Its first close zoom,
+which follow mode reaches on most headlines, adds 401 KB.
+
+The camera (`web/story/camera.js`) has two modes:
+
+- **Follow**, the default. Each year it flies to frame the headline's ground in the part
+  of the screen its card leaves free (below the ground on an upright screen, beside it
+  on a wide one), and stays there. It never snaps back to a home view: a year with
+  nothing to frame leaves it where it is. A single riding is framed with at least 60 map
+  units of its surroundings.
+- **Free**, after any gesture. The camera does not move until Recentre, which returns to
+  follow mode and the latest framing. Auto respects both modes.
+
+Where an event is (`web/story/marks.js`, one pure function tested under node). A
+dispatch and the game state go in; marks come out. Each beat's ground is:
+
+1. the ridings it names;
+2. else its scheme's target;
+3. else the seats of its houses.
+
+A house's seat is its principal riding (hard rule 4), from a seat history the exporter
+ships in `data/beats/atlas.json`: for an engine-played game, the riding held with the
+lowest holding id, since the engine appends holdings and never reorders them. A beat
+with no place (it names no house and no riding, as the reckoning does) is a banner, not
+a mark; the camera then frames the year's other marks.
+
+The marks. A small vocabulary, drawn in SVG with a glyph and a one-word label, so none
+relies on colour alone:
+
+| Mark | Drawn as |
+|---|---|
+| Transfer | A riding changing hands: its fill moves from the old colour to the new, outlined, with a ⇄ (or +, for unclaimed land) badge |
+| Claim | A claim or contest: the target riding outlined and pulsing, a dashed arrow from the claimant's seat, and on resolution "taken" (✓) or "held" (shield). A defence (Fortify) draws the threat from the claimant to the defended riding |
+| Scheme | A scheme begun or given up: an arrow from the seat to its target, labelled by scheme ("frontier", "courtship", "buy-out") |
+| Intent | Every public scheme of the cast and the followed house with a target: a faint dotted arrow from seat to target, before it resolves |
+| Seat | At the seat: founded (★), succession or an heir (↻), elevated (crown), a fall (✕), a failure (⊘) |
+| Bond | A match, compact or peace: a solid gold line between the two seats |
+| Strife | A quarrel or dispute: a dashed red line between the two seats |
+| Crisis | Every standing house's seat marked by camp: lead ▲, resist ▼, aside ○; the camera takes the whole table |
+| Chip | An event still running ("The Great War, year 3 of 5"), and "a quiet year" |
+| Closed land | Land not under Canada in the year shown, hatched; opened in its accession year, with the accession as the event |
+
+The cap:
+
+- Each year shows the headline and at most five other marks, by story weight; the rest
+  are a count that opens the drawer. One crisis's camps are drawn a year.
+- A year with no beat above the quiet threshold shows no marks and no scheme arrows,
+  only its "a quiet year" chip.
+- Following a house outlines its ridings.
+- Badges never sit on one another: each, most important first, takes the nearest free
+  spot and keeps a leader line to its place, and a label is drawn only where it fits.
+
+Cards:
+
+- The headline opens as a card attached to its mark, placed so it does not cover it: the
+  kicker, the sentence and the "previously" line.
+- Tapping any mark opens its own card, the beat told on its own.
+- Tapping a riding gives its holder, rank, whether it is the seat, and its jurisdiction
+  that year (for a game without a calendar, its province).
+- One card at a time; a tap on the map closes it.
+- Chapter closes and the reckoning are full-screen cards over the map, and Auto pauses on
+  them as before.
+
+Checks: node tests for marks (every type, the ground order, the cap, one crisis a year,
+a quiet year, the intent arrows) and for the camera (framing on three screens, both
+modes, limits, flights, cards that do not cover their mark, gestures).
+`tests/js/mapview.e2e.mjs` (run by `tests/test_mapview.py` where Playwright is
+installed) drives the preview at 390 × 844 and 820 × 1180 and checks:
+
+- follow mode frames 1885, 1914 and 1966;
+- a drag, a pinch and a double tap move the map and free the camera;
+- free mode holds still across Next year, and Recentre frames the year;
+- a mark's card opens without covering its mark and closes on a tap on the map;
+- no page logs an error.
+
 ## 4. Rules 1.0 (Phase C)
 
 Each item is a named flag in rules/versions/1.0/features.json, false in every earlier
@@ -848,4 +974,5 @@ The calendar:
 | D1 | Pacing (fewer, weightier contests; scarce capital; rank that differentiates), `distinct_surnames` (§4.10), `world_calendar` (§5) with the deck to 1966 and the reckoning, `crises` (§5.1), all in the 1.0 draft; years, chapter interstitials and the reckoning in the story layer; the preview as the whole game | Yes | §6 targets across ten seeds on the mean; cross-check byte-identical on seeds 1867, 2 and 3 at 120 turns under 0.9 and 100 under 1.0; the three-column table (C2 all on, D1 without `world_calendar`, D1 all on) in rules/CHANGELOG.md. Built 6 October 2026 |
 | D1 follow-up | Crisis side-taking with its own thresholds; rank that follows power (`schemes.json` `elevation`, Dukes); crisis headline order and articles; years, go-to and numeral-free names on the page | Yes | §6 targets, the four new ones included, across ten seeds on the mean; the before/after table in rules/CHANGELOG.md. Built 7 October 2026 |
 | D2 | The director reviews the preview; then the new scenario begins under 1.0, The Dominion is frozen, and 1.0 is published (`rules/current.txt` points at it) | Yes | A full game ends in 1967 with its reckoning, from the record |
+| V | The map view (§3.6): the Replay as a full-screen map with gestures, a follow/free camera, marks and cards; the text Replay kept as its own page | None | node tests for marks and camera; the browser checks at 390 × 844 and 820 × 1180; full suite, node tests and the referee on every scenario green; both frozen games' archive pages render. Built 7 October 2026 |
 | E | Scene templates, chapter narration, epilogues | None | A full game reads start to finish from the site |
