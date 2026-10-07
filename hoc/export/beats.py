@@ -36,6 +36,7 @@ from hoc import rules as mechanics
 
 __all__ = [
     "build_story", "write_beats", "turn_inputs", "type_turn", "BEAT_KINDS", "CHUNK_BUDGET",
+    "seat_history", "jurisdiction_spans", "write_atlas",
 ]
 
 CHUNK_BUDGET = 500_000  # bytes per fetch (Phase A, task 3)
@@ -600,6 +601,96 @@ def plans_by_turn(conn):
     return out
 
 
+def seat_history(conn):
+    """Each house's principal seat over the game, for the map view (Phase V):
+    {house: [[turn, fed_id or None], ...]}, a row each time it changes, turn 0
+    the board before the first turn.
+
+    The seat is the first of a house's ridings in canonical row order (hard
+    rule 4). The engine appends every holding it grants at the end of the
+    house's order and closes the gaps a departure leaves without reordering,
+    so for an engine-played game the seat at any turn is the riding held then
+    with the lowest holding id. The reconstructed game's order was written by
+    hand, so there the seat the record holds now comes first while it is held.
+    """
+    engine = _is_engine_game(conn)
+    turn_of = {}
+    for row in conn.execute("SELECT id, turn_id, mechanical_delta FROM events ORDER BY id"):
+        if engine:
+            delta = json.loads(row["mechanical_delta"]) if row["mechanical_delta"] else None
+            turn = delta.get("season") if isinstance(delta, dict) else None
+        else:
+            turn = row["turn_id"]
+        if isinstance(turn, int):
+            turn_of[row["id"]] = turn
+    rows = defaultdict(list)
+    for row in conn.execute(
+        "SELECT id, house, fed_id, seat_order, acquired_event_id, released_event_id"
+        " FROM holdings ORDER BY id"
+    ):
+        acquired = turn_of.get(row["acquired_event_id"], 0)
+        if row["released_event_id"] is None:
+            released = None
+        else:
+            released = turn_of.get(row["released_event_id"])
+            if released is None:
+                continue  # released before the first turn: never on the board told
+        current = row["released_event_id"] is None and row["seat_order"] == 1
+        rows[row["house"]].append((acquired, released, current, row["id"], row["fed_id"]))
+    if engine:
+        last = conn.execute("SELECT MAX(season_no) AS n FROM seasons").fetchone()["n"] or 0
+    else:
+        last = conn.execute("SELECT MAX(turn_id) AS n FROM turns").fetchone()["n"] or 0
+    out = {}
+    for house in sorted(rows):
+        changes = []
+        seat = None
+        for turn in range(0, last + 1):
+            held = [r for r in rows[house] if r[0] <= turn and (r[1] is None or r[1] > turn)]
+            if held:
+                key = (lambda r: r[3]) if engine else (lambda r: (0 if r[2] else 1, r[3]))
+                now = min(held, key=key)[4]
+            else:
+                now = None
+            if now != seat:
+                changes.append([turn, now])
+                seat = now
+        if changes:
+            out[house] = changes
+    return out
+
+
+def jurisdiction_spans(conn):
+    """The jurisdictions every riding lay under, by year, for a game played on
+    a world calendar on a set that has them ({fed_id: [[from, to, name, status,
+    sovereign], ...]}, `to` None for the span in force today), else None. The
+    map view draws land not under Canada in the year shown as closed, and names
+    a riding's jurisdiction that year when it is tapped. Display only."""
+    if calendar_of(conn) is None:
+        return None
+    from hoc import places
+
+    spans = places.riding_jurisdictions(places.reference_dir_for(conn))
+    if not spans:
+        return None
+    return {
+        fed: [[s["from_year"], s["to_year"], s["name"], s["status"], s["sovereign"]] for s in rows]
+        for fed, rows in sorted(spans.items())
+    }
+
+
+def write_atlas(conn, data_dir):
+    """data/beats/atlas.json: what only the map view reads — each house's seat
+    over the game and, for a calendar game, the jurisdictions by year."""
+    atlas = {"seats": seat_history(conn)}
+    spans = jurisdiction_spans(conn)
+    if spans is not None:
+        atlas["jurisdictions"] = spans
+    path = Path(data_dir) / "beats" / "atlas.json"
+    path.write_text(_dumps(atlas) + "\n", encoding="utf-8")
+    return path
+
+
 def _dumps(value):
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
 
@@ -657,4 +748,5 @@ def write_beats(conn, data_dir, title=None):
         })
     (out / "index.json").write_text(_dumps(index) + "\n", encoding="utf-8")
     written.append(out / "index.json")
+    written.append(write_atlas(conn, data_dir))
     return written
