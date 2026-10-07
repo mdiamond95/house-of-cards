@@ -51,6 +51,11 @@ test('the strip carries place, movement, colour and score, and marks the followe
   assert.ok(html.includes('move-down followed'));
 });
 
+test('the strip never shows a house key\'s numeral', () => {
+  const html = stripHtml([{ house: 'Sinclair 2', place: 1, score: 30, move: 'same', was: 1 }]);
+  assert.ok(html.includes('>Sinclair<') && !html.includes('Sinclair 2'));
+});
+
 test('a quiet dispatch is one line; a told one has headline, secondaries and ledger', () => {
   assert.equal(
     dispatchHtml({ turn: 4, quiet: true, quietLine: 'A quiet season: two houses tended their estates.' }),

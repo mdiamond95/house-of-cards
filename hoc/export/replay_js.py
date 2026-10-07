@@ -16,7 +16,7 @@ REPLAY_JS = r"""// A frozen game, told one turn at a time.
 // hoc/export/beats.py and fetched a chunk at a time as they are needed.
 
 import { Story } from './story/dispatch.js';
-import { houseStyle } from './story/text.js';
+import { houseStyle, readerNames } from './story/text.js';
 import {
   MapCamera, afootHtml, chapterHtml, dispatchHtml, escapeHtml, pauseReason, plansHtml, readStored,
   reckoningHtml, recordHtml, storylineHtml, stripHtml, writeStored,
@@ -41,6 +41,9 @@ const app = {
   camera: null,
   paths: [],
   styles: {},
+  // What a reader calls each house: its surname, or its title where two
+  // houses of the game share one (story/text.js readerNames). Never a numeral.
+  names: new Map(),
   // The storyline open in the Afoot panel, if any.
   afoot: null,
 };
@@ -66,6 +69,10 @@ async function turnData(turn) {
     // Rules 1.0 `schemes`: every public scheme as the turn left them.
     plans: chunk.plans ? (chunk.plans[String(turn)] || []) : null,
   };
+}
+
+function nameOf(house) {
+  return app.names.get(house) || house.replace(/ \d+$/, '');
 }
 
 function colourOf(house) {
@@ -176,7 +183,7 @@ function show(d, { zoom = true } = {}) {
   paint();
   renderLabel();
   renderAfoot();
-  el('story-strip').innerHTML = stripHtml(d ? d.standings : app.story.still(), { colourOf, follow: app.follow });
+  el('story-strip').innerHTML = stripHtml(d ? d.standings : app.story.still(), { colourOf, nameOf, follow: app.follow });
   if (!d) {
     el('story-dispatch').innerHTML =
       `<p class="dispatch-quiet">Press <b>Next ${unitName()}</b> to begin, or <b>Auto</b> to let it run.</p>`;
@@ -185,7 +192,7 @@ function show(d, { zoom = true } = {}) {
   }
   // Phase D1: a chapter's interstitial at its end, and the reckoning after the last turn.
   el('story-dispatch').innerHTML = dispatchHtml(d, { unit: unitName() })
-    + (d.chapter ? chapterHtml(d.chapter, { colourOf, follow: app.follow, start: startYear() }) : '')
+    + (d.chapter ? chapterHtml(d.chapter, { colourOf, nameOf, follow: app.follow, start: startYear() }) : '')
     + (d.reckoning ? reckoningHtml(d.reckoning, { colourOf }) : '');
   el('story-record-lines').innerHTML = recordHtml(d);
   if (zoom && app.camera) app.camera.focus(focusOf(d));
@@ -248,20 +255,30 @@ async function guarded(fn) {
   }
 }
 
+// Go to a turn and show its dispatch (with its interstitial or reckoning).
+// Telling it again from the start when it is not ahead means the turn already
+// on screen, asked for again, is shown and not the opening prompt.
 async function goTo(target) {
   const turn = Math.max(0, Math.min(app.index.turns, target));
   await guarded(async () => {
-    if (turn < app.turn || turn === 0) reset();
+    if (turn <= app.turn) reset();
     const d = turn === 0 ? null : await stepTo(turn);
     show(d, { zoom: false });
   });
 }
 
+// The go-to box: a year in a calendar game (1885), or a turn.
+function wantedTurn(value) {
+  if (calendar() && value >= startYear()) return value - startYear() + 1;
+  return value;
+}
+
 function renderFollow() {
   const select = el('story-follow');
-  const names = Object.keys(app.index.houses).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  const byText = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+  const names = Object.keys(app.index.houses).sort((a, b) => byText(nameOf(a), nameOf(b)) || byText(a, b));
   select.innerHTML = '<option value="">no one</option>'
-    + names.map((h) => `<option>${escapeHtml(h)}</option>`).join('');
+    + names.map((h) => `<option value="${escapeHtml(h)}">${escapeHtml(nameOf(h))}</option>`).join('');
   select.value = app.follow && names.includes(app.follow) ? app.follow : '';
   if (!select.value) app.follow = null;
 }
@@ -294,7 +311,7 @@ function wire() {
   el('story-goto').addEventListener('submit', (event) => {
     event.preventDefault();
     stopAuto();
-    goTo(Number(el('story-goto-turn').value) || 0);
+    goTo(wantedTurn(Number(el('story-goto-turn').value) || 0));
   });
   // Following changes the weights and so the headlines, never the game: the
   // story is told again from the start to where the reader stands.
@@ -336,9 +353,10 @@ async function boot() {
   for (const [house, info] of Object.entries(app.index.houses)) {
     app.styles[house] = houseStyle({ house, ...info });
   }
+  app.names = readerNames(Object.keys(app.index.houses), (house) => app.styles[house] || null);
   app.camera = new MapCamera(el('map'), { borders: el('map-borders') });
   app.follow = readStored(FOLLOW_KEY);
-  el('story-goto-turn').max = String(app.index.turns);
+  if (!calendar()) el('story-goto-turn').max = String(app.index.turns);
   renderFollow();
   reset();
   wire();

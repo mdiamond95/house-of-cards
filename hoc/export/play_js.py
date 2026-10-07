@@ -35,7 +35,7 @@ import {
 // export. It reads the engine's state after each season and never writes to it.
 import { Story } from './story/dispatch.js';
 import { BEAT_KINDS, baselineFromState, inputFromState, typeTurn } from './story/beats.js';
-import { houseStyle } from './story/text.js';
+import { houseStyle, readerNames } from './story/text.js';
 import {
   MapCamera, afootHtml, dispatchHtml, pauseReason, plansHtml, readStored, storylineHtml, stripHtml,
   writeStored,
@@ -507,6 +507,13 @@ function styleOf(house) {
   return row ? houseStyle({ house, peerage: row.peerage, rank: row.rank, place: row.seatPlace }) : null;
 }
 
+// What a reader calls a house: its surname, or its title where another house
+// of the game shares the surname (story/text.js readerNames). Never a numeral.
+function readerName(house) {
+  const houses = [...new Set([...app.world.state.activeHouseNames(), house])];
+  return readerNames(houses, styleOf).get(house);
+}
+
 function ridingNames() {
   const names = {};
   for (const [fed, path] of pathByFed) names[fed] = path.getAttribute('data-riding');
@@ -558,7 +565,7 @@ function houseColour(house) {
 }
 
 function renderStrip(rows) {
-  el('story-strip').innerHTML = stripHtml(rows, { colourOf: houseColour, follow: app.follow });
+  el('story-strip').innerHTML = stripHtml(rows, { colourOf: houseColour, nameOf: readerName, follow: app.follow });
 }
 
 // The headline's ridings, or every riding its houses hold when it moved none.
@@ -599,7 +606,7 @@ function renderFollow() {
   const select = el('story-follow');
   const names = app.world.state.activeHouseNames();
   select.innerHTML = '<option value="">no one</option>'
-    + names.map((h) => `<option>${escapeHtml(h)}</option>`).join('');
+    + names.map((h) => `<option value="${escapeHtml(h)}">${escapeHtml(readerName(h))}</option>`).join('');
   select.value = app.follow && names.includes(app.follow) ? app.follow : '';
 }
 

@@ -855,7 +855,14 @@ def _replay_page(conn, features, borders):
     story layer's dispatch (docs/STORY_DESIGN.md §3.2)."""
     lookup = _riding_lookup(conn)
     geometry = _map_geometry(features, borders, lookup)
-    unit = "season" if _latest_season(conn) else "turn"
+    # Rules 1.0 `world_calendar`: a turn is a year, and the go-to box takes one.
+    calendar = beats_export.calendar_of(conn)
+    unit = "year" if calendar else "season" if _latest_season(conn) else "turn"
+    if calendar:
+        first = calendar["start_year"]
+        goto_range = f' min="{first}" max="{first + calendar["turns"] - 1}"'
+    else:
+        goto_range = ' min="0"'
     body = (
         '<p class="lede prose">The game as it was played, told one '
         f"{esc(unit)} at a time: the headline, what else mattered, and how the"
@@ -870,7 +877,7 @@ def _replay_page(conn, features, borders):
                 '<button type="button" id="story-start">Start again</button>'
                 '<form id="story-goto" class="story-goto">'
                 f'<label for="story-goto-turn" class="sr-only">Go to {esc(unit)}</label>'
-                '<input id="story-goto-turn" type="number" min="0" step="1" inputmode="numeric"'
+                f'<input id="story-goto-turn" type="number"{goto_range} step="1" inputmode="numeric"'
                 f' placeholder="{esc(unit)}">'
                 '<button type="submit">Go</button></form>'
             ),
