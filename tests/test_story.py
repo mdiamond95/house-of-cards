@@ -354,3 +354,115 @@ def test_a_calendar_game_types_its_world_events_alike_and_ships_its_calendar(sch
     assert index["calendar"]["start_year"] == 1867
     assert [c["numeral"] for c in index["calendar"]["chapters"]] == ["I", "II", "III", "IV", "V"]
     assert "reckoning" not in index, "forty turns do not reach the reckoning"
+
+
+# ------------------------------------------- Phase V2: the round of a year --
+
+
+@pytest.fixture(scope="module")
+def preview_round(tmp_path_factory):
+    """The draft-rules preview's whole game (100 turns, seed 1867), played as
+    scripts/build_preview.py plays it, its beats exported with each season
+    record's playing order (rules 1.0 `round_record`)."""
+    import build_preview
+
+    from hoc import rules_data
+
+    work = tmp_path_factory.mktemp("story-round")
+    version = rules_data.draft_version()
+    records = []
+    conn = build_preview.play_preview(work / "game.db", version,
+                                      seasons=build_preview.preview_length(version), records=records)
+    conn.row_factory = sqlite3.Row
+    orders = beats_export.orders_from_records(records)
+    beats_export.write_beats(conn, work / "data", title="round", orders=orders)
+    yield conn, work, records, orders
+    conn.close()
+
+
+@needs_node
+def test_every_beat_of_the_preview_game_has_a_part_of_the_round(preview_round):
+    """Each of the preview's beats carries its part — the world, a house's
+    turn or the close — every part is in its year's round, and each round's
+    house turns come out in the engine's playing order, each once."""
+    _, work, records, _ = preview_round
+    report = json.loads(_node(JS / "story_round_report.mjs", work / "data" / "beats"))
+    assert report["round"] is True
+    assert report["turns"] == len(records) == 100
+    assert report["beats"] > 0 and report["withPart"] == report["beats"]
+    assert report["stray"] == 0
+    assert report["inOrder"] is True
+    assert report["housePartsTwice"] == 0
+    # Every house of every order has its turn, and the world and the close theirs.
+    assert report["parts"] == sum(len(r["order"]) + 2 for r in records)
+    assert set(report["byPace"]) == {"quiet", "notable", "pause"}
+    assert report["autoSkipped"]["ms"] < report["autoShown"]["ms"]
+
+
+@needs_node
+def test_both_typings_give_an_action_its_house_turn_where_the_order_is_known(preview_round, tmp_path):
+    conn, _, _, orders = preview_round
+    turns, _ = beats_export.turn_inputs(conn, orders)
+    inputs = [data for _, data in turns][:30]
+    path = tmp_path / "round.json"
+    path.write_text(json.dumps(inputs, ensure_ascii=False), encoding="utf-8")
+    js = json.loads(_node(JS / "story_type.mjs", path))
+    python = [beats_export.type_turn(data) for data in inputs]
+    assert [_canon(a) for a in python] == [_canon(b) for b in js]
+    beats = [b for turn in python for b in turn]
+    assert all(isinstance(b.get("part"), str) for b in beats)
+    # An action's beat is its own house's part of the round.
+    for data, typed in zip(inputs, python):
+        actors = {row["house"] for row in data["actions"]}
+        for beat in typed[len(data["events"]):]:
+            assert beat["part"] == beat["houses"][0] and beat["part"] in actors
+    # Without the order an action beat has no part, as before Phase V2.
+    bare, _ = beats_export.turn_inputs(conn)
+    for (_, data), with_order in zip(bare[:30], python):
+        typed = beats_export.type_turn(data)
+        assert [b.get("part") for b in typed[:len(data["events"])]] == \
+            [b["part"] for b in with_order[:len(data["events"])]]
+        assert all("part" not in b for b in typed[len(data["events"]):])
+
+
+def test_the_round_ships_its_order_its_deck_and_its_people(preview_round):
+    from hoc import rules_data
+
+    conn, work, records, orders = preview_round
+    directory = work / "data" / "beats"
+    index = json.loads((directory / "index.json").read_text(encoding="utf-8"))
+    assert index["round"] is True
+    chunk = json.loads((directory / index["chunks"][0]["file"]).read_text(encoding="utf-8"))
+    for turn, order in chunk["order"].items():
+        assert order == orders[int(turn)]
+    # The deck: the events of the year, by name and in deck order; none in
+    # turn 1, which is the first founding alone.
+    rules = rules_data.load_rules(version=rules_data.draft_version())
+    assert chunk["deck"]["1"] == []
+    for turn, deck in chunk["deck"].items():
+        year = 1866 + int(turn)
+        expected = [e.name for e in rules.events if e.personal_year == year] if int(turn) > 1 else []
+        assert [e["name"] for e in deck] == expected, turn
+    assert any(e["crisis"] for deck in chunk["deck"].values() for e in deck)
+    # The people: every house's holders, each from a season, and its named heirs.
+    atlas = json.loads((directory / "atlas.json").read_text(encoding="utf-8"))
+    people = atlas["people"]
+    assert set(people) <= set(index["houses"])
+    for house, rows in people.items():
+        holders = [r for r in rows if r[2] == "holder"]
+        assert holders, house
+        assert all(isinstance(r[6], int) for r in holders), house
+        assert sum(1 for r in holders if r[4] is None) <= 1, f"{house} has one living holder at most"
+
+
+def test_a_game_without_the_round_is_told_a_year_at_a_time(frozen_games, tmp_path):
+    for name, (_, work) in frozen_games.items():
+        index = json.loads((work / "data" / "beats" / "index.json").read_text(encoding="utf-8"))
+        assert "round" not in index, name
+        atlas = json.loads((work / "data" / "beats" / "atlas.json").read_text(encoding="utf-8"))
+        assert "people" not in atlas, name
+    # Orders handed over for a record without `round_record` are ignored.
+    conn = frozen_games["new"][0]
+    beats_export.write_beats(conn, tmp_path / "data", title="new", orders={1: ["X"]})
+    index = json.loads((tmp_path / "data" / "beats" / "index.json").read_text(encoding="utf-8"))
+    assert "round" not in index

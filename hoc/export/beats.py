@@ -178,7 +178,7 @@ def type_event(event, action_of):
 
 
 def _beat(turn, seq, kind, houses, ridings, outcome, line, owners, ranks, removed,
-          scheme=None, ran=None, world=None):
+          scheme=None, ran=None, world=None, part=None):
     """The canonical shape: empty fields left out (web/story/beats.js makeBeat)."""
     beat = {"turn": turn, "seq": seq, "kind": kind, "houses": houses}
     if ridings:
@@ -199,6 +199,8 @@ def _beat(turn, seq, kind, houses, ridings, outcome, line, owners, ranks, remove
         beat["ran"] = ran
     if world is not None:
         beat["world"] = world
+    if part is not None:
+        beat["part"] = part
     return beat
 
 
@@ -279,8 +281,13 @@ def type_turn(data):
             ridings = sorted(d.get("fed_ids") or [])
 
         beats.append(_beat(data["turn"], len(beats), kind, houses, ridings, outcome,
-                           event["line"], owners, ranks, removed, scheme, ran, world))
+                           event["line"], owners, ranks, removed, scheme, ran, world,
+                           d.get("part")))
 
+    # Rules 1.0 `round_record`: an action is written in its house's own turn,
+    # so where the turn's playing order is known an action beat is that
+    # house's part of the round.
+    round_known = data.get("order") is not None
     for row in data["actions"]:
         kind = None
         outcome = "success" if row["success"] else "failed"
@@ -293,7 +300,7 @@ def type_turn(data):
         if kind is None:
             continue
         beats.append(_beat(data["turn"], len(beats), kind, [row["house"]], [], outcome,
-                           None, {}, {}, []))
+                           None, {}, {}, [], part=row["house"] if round_known else None))
     return beats
 
 
@@ -322,9 +329,13 @@ def _founding_ranks(conn):
     return ranks
 
 
-def turn_inputs(conn):
+def turn_inputs(conn, orders=None):
     """Every turn's input, as (turns, baseline): turns is [(turn, input)] for
-    turns 1..last, baseline the board before turn 1 (web/story/standings.js)."""
+    turns 1..last, baseline the board before turn 1 (web/story/standings.js).
+
+    `orders` ({turn: [house, ...]}) is each season record's `order` (rules 1.0
+    `round_record`), which the database does not keep; a turn given one
+    carries it as its input's `order`."""
     engine = _is_engine_game(conn)
     houses_of = defaultdict(list)
     for row in conn.execute("SELECT event_id, house FROM event_houses ORDER BY event_id, rowid"):
@@ -423,13 +434,16 @@ def turn_inputs(conn):
                 if founding.get(house):
                     ranks[house] = founding[house]
         moved = sorted(holdings.get(turn, []), key=lambda row: row["event"])
-        turns.append((turn, {
+        data = {
             "turn": turn,
             "events": events,
             "actions": actions.get(turn, []) if engine else [],
             "holdings": moved,
             "ranks": ranks,
-        }))
+        }
+        if orders is not None and turn in orders:
+            data["order"] = list(orders[turn])
+        turns.append((turn, data))
     baseline = {"owners": baseline_owners, "ranks": baseline_ranks,
                 "removed": sorted(baseline_removed)}
     return turns, baseline
@@ -438,9 +452,9 @@ def turn_inputs(conn):
 # ------------------------------------------------------------------ output --
 
 
-def build_story(conn):
+def build_story(conn, orders=None):
     """(index, {turn: beats}) for the whole game."""
-    turns, baseline = turn_inputs(conn)
+    turns, baseline = turn_inputs(conn, orders)
     beats = {turn: type_turn(data) for turn, data in turns}
     # What the story layer names a house by (web/story/text.js houseStyle): its
     # peerage as last written, the rank word in it, and its seat's place where
@@ -601,6 +615,88 @@ def plans_by_turn(conn):
     return out
 
 
+def orders_from_records(records):
+    """{turn: order} from season records that carry rules 1.0's `order`; None
+    when none does (a game without `round_record`)."""
+    out = {record["season"]: record["order"] for record in records if "order" in record}
+    return out or None
+
+
+def orders_from_dir(seasons_dir):
+    """{turn: order} from a directory of season files, as orders_from_records."""
+    records = []
+    for path in sorted(Path(seasons_dir).glob("[0-9][0-9][0-9][0-9].json")):
+        records.append(json.loads(path.read_text(encoding="utf-8")))
+    return orders_from_records(records)
+
+
+def deck_by_turn(conn):
+    """Rules 1.0 `round_record` with `world_calendar`: the events of each
+    year's deck, by name, for the world's turn to announce ({turn: [{name,
+    magnitude, crisis, years}]}), in deck order. Turn 1 is the first founding
+    alone, so its year's events are not announced. Empty for any other game."""
+    from hoc import rules_data
+
+    out = {}
+    for row in conn.execute(
+        "SELECT season_no, rules_version FROM seasons WHERE rules_version IS NOT NULL ORDER BY season_no"
+    ):
+        try:
+            rules = rules_data.load_rules(version=row["rules_version"])
+        except rules_data.RulesDataError:
+            continue
+        if not (rules.feature("world_calendar") and rules.feature("round_record")) or row["season_no"] < 2:
+            continue
+        year = rules.game["start_year"] + row["season_no"] - 1
+        out[row["season_no"]] = [
+            {
+                "name": event.name,
+                "magnitude": event.magnitude,
+                "crisis": bool(rules.feature("crises") and event.magnitude == "Major"),
+                "years": (event.through_year - event.personal_year + 1) if event.through_year else 1,
+            }
+            for event in rules.events if event.personal_year == year
+        ]
+    return out
+
+
+def people_of(conn):
+    """Each house's holders and heirs over the game, for the map view's house
+    sheet (Phase V2): {house: [[name, gender, role, entered, died, age, from],
+    ...]} in id order. `role` is the person's role now; `entered` the season
+    the person entered the record; `died` the season they died, or None;
+    `age` their age at death, or now; `from` the season they became holder,
+    or None for one who never held. A house's first holder holds from its
+    founding; each later one from the season the holder before died, since a
+    succession is decided in the season of the death (§9). Only holders and
+    named heirs are listed."""
+    founded = {row["house"]: row["founded_season"] for row in conn.execute(
+        "SELECT house, founded_season FROM house_stats")}
+    rows = defaultdict(list)
+    for row in conn.execute(
+        "SELECT id, house, name, gender, role, born_season, died_season, age FROM persons"
+        " WHERE role IN ('holder', 'heir', 'heir2') ORDER BY id"
+    ):
+        rows[row["house"]].append(row)
+    out = {}
+    for house in sorted(rows):
+        holders = sorted(
+            (r for r in rows[house] if r["role"] == "holder"),
+            key=lambda r: (r["died_season"] is None, r["died_season"] or 0, r["id"]),
+        )
+        held_from = {}
+        previous = None
+        for r in holders:
+            held_from[r["id"]] = founded.get(house) if previous is None else previous["died_season"]
+            previous = r
+        out[house] = [
+            [r["name"], r["gender"], r["role"], r["born_season"], r["died_season"], r["age"],
+             held_from.get(r["id"])]
+            for r in rows[house]
+        ]
+    return out
+
+
 def seat_history(conn):
     """Each house's principal seat over the game, for the map view (Phase V):
     {house: [[turn, fed_id or None], ...]}, a row each time it changes, turn 0
@@ -679,10 +775,13 @@ def jurisdiction_spans(conn):
     }
 
 
-def write_atlas(conn, data_dir):
+def write_atlas(conn, data_dir, people=False):
     """data/beats/atlas.json: what only the map view reads — each house's seat
-    over the game and, for a calendar game, the jurisdictions by year."""
+    over the game, for a calendar game the jurisdictions by year, and for a
+    game told round by round (`people`) its holders and heirs."""
     atlas = {"seats": seat_history(conn)}
+    if people:
+        atlas["people"] = people_of(conn)
     spans = jurisdiction_spans(conn)
     if spans is not None:
         atlas["jurisdictions"] = spans
@@ -695,16 +794,28 @@ def _dumps(value):
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
 
 
-def write_beats(conn, data_dir, title=None):
-    """Write data/beats/. Returns the paths written."""
+def write_beats(conn, data_dir, title=None, orders=None):
+    """Write data/beats/. Returns the paths written.
+
+    `orders` is each season record's `order` ({turn: [house, ...]}), for a
+    game played with rules 1.0's `round_record`: the database does not keep
+    it, so the caller hands it over from the records. A game given orders is
+    told round by round (index `round`): each turn's chunk carries its
+    `order`, and for a calendar game its `deck`, the year's events by name."""
     out = Path(data_dir) / "beats"
     out.mkdir(parents=True, exist_ok=True)
     for stale in out.glob("*.json"):
         stale.unlink()
-    index, beats = build_story(conn)
+    told_by_round = bool(orders) and _record_has(conn, "round_record")
+    if not told_by_round:
+        orders = None
+    index, beats = build_story(conn, orders)
     index["title"] = title
+    if told_by_round:
+        index["round"] = True
     prestige = prestige_by_turn(conn)
     plans = plans_by_turn(conn)
+    deck = deck_by_turn(conn) if told_by_round else {}
 
     chunks = []
     current = {}
@@ -715,6 +826,9 @@ def write_beats(conn, data_dir, title=None):
             piece += len(_dumps({str(turn): prestige[turn]}).encode("utf-8"))
         if turn in plans:
             piece += len(_dumps({str(turn): plans[turn]}).encode("utf-8"))
+        if orders is not None:
+            piece += len(_dumps({str(turn): orders.get(turn, [])}).encode("utf-8"))
+            piece += len(_dumps({str(turn): deck.get(turn, [])}).encode("utf-8"))
         if current and size + piece > CHUNK_BUDGET - 64:
             chunks.append(current)
             current, size = {}, 0
@@ -735,6 +849,11 @@ def write_beats(conn, data_dir, title=None):
         if plans:
             # Rules 1.0 `schemes`: what the Plans afoot panel shows.
             body["plans"] = {t: plans.get(int(t), []) for t in chunk}
+        if orders is not None:
+            # Rules 1.0 `round_record`: the playing order of each turn, and
+            # the deck events its world's turn announces.
+            body["order"] = {t: orders.get(int(t), []) for t in chunk}
+            body["deck"] = {t: deck.get(int(t), []) for t in chunk}
         text = _dumps(body) + "\n"
         if len(text.encode("utf-8")) > CHUNK_BUDGET:
             raise ValueError(f"{name} is over the {CHUNK_BUDGET:,}-byte budget; one turn is too large")
@@ -748,5 +867,5 @@ def write_beats(conn, data_dir, title=None):
         })
     (out / "index.json").write_text(_dumps(index) + "\n", encoding="utf-8")
     written.append(out / "index.json")
-    written.append(write_atlas(conn, data_dir))
+    written.append(write_atlas(conn, data_dir, people=told_by_round))
     return written

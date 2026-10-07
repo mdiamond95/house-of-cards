@@ -259,9 +259,14 @@ export function typeTurn(input) {
 
     beats.push(makeBeat(input.turn, beats.length, {
       kind, houses, ridings: shown, outcome, line: event.line ?? null, owners, ranks, removed, scheme, ran, world,
+      part: d.part ?? null,
     }));
   }
 
+  // Rules 1.0 `round_record`: an action is written in its house's own turn, so
+  // where the turn's playing order is known an action beat is that house's
+  // part of the round.
+  const roundKnown = input.order !== undefined && input.order !== null;
   for (const row of input.actions || []) {
     let kind = null;
     let outcome = row.success ? 'success' : 'failed';
@@ -276,6 +281,7 @@ export function typeTurn(input) {
     if (kind === null) continue;
     beats.push(makeBeat(input.turn, beats.length, {
       kind, houses: [row.house], ridings: [], outcome, line: null, owners: {}, ranks: {}, removed: [],
+      part: roundKnown ? row.house : null,
     }));
   }
   return beats;
@@ -294,6 +300,7 @@ function makeBeat(turn, seq, fields) {
   if (fields.scheme !== null && fields.scheme !== undefined) beat.scheme = fields.scheme;
   if (fields.ran !== null && fields.ran !== undefined) beat.ran = fields.ran;
   if (fields.world !== null && fields.world !== undefined) beat.world = fields.world;
+  if (fields.part !== null && fields.part !== undefined) beat.part = fields.part;
   return beat;
 }
 
@@ -314,8 +321,9 @@ function worldFacts(kind, d) {
 // One season's input from the JavaScript engine's in-memory tables (web/engine/
 // state.js WorldState, read by shape). Only seasons played in this page carry
 // full deltas: a state restored from a snapshot keeps just the season number on
-// its old events, so call this right after the season is played.
-export function inputFromState(state, season) {
+// its old events, so call this right after the season is played. `order` is
+// the season record's (rules 1.0 `round_record`), where the page has it.
+export function inputFromState(state, season, order = null) {
   const events = state.events
     .filter((e) => e.mechanicalDelta && e.mechanicalDelta.season === season)
     .sort((a, b) => a.id - b.id);
@@ -334,7 +342,7 @@ export function inputFromState(state, season) {
     const row = founded === undefined ? undefined : state.houses.get(founded);
     if (row && row.rank) ranks[founded] = row.rank;
   }
-  return {
+  const input = {
     turn: season,
     events: events.map((e) => ({
       id: e.id,
@@ -350,6 +358,8 @@ export function inputFromState(state, season) {
     holdings: holdings.sort((a, b) => a.event - b.event),
     ranks,
   };
+  if (order !== null) input.order = [...order];
+  return input;
 }
 
 // The board as the in-memory engine holds it now, in the shape standings.js
@@ -415,6 +425,8 @@ function mergeGroup(merge, kind, parts) {
   }
   const principal = parts.find((p) => p.kind === kind) || parts[0];
   const beat = { turn: parts[0].turn, seq: parts[0].seq, kind, houses, merge, parts };
+  // One act is played in one turn of the round (rules 1.0 `round_record`).
+  if (principal.part !== undefined) beat.part = principal.part;
   for (const key of ['scheme', 'ran', 'plan']) {
     const carrier = parts.find((p) => p[key] !== undefined);
     if (carrier) beat[key] = carrier[key];

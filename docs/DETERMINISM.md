@@ -272,6 +272,45 @@ p_found(300, 343, 0.5) = 0.46760976479141225
 p_found(  0, 343, 0.5) = 0.0
 ```
 
+## The round record
+
+Rules 1.0's `round_record` (Phase V2, docs/STORY_DESIGN.md §3.6) writes down what both
+engines already do, in two fields, and decides nothing.
+
+- **`part`, on every engine event's mechanical delta.** The part of the round the event
+  was recorded in:
+  - `"world"` from the start of a season to the start of the house turns: ages, the
+    world's turn (accessions, the years of running events, crises) and the borders'
+    friction;
+  - the house's key during that house's turn: upkeep, strain, the succession watch, its
+    era events, its mortality and succession, its action and letter, its objectives and
+    its debt check, whatever house the event names first;
+  - `"close"` from the founding roll to the end of the season: the Crown's founding,
+    enclosure, the quiet lines, prestige and the reckoning.
+
+  Turn 1, the first founding alone, is `"close"`. A director's intervention, applied
+  between seasons, carries none.
+- **`order`, on every season record.** The houses the season's house turns were played
+  for, in the order `active_houses()` gave when they began (the Ordering rule above),
+  including a house removed before its turn came. Turn 1's is `[]`.
+
+Neither is read by any decision, and both engines set them at the same three points of
+the season loop. `tests/test_round_record.py` plays seeds 1867, 2 and 3 for 100 turns
+under 1.0 with the flag on and off, and requires every season record and every event to
+be identical once the two fields are taken out.
+
+The database keeps `part` (in `events.mechanical_delta`) but not `order`, which lives in
+the season record alone. The draft-rules preview writes no season file, so
+`scripts/build_preview.py` hands the exporter its records' `order`;
+`scripts/build_archive.py` reads it from the season files its replay writes.
+
+The cross-check compares the events each engine recorded as well as its season files
+(`scripts/crosscheck.py` `engine_events`): every engine event, in order, with its kind,
+title, line, houses and delta, `part` included. An event's row id is not compared: a
+director's intervention records a wrapper event, which the Python turn runner allocates
+before the operations it carries and the JavaScript engine after them, so the numbering
+after an intervention differs while the events, compared by position, do not.
+
 ## Keeping it true
 
 `CLAUDE.md` carries the standing rule: **any change to `hoc/sim.py` must be mirrored in

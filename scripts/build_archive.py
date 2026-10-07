@@ -29,7 +29,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from hoc import scenario  # noqa: E402  (after sys.path setup)
-from hoc.export import site  # noqa: E402
+from hoc.export import beats as beats_export, site  # noqa: E402
 
 
 def _summary(conn, name):
@@ -93,6 +93,9 @@ def build_archive(out_dir=site.DEFAULT_OUT_DIR, name=None, verbose=False):
                 subdir=f"{site.SITE_DIRNAME}/{site.ARCHIVE_DIRNAME}/{each}",
                 archive=True,
                 archive_name=each,
+                # Rules 1.0 `round_record`: the playing order each season
+                # record keeps, which the database does not.
+                orders=beats_export.orders_from_dir(workspace / "seasons"),
             ))
             entries.append(_summary(conn, each))
             conn.close()

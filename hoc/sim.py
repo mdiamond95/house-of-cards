@@ -466,6 +466,10 @@ class World:
     # -- rules 1.0 `world_calendar`: one year a turn, and the atlas read at it --
 
     _playing_season = None
+    # Rules 1.0 `round_record`: the part of the round being played ("world", a
+    # house, or "close"), stamped on every event recorded; None when the flag
+    # is off and between seasons.
+    _part = None
 
     def year_now(self):
         """The world year: of the season being played, or between seasons of
@@ -867,6 +871,10 @@ class World:
         JSON delta instead, which every engine event writes.
         """
         payload = {"season": season}
+        # Rules 1.0 `round_record`: the part of the round the event was
+        # recorded in. It is set by the season loop and read by nothing here.
+        if self._part is not None:
+            payload["part"] = self._part
         if delta:
             payload.update(delta)
         event_id = mechanics.record_event(
@@ -4724,6 +4732,10 @@ class World:
         self.chronicle = []
         rng = self.rng_for(1)
         self._playing_season = 1
+        # Rules 1.0 `round_record`: turn 1 is the first founding alone, which
+        # is the Crown's, in the close; no house has a turn.
+        round_record = self.feature("round_record")
+        self._part = "close" if round_record else None
         try:
             house = self.found_house(1, seat=seat, rng=rng)
             if house is None:
@@ -4732,9 +4744,11 @@ class World:
             prestige = self._compute_prestige(1) if self.feature("prestige") else None
             if self.feature("world_calendar"):
                 self._track_standing(1, prestige)
-            record = self._write_season(1, [], house, prestige=prestige)
+            record = self._write_season(1, [], house, prestige=prestige,
+                                        order=[] if round_record else None)
         finally:
             self._playing_season = None
+            self._part = None
         record["kind"] = "initial"
         record["seat"] = seat
         self._rewrite_season_file(1, record)
@@ -4793,12 +4807,19 @@ class World:
             return self._run_season(season)
         finally:
             self._playing_season = None
+            self._part = None
 
     def _run_season(self, season):
         self.log = []
         self.chronicle = []
         self._noticed = set()
         rng = self.rng_for(season)
+        # Rules 1.0 `round_record`: every event says which part of the round
+        # it was recorded in — the world's turn, a house's, or the close — and
+        # the season record keeps the playing order. Neither is read by any
+        # decision.
+        round_record = self.feature("round_record")
+        self._part = "world" if round_record else None
 
         # 1. Clocks and ages.
         if "clocks" in self.phases:
@@ -4817,8 +4838,12 @@ class World:
 
         outcomes = []
         self._expansion_claims = {}
-        for row in self.active_houses():
+        playing = self.active_houses()
+        order = [row["house"] for row in playing] if round_record else None
+        for row in playing:
             house = row["house"]
+            if round_record:
+                self._part = house
             self._turn_cache = {}
             if self.house_row(house)["removed_season"] is not None:
                 continue
@@ -4868,6 +4893,8 @@ class World:
                 self._debt_check(house, season, rng)
 
         # 7. Founding roll.
+        if round_record:
+            self._part = "close"
         founded = self._founding_roll(season, rng) if "founding" in self.phases else None
 
         # 8. Enclosure recompute.
@@ -4905,7 +4932,7 @@ class World:
         # Rules 1.0 `schemes`: every public scheme, as the season left them.
         plans = self._plans() if self.feature("schemes") else None
         return self._write_season(season, outcomes, founded, prestige=prestige, plans=plans,
-                                  reckoning=reckoning)
+                                  reckoning=reckoning, order=order)
 
     # A house that has done nothing worth recording for this many consecutive
     # seasons is noticed once. Ten is long enough that it is a fact about the
@@ -5024,7 +5051,8 @@ class World:
                     out.append({"operation": operation, "title": row["title"], **entry})
         return out
 
-    def _write_season(self, season, outcomes, founded, prestige=None, plans=None, reckoning=None):
+    def _write_season(self, season, outcomes, founded, prestige=None, plans=None, reckoning=None,
+                      order=None):
         self._snapshot(season)
         houses_after = self.conn.execute(
             "SELECT COUNT(*) AS n FROM houses WHERE status = 'active'"
@@ -5057,6 +5085,8 @@ class World:
             record["year"] = self.rules.game["start_year"] + season - 1
         if reckoning is not None:
             record["reckoning"] = reckoning
+        if order is not None:
+            record["order"] = order
 
         path = self._write_season_file(season, record)
 

@@ -584,3 +584,14 @@ The ranges worth naming:
 - The one seed that misses the Earl target, 1874, has a Viscount of 11 ridings first, with a Marquis second.
 
 On ten further seeds (1877–1886), the same tables meet the rank and crisis targets: 90%, 100% and 60%, with lead carrying 46%. They fall just outside on contests (18.8), passes (0.32) and cohesion (87.3). The D1 tables on those seeds also miss cohesion (90.0) and sit at the edge on passes (0.34) and contests (20.3). These targets sit near the edge of what ten seeds can show either way.
+
+### Phase V2: `round_record` (7 October 2026)
+
+A new flag in the draft, approved by the director: false in 0.7–0.9, on in 1.0, in both engines. It changes no table and no decision.
+
+- Every engine event's delta carries `part`: `"world"`, the house whose turn it is, or `"close"`.
+- Every season record carries `order`: the playing order fixed at the start of the house turns, so a house that dies before it acts, or does nothing, still has its place in the round.
+
+What motivated it: the story layer tells a year as the engine plays it (docs/STORY_DESIGN.md §3.6, Phase V2), and the record did not say whose turn every event belonged to. The best rule the exporter could apply (event order, the event's first house and its kind) put 30 of 4,895 events in the wrong turn on seed 1867 over 100 turns, 35 of 4,403 on seed 2 and 34 of 4,132 on seed 3. In 36 of those 99 the house whose turn it was is not named on the event at all: a suit given up because a third house's claim was withdrawn, a defence stood down, an absorption when a line dies out.
+
+The proof that it decides nothing: for seeds 1867, 2 and 3 over 100 turns, the 1.0 season records and events with the flag on and off are identical once `part` and `order` are removed (`tests/test_round_record.py`). The cross-check is byte-identical on seeds 1867, 2 and 3 at 120 turns under 0.9 and 100 under 1.0, the new fields included: it now compares every engine event as well as every season file (docs/DETERMINISM.md, "The round record").

@@ -304,3 +304,34 @@ test('a crisis is one beat naming both camps, the cast first, and who carried it
     + ' Delta and Beta resist; those who resist carry it. It is the first of five years.');
   assert.equal(d.inStoryline, false, 'a crisis belongs to no storyline');
 });
+
+test('Phase V2: a year handed its playing order is told as a round, with a card per house turn', () => {
+  const s = story({ seen: BEAT_KINDS, baseline: { owners: { 35001: 'A', 35002: 'B' }, ranks: { A: 0, B: 1 }, removed: [] } });
+  const plans = [{ id: 7, house: 'A', scheme: 'Claim a riding', target_house: 'B', riding: 'Perth', begun: 3, turns_remaining: 2 }];
+  const d = s.step(3, [
+    beat(3, 'quarrel', ['A', 'B'], { outcome: 'friction', part: 'world' }),
+    beat(3, 'scheme_begun', ['A', 'B'], { outcome: 'Claim a riding', scheme: 7, part: 'A' }),
+    beat(3, 'era_response', ['B'], { outcome: 'Resist', part: 'B' }),
+    beat(3, 'invest', ['B'], { outcome: 'success', part: 'B' }),
+  ], { plans, playing: ['A', 'B'], deck: [{ name: 'Laurier Elected', magnitude: 'Significant', crisis: false, years: 1 }] });
+  assert.deepEqual(d.round.parts.map((p) => p.id), ['world', 'A', 'B', 'close']);
+  assert.equal(d.round.stray.length, 0);
+  const a = d.round.parts[1];
+  assert.equal(a.card.scheme, 'It is in the first of three years of its claim on Perth.');
+  assert.match(a.card.did, /\.$/);
+  const b = d.round.parts[2];
+  assert.equal(b.pace, 'quiet');
+  assert.equal(b.card.did, 'It kept to its estates.');
+  assert.ok(b.card.era, 'its answer to the year\'s event is its quiet line');
+  assert.ok(b.card.doneTo, 'the claim begun in its rival\'s turn was done to it');
+  // The sheet: rank, ridings, place, scheme, the rivalry, its last turns.
+  const sheet = s.sheet('A', { people: [['Alice A', 'f', 'holder', 1, null, 40, 1]], last: 10 });
+  assert.equal(sheet.holder.name, 'Alice A');
+  assert.equal(sheet.holder.age, 33);
+  assert.equal(sheet.ridings, 1);
+  assert.match(sheet.scheme, /claim on Perth/);
+  assert.deepEqual(sheet.rivals, ['Beta']);
+  assert.equal(sheet.history.length, 1);
+  // A year without the order is told as before, with no round.
+  assert.equal(story().step(1, []).round, null);
+});

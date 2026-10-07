@@ -130,6 +130,11 @@ FEATURE_DEFAULTS = {
     # with more influence carries it. Reads the world year, so it does nothing
     # without world_calendar.
     "crises": False,
+    # Phase V2 (docs/STORY_DESIGN.md §3.6). Records and decides nothing: every
+    # engine event's delta carries `part` — "world", the house whose turn it
+    # is, or "close" — and each season record carries `order`, the playing
+    # order fixed at the start of the house turns.
+    "round_record": False,
 }
 
 

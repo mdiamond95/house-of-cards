@@ -61,6 +61,9 @@ export const FEATURE_DEFAULTS = {
   distinct_surnames: false,
   world_calendar: false,
   crises: false,
+  // Phase V2 (docs/STORY_DESIGN.md §3.6): `part` on every event, `order` on
+  // every season record. Records and decides nothing.
+  round_record: false,
 };
 
 // "Expand:+2;Dispute:-2" as an ordered object of integers (hoc/rules_data.py

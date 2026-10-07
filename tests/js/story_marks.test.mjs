@@ -103,6 +103,8 @@ test('a crisis marks every standing house\'s seat by its camp and frames the who
   assert.deepEqual(m.camps.lead, ['35001']);
   assert.deepEqual(m.camps.resist, ['35002']);
   assert.deepEqual(m.camps.aside, ['24001']);
+  // Phase V2: each camp's houses, for the page to tint their holdings.
+  assert.deepEqual(m.campHouses, { lead: ['A'], resist: ['B'], aside: ['C'] });
   assert.equal(m.groundKind, 'table');
   assert.deepEqual(m.ground, ['35001', '35002', '24001']);
 });

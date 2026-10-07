@@ -29,7 +29,7 @@ function parseArgs(argv) {
   const args = {
     seed: 1867, seasons: 1, seat: null, out: null,
     root: DEFAULT_ROOT, phases: null, resume: null, interventions: null,
-    rulesVersion: null, reference: 'data/reference',
+    rulesVersion: null, reference: 'data/reference', events: null,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const flag = argv[i];
@@ -39,6 +39,9 @@ function parseArgs(argv) {
       case '--seasons': args.seasons = parseInt(value, 10); i += 1; break;
       case '--seat': args.seat = value; i += 1; break;
       case '--out': args.out = value; i += 1; break;
+      // Where to write every event the engine recorded, for the cross-check's
+      // second comparison (scripts/crosscheck.py engine_events).
+      case '--events': args.events = value; i += 1; break;
       case '--root': args.root = path.resolve(value); i += 1; break;
       case '--resume': args.resume = value; i += 1; break;
       case '--interventions': args.interventions = value; i += 1; break;
@@ -120,6 +123,19 @@ function main() {
   for (let season = first; season <= last; season += 1) {
     write(season, world.runSeason());
     for (const entry of dueAfter(season)) world.intervene(entry.operations, entry.title);
+  }
+
+  if (args.events !== null) {
+    const events = world.state.events
+      .filter((e) => e.source === 'engine')
+      .map((e) => ({
+        kind: e.kind,
+        title: e.title,
+        narrative: e.narrative,
+        houses: [...e.houses],
+        delta: e.mechanicalDelta,
+      }));
+    writeFileSync(args.events, canonicalJson(events), 'utf8');
   }
 }
 
