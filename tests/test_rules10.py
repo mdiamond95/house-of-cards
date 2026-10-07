@@ -890,16 +890,38 @@ def test_a_house_at_its_ranks_reach_wants_elevation_more(tmp_path):
     terms["elevation_at_reach"] = at_reach
     # The influence a petition needs is the table's, not a constant.
     least = terms["elevation_influence_min"]
-    house = next((r["house"] for r in world.active_houses() if world.holding_count(r["house"]) >= 3
-                  and world.rank_index.get(r["rank"], 0) < world.rank_index["Marquis"]), None)
+    house = next((r["house"] for r in world.active_houses() if world._may_petition(r["house"])), None)
     if house is None:
-        pytest.skip("no house of three holdings below Marquis")
+        pytest.skip("no house with the holdings to petition")
     world.conn.execute("UPDATE house_stats SET influence = ?, capital = 100 WHERE house = ?", (least, house))
     world._turn_cache = {}
     assert world._scheme_targets(house, spec, season) == [(None, None)]
     world.conn.execute("UPDATE house_stats SET influence = ? WHERE house = ?", (least - 1, house))
     world._turn_cache = {}
     assert world._scheme_targets(house, spec, season) == []
+
+
+def test_a_petition_reaches_duke_and_asks_holdings_by_rank(tmp_path):
+    """schemes.json `elevation` (the Phase D1 follow-up): a Marquis may seek a
+    dukedom, the holdings a petition needs rise with rank, and holdings
+    beyond them add to the roll."""
+    world = _c2(tmp_path, 25)
+    terms = world.rules.scheme_rules["elevation"]
+    assert terms["highest"] == "Duke"
+    house = max((r["house"] for r in world.active_houses()), key=lambda h: (world.holding_count(h), h))
+    n = world.holding_count(house)
+    for rank in ("Baron", "Viscount", "Earl", "Marquis", "Duke"):
+        world.conn.execute("UPDATE houses SET rank = ? WHERE house = ?", (rank, house))
+        needed = terms.get("holdings_from", 3) + terms["holdings_per_rank"] * world.rank_index[rank]
+        assert world._petition_holdings(house) == needed
+        assert world._may_petition(house) == (rank != "Duke" and n >= needed), rank
+        assert world._petition_bonus(house) == max(0, n - needed) // terms["bonus_per_holdings"]
+    # Without the table, a petition reaches Marquis on three holdings and adds nothing.
+    del world.rules.scheme_rules["elevation"]
+    world.conn.execute("UPDATE houses SET rank = 'Marquis' WHERE house = ?", (house,))
+    assert not world._may_petition(house)
+    world.conn.execute("UPDATE houses SET rank = 'Earl' WHERE house = ?", (house,))
+    assert world._may_petition(house) == (n >= 3) and world._petition_bonus(house) == 0
 
 
 # -------------------------------------------------------- distinct_surnames --
@@ -1167,6 +1189,24 @@ def test_crisis_camps_move_borders_influence_and_compact_goodwill(tmp_path, monk
     assert world._stood_together(a, b, season + 1)
     assert not world._stood_together(a, b, season + spec["goodwill_turns"])
     assert not world._stood_together(crisis["lead"][0], crisis["resist"][0], season + 1)
+
+
+def test_crisis_sides_are_symmetric_between_lead_and_resist(tmp_path):
+    """game.json crises.response (the Phase D1 follow-up): before the tag
+    modifier, a d6 gives Lead and Resist the same number of faces, and the
+    modifier moves them by the same amount either way; the event response
+    roll is unchanged."""
+    world = _c2(tmp_path)
+    sides = {m: [world._crisis_response_for(d + m) for d in range(1, 7)] for m in (-1, 0, 1)}
+    assert sides[0].count("Lead") == sides[0].count("Resist") > 0
+    assert sides[1].count("Lead") == sides[-1].count("Resist")
+    assert sides[1].count("Resist") == sides[-1].count("Lead")
+    assert [world._response_for(d) for d in range(1, 7)] == \
+        ["Neutral", "Resist", "Resist", "Exploit", "Exploit", "Lead"]
+    # A version without the thresholds takes the event response roll's.
+    del world.rules.game["crises"]["response"]
+    assert [world._crisis_response_for(d) for d in range(1, 7)] == \
+        [world._response_for(d) for d in range(1, 7)]
 
 
 @needs_node

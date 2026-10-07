@@ -183,6 +183,17 @@ def play_one(version, overrides, seed, turns=TURNS):
             d1["crisis_lead_carried"] = sum(1 for c in crises if c["carried"] == "lead") / len(crises)
         if world.rules.features.get("world_calendar"):
             d1["reckoning"] = 1 if last is not None and "reckoning" in last else 0
+        # The Phase D1 follow-up's rank targets: rank follows power.
+        ranks = world.rank_index
+        ranked = sorted((-world.standing(r["house"]), r["house"]) for r in world.active_houses())
+        d1["first_earl"] = 1 if ranked and ranks.get(
+            world.house_row(ranked[0][1])["rank"], 0) >= ranks["Earl"] else 0
+        d1["marquis_100"] = 1 if any(
+            ranks.get(r["rank"], 0) >= ranks["Marquis"] for r in world.active_houses()) else 0
+        elevations = [json.loads(r["mechanical_delta"]) for r in conn.execute(
+            "SELECT mechanical_delta FROM events WHERE kind = 'elevation' ORDER BY id")]
+        d1["elevations"] = len(elevations)
+        d1["duke_created"] = 1 if any(e.get("to") == "Duke" for e in elevations) else 0
 
         turn_inputs, _ = beats_export.turn_inputs(conn)
         # A riding passing between houses: a transfer, or (rules 1.0) a claim
@@ -316,6 +327,10 @@ ROWS = (
     ("D1 crises with both camps non-empty (target ≥ 70%)", "crisis_both_camps", "pct"),
     ("D1 crises carried by those who lead", "crisis_lead_carried", "pct"),
     ("D1 games ending with a reckoning (target 100%)", "reckoning", "pct"),
+    ("D1 first house at the end an Earl or higher (target ≥ 80%)", "first_earl", "pct"),
+    ("D1 a Marquis or Duke active at turn 100 (target ≥ 80%)", "marquis_100", "pct"),
+    ("D1 a Duke created (target ≥ 30%)", "duke_created", "pct"),
+    ("elevations a game", "elevations", "num"),
 )
 
 
@@ -439,7 +454,10 @@ def main(argv=None):
         version = args.rules_version or rules_data.current_version()
         overrides = _parse_flags(args.flags)
         label = version + (f" {args.flags}" if args.flags else "")
-        configs = [run_config(label, version, overrides, seeds, args.turns)]
+        with ProcessPoolExecutor(max_workers=args.workers) as pool:
+            results = list(pool.map(play_one, *zip(*[(version, overrides, seed, args.turns)
+                                                     for seed in seeds])))
+        configs = [(label, results)]
     if args.prepend:
         configs = [tuple(c) for c in json.loads(Path(args.prepend).read_text(encoding="utf-8"))] + configs
     text = table(configs)

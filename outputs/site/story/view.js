@@ -6,6 +6,8 @@
 // camera and the stored choice touch the page and are written to fail quietly —
 // a page without localStorage, or without requestAnimationFrame, still works.
 
+import { surnameOf } from './text.js';
+
 export function escapeHtml(value) {
   return String(value)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -43,7 +45,7 @@ const ARROWS = { up: '▲', down: '▼', same: '–', new: '★' };
 const MOVES = { up: 'up', down: 'down', same: 'no change', new: 'new to the top eight' };
 
 // The standings strip (§3.3): the top eight with movement since last turn.
-export function stripHtml(rows, { nameOf = (h) => h, colourOf = () => null, follow = null } = {}) {
+export function stripHtml(rows, { nameOf = surnameOf, colourOf = () => null, follow = null } = {}) {
   return rows.map((row) => {
     const colour = colourOf(row.house) || '#bbb';
     const was = row.was === null ? '' : ` (was ${row.was})`;
@@ -51,7 +53,7 @@ export function stripHtml(rows, { nameOf = (h) => h, colourOf = () => null, foll
       + `<span class="standing-place">${row.place}</span>`
       + `<span class="standing-move" title="${MOVES[row.move]}${was}" aria-label="${MOVES[row.move]}${was}">${ARROWS[row.move]}</span>`
       + `<span class="swatch" style="background:${escapeHtml(colour)}"></span>`
-      + `<span class="standing-name">${escapeHtml(nameOf(row.house))}</span>`
+      + `<span class="standing-name" title="${escapeHtml(nameOf(row.house))}">${escapeHtml(nameOf(row.house))}</span>`
       + `<span class="standing-score">${row.score}</span></li>`;
   }).join('');
 }
@@ -177,7 +179,7 @@ export function storylineHtml(told, { unit = 'season', link = null, start = null
 // A chapter's interstitial (Phase D1, dispatch.js Story.interstitial): its
 // title and years, the standings with their movement over the chapter, and the
 // storylines it closed and left open.
-export function chapterHtml(ch, { colourOf = () => null, nameOf = (h) => h, follow = null, start = null } = {}) {
+export function chapterHtml(ch, { colourOf = () => null, nameOf = surnameOf, follow = null, start = null } = {}) {
   const lines = (list, empty) => (list.length
     ? list.map((s) => `<li>${escapeHtml(s.name)} <span class="meta">${storylineMeta(s, 'year', start)}</span></li>`).join('')
     : `<li class="meta">${empty}</li>`);

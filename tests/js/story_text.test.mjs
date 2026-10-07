@@ -2,7 +2,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { Namer, houseStyle, listWords, period, rankForm, sentence } from '../../web/story/text.js';
+import {
+  Namer, eventTitle, houseStyle, listWords, period, rankForm, readerNames, sentence, surnameOf,
+} from '../../web/story/text.js';
 
 const styles = {
   Benjamin: houseStyle({ house: 'Benjamin', peerage: 'Marquis Benjamin of Bellechasse', rank: 'Marquis', place: 'Bellechasse' }),
@@ -140,4 +142,25 @@ test('Phase D1: an accession names its land, and its ridings only when they are 
   const ext = { kind: 'accession', ridings: ['47001'],
     world: { jurisdiction: 'Saskatchewan', status: 'province', change: 'extension' } };
   assert.equal(accessionSentence(ext, () => 'Regina'), 'Saskatchewan becomes a province, and the Crown may found in one riding: Regina.');
+});
+
+test('a reader never sees a numeral: two houses of one surname are told apart by their titles', () => {
+  assert.equal(surnameOf('Benjamin 2'), 'Benjamin');
+  assert.equal(surnameOf('Letendre dit Batoche'), 'Letendre dit Batoche');
+  const names = readerNames(['Benjamin', 'Benjamin 2', 'Mercier'], (h) => styles[h] || null);
+  assert.equal(names.get('Mercier'), 'Mercier');
+  assert.equal(names.get('Benjamin'), 'Benjamin of Bellechasse');
+  assert.equal(names.get('Benjamin 2'), "Benjamin of La Pointe-de-l'Île");
+  assert.equal(readerNames(['Benjamin 2'], (h) => styles[h] || null).get('Benjamin 2'), 'Benjamin');
+  assert.equal(new Namer(() => null).style('Sinclair 2'), 'House Sinclair');
+});
+
+test('a crisis headline opens with the event\'s article', () => {
+  assert.equal(eventTitle('North-West Resistance'), 'The North-West Resistance');
+  assert.equal(eventTitle('The Great War'), 'The Great War');
+  assert.equal(eventTitle('Regulation 17'), 'Regulation 17');
+  assert.equal(eventTitle('Confederation'), 'Confederation');
+  assert.equal(eventTitle(null), 'A crisis');
+  const beat = { kind: 'crisis', houses: [], world: { event: 'Indian Act', lead: [], resist: [], carried: null } };
+  assert.ok(sentence(beat, new Namer(() => null)).startsWith('The Indian Act divides the peerage: none lead;'));
 });

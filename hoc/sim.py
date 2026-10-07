@@ -1817,7 +1817,7 @@ class World:
             elif self._opposing(row["tag"], event.tag):
                 modifier = self.rules.responses["tag_modifier"]["opposing_tag"]
             roll = rng.die(6, purpose=f"crisis.response.{house}") + modifier
-            response = self._response_for(roll)
+            response = self._crisis_response_for(roll)
             if response == "Neutral" and self._trait_effect(house, "steadfast"):
                 response = "Resist"
             camps[response].append(house)
@@ -1977,6 +1977,21 @@ class World:
     def _opposing(house_tag, event_tag):
         pairs = {("Progressive", "Conservative"), ("Conservative", "Progressive")}
         return (house_tag, event_tag) in pairs
+
+    def _crisis_response_for(self, roll):
+        """A crisis side by game.json crises.response, whose thresholds are
+        symmetric between Lead and Resist; a version without them takes the
+        event response roll's (Lead only on a 6)."""
+        terms = self.rules.game["crises"].get("response")
+        if terms is None:
+            return self._response_for(roll)
+        if roll >= terms["lead_from"]:
+            return "Lead"
+        if roll <= terms["resist_to"]:
+            return "Resist"
+        if roll >= terms["exploit_from"]:
+            return "Exploit"
+        return "Neutral"
 
     def _response_for(self, roll):
         """d6 + tag modifier, split across the four options in §8's order."""
@@ -2840,8 +2855,7 @@ class World:
         if kind == "Petition elevation":
             least = self.rules.scheme_rules["utility"].get("elevation_influence_min", 60)
             if (
-                row["influence"] >= least and self.holding_count(house) >= 3
-                and self.rank_index.get(row["rank"], 0) < self.rank_index["Marquis"]
+                row["influence"] >= least and self._may_petition(house)
                 and self._affords(house, spec, None)
             ):
                 return [(None, None)]
@@ -3062,8 +3076,7 @@ class World:
             if target not in self._match_candidates(house):
                 return "no match"
         elif kind == "Petition elevation":
-            if self.rank_index.get(self.house_row(house)["rank"], 0) >= self.rank_index["Marquis"] \
-                    or self.holding_count(house) < 3:
+            if not self._may_petition(house):
                 return "out of reach"
         elif kind == "Propose compact":
             if self.relation_marker(house, target) != FRIENDLY:
@@ -3183,6 +3196,8 @@ class World:
         kind = spec.resolves_as
         per = self.rules.scheme_rules["contest"]["committed_per_point"]
         bonus = (s["committed_capital"] + s["committed_influence"]) // per
+        if kind == "Petition elevation":
+            bonus += self._petition_bonus(s["house"])
         if kind == "contest":
             outcome = self._contest(s, season, rng)
             self._close_scheme(s["id"], outcome["contest"], season)
@@ -3202,6 +3217,36 @@ class World:
         outcome["scheme"] = "resolved"
         outcome["plan"] = spec.scheme
         return outcome
+
+    def _elevation_terms(self):
+        """schemes.json `elevation`: the highest rank a petition reaches, the
+        holdings it needs (holdings_from + holdings_per_rank x rank index),
+        and one point on its roll per bonus_per_holdings holdings beyond
+        that. A version without it petitions up to Marquis on 3 holdings."""
+        terms = self.rules.scheme_rules.get("elevation") or {}
+        return (
+            terms.get("highest", "Marquis"), terms.get("holdings_from", 3),
+            terms.get("holdings_per_rank", 0), terms.get("bonus_per_holdings", 0),
+        )
+
+    def _petition_holdings(self, house):
+        _, base, per_rank, _ = self._elevation_terms()
+        return base + per_rank * self.rank_index.get(self.house_row(house)["rank"], 0)
+
+    def _may_petition(self, house):
+        """Rules 1.0 `schemes`: whether a house's rank and holdings let it
+        seek the next rank."""
+        highest = self._elevation_terms()[0]
+        return (
+            self.rank_index.get(self.house_row(house)["rank"], 0) < self.rank_index[highest]
+            and self.holding_count(house) >= self._petition_holdings(house)
+        )
+
+    def _petition_bonus(self, house):
+        per = self._elevation_terms()[3]
+        if not per:
+            return 0
+        return max(0, self.holding_count(house) - self._petition_holdings(house)) // per
 
     def _settle(self, house, fed_id, season, band, roll, scheme_id):
         """Take an unclaimed riding: the record Expand writes, at Expand's cost."""

@@ -542,3 +542,45 @@ The ranges worth naming:
 
 Without the calendar, the same tables leave median capital at 18.6. The calendar's slower land and its two wars' capital are what balance the economy, so the tables are tuned for the game with it on.
 
+### Phase D1 follow-up (draft) — even crises, rank that follows power
+
+Docs: `docs/STORY_DESIGN.md` §4.5, §4.9, §5, §5.1, §6 and §7. No new flag: every change rides on `crises`, `schemes` and `cohesion_strain`, and is read from the draft's tables by both engines, with the old terms as the default where a key is absent. Rules 0.7–0.9 and both frozen games replay unchanged. The cross-check agrees byte for byte on seeds 1867, 2 and 3 at 120 turns under 0.9 and 100 under 1.0, on both reference sets.
+
+What motivated it, on seeds 1867 and 1870 of the D1 trial:
+
+- Those who resist carried 16 and 17 of 18 crises. The response roll gives Lead only on a 6.
+- Seed 1867's reckoning put a Baron of 29 ridings first, ahead of a Marquis of 11. On seed 1870 no house stood above Earl in 1966, and neither game made a Duke.
+
+The changes:
+
+- `game.json` `crises.response`: a crisis side is d6 + the tag modifier read as Lead at 5 or more, Resist at 2 or less, Exploit at 4 and Neutral at 3. Lead and Resist are symmetric before the modifier and the steadfast trait. `responses.json` and ordinary events are unchanged.
+- `schemes.json` `elevation`:
+  - The cap at Marquis was written into both engines. It is now `highest`, "Duke" in 1.0 and "Marquis" by default.
+  - A petition needs 3 + 2 × rank index holdings (`holdings_from`, `holdings_per_rank`), 3 by default.
+  - Each holding beyond that adds one to its roll (`bonus_per_holdings`), none by default.
+- `schemes.json`: `utility.leader_target` 25 → 40 and `contest.cooldown` 8 → 6. With more elevation schemes there were fewer claims, riding passes fell to 0.31 a turn and one seed's top eight held through a whole chapter; these restore them.
+- `upkeep.json` `cohesion.base` 2 → 1. Even crises lifted median cohesion at turn 100 to 91.
+
+### The trial (Phase D1 follow-up)
+
+`python scripts/story_trial.py --rules-version 1.0 --prepend before.json`, every flag on: 100 turns on the Meridian world, seeds 1867–1876, mean (min–max). The columns:
+
+- **before**: the same harness, with the four new metrics, run on the Phase D1 code.
+- **after**: this change.
+
+{table}
+
+Every §6 target is met on the mean, the four new ones included:
+
+- Those who lead carry 40% (17–61) of crises.
+- The first house at the reckoning is an Earl or higher in 9 games of 10.
+- A Marquis or Duke is active at turn 100 in 10 of 10.
+- A Duke is created in 6 of 10.
+
+The ranges worth naming:
+
+- Riding passes after turn 20 are 0.34 a turn, just above the 0.33 target. Contests are 22.9, near the bottom of their range.
+- Seed 1867's first house at the reckoning is an Earl of 12 ridings (Ritchie), where it was a Baron of 29. On seed 1870 an Earl is first and two Marquises follow.
+- The one seed that misses the Earl target, 1874, has a Viscount of 11 ridings first, with a Marquis second.
+
+On ten further seeds (1877–1886), the same tables meet the rank and crisis targets: 90%, 100% and 60%, with lead carrying 46%. They fall just outside on contests (18.8), passes (0.32) and cohesion (87.3). The D1 tables on those seeds also miss cohesion (90.0) and sit at the edge on passes (0.34) and contests (20.3). These targets sit near the edge of what ten seeds can show either way.

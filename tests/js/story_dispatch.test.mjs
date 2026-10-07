@@ -101,6 +101,21 @@ test('select keeps the storyline\'s other beats under the headline, not among th
   assert.deepEqual(chosen.secondary.map((e) => e.beat.kind), ['expansion']);
 });
 
+test('two crises at equal weight: the one opening a multi-year event headlines, then the one with more houses', () => {
+  const crisis = (event, lead, resist, years) => beat(48, 'crisis', [...lead, ...resist],
+    { world: { event, lead, resist, carried: 'lead', ...(years ? { years } : {}) } });
+  const weighed = [{ total: 90, mods: [] }, { total: 90, mods: [] }];
+  const komagata = crisis('Komagata Maru Incident', ['A', 'B', 'C'], ['D', 'E']);
+  const war = crisis('The Great War', ['A'], ['B'], 5);
+  assert.equal(select([komagata, war], weighed, weights).headline.beat.world.event, 'The Great War');
+  const small = crisis('A small crisis', ['A'], ['B']);
+  const large = crisis('A large crisis', ['A', 'C'], ['B', 'D']);
+  assert.equal(select([small, large], weighed, weights).headline.beat.world.event, 'A large crisis');
+  // Weight still comes first.
+  assert.equal(select([komagata, war], [{ total: 95, mods: [] }, { total: 90, mods: [] }], weights)
+    .headline.beat.world.event, 'Komagata Maru Incident');
+});
+
 test('a storyline headline carries a kicker and the storyline\'s previous beat', () => {
   const s = story({ seen: BEAT_KINDS, baseline: { owners: {}, ranks: { A: 0, B: 0 }, removed: [] } });
   const first = s.step(10, [beat(10, 'quarrel', ['A', 'B'], { outcome: 'friction', line: 'Season 10 · Baron A of Alpha and Baron B of Beta fall out.' })]);

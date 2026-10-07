@@ -40,6 +40,25 @@ export function houseStyle({ house, peerage = null, rank = null, place = null })
   return { title, designation, female: FEMALE.has(rank || lead) };
 }
 
+// A house's surname: its key less any numeral ("Sinclair 2" bears Sinclair).
+// The numeral only tells the record's keys apart; a reader never sees it.
+export function surnameOf(house) {
+  return String(house).replace(/ \d+$/, '');
+}
+
+// What a reader calls each house in a list of them (the standings, the follow
+// menu): its surname, or, where another house of the game bears the same
+// surname, its peerage less the rank word ("Robinson of Hamilton" and
+// "Robinson of Brampton"), which tells the two apart without a numeral.
+export function readerNames(houses, styleOf = () => null) {
+  const bearers = new Map();
+  for (const house of houses) bearers.set(surnameOf(house), (bearers.get(surnameOf(house)) || 0) + 1);
+  return new Map(houses.map((house) => {
+    const s = styleOf(house);
+    return [house, bearers.get(surnameOf(house)) > 1 && s ? s.title : surnameOf(house)];
+  }));
+}
+
 export function rankForm(index, female) {
   const forms = RANK_LADDER[Math.max(0, Math.min(RANK_LADDER.length - 1, index))];
   return forms[female ? 1 : 0];
@@ -56,12 +75,12 @@ export class Namer {
 
   style(house) {
     const s = this.styleOf(house);
-    return s ? `${rankForm(this.rankOf(house), s.female)} ${s.title}` : `House ${house}`;
+    return s ? `${rankForm(this.rankOf(house), s.female)} ${s.title}` : `House ${surnameOf(house)}`;
   }
 
   designation(house) {
     const s = this.styleOf(house);
-    return s ? s.designation : `House ${house}`;
+    return s ? s.designation : `House ${surnameOf(house)}`;
   }
 
   // The next mention of `house`: its full style the first time, then its place.
@@ -239,12 +258,22 @@ export function accessionSentence(beat, ridingName) {
     : `${w.jurisdiction} comes under Canada as a ${w.status}, opening ${ridings}${names}.`;
 }
 
+// A crisis headline opens with the event's article. The deck's titles mostly
+// have none ("North-West Resistance"), so "The" is added, except to a title
+// that has one already or names something that takes none: a single word
+// ("Confederation") or a numbered act ("Regulation 17").
+export function eventTitle(name) {
+  if (!name) return 'A crisis';
+  if (/^(The|A|An) /.test(name) || !name.includes(' ') || /\d/.test(name)) return name;
+  return `The ${name}`;
+}
+
 export function crisisSentence(beat, namer, order = (houses) => houses) {
   const w = beat.world;
   const carried = { lead: 'those who lead carry it', resist: 'those who resist carry it' }[w.carried]
     || 'neither side carries it';
   const span = w.years ? ` It is the first of ${numberWords(w.years)} years.` : '';
-  return `${w.event || 'A crisis'} divides the peerage: ${camp(w.lead, namer, order)} lead;`
+  return `${eventTitle(w.event)} divides the peerage: ${camp(w.lead, namer, order)} lead;`
     + ` ${camp(w.resist, namer, order)} resist; ${carried}.${span}`;
 }
 
