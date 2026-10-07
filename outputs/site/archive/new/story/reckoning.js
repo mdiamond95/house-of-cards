@@ -8,7 +8,7 @@
 // Pure: no DOM, no engine.
 
 import { rankIndex } from './beats.js';
-import { rankForm } from './text.js';
+import { rankForm, surnameOf } from './text.js';
 
 const ORDINALS = ['zeroth', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh',
   'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth',
@@ -33,14 +33,14 @@ function count(n, noun) {
 // A house's full style at the reckoning: its last rank and its title.
 export function styleAt(house, rank, styleOf) {
   const s = styleOf(house);
-  return s ? `${rankForm(rankIndex(rank), s.female)} ${s.title}` : `House ${house}`;
+  return s ? `${rankForm(rankIndex(rank), s.female)} ${s.title}` : `House ${surnameOf(house)}`;
 }
 
 // One house's epilogue, from its facts in the reckoning record.
 export function epilogue(fact, { styleOf, houses }) {
   const name = styleAt(fact.house, fact.rank, styleOf);
   const s = styleOf(fact.house);
-  const it = s ? s.designation : fact.house;
+  const it = s ? s.designation : surnameOf(fact.house);
   const rankWord = rankForm(rankIndex(fact.rank), s ? s.female : false);
   const article = /^[AEIOU]/.test(rankWord) ? 'an' : 'a';
   const opening = fact.status === 'active' && fact.place !== null

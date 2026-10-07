@@ -1,5 +1,5 @@
 {
-  "note": "Rules 1.0 `world_calendar` and `crises` (docs/STORY_DESIGN.md §5, §5.1). One turn is one year: turn N is start_year + N - 1, and the game ends after `turns` turns with a reckoning. The chapters are the era bands under world_calendar; their ids are what events.era_cohort records. There is one climate ledger, `climate_ledger`. The crisis terms: the camp that carries a crisis gains win_influence, the other camp loses lose_influence; neighbours in the same camp move friction_same on their border and neighbours in opposed camps friction_opposed; a house values a compact with a house that stood with it in a crisis within goodwill_turns by goodwill (schemes.json utility). Integers only.",
+  "note": "Rules 1.0 `world_calendar` and `crises` (docs/STORY_DESIGN.md §5, §5.1). One turn is one year: turn N is start_year + N - 1, and the game ends after `turns` turns with a reckoning. The chapters are the era bands under world_calendar; their ids are what events.era_cohort records. There is one climate ledger, `climate_ledger`. The crisis terms: the camp that carries a crisis gains win_influence, the other camp loses lose_influence; neighbours in the same camp move friction_same on their border and neighbours in opposed camps friction_opposed; a house values a compact with a house that stood with it in a crisis within goodwill_turns by goodwill (schemes.json utility). A house takes its side by d6 + the tag modifier against `response`, not the event response roll: Lead at or above lead_from, Resist at or below resist_to, Exploit at or above exploit_from, otherwise Neutral (which a steadfast holder turns to Resist). Lead and Resist are symmetric about 3.5 before the modifier. Integers only.",
   "start_year": 1867,
   "turns": 100,
   "climate_ledger": "world",
@@ -16,6 +16,7 @@
     "friction_same": -10,
     "friction_opposed": 10,
     "goodwill": 20,
-    "goodwill_turns": 10
+    "goodwill_turns": 10,
+    "response": {"lead_from": 5, "resist_to": 2, "exploit_from": 4}
   }
 }

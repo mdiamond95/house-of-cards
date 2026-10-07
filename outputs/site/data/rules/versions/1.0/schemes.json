@@ -1,5 +1,5 @@
 {
-  "note": "Rules 1.0 `schemes`, `contested_claims` and `prestige_politics` (docs/STORY_DESIGN.md §4.2, §4.4, §4.5). Every number is an integer. schemes.csv holds the schemes themselves; this file the terms of the choice, the waiting period before peace, and the contest.",
+  "note": "Rules 1.0 `schemes`, `contested_claims` and `prestige_politics` (docs/STORY_DESIGN.md §4.2, §4.4, §4.5). Every number is an integer. schemes.csv holds the schemes themselves; this file the terms of the choice, the waiting period before peace, and the contest. `elevation` (Phase D1 follow-up): a Win elevation scheme reaches up to `highest`, needs holdings_from + holdings_per_rank x rank index holdings, and adds one to its roll per bonus_per_holdings holdings beyond them.",
   "choice": {
     "top": 3,
     "abandon_below": 10,
@@ -26,7 +26,7 @@
     "elevation_influence_from": 60,
     "weak_target": 20,
     "recent_loss_turns": 10,
-    "leader_target": 25,
+    "leader_target": 40,
     "leader_ally": -25,
     "top": 8,
     "overreach": 10,
@@ -46,7 +46,7 @@
     "loss_cohesion": 30,
     "rout_margin": 5,
     "rout_cohesion_below": 40,
-    "cooldown": 8,
+    "cooldown": 6,
     "ally_accept": 50,
     "ally_kin": 15,
     "ally_bound_both": -100,
@@ -55,5 +55,10 @@
   },
   "frontier": {
     "double_on": 8
+  },
+  "elevation": {
+    "highest": "Duke",
+    "holdings_per_rank": 2,
+    "bonus_per_holdings": 1
   }
 }

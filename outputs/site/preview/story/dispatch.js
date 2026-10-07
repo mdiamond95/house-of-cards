@@ -98,13 +98,24 @@ function mainStoryline(roles, lines) {
   return best || frontier;
 }
 
+// Two crises of one year at equal weight: the one that opens a multi-year
+// event comes first (1914's Great War above the Komagata Maru), then the one
+// with more houses in its camps. Zero for anything else, which keeps the
+// record's order.
+function crisisOrder(a, b) {
+  if (a.kind !== 'crisis' || b.kind !== 'crisis' || !a.world || !b.world) return 0;
+  const long = (beat) => ((beat.world.years ?? 1) > 1 ? 1 : 0);
+  const camps = (beat) => (beat.world.lead || []).length + (beat.world.resist || []).length;
+  return long(b) - long(a) || camps(b) - camps(a);
+}
+
 // Choose a turn's headline, its storyline's other beats, the secondaries and
 // the rest from its weighed beats. `roles[i]` are beat i's storyline roles.
 export function select(beats, weighed, weights, roles = []) {
   const t = weights.thresholds;
   const order = beats
     .map((beat, i) => ({ beat, index: i, weight: weighed[i].total, mods: weighed[i].mods, roles: roles[i] || [] }))
-    .sort((a, b) => b.weight - a.weight || a.beat.seq - b.beat.seq);
+    .sort((a, b) => b.weight - a.weight || crisisOrder(a.beat, b.beat) || a.beat.seq - b.beat.seq);
   const era = (entry) => ERA_KINDS.includes(entry.beat.kind);
   const headline = order.find((e) => e.weight >= t.quiet && !era(e))
     || order.find((e) => e.weight >= t.quiet);
