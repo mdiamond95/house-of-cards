@@ -29,24 +29,27 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from hoc import rules_data, scenario, sim  # noqa: E402  (after sys.path setup)
-from hoc.export import site  # noqa: E402
+from hoc.export import beats as beats_export, site  # noqa: E402
 
 SEED = 1867
 SEASONS = 100
 REFERENCE = "meridian-v1.0.3"
 
 
-def play_preview(db_path, version, seed=SEED, seasons=SEASONS):
+def play_preview(db_path, version, seed=SEED, seasons=SEASONS, records=None):
     """A scratch world, played `seasons` seasons under `version`. Returns the
-    open connection."""
+    open connection. Each season's record is appended to `records`, if given:
+    the preview writes no season file, and the exporter reads the records'
+    `order` (rules 1.0 `round_record`) from them."""
     import load_seed
 
     conn = load_seed.build(db_path, seed=scenario.blank_seed_dir(), reference_data=REFERENCE)
     world = sim.World(conn, rules=rules_data.load_rules(version=version), world_seed=seed)
+    kept = records if records is not None else []
     with conn:
-        world.initialise(seed)
+        kept.append(world.initialise(seed))
         for _ in range(seasons - 1):
-            world.run_season()
+            kept.append(world.run_season())
     return conn
 
 
@@ -70,8 +73,10 @@ def build_preview(out_dir=site.DEFAULT_OUT_DIR, verbose=False):
         return []
     with tempfile.TemporaryDirectory(prefix="hoc-preview-") as workspace:
         seasons = preview_length(version)
-        conn = play_preview(Path(workspace) / "preview.db", version, seasons=seasons)
-        written = site.write_preview(conn, version, out_dir=out_dir, seed=SEED, seasons=seasons)
+        records = []
+        conn = play_preview(Path(workspace) / "preview.db", version, seasons=seasons, records=records)
+        written = site.write_preview(conn, version, out_dir=out_dir, seed=SEED, seasons=seasons,
+                                     orders=beats_export.orders_from_records(records))
         conn.close()
     if verbose:
         print(f"preview: {seasons} turns under rules {version} (draft), {len(written)} files")

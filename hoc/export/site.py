@@ -3248,7 +3248,7 @@ def _write_replay(conn, site_dir, features, borders, reference_dir, key, write):
     )
 
 
-def write_preview(conn, version, out_dir=DEFAULT_OUT_DIR, seed=None, seasons=None):
+def write_preview(conn, version, out_dir=DEFAULT_OUT_DIR, seed=None, seasons=None, orders=None):
     """Write preview/: the draft-rules preview's Replay and Storylines pages,
     from a scratch database played under the draft (scripts/build_preview.py).
     Everything in preview/ is generated; it is cleared first. Returns the
@@ -3286,7 +3286,8 @@ def write_preview(conn, version, out_dir=DEFAULT_OUT_DIR, seed=None, seasons=Non
         if _PREVIEW_RECKONING:
             write(site_dir / "reckoning.html", _reckoning_page())
             write(site_dir / "reckoning-page.js", RECKONING_JS)
-        written.extend(beats_export.write_beats(conn, site_dir / "data", title=_game_title()))
+        written.extend(beats_export.write_beats(conn, site_dir / "data", title=_game_title(),
+                                                orders=orders))
         written.extend(play_export.write_story_assets(site_dir, scenario.REPO_ROOT))
         write(site_dir / ".nojekyll", "")
     finally:
@@ -3297,7 +3298,7 @@ def write_preview(conn, version, out_dir=DEFAULT_OUT_DIR, seed=None, seasons=Non
 
 
 def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False,
-               archive_name=None):
+               archive_name=None, orders=None):
     """Write a site. Returns the paths written.
 
     `subdir` and `archive` are how the Archive is built: the same exporter, the
@@ -3391,7 +3392,8 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
         _write_replay(conn, site_dir, index_features, index_borders, reference_dir, archive_name, write)
         write(site_dir / "storylines.html", _storylines_page())
         write(site_dir / "storylines-page.js", STORYLINES_JS)
-        written.extend(beats_export.write_beats(conn, site_dir / "data", title=_ARCHIVE_TITLE))
+        written.extend(beats_export.write_beats(conn, site_dir / "data", title=_ARCHIVE_TITLE,
+                                                orders=orders))
         written.extend(play_export.write_story_assets(site_dir, scenario.REPO_ROOT))
     write(site_dir / "ridings.html", _ridings_page(conn, slugs))
     write(site_dir / "climate.html", _climate_page(conn))
