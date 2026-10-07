@@ -462,6 +462,124 @@ installed) drives the preview at 390 × 844 and 820 × 1180 and checks:
 - a mark's card opens without covering its mark and closes on a tap on the map;
 - no page logs an error.
 
+**Phase V2 note, 7 October 2026: the year as a round of house turns.** The director's
+review of the map view: on the right track, but hard to keep track of what each house
+is doing when there are many. The engine plays a year turn by turn: the world's phase,
+then each active house in a fixed order, a whole turn each, then the Crown's founding
+roll and the standings. The map view now tells it that way, for a game whose record
+keeps the round; any other game keeps the year-at-a-time telling above.
+
+Whose turn a beat belongs to is in the record, not derived. The best rule the exporter
+could apply (event order, the event's first house, its kind) put 30 of 4,895 events of
+the preview game in the wrong turn, and in a third of those the house whose turn it was
+is not named on the event. So, approved by the director, rules 1.0 gains a flag,
+`round_record`, in both engines: every engine event carries `part` (`"world"`, the
+house whose turn it is, or `"close"`) and every season record carries `order`, the
+playing order fixed when the house turns begin. It records and decides nothing
+(docs/DETERMINISM.md, "The round record"; rules/CHANGELOG.md). The First Dominion and
+the 2026 playthrough do not have it, and are told a year at a time.
+
+What the exporter ships for a round game (`hoc/export/beats.py`):
+
+- each beat's `part`; an action's beat takes its house's, where the order is known;
+- in each chunk, each turn's `order`, and its `deck`: the year's events by name, in deck
+  order, for the world's turn to announce (none in turn 1, the first founding alone);
+- in `atlas.json`, `people`: each house's holders and named heirs, when each entered the
+  record, died, and began to hold, for the house sheet. A house's first holder holds from
+  its founding and each later one from the season the last died.
+
+The index says `round`; the database keeps `part` but not `order`, so the preview and
+the archive hand the exporter their records' orders.
+
+The round (`web/story/round.js`, and `dispatch.js`, whose `step` takes the order and the
+deck and returns `round`). A year has three parts, in the engine's order:
+
+- **The world's turn**: the year's events by name, from the deck, ordinary ones included;
+  crises, land opened, a running event's year, and the quarrels its borders strike before
+  any house acts. Each house's answer to the year's event stays in its own turn, where the
+  engine plays it, as a quiet line on its card.
+- **Each house's turn**, in the engine's order, one at a time, a house removed earlier in
+  the year included ("its turn did not come").
+- **The close**: a Crown founding if there is one (the new house first acts next year),
+  the standings with their movement, and the dispatch's headline as "the year in brief".
+  A chapter's close and the reckoning follow it, as before.
+
+A house's turn on screen:
+
+- Its ridings are outlined, its seat ringed, its name shown; only that turn's marks are
+  drawn (its heaviest beat and any other at the quiet threshold or above; never its answer
+  to the year's event, nor a letter), with the cast's standing claims as faint arrows.
+- Its card, docked above the controls: what it did (its heaviest act this turn), what was
+  done to it (the heaviest beat of an earlier turn this year that names it), its answer to
+  the event as a quiet line, where its scheme stands ("It is in the second of four years
+  of its claim on Guelph", a scheme begun at turn b with r turns remaining at turn t
+  running (t − b + 1) + r years), and a small line: ridings, rank, place.
+
+The turn-order strip sits under the scrubber: a chip a turn, the world and the close as
+end caps, the current chip lit, those done dimmed, those to come plain, a gone house struck
+through, kept in view as the round moves. Tapping a house chip opens its sheet: holder and
+age, heir, rank, ridings, prestige and place, its scheme and target, its allies and rivals
+(the other houses of its open unions and rivalries) and its last five turns. A row of the
+standings, a name on the map and the house link on a card open it too.
+
+The heir at a turn is someone in the record by then, alive and not yet holding, who went on
+to hold or was named heir: the one who went on to hold first, then the heir, then the
+second heir; none named otherwise. It is read from `persons`, which keeps each person's
+role now (not its history), the season they entered the record and the season they died.
+
+Pace, from the story weights (§3.1), the follow multiplier included:
+
+| Turn | Weight | On screen | On Auto at 1× |
+|---|---|---|---|
+| Quiet | below the quiet threshold (40) | the seat pulses if on screen; the camera does not move | its line for 450 ms, or none with quiet turns skipped |
+| Notable | between | the camera flies to it (700 ms, eased) | 3.2 s: the flight and a 2.5 s hold |
+| Pause | at or above the pause threshold (90) | as notable | Auto stops |
+
+The world's turn is at least notable when it announces anything, and the close always is.
+Following a house stops Auto on its turns and on turns whose beats name it. Controls:
+Next (the next turn), Next year (the rest of the round at 260 ms a turn, quiet ones
+skipped, stopping at the close), Auto with 1×, 2× and 4×, and "Quiet: show / skip".
+
+The preview game (seed 1867, 1867–1966) has 2,417 turns in its 100 rounds: 1,231 quiet,
+1,088 notable and 98 at the pause weight, so Auto stops 98 times when following no one.
+Measured by `node tests/js/story_round_report.mjs <preview>/data/beats`, Auto at 1× runs
+72.5 minutes with quiet turns shown and 63.4 minutes with them skipped, between stops;
+at 4×, about 18 and 16.
+
+The first look's fixes, in the same pass, for every game:
+
+- The turn's card docks at the bottom above the controls at its natural height (at most
+  38% of the screen, scrolling beyond), and follow mode frames the turn in all the space
+  between the top bar and the card. A tapped mark or riding still opens its own card beside
+  it, the docked card stepping aside: one card at a time.
+- Houses are named on the map at their seats with a halo: the house whose turn it is, any
+  house its turn touches, any of the top eight on screen, once each. A name takes the
+  first free place above, below, right or left of its seat, near then further off, clear
+  of the badges and the other names; the lower-ranked name is dropped when there is no
+  room, and the house whose turn it is always finds one (`round.js` `placeLabels`).
+- A crisis tints every house's holdings by camp, with a colour and a pattern (lead: green
+  with diagonal lines; resist: purple with dots; aside: grey with a rule) and a legend
+  chip, not by badges at the seats and leader lines.
+- Chapter closes and the reckoning are opaque.
+- A riding changing hands crosses colours in half a second; a claim's target pulses; a
+  camera flight eases and takes 700 ms; with prefers-reduced-motion there is no
+  transition, pulse or flight.
+- The page is checked at a wide desktop window (1440 × 900) as well, where the wheel zooms
+  and the mouse drags.
+
+Checks: node tests for the round (`tests/js/story_round.test.mjs`: the parts in the
+engine's order, the three paces, what stops Auto, the strip's states, the card, the sheet,
+the label rule) and the dispatch's round. `tests/test_story.py` plays the preview game and
+requires every beat to have its part and every round its order.
+`tests/js/mapview.e2e.mjs` drives the preview at 390 × 844, 820 × 1180 and 1440 × 900:
+Next walks 1896's world, every house and the close in order; the strip follows; Next year
+stops at the close; a chip and a standings row open a sheet; Auto stops on the first
+pause-weight turn; follow mode frames a turn of 1885, 1914 and 1936 between the top bar
+and the card with no more than a fifth of the map unused below it; names never overlap; a
+crisis tints its camps; a chapter's close is opaque; gestures and a mark's card work; no
+page logs an error. Screenshots of 1896 turn by turn at 390 px, and of 1885, 1914 and 1936
+at each size, are in `docs/phase-v/v2/`.
+
 ## 4. Rules 1.0 (Phase C)
 
 Each item is a named flag in rules/versions/1.0/features.json, false in every earlier
@@ -975,4 +1093,5 @@ The calendar:
 | D1 follow-up | Crisis side-taking with its own thresholds; rank that follows power (`schemes.json` `elevation`, Dukes); crisis headline order and articles; years, go-to and numeral-free names on the page | Yes | §6 targets, the four new ones included, across ten seeds on the mean; the before/after table in rules/CHANGELOG.md. Built 7 October 2026 |
 | D2 | The director reviews the preview; then the new scenario begins under 1.0, The Dominion is frozen, and 1.0 is published (`rules/current.txt` points at it) | Yes | A full game ends in 1967 with its reckoning, from the record |
 | V | The map view (§3.6): the Replay as a full-screen map with gestures, a follow/free camera, marks and cards; the text Replay kept as its own page | None | node tests for marks and camera; the browser checks at 390 × 844 and 820 × 1180; full suite, node tests and the referee on every scenario green; both frozen games' archive pages render. Built 7 October 2026 |
+| V2 | The year as a round (§3.6): the world's turn, each house's turn in the engine's order, the close; a house's turn on screen with its card; the turn-order strip and the house sheet; three paces and the controls; the first look's fixes. `round_record` in the 1.0 draft, both engines | Yes: a record field, deciding nothing | 1.0 season records and events identical with the flag on and off on seeds 1867, 2 and 3 over 100 turns, less the two fields; cross-check byte-identical with the fields and every engine event; every beat of the preview game has its part; the browser checks at 390 × 844, 820 × 1180 and 1440 × 900; full suite, node tests and the referee on every scenario green. Built 7 October 2026 |
 | E | Scene templates, chapter narration, epilogues | None | A full game reads start to finish from the site |
