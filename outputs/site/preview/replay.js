@@ -16,7 +16,7 @@
 // without it keeps the year-at-a-time telling.
 
 import { Story } from './story/dispatch.js';
-import { Namer, houseStyle, rankForm, readerNames, surnameOf } from './story/text.js';
+import { Namer, capitalise, houseStyle, rankForm, readerNames, surnameOf } from './story/text.js';
 import {
   afootHtml, chapterHtml, dispatchHtml, escapeHtml, pauseReason, plansHtml, readStored,
   reckoningHtml, recordHtml, storylineHtml, stripHtml, writeStored,
@@ -30,6 +30,7 @@ import { PROVINCES } from './story/storylines.js';
 import {
   QUICK_MS, autoMs, entryPace, houseLine, paceRank, placeLabels, stopsAuto, stripOf,
 } from './story/round.js';
+import { unitNoun } from './story/words.js';
 
 const SCENARIO = "preview-1.0";
 const FOLLOW_KEY = `hoc-story-follow:${SCENARIO}`;
@@ -86,7 +87,22 @@ const app = {
   frameRect: null,
   detail: 'none',
   downTarget: null,
+  // The hex trial's board (docs/hex-trial/README.md): a map whose SVG says
+  // data-hexes. Each unit's wilderness within two steps (`near`, by unit:
+  // [{path, dist}]), each unit's links ([[other, length], ...]) and each
+  // route's line in map coordinates, keyed "a|b" with a < b.
+  hexes: false,
+  near: new Map(),
+  links: new Map(),
+  lines: new Map(),
+  layoutAt: 0,
 };
+
+// The hex board's colours: its land, a unit no house holds, and how much of a
+// holder's colour its nearer and further wilderness takes.
+const HEX_LAND = '#ece8df';
+const HEX_UNCLAIMED = '#d3cec2';
+const NEAR_TINT = { 1: 0.32, 2: 0.17 };
 
 // ------------------------------------------------------------- the record --
 
@@ -155,6 +171,7 @@ function reset() {
     styleOf: (house) => app.styles[house] || null,
     ridings: app.index.ridings || {},
     watch: Boolean(app.index.succession_watch),
+    unitWord: app.index.unit_word || null,
     calendar: calendar(),
     reckoning: app.index.reckoning || null,
   });
@@ -249,8 +266,13 @@ function measure() {
   app.screen = { w: Math.max(1, stage.clientWidth), h: Math.max(1, stage.clientHeight) };
 }
 
+// How close the camera may come, in map units across: a few kilometres on a
+// riding map, where a city's ridings are that small; on the hex board about
+// ten hexagons, since no unit is smaller than one.
+const HEX_MIN_W = 90;
+
 function limits() {
-  return limitsFor(app.world, app.screen, { minW: 3 });
+  return limitsFor(app.world, app.screen, { minW: app.hexes ? HEX_MIN_W : 3 });
 }
 
 // Show `view`: during a gesture or a flight the drawn map is moved by a CSS
@@ -280,6 +302,8 @@ function commitView() {
   app.committed = { ...v };
   const map = el('map');
   map.setAttribute('viewBox', `${v.x.toFixed(3)} ${v.y.toFixed(3)} ${v.w.toFixed(3)} ${v.h.toFixed(3)}`);
+  const under = document.getElementById('map-under');
+  if (under) under.setAttribute('viewBox', map.getAttribute('viewBox'));
   el('mv-layer').style.transform = '';
   // The hatchings (closed land, a crisis's camps) keep their size on screen.
   for (const [id, px] of [['mv-closed', 7], ['mv-tint-lead', 9], ['mv-tint-resist', 9], ['mv-tint-aside', 9]]) {
@@ -405,13 +429,88 @@ function boardNow() {
 function paint() {
   const owners = boardNow().owners;
   const year = calendar() ? yearOf(Math.max(1, app.turn)) : null;
+  const unclaimed = app.hexes ? HEX_UNCLAIMED : UNCLAIMED_FILL;
   for (const [fed, path] of app.paths) {
     const house = owners[fed];
-    let fill = (house && colourOf(house)) || UNCLAIMED_FILL;
+    let fill = (house && colourOf(house)) || unclaimed;
     if (!house && closedAt(fed, year)) fill = 'url(#mv-closed)';
     path.style.fill = fill;
     path.classList.toggle('closed', fill === 'url(#mv-closed)');
   }
+  // The hex board: a held unit's wilderness within two steps takes a faint
+  // wash of its holder's colour, fainter at two.
+  for (const [fed, list] of app.near) {
+    const house = owners[fed];
+    const colour = house ? colourOf(house) : null;
+    for (const near of list) {
+      const fill = colour ? mixColour(colour, HEX_LAND, NEAR_TINT[near.dist] || 0) : '';
+      if (near.fill !== fill) { near.path.style.fill = fill; near.fill = fill; }
+    }
+  }
+}
+
+// `share` of colour `a` over colour `b`, both #rrggbb.
+function mixColour(a, b, share) {
+  const parse = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const [x, y] = [parse(a), parse(b)];
+  if (x.some(Number.isNaN) || y.some(Number.isNaN)) return a;
+  return `#${x.map((v, i) => Math.round(v * share + y[i] * (1 - share)).toString(16).padStart(2, '0')).join('')}`;
+}
+
+// The hex board's routes, as dotted lines between the units' edges: each
+// route from halfway along its first step to halfway along its last, clipped
+// to the screen, in screen pixels.
+function drawRoutes(layer) {
+  const { w, h } = app.screen;
+  const m = 8;
+  const parts = [];
+  const clip = (a, b) => {
+    // Liang–Barsky against the screen less nothing, plus a margin.
+    let t0 = 0;
+    let t1 = 1;
+    const dx = b[0] - a[0];
+    const dy = b[1] - a[1];
+    for (const [p, q] of [[-dx, a[0] + m], [dx, w + m - a[0]], [-dy, a[1] + m], [dy, h + m - a[1]]]) {
+      if (p === 0) { if (q < 0) return null; continue; }
+      const r = q / p;
+      if (p < 0) { if (r > t1) return null; if (r > t0) t0 = r; } else { if (r < t0) return null; if (r < t1) t1 = r; }
+    }
+    return [[a[0] + t0 * dx, a[1] + t0 * dy], [a[0] + t1 * dx, a[1] + t1 * dy]];
+  };
+  const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+  for (const line of app.lines.values()) {
+    if (line.length < 2) continue;
+    const n = line.length;
+    const pts = n === 2
+      ? [lerp(line[0], line[1], 0.2), lerp(line[0], line[1], 0.8)]
+      : [lerp(line[0], line[1], 0.5), ...line.slice(1, n - 1), lerp(line[n - 2], line[n - 1], 0.5)];
+    const screen = pts.map((p) => toScreen(app.view, app.screen, p));
+    for (let i = 0; i + 1 < screen.length; i += 1) {
+      const seg = clip(screen[i], screen[i + 1]);
+      if (seg) parts.push(`M${seg[0][0].toFixed(1)},${seg[0][1].toFixed(1)}L${seg[1][0].toFixed(1)},${seg[1][1].toFixed(1)}`);
+    }
+  }
+  if (parts.length) layer.appendChild(svgEl('path', { d: parts.join(''), class: 'mv-route-dots' }));
+}
+
+// The hex board: the route an expansion into `target` came along — from the
+// house's nearest unit linked to it, ties to the lower id — as map points from
+// that unit to the target, or null when the two touch (a link of length 1)
+// or the map is not a hex board.
+function expansionRoute(target, house) {
+  if (!app.hexes || !target || !house) return null;
+  const owners = boardNow().owners;
+  let best = null;
+  for (const [other, length] of app.links.get(target) || []) {
+    if (other === target || owners[other] !== house) continue;
+    if (!best || length < best[1] || (length === best[1] && other < best[0])) best = [other, length];
+  }
+  if (!best || best[1] <= 1) return null;
+  const [source] = best;
+  const key = source < target ? `${source}|${target}` : `${target}|${source}`;
+  const line = app.lines.get(key);
+  if (!line) return null;
+  return source < target ? line : [...line].reverse();
 }
 
 // Outlines and tints drawn in the map's own coordinates, at a stroke width
@@ -612,6 +711,7 @@ function drawMarks() {
     + '<path d="M0,0 L10,5 L0,10 Z" class="mv-arrowhead-faint"/></marker></defs>';
   app.labels = [];
   if (!app.view || !app.story) return;
+  if (app.hexes) drawRoutes(layer);
   const layout = app.layout;
   const lines = svgEl('g', { class: 'mv-lines' });
   const badges = svgEl('g', { class: 'mv-badges' });
@@ -654,6 +754,20 @@ function drawMarks() {
         }));
         lines.appendChild(svgEl('circle', { cx: from[0].toFixed(1), cy: from[1].toFixed(1), r: 4, class: 'ln-origin' }));
       }
+    }
+    // The hex board: an expansion along a route is drawn along it, the line
+    // running out from the house's unit to the new one. It is redrawn with the
+    // marks, so its animation is resumed where it had reached.
+    for (const m of layout.marks) {
+      if (m.type !== 'transfer' || m.glyph !== 'expand') continue;
+      const route = expansionRoute(m.at, m.houses[0]);
+      if (!route) continue;
+      const pts = route.map((p) => toScreen(app.view, app.screen, p));
+      const d = `M${pts.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join('L')}`;
+      lines.appendChild(svgEl('path', { d, class: 'ln ln-casing' }));
+      const go = svgEl('path', { d, class: 'ln ln-route', pathLength: 1 });
+      go.style.animationDelay = `${-Math.round(performance.now() - app.layoutAt)}ms`;
+      lines.appendChild(go);
     }
     // Then where every badge goes, most important first: the headline, the
     // other marks by weight, and a fall. A crisis is one badge over its
@@ -953,7 +1067,7 @@ function sheetHtml(house) {
     rows.push(['Heir', person(s.heir)]);
   }
   rows.push(['Rank', escapeHtml(s.rank || '—')]);
-  rows.push(['Ridings', String(s.ridings)]);
+  rows.push([capitalise(unitNoun(2)), String(s.ridings)]);
   if (s.place) rows.push([app.index.round || app.story.plans !== null ? 'Prestige' : 'Standing', `${s.prestige} · ${s.place} of ${s.of}`]);
   if (s.scheme) rows.push(['Scheme', escapeHtml(s.scheme) + (s.target ? ` <span class="meta">(against ${escapeHtml(s.target)})</span>` : '')]);
   rows.push(['Allies', s.allies.length ? escapeHtml(s.allies.join(', ')) : 'none']);
@@ -1047,6 +1161,10 @@ function partLayout(d, part) {
     if (!layout.frame.length) {
       layout.frame = Object.entries(part.board.owners).filter(([, h]) => h === part.house).map(([fed]) => fed);
     }
+    // On the hex board a unit is large on screen, so the turn's house could
+    // lie under the card: its seat is framed with its turn's ground.
+    const seat = app.hexes ? seatsAt(app.atlas.seats, app.turn).get(part.house) : null;
+    if (seat && !layout.frame.includes(seat)) layout.frame = [...layout.frame, seat];
   }
   return layout;
 }
@@ -1174,6 +1292,7 @@ function render({ jump = false, frame = true, full = true, quick = false } = {})
   if (!d) app.layout = null;
   else if (part) app.layout = partLayout(d, part);
   else app.layout = marksFor(d, markContext(d), { unit: unitName() });
+  app.layoutAt = performance.now();
   const stage = el('mv-stage');
   if (jump) stage.classList.add('mv-jump');
   paint();
@@ -1595,6 +1714,35 @@ function prepareMap() {
     path.removeAttribute('fill');
     app.paths.set(path.getAttribute('data-fed'), path);
   }
+  app.hexes = map.hasAttribute('data-hexes');
+  if (app.hexes) {
+    for (const path of map.querySelectorAll('#mv-hexes path, #mv-routes')) {
+      path.setAttribute('vector-effect', 'non-scaling-stroke');
+    }
+    // (The hex board's own elements are found with getElementById, not el():
+    // a riding map has none of them.)
+    // The land that never changes colour goes to an SVG of its own under the
+    // map, so that painting a turn redraws the units and their wilderness and
+    // not every hexagon of the Arctic.
+    const under = document.createElementNS(SVGNS, 'svg');
+    under.id = 'map-under';
+    under.setAttribute('data-hexes', '1');
+    under.setAttribute('aria-hidden', 'true');
+    under.setAttribute('preserveAspectRatio', 'xMinYMin meet');
+    under.setAttribute('viewBox', map.getAttribute('viewBox'));
+    under.appendChild(document.getElementById('mv-land'));
+    map.parentNode.insertBefore(under, map);
+    // The routes are drawn with the marks instead, in screen pixels and only
+    // where they are on screen (drawRoutes): dashed in the map, every route
+    // was dashed in full at every redraw.
+    const routes = document.getElementById('mv-routes');
+    if (routes) routes.remove();
+    for (const path of map.querySelectorAll('[data-near]')) {
+      const fed = path.getAttribute('data-near');
+      if (!app.near.has(fed)) app.near.set(fed, []);
+      app.near.get(fed).push({ path, dist: Number(path.getAttribute('data-dist')), fill: '' });
+    }
+  }
   const full = map.getAttribute('data-view-full').split(/[\s,]+/).map(Number);
   app.world = { x: full[0], y: full[1], w: full[2], h: full[3] };
 }
@@ -1609,6 +1757,22 @@ async function boot() {
   } catch (error) {
     el('story-load').textContent = `The replay could not be loaded (${error.message}).`;
     return;
+  }
+  // The hex board's links and routes. Without them the map is still drawn;
+  // an expansion is then marked at its unit alone.
+  if (el('map').hasAttribute('data-hexes')) {
+    try {
+      const routes = await fetchJson('data/routes.json');
+      for (const [a, b, length] of routes.links) {
+        for (const [x, y] of [[a, b], [b, a]]) {
+          if (!app.links.has(x)) app.links.set(x, []);
+          app.links.get(x).push([y, length]);
+        }
+      }
+      for (const [key, line] of Object.entries(routes.lines)) app.lines.set(key, line);
+    } catch (error) {
+      app.links.clear();
+    }
   }
   app.round = Boolean(app.index.round);
   for (const [house, info] of Object.entries(app.index.houses)) {
@@ -1646,6 +1810,8 @@ async function boot() {
     turn: () => app.turn,
     busy: () => app.busy || app.flying !== null,
     view: () => ({ ...app.view }),
+    minW: () => limits().minW,
+    unitWord: () => (app.index.unit_word ? app.index.unit_word.plural : 'ridings'),
     mode: () => app.camera.mode,
     frame: () => (app.layout ? [...app.layout.frame] : []),
     frameRect: () => (app.frameRect ? { ...app.frameRect } : null),

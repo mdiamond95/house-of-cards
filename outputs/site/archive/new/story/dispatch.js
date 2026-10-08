@@ -52,6 +52,7 @@
 import { BOOKKEEPING, compareText, mergeActs } from './beats.js';
 import { reckoningView } from './reckoning.js';
 import { createContext, weighTurn, advance, provinceOf } from './weight.js';
+import { useUnitWord } from './words.js';
 import { emptyBoard, copyBoard, applyBeats, table, movement } from './standings.js';
 import { Storylines, storylineName } from './storylines.js';
 import { Namer, rankForm, sentence } from './text.js';
@@ -164,7 +165,11 @@ export class Story {
   constructor({
     weights, baseline = emptyBoard(), follow = null, unit = 'season', seen = [],
     styleOf = () => null, ridings = {}, watch = false, calendar = null, reckoning = null,
+    unitWord = null,
   }) {
+    // What a unit of the map is called (words.js): the beat index's
+    // `unit_word` where the set names one, else "riding".
+    useUnitWord(unitWord);
     this.weights = weights;
     this.follow = follow;
     // Rules 1.0 `world_calendar`: one turn is one year.

@@ -9,6 +9,7 @@
 
 import { rankIndex } from './beats.js';
 import { rankForm, surnameOf } from './text.js';
+import { unitNoun } from './words.js';
 
 const ORDINALS = ['zeroth', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh',
   'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth',
@@ -45,11 +46,11 @@ export function epilogue(fact, { styleOf, houses }) {
   const article = /^[AEIOU]/.test(rankWord) ? 'an' : 'a';
   const opening = fact.status === 'active' && fact.place !== null
     ? `${name} comes to the reckoning ${ordinalWord(fact.place)} of ${houses}, ${article} ${rankWord}`
-      + ` of ${count(fact.ridings, 'riding')}.`
+      + ` of ${word(fact.ridings)} ${unitNoun(fact.ridings)}.`
     : `${name} did not come to the reckoning: the house was gone before it.`;
   const peak = `${it} stood highest in ${fact.peak_year}, at a prestige of ${fact.peak_prestige}.`;
   const fought = fact.contests_won + fact.contests_lost === 0
-    ? 'It fought no contest for a riding.'
+    ? `It fought no contest for a ${unitNoun(1)}.`
     : `It won ${count(fact.contests_won, 'contest')} and lost ${fact.contests_lost === 0 ? 'none' : word(fact.contests_lost)}.`;
   const line = fact.successions === 0
     ? 'Its line passed through no succession.'

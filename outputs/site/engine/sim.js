@@ -43,6 +43,9 @@ export const RULES_VERSION = '0.7';
 // hoc/sim.py's World.QUIET_HOUSE_SEASONS.
 const QUIET_HOUSE_SEASONS = 10;
 export const WEIGHT_SCALE = 100;
+// The 343 ridings of the 2023 Representation Order, which both riding sets
+// hold. The founding roll reads the size of the map it is played on
+// (ReferenceMap.ridings.length), as hoc/sim.py's World.total_units does.
 export const TOTAL_RIDINGS = 343;
 // Rules 0.9 (`atlas_jurisdiction`): the personal year every founding and every
 // accession starts a clock at, and so the year a Crown grant reads the map at.
@@ -4223,7 +4226,7 @@ export class World {
     if (this.feature('founding_curve')) return this.foundingCurveRoll(season, rng);
     const spec = this.rules.founding.p_found;
     const room = this.foundingRoom();
-    const probability = pFound(room, TOTAL_RIDINGS, spec.coefficient);
+    const probability = pFound(room, this.state.map.ridings.length, spec.coefficient);
     rng.draw('founding.p_found', { room, p: new FloatValue(probability) });
     if (probability <= 0) return null;
     if (!rng.chanceFloat(probability, 'founding.roll')) return null;

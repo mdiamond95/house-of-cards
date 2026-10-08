@@ -97,6 +97,7 @@ function reset() {
     styleOf: (house) => app.styles[house] || null,
     ridings: app.index.ridings || {},
     watch: Boolean(app.index.succession_watch),
+    unitWord: app.index.unit_word || null,
     calendar: calendar(),
     reckoning: app.index.reckoning || null,
   });
