@@ -673,7 +673,7 @@ def test_the_hex_preview_sits_beside_the_riding_preview_and_draws_the_hex_board(
     assert "data-hexes" not in riding_html and 'id="mv-land"' not in riding_html
     assert 'aria-label="Map of the 343 federal ridings, coloured by house"' in riding_html
     assert 'data-hexes="1"' in hex_html and 'id="mv-land"' in hex_html and 'id="mv-routes"' in hex_html
-    assert hex_html.count("data-near=") > 400
+    assert hex_html.count("data-near=") == 372  # units with wilderness within one or two hexagons
     assert "Hex-board trial — rules" in hex_html and "not a game of record" in hex_html
     index = json.loads((hexes / "data" / "beats" / "index.json").read_text(encoding="utf-8"))
     assert index["unit_word"] == {"singular": "holding", "plural": "holdings"}

@@ -116,8 +116,12 @@ def test_an_id_is_the_province_code_and_the_h3_cell(table):
 
 
 def test_h3_sequence_reads_the_base_cell_and_four_digits():
-    # 842b9bdffffffff: base cell 21, digits 3 3 3 6 (Toronto's hexagon).
-    assert build_world_hex.h3_sequence("842b9bdffffffff") == ((21 * 7 + 3) * 7 + 3) * 7 * 7 + 3 * 7 + 6
+    # 842b9bdffffffff (Toronto's hexagon): mode 1, resolution 4, base cell 21,
+    # digits 6 3 3 6, then eleven 7s.
+    value = int("842b9bdffffffff", 16)
+    assert (value >> 45) & 0x7F == 21
+    assert [(value >> (3 * (15 - i))) & 7 for i in range(1, 5)] == [6, 3, 3, 6]
+    assert build_world_hex.h3_sequence("842b9bdffffffff") == (((21 * 7 + 6) * 7 + 3) * 7 + 3) * 7 + 6 == 52653
     with pytest.raises(build_world_hex.HexBuildError):
         build_world_hex.h3_sequence("852b9bdbfffffff")  # resolution 5
 
@@ -157,13 +161,20 @@ def test_a_unit_with_a_town_of_its_own_is_named_for_its_largest_unused_one(table
 
 
 def test_designations_are_chosen_by_csd_type(table):
+    # Rows are written unit by unit in the table's own place order, so they
+    # are matched by position: a unit can hold two places of one name (a
+    # village and a reserve, Miscouche).
     rows = {r["id"]: r for r in table["rows"]}
     units = {u["fed_id"]: u for u in load("units.csv")}
+    by_unit = {}
     for place in load("places_by_riding.csv"):
-        row = rows[units[place["fed_id"]]["h3"]]
-        kind = next(p["csdType"] for p in row["places"] if p["name"] == place["place"])
-        expected = int(kind in build_world_hex.NAMEABLE and place["spans_ridings"] == "0")
-        assert int(place["designation_ok"]) == expected, place
+        by_unit.setdefault(place["fed_id"], []).append(place)
+    for fed, written in by_unit.items():
+        source = rows[units[fed]["h3"]]["places"]
+        assert [p["place"] for p in written] == [p["name"] for p in source]
+        for place, raw in zip(written, source):
+            expected = int(raw["csdType"] in build_world_hex.NAMEABLE and place["spans_ridings"] == "0")
+            assert int(place["designation_ok"]) == expected, place
 
 
 # --------------------------------------------------------------------- links --

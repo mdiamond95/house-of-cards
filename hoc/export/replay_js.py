@@ -317,7 +317,7 @@ function commitView() {
   app.committed = { ...v };
   const map = el('map');
   map.setAttribute('viewBox', `${v.x.toFixed(3)} ${v.y.toFixed(3)} ${v.w.toFixed(3)} ${v.h.toFixed(3)}`);
-  const under = el('map-under');
+  const under = document.getElementById('map-under');
   if (under) under.setAttribute('viewBox', map.getAttribute('viewBox'));
   el('mv-layer').style.transform = '';
   // The hatchings (closed land, a crisis's camps) keep their size on screen.
@@ -1734,6 +1734,8 @@ function prepareMap() {
     for (const path of map.querySelectorAll('#mv-hexes path, #mv-routes')) {
       path.setAttribute('vector-effect', 'non-scaling-stroke');
     }
+    // (The hex board's own elements are found with getElementById, not el():
+    // a riding map has none of them.)
     // The land that never changes colour goes to an SVG of its own under the
     // map, so that painting a turn redraws the units and their wilderness and
     // not every hexagon of the Arctic.
@@ -1743,12 +1745,12 @@ function prepareMap() {
     under.setAttribute('aria-hidden', 'true');
     under.setAttribute('preserveAspectRatio', 'xMinYMin meet');
     under.setAttribute('viewBox', map.getAttribute('viewBox'));
-    under.appendChild(el('mv-land'));
+    under.appendChild(document.getElementById('mv-land'));
     map.parentNode.insertBefore(under, map);
     // The routes are drawn with the marks instead, in screen pixels and only
     // where they are on screen (drawRoutes): dashed in the map, every route
     // was dashed in full at every redraw.
-    const routes = el('mv-routes');
+    const routes = document.getElementById('mv-routes');
     if (routes) routes.remove();
     for (const path of map.querySelectorAll('[data-near]')) {
       const fed = path.getAttribute('data-near');
