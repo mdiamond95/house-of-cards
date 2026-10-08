@@ -174,7 +174,10 @@ async function gesture(page, cdp, size, label, mouse) {
     await touch(cdp, 'touchEnd', []);
     await wait(150);
     after = await R(page, () => window.hocReplay.view());
-    check(`${label}: a pinch zooms in`, after.w < before.w * 0.6, `${before.w} -> ${after.w}`);
+    // As close as the board lets the camera come counts as zoomed (the hex
+    // board stops at a few hexagons across).
+    const minW = await R(page, () => window.hocReplay.minW());
+    check(`${label}: a pinch zooms in`, after.w < before.w * 0.6 || after.w <= minW + 0.01, `${before.w} -> ${after.w}`);
 
     // A double tap zooms in about the tap.
     before = after;
@@ -183,7 +186,7 @@ async function gesture(page, cdp, size, label, mouse) {
     await page.touchscreen.tap(centre[0], centre[1]);
     await wait(1200);
     after = await R(page, () => window.hocReplay.view());
-    check(`${label}: a double tap zooms in`, after.w < before.w * 0.75 || before.w <= 3.01, `${before.w} -> ${after.w}`);
+    check(`${label}: a double tap zooms in`, after.w < before.w * 0.75 || before.w <= minW + 0.01, `${before.w} -> ${after.w}`);
   } else {
     // The wheel zooms on a desktop.
     before = await R(page, () => window.hocReplay.view());
@@ -191,7 +194,8 @@ async function gesture(page, cdp, size, label, mouse) {
     await page.mouse.wheel(0, -400);
     await wait(200);
     after = await R(page, () => window.hocReplay.view());
-    check(`${label}: the wheel zooms in`, after.w < before.w, `${before.w} -> ${after.w}`);
+    const minW = await R(page, () => window.hocReplay.minW());
+    check(`${label}: the wheel zooms in`, after.w < before.w || before.w <= minW + 0.01, `${before.w} -> ${after.w}`);
   }
 }
 
@@ -228,8 +232,8 @@ async function paces(page, turns, label) {
   check(`${label}: no card has a sentence for the year's event`, houses.every((t) => t.card.text.every((line) => !/ meets /.test(line))));
   const close = turns[turns.length - 1];
   check(`${label}: the close counts the year`, close.p.kind === 'close' && close.card.text.some((line) => /^The year in brief\. /.test(line)
-    && /\d+ (ridings?|contests?|successions?|elevations?|houses?)/.test(line + close.card.text.join(' '))), JSON.stringify(close.card.text));
-  check(`${label}: a count of zero is left out`, !close.card.text.some((line) => /(^|[ ·])0 (ridings?|contests?|successions?|elevations?|houses?)/.test(line)));
+    && /\d+ (ridings?|holdings?|contests?|successions?|elevations?|houses?)/.test(line + close.card.text.join(' '))), JSON.stringify(close.card.text));
+  check(`${label}: a count of zero is left out`, !close.card.text.some((line) => /(^|[ ·])0 (ridings?|holdings?|contests?|successions?|elevations?|houses?)/.test(line)));
   // Auto holds each pace as long as the table says.
   const weights = await (await fetch(`${base}/story/weights.json`)).json();
   await open(page, 30);
@@ -331,8 +335,11 @@ async function viewport(browser, size, label) {
   check(`${label}: a chip opens its sheet`, await page.isVisible('#mv-sheet')
     && (await R(page, () => window.hocReplay.sheet())) === chipHouse);
   const sheetText = await page.textContent('#mv-sheet-body');
-  check(`${label}: the sheet names holder, heir, rank, ridings, scheme, allies and rivals`,
-    ['Holder', 'Heir', 'Rank', 'Ridings', 'Allies', 'Rivals'].every((w) => sheetText.includes(w)), sheetText.slice(0, 200));
+  // Ridings, or the set's own word for its units (the hex board's holdings).
+  const units = await R(page, () => window.hocReplay.unitWord());
+  const unitsRow = units.charAt(0).toUpperCase() + units.slice(1);
+  check(`${label}: the sheet names holder, heir, rank, ${units}, scheme, allies and rivals`,
+    ['Holder', 'Heir', 'Rank', unitsRow, 'Allies', 'Rivals'].every((w) => sheetText.includes(w)), sheetText.slice(0, 200));
   await page.click('#mv-sheet-close');
   await page.click('#mv-standings-toggle');
   const row = await page.$('#story-strip [data-house]');

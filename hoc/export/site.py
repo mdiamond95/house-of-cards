@@ -66,9 +66,30 @@ _PREVIEW = None
 # Whether the preview game ended in a reckoning (rules 1.0 `world_calendar`).
 _PREVIEW_RECKONING = False
 PREVIEW_DIRNAME = "preview"
+# The hex trial's preview (docs/hex-trial/README.md): the same draft played on
+# the hex board, meridian-hex-v1.0.4, published beside the riding preview.
+HEX_PREVIEW_DIRNAME = "preview-hex"
+# Which of the two previews is being rendered.
+_PREVIEW_DIR = PREVIEW_DIRNAME
+# Set while a hex board's pages are rendered: its land hexagons and routes,
+# projected, and the set's own word for a unit (set.json).
+_HEX = None
+# A hex board is drawn to a tenth of a map unit: at whole units a 45 km
+# hexagon is nine units across and its corners visibly wander.
+HEX_PRECISION = 1
+# The hex board's layers are simplified for the page by this many map units
+# (about a kilometre and a half): the Arctic coast is most of the backdrop's
+# points, and at this the page stays light enough for a phone.
+HEX_TOLERANCE = 0.3
 
 
 def preview_banner(version):
+    if _HEX:
+        return (
+            f"Hex-board trial — rules {version} (draft) on Meridian v1.0.4's hexagons. Not a"
+            " game of record: it is played afresh on a scratch world every time the site is"
+            " exported, so it changes whenever the draft does."
+        )
     return (
         f"Draft-rules preview — rules {version} (draft). Not a game of record: it is"
         " played afresh on a scratch world every time the site is exported, so it"
@@ -149,6 +170,12 @@ def _nav(depth=0):
         ]
         if _PREVIEW_RECKONING:
             nav.insert(3, ("reckoning.html", "Reckoning"))
+        # The two previews link to each other: the same draft on ridings and
+        # on the hex board.
+        if _PREVIEW_DIR == HEX_PREVIEW_DIRNAME:
+            nav.insert(-1, (f"../{PREVIEW_DIRNAME}/replay.html", "Preview on ridings"))
+        else:
+            nav.insert(-1, (f"../{HEX_PREVIEW_DIRNAME}/replay.html", "Preview on hexes (trial)"))
     elif _ARCHIVE:
         # Out of the archive rather than deeper into it: the archived site's own
         # root is two directories below the site's. A frozen game carries no play
@@ -398,6 +425,8 @@ def _event_season(row):
 def _game_title():
     """The title of the game these pages show: the archived game's in an
     archive, otherwise the one hoc.db holds (scenarios/current.txt)."""
+    if _PREVIEW and _HEX:
+        return f"Draft-rules preview on hexes (rules {_PREVIEW})"
     if _PREVIEW:
         return f"Draft-rules preview (rules {_PREVIEW})"
     return _ARCHIVE_TITLE if _ARCHIVE else scenario.title(scenario.current_name())
@@ -758,7 +787,11 @@ def _map_geometry(features, borders, lookup):
     Extracted so the two pages cannot drift: the same projection, the same
     viewBox pair for the north/south toggle, the same stroke correction.
     """
-    height, to_svg = map_export.viewport(features, MAP_WIDTH)
+    # A hex board is framed by all its land, wilderness included, and drawn
+    # finer; a riding map exactly as before.
+    precision = HEX_PRECISION if _HEX else MAP_PRECISION
+    extent = [{"rings": h["rings"]} for h in _HEX["hexes"]] if _HEX else features
+    height, to_svg = map_export.viewport(extent, MAP_WIDTH)
     # The province comes from the riding lookup, not the geometry: the projected
     # features carry rings and an id and nothing else.
     def province_of(feature):
@@ -784,8 +817,55 @@ def _map_geometry(features, borders, lookup):
         "south_view_box": south_view_box,
         "full_view_box": f"0 0 {MAP_WIDTH} {height:.0f}",
         "south_stroke": BASE_STROKE_WIDTH / zoom_factor,
-        "borders": map_export.border_path_data(borders, to_svg, MAP_PRECISION),
+        "borders": map_export.border_path_data(borders, to_svg, precision),
+        "precision": precision,
     }
+
+
+def _hex_layers(to_svg, precision):
+    """What a hex board draws under its units (the hex trial): every land
+    hexagon in a neutral fill, the wilderness within two steps of each unit as
+    a path of its own (`data-near`, `data-dist`) for the page to tint in its
+    holder's colour, and the routes between units as dotted lines."""
+    near = {}
+    rest = []
+    for h in _HEX["hexes"]:
+        if h["dist"] == 0:
+            continue  # the unit's own hexagon: drawn above, in #map-fills
+        if h["unit"] is not None and h["dist"] <= 2:
+            near.setdefault((h["unit"], h["dist"]), []).extend(h["rings"])
+        else:
+            rest.extend(h["rings"])
+    def draw(rings):
+        return map_export.compact_path_data(rings, to_svg, precision, HEX_TOLERANCE)
+
+    out = ['<g id="mv-hexes" pointer-events="none">']
+    out.append(f'<path id="mv-land" class="hex-land" fill="#ece8df" stroke="#fbf9f4" stroke-width="0.15" d="{draw(rest)}"/>')
+    for (unit, dist) in sorted(near):
+        data = draw(near[(unit, dist)])
+        if data:
+            out.append(f'<path class="hex-land hex-near" fill="#ece8df" stroke="#fbf9f4" stroke-width="0.15" data-near="{esc(unit)}"'
+                       f' data-dist="{dist}" d="{data}"/>')
+    out.append("</g>")
+    routes = map_export.border_path_data([r["line"] for r in _HEX["routes"]], to_svg, precision)
+    out.append(f'<path id="mv-routes" class="hex-routes" fill="none" stroke="#6b665c"'
+               f' stroke-width="0.4" stroke-dasharray="0.4 1.6" stroke-linecap="round"'
+               f' pointer-events="none" d="{routes}"/>')
+    return "".join(out)
+
+
+def _hex_routes_json(geometry):
+    """data/routes.json for a hex board: every unit link with its length and
+    kind, from the set's links.csv, and each route's line in the map's own
+    coordinates, from unit a to unit b. The page draws an expansion along it."""
+    to_svg = geometry["to_svg"]
+    precision = geometry.get("precision", HEX_PRECISION)
+    lines = {}
+    for r in _HEX["routes"]:
+        lines[f"{r['a']}|{r['b']}"] = [
+            [round(x, precision), round(y, precision)] for x, y in (to_svg(px, py) for px, py in r["line"])
+        ]
+    return json.dumps({"links": _HEX["links"], "lines": lines}, separators=(",", ":"), sort_keys=True) + "\n"
 
 
 def _map_svg(features, geometry, lookup):
@@ -793,10 +873,14 @@ def _map_svg(features, geometry, lookup):
     script paints it, the same projection and north/south viewBox pair as the
     index page."""
     to_svg = geometry["to_svg"]
+    precision = geometry.get("precision", MAP_PRECISION)
     paths = []
     for feature in features:
         fed_id = feature["fed_id"]
-        data = map_export.path_data(feature["rings"], to_svg, MAP_PRECISION)
+        data = (
+            map_export.compact_path_data(feature["rings"], to_svg, precision, HEX_TOLERANCE) if _HEX
+            else map_export.path_data(feature["rings"], to_svg, precision)
+        )
         if not data:
             continue
         row = lookup.get(fed_id)
@@ -806,15 +890,27 @@ def _map_svg(features, geometry, lookup):
             f' data-province="{esc(row["province"] if row else "")}"'
             f' d="{data}"/>'
         )
+    if _HEX:
+        label = (
+            f"Map of the {len(lookup)} {_HEX['word']['plural']} of the hex board, hexagons of"
+            " 5,000 people or more, coloured by house, on all the land"
+        )
+        hexes = ' data-hexes="1"'
+        under = _hex_layers(to_svg, precision)
+    else:
+        label = "Map of the 343 federal ridings, coloured by house"
+        hexes = ""
+        under = ""
     return (
         f'<svg id="map" viewBox="{geometry["south_view_box"]}" role="img"'
-        ' aria-label="Map of the 343 federal ridings, coloured by house"'
+        f' aria-label="{esc(label)}"{hexes}'
         f' data-view-south="{geometry["south_view_box"]}"'
         f' data-view-full="{geometry["full_view_box"]}"'
         f' data-stroke-south="{geometry["south_stroke"]:.4f}"'
         f' data-stroke-full="{BASE_STROKE_WIDTH}"'
         ' xmlns="http://www.w3.org/2000/svg">'
-        '<g id="map-fills" stroke="none">' + "".join(paths) + "</g>"
+        + under
+        + '<g id="map-fills" stroke="none">' + "".join(paths) + "</g>"
         f'<path id="map-borders" fill="none" stroke="#ffffff"'
         f' stroke-width="{geometry["south_stroke"]:.4f}"'
         ' stroke-linejoin="round" stroke-linecap="round" pointer-events="none"'
@@ -939,6 +1035,8 @@ def _map_detail(features, borders, geometry):
 
 def _short_banner():
     """The few words the map view keeps on screen to say what this game is."""
+    if _PREVIEW and _HEX:
+        return f"Hex trial · draft rules {_PREVIEW} · not a game of record"
     if _PREVIEW:
         return f"Draft rules {_PREVIEW} · not a game of record"
     if _ARCHIVE:
@@ -3276,6 +3374,8 @@ def _write_replay(conn, site_dir, features, borders, reference_dir, key, write):
             geometry,
         ),
     )
+    if _HEX:
+        write(site_dir / "data" / "routes.json", _hex_routes_json(geometry))
     write(site_dir / "replay-text.html", _replay_page(conn, features, borders))
     write(
         site_dir / "replay-text.js",
@@ -3285,25 +3385,51 @@ def _write_replay(conn, site_dir, features, borders, reference_dir, key, write):
     )
 
 
-def write_preview(conn, version, out_dir=DEFAULT_OUT_DIR, seed=None, seasons=None, orders=None):
+def _hex_board(reference_dir):
+    """The hex layers of a set that declares itself a hex board (set.json
+    `hexes`), or None for a riding set."""
+    info = places.set_info(reference_dir)
+    if not info.get("hexes"):
+        return None
+    with open(Path(reference_dir) / "links.csv", newline="", encoding="utf-8") as f:
+        import csv
+
+        links = [
+            [row["fed_id_a"], row["fed_id_b"], int(row["length"]), row["adjacency_type"]]
+            for row in csv.DictReader(f)
+        ]
+    return {
+        "hexes": map_export.projected_hexes(reference_dir),
+        "routes": map_export.projected_routes(reference_dir),
+        "links": links,
+        "word": info.get("unit_word") or {"singular": "riding", "plural": "ridings"},
+    }
+
+
+def write_preview(conn, version, out_dir=DEFAULT_OUT_DIR, seed=None, seasons=None, orders=None,
+                  dirname=PREVIEW_DIRNAME):
     """Write preview/: the draft-rules preview's Replay and Storylines pages,
     from a scratch database played under the draft (scripts/build_preview.py).
-    Everything in preview/ is generated; it is cleared first. Returns the
-    paths written."""
-    global _PREVIEW, _GENERATED_FROM, _PREVIEW_RECKONING
-    site_dir = Path(out_dir) / SITE_DIRNAME / PREVIEW_DIRNAME
+    `dirname` is preview-hex/ for the hex trial's preview, whose database is
+    on the hex board. Everything in the directory is generated; it is cleared
+    first. Returns the paths written."""
+    global _PREVIEW, _GENERATED_FROM, _PREVIEW_RECKONING, _PREVIEW_DIR, _HEX
+    site_dir = Path(out_dir) / SITE_DIRNAME / dirname
     shutil.rmtree(site_dir, ignore_errors=True)
     site_dir.mkdir(parents=True)
     previous = _GENERATED_FROM
     _PREVIEW = version
+    _PREVIEW_DIR = dirname
+    _HEX = _hex_board(places.reference_dir_for(conn))
     _PREVIEW_RECKONING = beats_export.reckoning_of(conn) is not None
     calendar = beats_export.calendar_of(conn)
     length = (
         f"the whole game, {calendar['start_year']}–{calendar['start_year'] + seasons - 1},"
         if calendar else f"{seasons} seasons"
     )
+    board = " on the hex board (meridian-hex-v1.0.4)" if _HEX else ""
     _GENERATED_FROM = (
-        f"a draft-rules preview: {length} under rules {version} (draft), seed {seed},"
+        f"a draft-rules preview: {length} under rules {version} (draft){board}, seed {seed},"
         " played afresh on every export — not a game of record"
     )
     written = []
@@ -3317,7 +3443,8 @@ def write_preview(conn, version, out_dir=DEFAULT_OUT_DIR, seed=None, seasons=Non
         features = map_export.projected_site_features(reference_dir)
         borders = map_export.projected_site_borders(reference_dir)
         write(site_dir / "style.css", STYLE)
-        _write_replay(conn, site_dir, features, borders, reference_dir, f"preview-{version}", write)
+        key = f"preview-hex-{version}" if _HEX else f"preview-{version}"
+        _write_replay(conn, site_dir, features, borders, reference_dir, key, write)
         write(site_dir / "storylines.html", _storylines_page())
         write(site_dir / "storylines-page.js", STORYLINES_JS)
         if _PREVIEW_RECKONING:
@@ -3330,6 +3457,8 @@ def write_preview(conn, version, out_dir=DEFAULT_OUT_DIR, seed=None, seasons=Non
     finally:
         _PREVIEW = None
         _PREVIEW_RECKONING = False
+        _PREVIEW_DIR = PREVIEW_DIRNAME
+        _HEX = None
         _GENERATED_FROM = previous
     return written
 
