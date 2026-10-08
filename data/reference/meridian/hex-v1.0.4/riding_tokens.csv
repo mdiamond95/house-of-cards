@@ -1,0 +1,439 @@
+fed_id,token,token_order
+10032095,Pouch Cove,0
+10032097,Bay Roberts,0
+10032098,St. John's,0
+10032114,Holyrood,0
+10032126,Bonavista,0
+10032142,Clarenville,0
+10032229,Marystown,0
+10033423,Springdale,0
+10033425,Lewisporte,0
+10033426,Gander,0
+10033427,Grand Falls-Windsor,0
+10033429,Twillingate,0
+10033436,Corner Brook,0
+10033438,Mount Moriah,0
+10033568,Happy Valley-Goose Bay,0
+10052022,Stephenville,0
+11051797,Summerside,0
+11051798,Borden-Carleton,0
+11051799,Alberton,0
+11051828,Three Rivers,0
+11051830,Charlottetown,0
+12051794,Amherst,0
+12051800,Truro,0
+12051801,Halifax,0
+12051802,Wolfville,0
+12051803,Hants,0
+12051804,Stellarton,0
+12051806,Westville,0
+12051815,Berwick,0
+12051819,Kentville,0
+12051829,New Glasgow,0
+12051856,Clark's Harbour,0
+12051858,Barrington,0
+12051872,Stewiacke,0
+12051876,Hants,0
+12051884,Bridgewater,0
+12051887,Queens,0
+12051888,Lunenburg,0
+12051890,Chester,0
+12051951,Clare,0
+12051975,Annapolis Royal,0
+12051976,Yarmouth,0
+12051979,Digby,0
+12052058,Antigonish,0
+12052068,Guysborough,0
+12052080,Trenton,0
+12052081,Pictou,0
+12052083,Port Hawkesbury,0
+12052084,Mulgrave,0
+12052085,Cape Breton,0
+13051793,Cap-Pelé,0
+13051795,Bouctouche,0
+13051796,Moncton,0
+13051808,Studholm,0
+13051810,Saint Marys,0
+13051811,Rogersville,0
+13051812,Salisbury,0
+13051813,Blackville,0
+13051816,Sussex,0
+13051820,Petitcodiac,0
+13051835,Neguac,0
+13051837,Tracadie,0
+13051838,Miramichi,0
+13051841,Caraquet,0
+13051891,Edmundston,0
+13051892,Grand Falls / Grand-Sault,0
+13051898,Florenceville-Bristol,0
+13051899,Nackawic,0
+13051901,Wakefield,0
+13051903,Stanley,0
+13051904,Perth-Andover,0
+13051930,Bathurst,0
+13051932,Atholville,0
+13051969,St. George,0
+13051971,St. Stephen,0
+13051972,Gagetown,0
+13051973,Saint John,0
+13051974,Fredericton,0
+13052109,Grande-Anse,0
+24017206,Godbout,0
+24017209,Baie-Comeau,0
+24017235,Port-Cartier,0
+24017239,Sept-Îles,0
+24017319,Chibougamau,0
+24017415,Wabush,0
+24051893,Témiscouata-sur-le-Lac,0
+24051905,La Pocatière,0
+24051907,La Malbaie,0
+24051908,L'Islet,0
+24051909,Rivière-du-Loup,0
+24051911,Saint-Siméon,0
+24051919,Causapscal,0
+24051920,Tide Head,0
+24051921,Amqui,0
+24051924,Campbellton,0
+24051925,Matane,0
+24051933,Saint-Fabien,0
+24051934,Saint-Jean-de-Dieu,0
+24051936,Trois-Pistoles,0
+24051937,Mont-Joli,0
+24051938,Rimouski,0
+24052012,Les Îles-de-la-Madeleine,0
+24052088,Gaspé,0
+24052096,Grande-Rivière,0
+24052104,Sainte-Anne-des-Monts,0
+24052108,Paspébiac,0
+24052111,Carleton-sur-Mer,0
+24052479,Mont-Laurier,0
+24052482,Gracefield,0
+24052483,Rivière-Rouge,0
+24052484,Labelle,0
+24052488,Clarence-Rockland,0
+24052490,Saint-Jérôme,0
+24052491,Vaudreuil-Dorion,0
+24052492,Saint-André-Avellin,0
+24052494,Petawawa,0
+24052504,Val-des-Monts,0
+24052506,Fort-Coulonge,0
+24052514,Saint-Zénon,0
+24052515,Saint-Lin--Laurentides,0
+24052517,Sainte-Agathe-des-Monts,0
+24052519,Saint-Gabriel,0
+24052562,Huntingdon,0
+24052605,McGarry,0
+24052675,Roberval,0
+24052679,Alma,0
+24052680,Métabetchouan--Lac-à-la-Croix,0
+24052681,Dolbeau-Mistassini,0
+24052683,Sainte-Brigitte-de-Laval,0
+24052701,Saint-Raymond,0
+24052710,Saint-Fulgence,0
+24052712,Saint-Honoré,0
+24052713,Saguenay,0
+24052724,Cookshire-Eaton,0
+24052726,Val-des-Sources,0
+24052727,Sherbrooke,0
+24052728,La Guadeloupe,0
+24052729,Lac-Mégantic,0
+24052730,Disraeli,0
+24052738,Longueuil,0
+24052739,Cowansville,0
+24052740,Montréal,0
+24052741,Saint-Jean-sur-Richelieu,0
+24052742,Drummondville,0
+24052743,Granby,0
+24052744,Sorel-Tracy,0
+24052751,Sutton,0
+24052752,Saint-Joseph-de-Beauce,0
+24052753,Saint-Georges,0
+24052754,Québec,0
+24052755,Thetford Mines,0
+24052756,Saint-Fabien-de-Panet,0
+24052758,Montmagny,0
+24052766,Bécancour,0
+24052767,Victoriaville,0
+24052768,Shawinigan,0
+24052769,Trois-Rivières,0
+24052770,Pont-Rouge,0
+24052771,Plessisville,0
+24052772,Saint-Tite,0
+24052790,La Sarre,0
+24052794,Barraute,0
+24052796,Preissac,0
+24052797,Malartic,0
+35017894,Iroquois Falls,0
+35017912,Kapuskasing,0
+35047001,Kenora,0
+35047046,Fort Frances,0
+35047072,Dryden,0
+35047556,Sault Ste. Marie,0
+35047586,Huron-Kinloss,0
+35047587,Goderich,0
+35047590,Saugeen Shores,0
+35047591,Hanover,0
+35047607,Gore Bay,0
+35047611,Espanola,0
+35047613,Elliot Lake,0
+35047615,Owen Sound,0
+35047630,Neebing,0
+35047634,Thunder Bay,0
+35051403,Chatham-Kent,0
+35051405,St. Thomas,0
+35051407,Newbury,0
+35051415,Windsor,0
+35051419,Lakeshore,0
+35051420,Leamington,0
+35051421,LaSalle,0
+35051429,Woodstock,0
+35051430,Norfolk County,0
+35051431,Huron,0
+35051432,London,0
+35051433,Kitchener,0
+35051434,Brantford,0
+35051435,Perth,0
+35051442,Brant,0
+35051443,Sarnia,0
+35051444,Petrolia,0
+35051447,Perth,0
+35051448,Lambton Shores,0
+35052486,Hawkesbury,0
+35052487,Cornwall,0
+35052489,Casselman,0
+35052496,Laurentian Hills,0
+35052500,Mississippi Mills,0
+35052501,Carleton Place,0
+35052502,Portage-du-Fort,0
+35052505,Ottawa,0
+35052570,Brockville,0
+35052572,Rideau Lakes,0
+35052573,Gananoque,0
+35052574,Dundas,0
+35052576,Merrickville-Wolford,0
+35052581,Temiskaming Shores,0
+35052584,Mattawa,0
+35052587,River,0
+35052592,Sables-Spanish Rivers,0
+35052600,French River / Rivière des Français,0
+35052602,Nipissing / Nipissing,0
+35052604,Greater Sudbury / Grand Sudbury,0
+35052607,Kirkland Lake,0
+35052608,Englehart,0
+35052625,Timmins,0
+35052626,Kawartha Lakes,0
+35052627,Clarington,0
+35052628,Georgina,0
+35052629,Oshawa,0
+35052630,Trent Lakes,0
+35052631,Peterborough,0
+35052632,Minden Hills,0
+35052639,Cobourg,0
+35052640,Shelburne,0
+35052641,Caledon,0
+35052642,Grey,0
+35052643,Minto,0
+35052644,Wasaga Beach,0
+35052645,Barrie,0
+35052646,Collingwood,0
+35052647,St. Catharines,0
+35052648,Niagara Falls,0
+35052649,Hamilton,0
+35052650,Haldimand County,0
+35052651,Mississauga,0
+35052653,Toronto,0
+35052655,Bancroft,0
+35052657,Dysart et al,0
+35052658,Madawaska Valley,0
+35052661,Stone Mills,0
+35052662,Greater Napanee,0
+35052663,Havelock-Belmont-Methuen,0
+35052664,Belleville,0
+35052665,Westport,0
+35052666,Kingston,0
+35052668,Muskoka Lakes,0
+35052669,Gravenhurst,0
+35052670,Parry Sound,0
+35052671,Midland,0
+35052672,Kearney,0
+35052673,Huntsville,0
+35052674,Magnetawan,0
+46017654,Thompson,0
+46022009,Swan River,0
+46022041,The Pas,0
+46047005,Teulon,0
+46047006,Selkirk,0
+46047008,Woodlands,0
+46047009,Arborg,0
+46047010,Winnipeg Beach,0
+46047014,Ste. Anne,0
+46047015,La Broquerie,0
+46047018,Beausejour,0
+46047036,Gimli,0
+46047093,Dauphin,0
+46047097,Norfolk-Treherne,0
+46047098,Neepawa,0
+46047101,Portage la Prairie,0
+46047110,Souris-Glenwood,0
+46047114,Oakview,0
+46047115,Brandon,0
+46047116,Virden,0
+46047166,Morris,0
+46047168,Carman,0
+46047169,Winkler,0
+46047170,Winnipeg,0
+46047171,Steinbach,0
+46047172,Cartier,0
+46047232,Gillam,0
+47022003,Nipawin,0
+47022015,Melfort,0
+47022018,Humboldt,0
+47022021,Birch Hills,0
+47022099,Battleford,0
+47022106,Saskatoon,0
+47022109,Dundurn,0
+47022110,Rosthern,0
+47022112,Waldheim,0
+47022133,Meadow Lake,0
+47022135,St. Louis,0
+47022139,Prince Albert,0
+47047133,Canora,0
+47047134,Yorkton,0
+47047873,Lumsden,0
+47047874,Regina,0
+47047875,Moose Jaw,0
+47047878,White City,0
+47047883,Weyburn,0
+47047911,Fort Qu'Appelle,0
+47047913,Melville,0
+47047952,Estevan,0
+47048003,Kindersley,0
+47048007,Swift Current,0
+48021674,Peace River,0
+48021688,High Level,0
+48021759,Dawson Creek,0
+48021777,Beaverlodge,0
+48021782,Grande Prairie,0
+48022052,Bondiss,0
+48022059,Cold Lake,0
+48022067,Redwater,0
+48022070,Athabasca,0
+48022071,St. Paul,0
+48022075,Bonnyville,0
+48022076,Elk Point,0
+48022082,La Loche,0
+48022143,Lloydminster (Part),0
+48022645,Canmore,0
+48022650,Cochrane,0
+48022678,Rocky Mountain House,0
+48022687,Fort Macleod,0
+48022688,Cardston,0
+48022689,Pincher Creek,0
+48022691,Claresholm,0
+48022692,Lethbridge,0
+48022700,Raymond,0
+48022715,Okotoks,0
+48022717,Black Diamond,0
+48022719,Chestermere,0
+48022721,Calgary,0
+48022724,Picture Butte,0
+48022725,Taber,0
+48022726,Brooks,0
+48022730,Crowsnest Pass,0
+48022835,Whitecourt,0
+48022841,Onoway,0
+48022842,Edmonton,0
+48022844,Seba Beach,0
+48022845,Barrhead,0
+48022846,Morinville,0
+48022851,Hinton,0
+48022860,Drayton Valley,0
+48022861,Edson,0
+48022873,Slave Lake,0
+48022883,Stettler,0
+48022889,Bashaw,0
+48022897,Olds,0
+48022898,Irricana,0
+48022899,Sundre,0
+48022900,Airdrie,0
+48022901,Red Deer,0
+48022902,Three Hills,0
+48022903,Innisfail,0
+48022910,Drumheller,0
+48022911,Tofield,0
+48022913,Leduc,0
+48022914,Camrose,0
+48022915,Lamont,0
+48022916,Vegreville,0
+48022917,Fort Saskatchewan,0
+48022918,Wainwright,0
+48022922,Vermilion,0
+48022925,Rimbey,0
+48022926,Lacombe,0
+48022928,Sylvan Lake,0
+48022929,Calmar,0
+48022930,Wetaskiwin,0
+48047989,Medicine Hat,0
+59021775,Pouce Coupe,0
+59021799,Fort St. John,0
+59022301,Kitimat,0
+59022326,Terrace,0
+59022330,Smithers,0
+59022343,Prince Rupert,0
+59022356,Williams Lake,0
+59022380,Quesnel,0
+59022562,Prince George,0
+59022563,Vanderhoof,0
+59022641,Golden,0
+59022652,Revelstoke,0
+59022664,Radium Hot Springs,0
+59022732,Fernie,0
+59022736,Kamloops,0
+59022737,Armstrong,0
+59022741,Sun Peaks Mountain,0
+59022743,Vernon,0
+59022746,Kelowna,0
+59022747,Salmon Arm,0
+59022749,Enderby,0
+59022758,Oliver,0
+59022762,Kelowna,0
+59022763,Merritt,0
+59022764,One Hundred Mile House,0
+59022774,Chase,0
+59022789,Castlegar,0
+59022791,Trail,0
+59022814,Nelson,0
+59022816,Rossland,0
+59022823,Creston,0
+59022825,Cranbrook,0
+59022828,Grand Forks,0
+59022829,Osoyoos,0
+59022833,Penticton,0
+59022980,Fort St. James,0
+59049155,Sidney,0
+59049157,White Rock,0
+59049159,Victoria,0
+59049168,Chilliwack,0
+59049169,Harrison Hot Springs,0
+59049171,Hope,0
+59049173,Abbotsford,0
+59049196,Powell River,0
+59049200,Qualicum Beach,0
+59049201,Courtenay,0
+59049202,Sechelt,0
+59049209,Campbell River,0
+59049216,Pemberton,0
+59049225,Port Alberni,0
+59049226,Ladysmith,0
+59049227,Nanaimo,0
+59049230,Duncan,0
+59049233,Comox,0
+59049238,Vancouver,0
+59049239,Port Moody,0
+59049241,Squamish,0
+59049242,Vancouver,0
+59049243,Gibsons,0
+59049244,Surrey,0
+60023712,Whitehorse,0
+61023440,Yellowknife,0
+62018255,Iqaluit,0
