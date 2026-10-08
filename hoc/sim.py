@@ -61,6 +61,10 @@ RULES_VERSION = rules_data.current_version()
 
 STAT_RANGE = (0, 100)
 AMBITION_RANGE = (0, 10)
+# The 343 ridings of the 2023 Representation Order, which both riding sets
+# (ne-2026, meridian-v1.0.3) hold. Kept for callers that want the number; a
+# World reads the size of its own map (World.total_units), so a set of another
+# size (the hex trial's 439) is read as it is.
 TOTAL_RIDINGS = 343
 # A second house of a surname takes a numeral (_unique_house_name).
 _SURNAME_NUMERAL = re.compile(r" [0-9]+$")
@@ -353,6 +357,9 @@ class World:
         # reads them yet.
         self.riding_stats = places.riding_stats(self.reference_dir)
         self.riding_jurisdictions = places.riding_jurisdictions(self.reference_dir)
+        # How many units the map holds: §10's founding denominator. 343 on
+        # both riding sets; whatever the set's ridings.csv holds on any other.
+        self.total_units = conn.execute("SELECT COUNT(*) AS n FROM ridings").fetchone()["n"]
         # A world plays under one version of the rules. `rules_version` names it
         # when replaying a season that recorded one; otherwise it is whatever
         # rules/current.txt says now. `use_rules_version` switches mid-replay,
@@ -4984,11 +4991,12 @@ class World:
         spec = self.rules.founding["p_found"]
         room = self.founding_room()
         # The only floating-point computation in the engine, and the only float
-        # comparison: sqrt(room / 343) * coefficient, against rand_float().
+        # comparison: sqrt(room / total) * coefficient, against rand_float(),
+        # where total is the map's unit count (343 on the riding sets).
         # IEEE-754 makes division, multiplication and sqrt exact-or-correctly-
         # rounded, so Python and JavaScript compute the same double here; a
         # general pow would not be safe (docs/DETERMINISM.md, hoc/prng.py).
-        p_found = prng.p_found(room, TOTAL_RIDINGS, spec["coefficient"])
+        p_found = prng.p_found(room, self.total_units, spec["coefficient"])
         rng.draw("founding.p_found", {"room": room, "p": p_found})
         if p_found <= 0:
             return None
