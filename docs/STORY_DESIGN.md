@@ -527,7 +527,7 @@ to hold or was named heir: the one who went on to hold first, then the heir, the
 second heir; none named otherwise. It is read from `persons`, which keeps each person's
 role now (not its history), the season they entered the record and the season they died.
 
-Pace, from the story weights (§3.1), the follow multiplier included:
+Pace, from the story weights (§3.1), the follow multiplier included (three paces here; Phase V3, below, replaces them with four, by what happened in the turn):
 
 | Turn | Weight | On screen | On Auto at 1× |
 |---|---|---|---|
@@ -579,6 +579,78 @@ and the card with no more than a fifth of the map unused below it; names never o
 crisis tints its camps; a chapter's close is opaque; gestures and a mark's card work; no
 page logs an error. Screenshots of 1896 turn by turn at 390 px, and of 1885, 1914 and 1936
 at each size, are in `docs/phase-v/v2/`.
+
+**Phase V3 note, 7 October 2026: pace and wording of the round.** The director's review
+of the round at 390 × 844. Story layer only: no rules, engine or record change (the one
+addition to a beat is the event's name on a house's response, below), `rules/current.txt`
+stays at 0.9, and no scenario was created or played.
+
+1. **Four paces, by what happened in the turn.** The V2 pace read the yearly headline
+   weights alone, so a house taking a riding was quiet (1896: Yeltatzie takes Delta while
+   the camera sat on Prince Edward Island) and "sets out to open X" held three seconds. A
+   turn now takes the pace of its heaviest beat *by what the beat is*, from
+   `web/story/weights.json` (`pace`; the kinds and the times are data, not code):
+
+   | Pace | Kinds | On screen | Auto at 1× |
+   |---|---|---|---|
+   | Quiet | a house kept to its estates, a scheme's middle step, a letter, an answer to an ordinary event, a failed attempt, an endowment | the seat pulses if on screen; no camera move | 0.4 s |
+   | Routine | land gained or given up without a contest (expansion, a riding returned to the Crown), a scheme begun, answered or abandoned, an heir named, coming of age or wanted, a compact, a match, an ally joining | the camera flies there (0.5 s) | 1.1 s |
+   | Notable | a contest decided (won, held, a dispute carried), a riding passing between houses, a succession, an elevation, a quarrel or a reconciliation, a partition, a founding | the camera flies there (0.7 s) | 3.0 s |
+   | Pause | a fall or removal, a crisis, a chapter's close, the reckoning, and any beat at the pause weight (90) whatever its kind | as notable | Auto stops |
+
+   A kind in no list is quiet. The world's turn is at least routine when it announces
+   anything; the close is routine at least, as long as the year's headline merits (never
+   above notable: the turn that made the headline has stopped Auto already), and a pause
+   when it ends a chapter or the game. The card's kicker says "quiet" only for a quiet
+   turn, and "Quiet: skip" skips quiet house turns only. Which beat a card tells first is
+   chosen the same way: by what it was, then by weight. The weights stay as they were for
+   headlines, the storylines and the follow multiplier.
+
+   Measured on the preview game (seed 1867, 1867–1966; `node tests/js/story_round_report.mjs`):
+   2,417 turns: 950 quiet, 1,132 routine, 231 notable, 104 at a pause (Auto stops 104
+   times when following no one). Auto at 1× with quiet turns shown runs **43.8 minutes**
+   (the target was 35 to 45); with quiet turns skipped, 37.7 minutes over 1,491 turns. At
+   2× it is 21.9 and 18.8 minutes; at 4×, 11.0 and 9.4. The times were chosen to meet the
+   target without touching a contest: the first pass at 450 ms, 1.2 s and 3.0 s ran 46.5
+   minutes, and the 2.8 minutes came from the quiet and routine holds (0.4 s and 1.1 s)
+   and from the world's turn and the close no longer being notable by default.
+
+2. **The year's event is a tag.** A house's answer to an ordinary event is a small tag on
+   its card, the event's name and the response in one word with a glyph (▲ leads, ▼
+   resists, ◆ exploits, ○ neutral; `pace.responses`): "◆ Laurier Elected · exploits". It
+   is not a line of prose and not a mark. To name the event, a response beat now carries
+   it as `world: { event }` (from the event's title; `hoc/export/beats.py` and
+   `web/story/beats.js`, which agree). A crisis keeps its camp on every card in words
+   ("Leads in the Great War crisis.", "Resists…", "Stands aside…"), read from the world
+   turn's crisis, one line for each crisis of the year.
+
+3. **A card says the name once.** The header carries the peerage and the sentences start
+   at the verb ("Sets out to open Cumberland—Colchester.", "Enters into a compact with
+   Baron David of Saint-Léonard."). A sentence with two houses for its subject is turned
+   round ("X and Y enter into a compact" becomes "Enters into a compact with Y"), other
+   houses keep their names, and where a sentence must name the card's own house ("heir to
+   Baron Robinson…") it says "the house" (`web/story/text.js` `verbFirst`). The text
+   Replay, the drawer, the house sheet's last turns and the year in brief keep their full
+   sentences (`didFull`). A card tells each other act of the turn that the map marks, at
+   most two after the first, so no mark is left without its sentence.
+
+4. **The close counts the year.** Under "The year in brief" one line of counts from the
+   round just played, nothing at zero: ridings taken, ridings changing hands, contests
+   decided, successions, elevations, houses founded, houses fallen (`yearCounts`). Ridings
+   are counted by the moves the record gives (a founding's or partition's own ground
+   aside); a contest decided is a contest won or held or a dispute carried, a rout
+   excepted. When the year's headline is below the notable pace the count line leads and
+   the headline follows; otherwise the headline leads.
+
+Checks: node tests for the four paces (one fixture for each kind listed above), the weight
+override, a merged act, the world and the close, Auto's holds against the table, the tag,
+the camp lines, the verb-first sentences (and the joint-subject, "the house" and letter
+cases) and the count line; the browser check adds, for 1896 at each size, that a quiet
+turn never moves the camera and a routine one does, that a card says its name once in its
+header, that an answer to the event is a tag, that the close counts the year and leaves out
+zeros, and that Auto holds each pace for the table's time (`window.hocReplay.holdMs()`
+and the measured dwell). Screenshots of 1896 turn by turn at 390 px are in
+`docs/phase-v/v3/`.
 
 ## 4. Rules 1.0 (Phase C)
 
@@ -1094,4 +1166,5 @@ The calendar:
 | D2 | The director reviews the preview; then the new scenario begins under 1.0, The Dominion is frozen, and 1.0 is published (`rules/current.txt` points at it) | Yes | A full game ends in 1967 with its reckoning, from the record |
 | V | The map view (§3.6): the Replay as a full-screen map with gestures, a follow/free camera, marks and cards; the text Replay kept as its own page | None | node tests for marks and camera; the browser checks at 390 × 844 and 820 × 1180; full suite, node tests and the referee on every scenario green; both frozen games' archive pages render. Built 7 October 2026 |
 | V2 | The year as a round (§3.6): the world's turn, each house's turn in the engine's order, the close; a house's turn on screen with its card; the turn-order strip and the house sheet; three paces and the controls; the first look's fixes. `round_record` in the 1.0 draft, both engines | Yes: a record field, deciding nothing | 1.0 season records and events identical with the flag on and off on seeds 1867, 2 and 3 over 100 turns, less the two fields; cross-check byte-identical with the fields and every engine event; every beat of the preview game has its part; the browser checks at 390 × 844, 820 × 1180 and 1440 × 900; full suite, node tests and the referee on every scenario green. Built 7 October 2026 |
+| V3 | Pace and wording of the round (§3.6): four paces by what happened in a turn, the kinds and times in `weights.json`; the year's event as a tag; sentences from the verb; the close's count line | None (a response beat gains the event's name) | node tests for the paces, tag, sentences and counts; the browser check at 390 × 844, 820 × 1180 and 1440 × 900; Auto at 1× on the preview game with quiet turns shown 35–45 minutes; full suite, node tests and the referee on every scenario green. Built 7 October 2026 |
 | E | Scene templates, chapter narration, epilogues | None | A full game reads start to finish from the site |

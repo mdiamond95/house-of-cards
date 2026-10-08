@@ -43,7 +43,7 @@ import {
 } from './story/camera.js';
 import { PROVINCES } from './story/storylines.js';
 import {
-  FLIGHT_MS, QUICK_MS, autoMs, houseLine, placeLabels, stopsAuto, stripOf,
+  QUICK_MS, autoMs, entryPace, houseLine, paceRank, placeLabels, stopsAuto, stripOf,
 } from './story/round.js';
 
 const SCENARIO = __SCENARIO__;
@@ -315,7 +315,15 @@ function cancelFlight() {
   app.flying = null;
 }
 
-function fly(target, { ms = FLIGHT_MS } = {}) {
+// How long the camera takes to reach a turn (weights.json `pace.flight_ms`): a
+// quiet turn never moves it. The year told a year at a time flies as a notable
+// turn does.
+function flightMs(part) {
+  const table = app.weights.pace.flight_ms;
+  return part ? table[part.pace] : table.notable;
+}
+
+function fly(target, { ms = flightMs(null) } = {}) {
   cancelFlight();
   const to = clampView(target, app.world, app.screen, limits());
   const from = app.view;
@@ -864,6 +872,13 @@ function houseFacts(house) {
   });
 }
 
+// A house's answer to the year's event: the event's name and the response in
+// one word, with a glyph. A tag, not a sentence.
+function tagHtml(tag) {
+  return `<span class="mv-tag mv-tag-${escapeHtml(String(tag.response).toLowerCase())}">`
+    + `<span aria-hidden="true">${escapeHtml(tag.glyph)}</span> ${tag.event ? `${escapeHtml(tag.event)} · ` : ''}${escapeHtml(tag.word)}</span>`;
+}
+
 function partCardHtml(part) {
   const d = app.d;
   const when = whenOf(app.turn);
@@ -871,9 +886,12 @@ function partCardHtml(part) {
   if (part.kind === 'house') {
     const c = part.card;
     const index = d.round.parts.filter((p) => p.kind === 'house').indexOf(part) + 1;
+    // The header carries the peerage, so the sentences start at the verb.
     const lines = [`<p class="mv-card-text mv-card-headline">${escapeHtml(c.did)}</p>`];
+    for (const more of c.also) lines.push(`<p class="mv-card-text">${escapeHtml(more)}</p>`);
     if (c.doneTo) lines.push(`<p class="mv-card-text">${escapeHtml(c.doneTo)}</p>`);
-    if (c.era) lines.push(`<p class="mv-card-quiet">${escapeHtml(c.era)}</p>`);
+    for (const camp of c.camps) lines.push(`<p class="mv-card-text">${escapeHtml(camp)}</p>`);
+    if (c.tags.length) lines.push(`<p class="mv-card-tags">${c.tags.map(tagHtml).join('')}</p>`);
     if (c.scheme) lines.push(`<p class="mv-card-scheme">${escapeHtml(c.scheme)}</p>`);
     return `<p class="mv-card-kicker">${escapeHtml(when)} · turn ${index} of ${houses}${part.pace === 'quiet' ? ' · quiet' : ''}</p>`
       + `<h2 class="mv-card-title">${swatch(part.house)}<button type="button" class="mv-sheet-link mv-title-link"`
@@ -900,13 +918,19 @@ function partCardHtml(part) {
   // The close: a Crown founding, the standings with their movement, the year in brief.
   const founded = part.entries.filter((e) => e.weight > 0).map((e) => `<p class="mv-card-text">${escapeHtml(e.alone)}</p>`).join('');
   const brief = d.quiet ? d.quietLine : d.headline.text;
+  // The year's counts; the headline goes second when it is below the notable
+  // pace (a routine or quiet year), and first otherwise.
+  const parts = [d.round.countLine, brief].filter(Boolean);
+  if (paceRank(d.round.headlinePace) >= paceRank('notable')) parts.reverse();
+  const paragraphs = parts.map((text, i) => `<p class="mv-card-text${i === 0 ? ' mv-card-headline' : ''}">`
+    + `${i === 0 ? '<b>The year in brief.</b> ' : ''}${escapeHtml(text)}</p>`).join('');
   const arrows = { up: '▲', down: '▼', same: '–', new: '★' };
   const table = d.standings.map((row) => `<li class="mv-close-row move-${row.move}">${row.place}`
     + ` <span class="standing-move" aria-label="${row.move}">${arrows[row.move]}</span> ${swatch(row.house)}`
     + `<button type="button" class="mv-sheet-link" data-house="${escapeHtml(row.house)}">${escapeHtml(shortOf(row.house))}</button></li>`).join('');
   return `<p class="mv-card-kicker">${escapeHtml(when)} · the close</p>`
     + founded
-    + `<p class="mv-card-text mv-card-headline"><b>The year in brief.</b> ${escapeHtml(brief)}</p>`
+    + paragraphs
     + `<ol class="mv-close-table">${table}</ol>`;
 }
 
@@ -1010,18 +1034,21 @@ function byTelling(a, b) {
 // standing claims as faint arrows. A quiet house turn draws none.
 function partLayout(d, part) {
   const claims = new Set(app.weights.claim_schemes || []);
-  const told = [...part.entries].filter((e) => e.weight > 0).sort(byTelling);
   const quiet = part.kind === 'house' && part.pace === 'quiet';
-  // The turn's heaviest beat, and the others worth a mark: at the quiet
-  // threshold or above. A house's answer to the year's event is a quiet line
-  // in its card, never a mark, and nor are its routine letters.
-  const marked = told.filter((e) => !['era_response', 'major_response'].includes(e.beat.kind));
+  // The turn's heaviest beat by what it was, and the others worth a mark: at
+  // the routine pace or above. A house's answer to the year's event is a tag on
+  // its card, never a mark, and nor are its letters.
+  const options = { pace: app.weights.pace, thresholds: app.weights.thresholds };
+  const level = (e) => paceRank(entryPace(e, options));
+  const marked = [...part.entries]
+    .filter((e) => !['era_response', 'major_response'].includes(e.beat.kind) && (e.weight > 0 || level(e) > 0))
+    .sort((a, b) => level(b) - level(a) || byTelling(a, b));
   const pseudo = {
     quiet: quiet || !marked.length,
     headline: marked[0] || null,
     related: [],
     secondary: [],
-    others: marked.slice(1).filter((e) => e.weight >= app.weights.thresholds.quiet),
+    others: marked.slice(1).filter((e) => level(e) > 0),
     running: d.running || [],
   };
   const ctx = markContext(d, part);
@@ -1183,7 +1210,7 @@ function render({ jump = false, frame = true, full = true, quick = false } = {})
   const still = quick || (part && part.pace === 'quiet' && part.kind === 'house');
   if (frame && app.layout && !still) {
     const target = app.camera.frame(frameFor(app.layout.frame));
-    if (target) fly(target);
+    if (target) fly(target, { ms: flightMs(part) });
   }
   drawMarks();
   // Told a year at a time on a game without the round, the headline's card
@@ -1257,6 +1284,11 @@ function partStop(part) {
     : `Paused: ${shortOf(part.house)}'s turn touches ${shortOf(app.follow)}. Press Auto to carry on.`;
 }
 
+// How long Auto holds a part: weights.json `pace.hold_ms` at the chosen speed.
+function holdMs(part) {
+  return autoMs(part, { hold: app.weights.pace.hold_ms, skipQuiet: app.skipQuiet, speed: SPEEDS[app.speed].factor });
+}
+
 function startAuto() {
   note('');
   el('mv-full').hidden = true;
@@ -1282,7 +1314,7 @@ function startAuto() {
     }
     const why = partStop(part);
     if (why) { stopAuto(why); return; }
-    app.auto = setTimeout(tick, autoMs(part, { skipQuiet: app.skipQuiet, speed: SPEEDS[app.speed].factor }));
+    app.auto = setTimeout(tick, holdMs(part));
   };
   app.auto = setTimeout(tick, 0);
 }
@@ -1646,6 +1678,8 @@ async function boot() {
     labels: () => app.labels.map((l) => ({ house: l.house, x0: l.x0, y0: l.y0, x1: l.x1, y1: l.y1, priority: l.priority })),
     sheet: () => app.sheet,
     auto: () => app.auto !== null,
+    holdMs: () => { const part = partNow(); return part ? holdMs(part) : null; },
+    flightMs: () => { const part = partNow(); return part ? flightMs(part) : null; },
     tints: () => document.querySelectorAll('#mv-outlines .tint').length,
   };
   const start = hashTurn();
@@ -1799,6 +1833,9 @@ body.mapview { background: #c9d8e1; }
 .mv-turn { position: relative; margin: 0 auto 8px; max-width: 640px; max-height: 38dvh; overflow: auto;
   background: #fff; border-radius: 10px; padding: 9px 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.16);
   border: 1px solid rgba(0,0,0,0.08); font-size: 0.9rem; text-align: left; }
+.mv-card-tags { margin: 0.35rem 0 0; display: flex; flex-wrap: wrap; gap: 4px; }
+.mv-tag { display: inline-block; padding: 1px 7px; border: 1px solid var(--rule, #c9c2b0); border-radius: 10px;
+  font-size: 0.72rem; color: var(--muted); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .mv-card-quiet { margin: 0.25rem 0 0; font-size: 0.82rem; color: var(--muted); font-family: var(--serif); }
 .mv-card-scheme { margin: 0.3rem 0 0; font-size: 0.86rem; font-family: var(--serif); font-style: italic; }
 .mv-card-facts { margin: 0.35rem 0 0; font-size: 0.76rem; color: var(--muted); }

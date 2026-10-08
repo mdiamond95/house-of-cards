@@ -395,8 +395,11 @@ def test_every_beat_of_the_preview_game_has_a_part_of_the_round(preview_round):
     assert report["housePartsTwice"] == 0
     # Every house of every order has its turn, and the world and the close theirs.
     assert report["parts"] == sum(len(r["order"]) + 2 for r in records)
-    assert set(report["byPace"]) == {"quiet", "notable", "pause"}
+    assert set(report["byPace"]) == {"quiet", "routine", "notable", "pause"}
+    assert sum(report["byPace"].values()) == report["parts"]
     assert report["autoSkipped"]["ms"] < report["autoShown"]["ms"]
+    # Phase V3's target: the preview on Auto at 1x with quiet turns shown runs 35 to 45 minutes.
+    assert 35 <= report["autoShown"]["minutes"] <= 45
 
 
 @needs_node

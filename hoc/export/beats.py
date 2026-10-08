@@ -204,9 +204,13 @@ def _beat(turn, seq, kind, houses, ridings, outcome, line, owners, ranks, remove
     return beat
 
 
-def _world_facts(kind, d):
+def _world_facts(kind, d, title=None):
     """Rules 1.0 `world_calendar` and `crises`: what a world beat carries for
-    its sentence and the pages (web/story/beats.js worldFacts)."""
+    its sentence and the pages (web/story/beats.js worldFacts). A house's
+    response to an ordinary event carries the event's name (Phase V3), which
+    the engine records as the event's title."""
+    if kind in ("era_response", "major_response"):
+        return {"event": title} if title else None
     if kind == "crisis":
         c = d["crisis"]
         facts = {"event": d.get("event"), "lead": c["lead"], "resist": c["resist"],
@@ -275,7 +279,7 @@ def type_turn(data):
             scheme = d["ally"].get("scheme")
         if kind == "riding_passes" and outcome == "absorption" and len(houses) > 1:
             removed.append(houses[1])
-        world = _world_facts(kind, d)
+        world = _world_facts(kind, d, event.get("title"))
         if kind == "accession":
             # The land it opens, for the map to show.
             ridings = sorted(d.get("fed_ids") or [])
@@ -360,6 +364,7 @@ def turn_inputs(conn, orders=None):
             "houses": houses_of.get(row["id"], []),
             "delta": delta,
             "line": row["narrative"] if row["narrative"] is not None else row["title"],
+            "title": row["title"],
         })
 
     actions = defaultdict(list)

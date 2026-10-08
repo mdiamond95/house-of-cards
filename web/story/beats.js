@@ -197,7 +197,7 @@ export function typeEvent(event, actionOf) {
 
 // One turn's beats from its input:
 //   { turn,
-//     events:   [{ id, kind, houses, delta, line }]            in id order
+//     events:   [{ id, kind, houses, delta, line, title }]     in id order
 //     actions:  [{ house, action, success }]                   in the order taken
 //     holdings: [{ event, fed, house, change }]                'acquired' | 'released', in holding-id order
 //     ranks:    { house: rank }                                each house founded this turn, at founding }
@@ -253,7 +253,7 @@ export function typeTurn(input) {
       scheme = d.ally.scheme ?? null;
     }
     if (kind === 'riding_passes' && outcome === 'absorption' && houses.length > 1) removed.push(houses[1]);
-    const world = worldFacts(kind, d);
+    const world = worldFacts(kind, d, event.title ?? null);
     // The land an accession opens, for the map to show.
     const shown = kind === 'accession' ? [...(d.fed_ids || [])].sort() : ridings;
 
@@ -306,7 +306,10 @@ function makeBeat(turn, seq, fields) {
 
 // Rules 1.0 `world_calendar` and `crises`: what a world beat carries for its
 // sentence and the pages (hoc/export/beats.py _world_facts).
-function worldFacts(kind, d) {
+function worldFacts(kind, d, title = null) {
+  // A house's response to an ordinary event carries the event's name (Phase
+  // V3), which the engine records as the event's title.
+  if (kind === 'era_response' || kind === 'major_response') return title ? { event: title } : null;
   if (kind === 'crisis') {
     const c = d.crisis;
     const facts = { event: d.event ?? null, lead: c.lead, resist: c.resist, carried: c.carried };
@@ -350,6 +353,7 @@ export function inputFromState(state, season, order = null) {
       houses: [...e.houses],
       delta: e.mechanicalDelta,
       line: e.narrative ?? e.title ?? null,
+      title: e.title ?? null,
     })),
     actions: state.houseActions
       .filter((a) => a.seasonNo === season)

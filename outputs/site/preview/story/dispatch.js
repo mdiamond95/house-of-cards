@@ -55,7 +55,7 @@ import { createContext, weighTurn, advance, provinceOf } from './weight.js';
 import { emptyBoard, copyBoard, applyBeats, table, movement } from './standings.js';
 import { Storylines, storylineName } from './storylines.js';
 import { Namer, rankForm, sentence } from './text.js';
-import { buildRound, houseCard, houseSheet } from './round.js';
+import { buildRound, entryPace, houseCard, houseSheet } from './round.js';
 
 const SMALL = [
   'no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
@@ -426,16 +426,20 @@ export class Story {
         const alone = sentence(entry.beat, this.namer(boardAfter.ranks), (fed) => this.ridingName(fed), { order });
         return { beat: entry.beat, weight: entry.weight, mods: entry.mods, text: alone, alone };
       });
+      const options = { pace: w.pace, thresholds: w.thresholds };
       round = buildRound({
-        turn, entries, playing, deck, board: boardBefore, thresholds: w.thresholds,
+        turn, entries, playing, deck, board: boardBefore, ...options,
+        closing: chapter !== null || reckoning !== null,
+        headlinePace: chosen.quiet ? 'quiet' : entryPace(chosen.headline, options),
       });
       round.parts.forEach((part, i) => {
         if (part.kind !== 'house') return;
         part.card = houseCard(part, round.parts.slice(0, i), {
           turn, plans: this.plans, plansBefore, placeOf: (h) => this.placeOf(h),
+          styleOf: this.styleOf, responses: w.pace.responses, ...options,
         });
         const list = this.turnsOf.get(part.house) || [];
-        list.push({ turn, year, text: part.card.did });
+        list.push({ turn, year, text: part.card.didFull });
         this.turnsOf.set(part.house, list.slice(-5));
       });
     }
