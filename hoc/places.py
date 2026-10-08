@@ -47,7 +47,7 @@ from pathlib import Path
 __all__ = [
     "places_by_riding", "tokens_by_riding", "riding_stats", "riding_jurisdictions",
     "reference_dir_for", "DEFAULT_REFERENCE_DIR", "PLACES_PATH", "TOKENS_PATH",
-    "jurisdiction_at", "jurisdiction_label",
+    "jurisdiction_at", "jurisdiction_label", "set_info",
 ]
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -97,6 +97,21 @@ def reference_dir_for(conn):
     except Exception:  # sqlite3.OperationalError: a database without the table
         return DEFAULT_REFERENCE_DIR
     return DEFAULT_REFERENCE_DIR if row is None else REPO_ROOT / row[0]
+
+
+def set_info(reference_dir=None):
+    """What a reference set says about itself in its set.json, or {} for a
+    set without one (both riding sets). The hex trial's names its unit
+    ("holding", `unit_word`) and says it is a hex board (`hexes`). Read by the
+    exporters for display, never by an engine."""
+    def build(directory):
+        path = directory / "set.json"
+        if not path.exists():
+            return {}
+        import json
+
+        return json.loads(path.read_text(encoding="utf-8"))
+    return _cached("set", reference_dir, build)
 
 
 def places_by_riding(reference_dir=None):
