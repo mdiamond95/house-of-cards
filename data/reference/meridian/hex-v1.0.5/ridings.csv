@@ -1,0 +1,495 @@
+fed_id,name_en,name_fr,province,name_key
+100032095,Pouch Cove,Pouch Cove,NL,pouch cove
+100032097,Bay Roberts,Bay Roberts,NL,bay roberts
+100032098,St. John's,St. John's,NL,st. john's
+100032114,Holyrood,Holyrood,NL,holyrood
+100032126,Bonavista,Bonavista,NL,bonavista
+100032142,Clarenville,Clarenville,NL,clarenville
+100032229,Marystown,Marystown,NL,marystown
+100033423,Springdale,Springdale,NL,springdale
+100033425,Lewisporte,Lewisporte,NL,lewisporte
+100033426,Gander,Gander,NL,gander
+100033427,Grand Falls-Windsor,Grand Falls-Windsor,NL,grand falls-windsor
+100033429,Twillingate,Twillingate,NL,twillingate
+100033436,Corner Brook,Corner Brook,NL,corner brook
+100033438,Mount Moriah,Mount Moriah,NL,mount moriah
+100033568,Happy Valley-Goose Bay,Happy Valley-Goose Bay,NL,happy valley-goose bay
+100052022,Stephenville,Stephenville,NL,stephenville
+110051797,Summerside,Summerside,PE,summerside
+110051798,Borden-Carleton,Borden-Carleton,PE,borden-carleton
+110051799,Alberton,Alberton,PE,alberton
+110051828,Three Rivers,Three Rivers,PE,three rivers
+110051830,Charlottetown,Charlottetown,PE,charlottetown
+120051794,Amherst,Amherst,NS,amherst
+120051800,Truro,Truro,NS,truro
+120051801,Halifax,Halifax,NS,halifax
+120051802,Oxford,Oxford,NS,oxford
+120051803,East Hants,East Hants,NS,east hants
+120051804,Stellarton,Stellarton,NS,stellarton
+120051806,Westville,Westville,NS,westville
+120051815,Berwick,Berwick,NS,berwick
+120051819,Kentville,Kentville,NS,kentville
+120051829,New Glasgow,New Glasgow,NS,new glasgow
+120051856,Clark's Harbour,Clark's Harbour,NS,clark's harbour
+120051858,Barrington,Barrington,NS,barrington
+120051872,Stewiacke,Stewiacke,NS,stewiacke
+120051876,West Hants,West Hants,NS,west hants
+120051884,Bridgewater,Bridgewater,NS,bridgewater
+120051887,Queens,Queens,NS,queens
+120051888,Lunenburg,Lunenburg,NS,lunenburg
+120051890,Chester,Chester,NS,chester
+120051951,Clare,Clare,NS,clare
+120051975,Annapolis Royal,Annapolis Royal,NS,annapolis royal
+120051976,Yarmouth,Yarmouth,NS,yarmouth
+120051979,Digby,Digby,NS,digby
+120052058,Antigonish,Antigonish,NS,antigonish
+120052068,Guysborough,Guysborough,NS,guysborough
+120052080,Trenton,Trenton,NS,trenton
+120052081,Pictou,Pictou,NS,pictou
+120052083,Port Hawkesbury,Port Hawkesbury,NS,port hawkesbury
+120052084,Mulgrave,Mulgrave,NS,mulgrave
+120052085,Cape Breton,Cape Breton,NS,cape breton
+130051793,Cap-Pelé,Cap-Pelé,NB,cap-pelé
+130051795,Bouctouche,Bouctouche,NB,bouctouche
+130051796,Moncton,Moncton,NB,moncton
+130051808,Studholm,Studholm,NB,studholm
+130051810,Saint Marys,Saint Marys,NB,saint marys
+130051811,Rogersville,Rogersville,NB,rogersville
+130051812,Salisbury,Salisbury,NB,salisbury
+130051813,Blackville,Blackville,NB,blackville
+130051816,Sussex,Sussex,NB,sussex
+130051820,Petitcodiac,Petitcodiac,NB,petitcodiac
+130051835,Neguac,Neguac,NB,neguac
+130051837,Tracadie,Tracadie,NB,tracadie
+130051838,Miramichi,Miramichi,NB,miramichi
+130051841,Caraquet,Caraquet,NB,caraquet
+130051891,Edmundston,Edmundston,NB,edmundston
+130051892,Grand Falls / Grand-Sault,Grand Falls / Grand-Sault,NB,grand falls / grand-sault
+130051898,Florenceville-Bristol,Florenceville-Bristol,NB,florenceville-bristol
+130051899,Nackawic,Nackawic,NB,nackawic
+130051901,Wakefield,Wakefield,NB,wakefield
+130051903,Stanley,Stanley,NB,stanley
+130051904,Perth-Andover,Perth-Andover,NB,perth-andover
+130051930,Bathurst,Bathurst,NB,bathurst
+130051932,Atholville,Atholville,NB,atholville
+130051969,St. George,St. George,NB,st. george
+130051971,St. Stephen,St. Stephen,NB,st. stephen
+130051972,Gagetown,Gagetown,NB,gagetown
+130051973,Saint John,Saint John,NB,saint john
+130051974,Fredericton,Fredericton,NB,fredericton
+130052109,Grande-Anse,Grande-Anse,NB,grande-anse
+240017206,Godbout,Godbout,QC,godbout
+240017209,Baie-Comeau,Baie-Comeau,QC,baie-comeau
+240017235,Port-Cartier,Port-Cartier,QC,port-cartier
+240017239,Sept-Îles,Sept-Îles,QC,sept-îles
+240017319,Chibougamau,Chibougamau,QC,chibougamau
+240017415,Wabush,Wabush,QC,wabush
+240051893,Témiscouata-sur-le-Lac,Témiscouata-sur-le-Lac,QC,témiscouata-sur-le-lac
+240051905,La Pocatière,La Pocatière,QC,la pocatière
+240051907,La Malbaie,La Malbaie,QC,la malbaie
+240051908,L'Islet,L'Islet,QC,l'islet
+240051909,Rivière-du-Loup,Rivière-du-Loup,QC,rivière-du-loup
+240051911,Saint-Siméon,Saint-Siméon,QC,saint-siméon
+240051919,Causapscal,Causapscal,QC,causapscal
+240051920,Tide Head,Tide Head,QC,tide head
+240051921,Amqui,Amqui,QC,amqui
+240051924,Campbellton,Campbellton,QC,campbellton
+240051925,Matane,Matane,QC,matane
+240051933,Saint-Fabien,Saint-Fabien,QC,saint-fabien
+240051934,Saint-Jean-de-Dieu,Saint-Jean-de-Dieu,QC,saint-jean-de-dieu
+240051936,Trois-Pistoles,Trois-Pistoles,QC,trois-pistoles
+240051937,Mont-Joli,Mont-Joli,QC,mont-joli
+240051938,Rimouski,Rimouski,QC,rimouski
+240052012,Les Îles-de-la-Madeleine,Les Îles-de-la-Madeleine,QC,les îles-de-la-madeleine
+240052088,Gaspé,Gaspé,QC,gaspé
+240052096,Grande-Rivière,Grande-Rivière,QC,grande-rivière
+240052104,Sainte-Anne-des-Monts,Sainte-Anne-des-Monts,QC,sainte-anne-des-monts
+240052108,Paspébiac,Paspébiac,QC,paspébiac
+240052111,Carleton-sur-Mer,Carleton-sur-Mer,QC,carleton-sur-mer
+240052479,Mont-Laurier,Mont-Laurier,QC,mont-laurier
+240052482,Gracefield,Gracefield,QC,gracefield
+240052483,Rivière-Rouge,Rivière-Rouge,QC,rivière-rouge
+240052484,Labelle,Labelle,QC,labelle
+240052488,Clarence-Rockland,Clarence-Rockland,QC,clarence-rockland
+240052490,Saint-Jérôme,Saint-Jérôme,QC,saint-jérôme
+240052491,Vaudreuil-Dorion,Vaudreuil-Dorion,QC,vaudreuil-dorion
+240052492,Saint-André-Avellin,Saint-André-Avellin,QC,saint-andré-avellin
+240052494,Petawawa,Petawawa,QC,petawawa
+240052504,Val-des-Monts,Val-des-Monts,QC,val-des-monts
+240052506,Fort-Coulonge,Fort-Coulonge,QC,fort-coulonge
+240052514,Saint-Zénon,Saint-Zénon,QC,saint-zénon
+240052515,Saint-Lin--Laurentides,Saint-Lin--Laurentides,QC,saint-lin--laurentides
+240052517,Sainte-Agathe-des-Monts,Sainte-Agathe-des-Monts,QC,sainte-agathe-des-monts
+240052519,Saint-Gabriel,Saint-Gabriel,QC,saint-gabriel
+240052562,Huntingdon,Huntingdon,QC,huntingdon
+240052605,McGarry,McGarry,QC,mcgarry
+240052675,Roberval,Roberval,QC,roberval
+240052679,Alma,Alma,QC,alma
+240052680,Métabetchouan--Lac-à-la-Croix,Métabetchouan--Lac-à-la-Croix,QC,métabetchouan--lac-à-la-croix
+240052681,Dolbeau-Mistassini,Dolbeau-Mistassini,QC,dolbeau-mistassini
+240052683,Sainte-Brigitte-de-Laval,Sainte-Brigitte-de-Laval,QC,sainte-brigitte-de-laval
+240052701,Saint-Raymond,Saint-Raymond,QC,saint-raymond
+240052710,Saint-Fulgence,Saint-Fulgence,QC,saint-fulgence
+240052712,Saint-Honoré,Saint-Honoré,QC,saint-honoré
+240052713,Saguenay,Saguenay,QC,saguenay
+240052724,Cookshire-Eaton,Cookshire-Eaton,QC,cookshire-eaton
+240052726,Val-des-Sources,Val-des-Sources,QC,val-des-sources
+240052727,Sherbrooke,Sherbrooke,QC,sherbrooke
+240052728,La Guadeloupe,La Guadeloupe,QC,la guadeloupe
+240052729,Lac-Mégantic,Lac-Mégantic,QC,lac-mégantic
+240052730,Disraeli,Disraeli,QC,disraeli
+240052739,Cowansville,Cowansville,QC,cowansville
+240052741,Saint-Jean-sur-Richelieu,Saint-Jean-sur-Richelieu,QC,saint-jean-sur-richelieu
+240052742,Drummondville,Drummondville,QC,drummondville
+240052743,Granby,Granby,QC,granby
+240052744,Sorel-Tracy,Sorel-Tracy,QC,sorel-tracy
+240052751,Sutton,Sutton,QC,sutton
+240052752,Saint-Joseph-de-Beauce,Saint-Joseph-de-Beauce,QC,saint-joseph-de-beauce
+240052753,Saint-Georges,Saint-Georges,QC,saint-georges
+240052755,Thetford Mines,Thetford Mines,QC,thetford mines
+240052756,Saint-Fabien-de-Panet,Saint-Fabien-de-Panet,QC,saint-fabien-de-panet
+240052758,Montmagny,Montmagny,QC,montmagny
+240052766,Bécancour,Bécancour,QC,bécancour
+240052767,Victoriaville,Victoriaville,QC,victoriaville
+240052768,Shawinigan,Shawinigan,QC,shawinigan
+240052769,Trois-Rivières,Trois-Rivières,QC,trois-rivières
+240052770,Pont-Rouge,Pont-Rouge,QC,pont-rouge
+240052771,Plessisville,Plessisville,QC,plessisville
+240052772,Saint-Tite,Saint-Tite,QC,saint-tite
+240052790,La Sarre,La Sarre,QC,la sarre
+240052794,Barraute,Barraute,QC,barraute
+240052796,Preissac,Preissac,QC,preissac
+240052797,Malartic,Malartic,QC,malartic
+241367539,Ottawa,Ottawa,QC,ottawa
+241367541,Pontiac,Pontiac,QC,pontiac
+241369166,Beloeil,Beloeil,QC,beloeil
+241369168,Longueuil,Longueuil,QC,longueuil
+241369169,Chambly,Chambly,QC,chambly
+241369170,Saint-Hyacinthe,Saint-Hyacinthe,QC,saint-hyacinthe
+241369172,Sainte-Julie,Sainte-Julie,QC,sainte-julie
+241369180,Laval,Laval,QC,laval
+241369181,Montréal,Montréal,QC,montréal
+241369182,Blainville,Blainville,QC,blainville
+241369183,Dollard-Des Ormeaux,Dollard-Des Ormeaux,QC,dollard-des ormeaux
+241369184,Terrebonne,Terrebonne,QC,terrebonne
+241369185,Charlemagne,Charlemagne,QC,charlemagne
+241369186,Sainte-Anne-des-Plaines,Sainte-Anne-des-Plaines,QC,sainte-anne-des-plaines
+241369278,Lévis,Lévis,QC,lévis
+241369282,Sainte-Pétronille,Sainte-Pétronille,QC,sainte-pétronille
+241369284,Québec,Québec,QC,québec
+350017894,Iroquois Falls,Iroquois Falls,ON,iroquois falls
+350017912,Kapuskasing,Kapuskasing,ON,kapuskasing
+350047001,Kenora,Kenora,ON,kenora
+350047046,Fort Frances,Fort Frances,ON,fort frances
+350047072,Dryden,Dryden,ON,dryden
+350047556,Sault Ste. Marie,Sault Ste. Marie,ON,sault ste. marie
+350047586,Huron-Kinloss,Huron-Kinloss,ON,huron-kinloss
+350047587,Goderich,Goderich,ON,goderich
+350047590,Saugeen Shores,Saugeen Shores,ON,saugeen shores
+350047591,Hanover,Hanover,ON,hanover
+350047607,Gore Bay,Gore Bay,ON,gore bay
+350047611,Espanola,Espanola,ON,espanola
+350047613,Elliot Lake,Elliot Lake,ON,elliot lake
+350047615,Owen Sound,Owen Sound,ON,owen sound
+350047630,Neebing,Neebing,ON,neebing
+350047634,Thunder Bay,Thunder Bay,ON,thunder bay
+350051403,Chatham-Kent,Chatham-Kent,ON,chatham-kent
+350051405,Tillsonburg,Tillsonburg,ON,tillsonburg
+350051407,Newbury,Newbury,ON,newbury
+350051415,Windsor,Windsor,ON,windsor
+350051419,Lakeshore,Lakeshore,ON,lakeshore
+350051420,Leamington,Leamington,ON,leamington
+350051421,LaSalle,LaSalle,ON,lasalle
+350051429,Woodstock,Woodstock,ON,woodstock
+350051430,Norfolk County,Norfolk County,ON,norfolk county
+350051431,South Huron,South Huron,ON,south huron
+350051434,Brantford,Brantford,ON,brantford
+350051435,North Perth,North Perth,ON,north perth
+350051442,Brant,Brant,ON,brant
+350051443,Sarnia,Sarnia,ON,sarnia
+350051444,Petrolia,Petrolia,ON,petrolia
+350051447,West Perth,West Perth,ON,west perth
+350051448,Lambton Shores,Lambton Shores,ON,lambton shores
+350052486,Hawkesbury,Hawkesbury,ON,hawkesbury
+350052487,Cornwall,Cornwall,ON,cornwall
+350052489,Casselman,Casselman,ON,casselman
+350052496,Laurentian Hills,Laurentian Hills,ON,laurentian hills
+350052500,Mississippi Mills,Mississippi Mills,ON,mississippi mills
+350052501,Carleton Place,Carleton Place,ON,carleton place
+350052502,Portage-du-Fort,Portage-du-Fort,ON,portage-du-fort
+350052570,Brockville,Brockville,ON,brockville
+350052572,Rideau Lakes,Rideau Lakes,ON,rideau lakes
+350052573,Gananoque,Gananoque,ON,gananoque
+350052574,South Dundas,South Dundas,ON,south dundas
+350052576,Merrickville-Wolford,Merrickville-Wolford,ON,merrickville-wolford
+350052581,Temiskaming Shores,Temiskaming Shores,ON,temiskaming shores
+350052584,Mattawa,Mattawa,ON,mattawa
+350052586,North Bay,North Bay,ON,north bay
+350052587,South River,South River,ON,south river
+350052592,Sables-Spanish Rivers,Sables-Spanish Rivers,ON,sables-spanish rivers
+350052600,French River / Rivière des Français,French River / Rivière des Français,ON,french river / rivière des français
+350052602,West Nipissing / Nipissing Ouest,West Nipissing / Nipissing Ouest,ON,west nipissing / nipissing ouest
+350052604,Greater Sudbury / Grand Sudbury,Greater Sudbury / Grand Sudbury,ON,greater sudbury / grand sudbury
+350052607,Kirkland Lake,Kirkland Lake,ON,kirkland lake
+350052608,Englehart,Englehart,ON,englehart
+350052625,Timmins,Timmins,ON,timmins
+350052626,Kawartha Lakes,Kawartha Lakes,ON,kawartha lakes
+350052627,Clarington,Clarington,ON,clarington
+350052628,Georgina,Georgina,ON,georgina
+350052630,Trent Lakes,Trent Lakes,ON,trent lakes
+350052631,Peterborough,Peterborough,ON,peterborough
+350052632,Minden Hills,Minden Hills,ON,minden hills
+350052639,Cobourg,Cobourg,ON,cobourg
+350052640,Shelburne,Shelburne,ON,shelburne
+350052641,Caledon,Caledon,ON,caledon
+350052642,West Grey,West Grey,ON,west grey
+350052643,Minto,Minto,ON,minto
+350052644,Wasaga Beach,Wasaga Beach,ON,wasaga beach
+350052645,Barrie,Barrie,ON,barrie
+350052646,Collingwood,Collingwood,ON,collingwood
+350052647,St. Catharines,St. Catharines,ON,st. catharines
+350052648,Niagara Falls,Niagara Falls,ON,niagara falls
+350052651,Whitby,Whitby,ON,whitby
+350052655,Bancroft,Bancroft,ON,bancroft
+350052657,Dysart et al,Dysart et al,ON,dysart et al
+350052658,Madawaska Valley,Madawaska Valley,ON,madawaska valley
+350052661,Stone Mills,Stone Mills,ON,stone mills
+350052662,Greater Napanee,Greater Napanee,ON,greater napanee
+350052663,Havelock-Belmont-Methuen,Havelock-Belmont-Methuen,ON,havelock-belmont-methuen
+350052664,Belleville,Belleville,ON,belleville
+350052665,Westport,Westport,ON,westport
+350052666,Kingston,Kingston,ON,kingston
+350052668,Muskoka Lakes,Muskoka Lakes,ON,muskoka lakes
+350052669,Gravenhurst,Gravenhurst,ON,gravenhurst
+350052670,Parry Sound,Parry Sound,ON,parry sound
+350052671,Midland,Midland,ON,midland
+350052672,Kearney,Kearney,ON,kearney
+350052673,Huntsville,Huntsville,ON,huntsville
+350052674,Magnetawan,Magnetawan,ON,magnetawan
+351360024,London,London,ON,london
+351360025,St. Thomas,St. Thomas,ON,st. thomas
+351360028,Thames Centre,Thames Centre,ON,thames centre
+351360030,Middlesex Centre,Middlesex Centre,ON,middlesex centre
+351360031,Waterloo,Waterloo,ON,waterloo
+351360032,Cambridge,Cambridge,ON,cambridge
+351360034,Kitchener,Kitchener,ON,kitchener
+351360035,Centre Wellington,Centre Wellington,ON,centre wellington
+351360036,Guelph,Guelph,ON,guelph
+351367535,Nepean,Nepean,ON,nepean
+351367536,Russell,Russell,ON,russell
+351367537,Arnprior,Arnprior,ON,arnprior
+351367538,Smiths Falls,Smiths Falls,ON,smiths falls
+351367540,Carleton,Carleton,ON,carleton
+351368404,Oshawa,Oshawa,ON,oshawa
+351368405,Whitchurch-Stouffville,Whitchurch-Stouffville,ON,whitchurch-stouffville
+351368406,Pickering,Pickering,ON,pickering
+351368543,Milton,Milton,ON,milton
+351368544,Burlington,Burlington,ON,burlington
+351368546,Flamborough,Flamborough,ON,flamborough
+351368547,Hamilton,Hamilton,ON,hamilton
+351368548,Oakville,Oakville,ON,oakville
+351368554,Grimsby,Grimsby,ON,grimsby
+351368556,Haldimand County,Haldimand County,ON,haldimand county
+351368571,Thornhill,Thornhill,ON,thornhill
+351368572,Danforth,Danforth,ON,danforth
+351368573,Brampton,Brampton,ON,brampton
+351368574,Mississauga,Mississauga,ON,mississauga
+351368575,Markham,Markham,ON,markham
+351368576,Toronto,Toronto,ON,toronto
+351368577,Vaughan,Vaughan,ON,vaughan
+460017654,Thompson,Thompson,MB,thompson
+460022009,Swan River,Swan River,MB,swan river
+460022041,The Pas,The Pas,MB,the pas
+460047005,Teulon,Teulon,MB,teulon
+460047006,Selkirk,Selkirk,MB,selkirk
+460047008,Woodlands,Woodlands,MB,woodlands
+460047009,Arborg,Arborg,MB,arborg
+460047010,Winnipeg Beach,Winnipeg Beach,MB,winnipeg beach
+460047014,Ste. Anne,Ste. Anne,MB,ste. anne
+460047015,La Broquerie,La Broquerie,MB,la broquerie
+460047018,Beausejour,Beausejour,MB,beausejour
+460047036,Gimli,Gimli,MB,gimli
+460047093,Dauphin,Dauphin,MB,dauphin
+460047097,Norfolk-Treherne,Norfolk-Treherne,MB,norfolk-treherne
+460047098,Neepawa,Neepawa,MB,neepawa
+460047101,Portage la Prairie,Portage la Prairie,MB,portage la prairie
+460047110,Souris-Glenwood,Souris-Glenwood,MB,souris-glenwood
+460047114,Oakview,Oakview,MB,oakview
+460047115,Brandon,Brandon,MB,brandon
+460047116,Virden,Virden,MB,virden
+460047166,Morris,Morris,MB,morris
+460047168,Carman,Carman,MB,carman
+460047169,Winkler,Winkler,MB,winkler
+460047171,Steinbach,Steinbach,MB,steinbach
+460047172,Cartier,Cartier,MB,cartier
+460047232,Gillam,Gillam,MB,gillam
+461330190,Headingley,Headingley,MB,headingley
+461330194,Rosser,Rosser,MB,rosser
+461330195,Winnipeg,Winnipeg,MB,winnipeg
+470022003,Nipawin,Nipawin,SK,nipawin
+470022015,Melfort,Melfort,SK,melfort
+470022018,Humboldt,Humboldt,SK,humboldt
+470022021,Birch Hills,Birch Hills,SK,birch hills
+470022099,North Battleford,North Battleford,SK,north battleford
+470022106,Saskatoon,Saskatoon,SK,saskatoon
+470022109,Dundurn,Dundurn,SK,dundurn
+470022110,Rosthern,Rosthern,SK,rosthern
+470022112,Waldheim,Waldheim,SK,waldheim
+470022133,Meadow Lake,Meadow Lake,SK,meadow lake
+470022135,St. Louis,St. Louis,SK,st. louis
+470022139,Prince Albert,Prince Albert,SK,prince albert
+470047133,Canora,Canora,SK,canora
+470047134,Yorkton,Yorkton,SK,yorkton
+470047873,Lumsden,Lumsden,SK,lumsden
+470047874,Regina,Regina,SK,regina
+470047875,Moose Jaw,Moose Jaw,SK,moose jaw
+470047878,White City,White City,SK,white city
+470047883,Weyburn,Weyburn,SK,weyburn
+470047911,Fort Qu'Appelle,Fort Qu'Appelle,SK,fort qu'appelle
+470047913,Melville,Melville,SK,melville
+470047952,Estevan,Estevan,SK,estevan
+470048003,Kindersley,Kindersley,SK,kindersley
+470048007,Swift Current,Swift Current,SK,swift current
+480021674,Peace River,Peace River,AB,peace river
+480021688,High Level,High Level,AB,high level
+480021759,Dawson Creek,Dawson Creek,AB,dawson creek
+480021777,Beaverlodge,Beaverlodge,AB,beaverlodge
+480021782,Grande Prairie,Grande Prairie,AB,grande prairie
+480022052,Bondiss,Bondiss,AB,bondiss
+480022059,Cold Lake,Cold Lake,AB,cold lake
+480022067,Redwater,Redwater,AB,redwater
+480022070,Athabasca,Athabasca,AB,athabasca
+480022071,St. Paul,St. Paul,AB,st. paul
+480022075,Bonnyville,Bonnyville,AB,bonnyville
+480022076,Elk Point,Elk Point,AB,elk point
+480022082,La Loche,La Loche,AB,la loche
+480022143,Lloydminster (Part),Lloydminster (Part),AB,lloydminster (part)
+480022645,Canmore,Canmore,AB,canmore
+480022650,Cochrane,Cochrane,AB,cochrane
+480022678,Rocky Mountain House,Rocky Mountain House,AB,rocky mountain house
+480022687,Fort Macleod,Fort Macleod,AB,fort macleod
+480022688,Cardston,Cardston,AB,cardston
+480022689,Pincher Creek,Pincher Creek,AB,pincher creek
+480022691,Claresholm,Claresholm,AB,claresholm
+480022692,Lethbridge,Lethbridge,AB,lethbridge
+480022700,Raymond,Raymond,AB,raymond
+480022715,Okotoks,Okotoks,AB,okotoks
+480022717,Black Diamond,Black Diamond,AB,black diamond
+480022719,Chestermere,Chestermere,AB,chestermere
+480022724,Picture Butte,Picture Butte,AB,picture butte
+480022725,Taber,Taber,AB,taber
+480022726,Brooks,Brooks,AB,brooks
+480022730,Crowsnest Pass,Crowsnest Pass,AB,crowsnest pass
+480022835,Whitecourt,Whitecourt,AB,whitecourt
+480022841,Onoway,Onoway,AB,onoway
+480022842,Edmonton,Edmonton,AB,edmonton
+480022844,Seba Beach,Seba Beach,AB,seba beach
+480022845,Barrhead,Barrhead,AB,barrhead
+480022846,Morinville,Morinville,AB,morinville
+480022851,Hinton,Hinton,AB,hinton
+480022860,Drayton Valley,Drayton Valley,AB,drayton valley
+480022861,Edson,Edson,AB,edson
+480022873,Slave Lake,Slave Lake,AB,slave lake
+480022883,Stettler,Stettler,AB,stettler
+480022889,Bashaw,Bashaw,AB,bashaw
+480022897,Olds,Olds,AB,olds
+480022898,Irricana,Irricana,AB,irricana
+480022899,Sundre,Sundre,AB,sundre
+480022901,Red Deer,Red Deer,AB,red deer
+480022902,Three Hills,Three Hills,AB,three hills
+480022903,Innisfail,Innisfail,AB,innisfail
+480022910,Drumheller,Drumheller,AB,drumheller
+480022911,Tofield,Tofield,AB,tofield
+480022913,Leduc,Leduc,AB,leduc
+480022914,Camrose,Camrose,AB,camrose
+480022915,Lamont,Lamont,AB,lamont
+480022916,Vegreville,Vegreville,AB,vegreville
+480022918,Wainwright,Wainwright,AB,wainwright
+480022922,Vermilion,Vermilion,AB,vermilion
+480022925,Rimbey,Rimbey,AB,rimbey
+480022926,Lacombe,Lacombe,AB,lacombe
+480022928,Sylvan Lake,Sylvan Lake,AB,sylvan lake
+480022929,Calmar,Calmar,AB,calmar
+480022930,Wetaskiwin,Wetaskiwin,AB,wetaskiwin
+480047989,Medicine Hat,Medicine Hat,AB,medicine hat
+481159047,Strathmore,Strathmore,AB,strathmore
+481159048,Foothills,Foothills,AB,foothills
+481159051,Calgary Signal Hill,Calgary Signal Hill,AB,calgary signal hill
+481159052,Calgary,Calgary,AB,calgary
+481160300,Crossfield,Crossfield,AB,crossfield
+481160302,Ghost Lake,Ghost Lake,AB,ghost lake
+481160303,Airdrie,Airdrie,AB,airdrie
+481160419,Fort Saskatchewan,Fort Saskatchewan,AB,fort saskatchewan
+481160421,Strathcona County,Strathcona County,AB,strathcona county
+481160422,Sherwood Park,Sherwood Park,AB,sherwood park
+481160425,St. Albert,St. Albert,AB,st. albert
+590021775,Pouce Coupe,Pouce Coupe,BC,pouce coupe
+590021799,Fort St. John,Fort St. John,BC,fort st. john
+590022301,Kitimat,Kitimat,BC,kitimat
+590022326,Terrace,Terrace,BC,terrace
+590022330,Smithers,Smithers,BC,smithers
+590022343,Prince Rupert,Prince Rupert,BC,prince rupert
+590022356,Williams Lake,Williams Lake,BC,williams lake
+590022380,Quesnel,Quesnel,BC,quesnel
+590022562,Prince George,Prince George,BC,prince george
+590022563,Vanderhoof,Vanderhoof,BC,vanderhoof
+590022641,Golden,Golden,BC,golden
+590022652,Revelstoke,Revelstoke,BC,revelstoke
+590022664,Radium Hot Springs,Radium Hot Springs,BC,radium hot springs
+590022732,Fernie,Fernie,BC,fernie
+590022736,Kamloops,Kamloops,BC,kamloops
+590022737,Armstrong,Armstrong,BC,armstrong
+590022741,Sun Peaks Mountain,Sun Peaks Mountain,BC,sun peaks mountain
+590022743,Vernon,Vernon,BC,vernon
+590022746,Kelowna,Kelowna,BC,kelowna
+590022747,Salmon Arm,Salmon Arm,BC,salmon arm
+590022749,Enderby,Enderby,BC,enderby
+590022758,Oliver,Oliver,BC,oliver
+590022762,West Kelowna,West Kelowna,BC,west kelowna
+590022763,Merritt,Merritt,BC,merritt
+590022764,One Hundred Mile House,One Hundred Mile House,BC,one hundred mile house
+590022774,Chase,Chase,BC,chase
+590022789,Castlegar,Castlegar,BC,castlegar
+590022791,Trail,Trail,BC,trail
+590022814,Nelson,Nelson,BC,nelson
+590022816,Rossland,Rossland,BC,rossland
+590022823,Creston,Creston,BC,creston
+590022825,Cranbrook,Cranbrook,BC,cranbrook
+590022828,Grand Forks,Grand Forks,BC,grand forks
+590022829,Osoyoos,Osoyoos,BC,osoyoos
+590022833,Penticton,Penticton,BC,penticton
+590022980,Fort St. James,Fort St. James,BC,fort st. james
+590049155,Sidney,Sidney,BC,sidney
+590049157,White Rock,White Rock,BC,white rock
+590049159,Victoria,Victoria,BC,victoria
+590049168,Chilliwack,Chilliwack,BC,chilliwack
+590049169,Harrison Hot Springs,Harrison Hot Springs,BC,harrison hot springs
+590049171,Hope,Hope,BC,hope
+590049173,Abbotsford,Abbotsford,BC,abbotsford
+590049196,Powell River,Powell River,BC,powell river
+590049200,Qualicum Beach,Qualicum Beach,BC,qualicum beach
+590049201,Courtenay,Courtenay,BC,courtenay
+590049202,Sechelt,Sechelt,BC,sechelt
+590049209,Campbell River,Campbell River,BC,campbell river
+590049216,Pemberton,Pemberton,BC,pemberton
+590049225,Port Alberni,Port Alberni,BC,port alberni
+590049226,Ladysmith,Ladysmith,BC,ladysmith
+590049227,Nanaimo,Nanaimo,BC,nanaimo
+590049230,Duncan,Duncan,BC,duncan
+590049233,Comox,Comox,BC,comox
+590049238,North Vancouver,North Vancouver,BC,north vancouver
+590049239,Port Moody,Port Moody,BC,port moody
+590049241,Squamish,Squamish,BC,squamish
+590049243,Gibsons,Gibsons,BC,gibsons
+591344694,Richmond,Richmond,BC,richmond
+591344696,Burnaby,Burnaby,BC,burnaby
+591344697,Vancouver,Vancouver,BC,vancouver
+591344700,Delta,Delta,BC,delta
+591344708,Maple Ridge,Maple Ridge,BC,maple ridge
+591344709,Coquitlam,Coquitlam,BC,coquitlam
+591344712,Langley,Langley,BC,langley
+591344713,Surrey,Surrey,BC,surrey
+591344714,Mission,Mission,BC,mission
+600023712,Whitehorse,Whitehorse,YT,whitehorse
+610023440,Yellowknife,Yellowknife,NT,yellowknife
+620018255,Iqaluit,Iqaluit,NU,iqaluit

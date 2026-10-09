@@ -1,0 +1,2928 @@
+{
+  "source": "meridian v1.0.5 (h3_r4 hexes.r4.v1.2, h3_r5 hexes.r5.v1)",
+  "rows": {
+    "h3_r4": 5986,
+    "h3_r5": 407
+  },
+  "board_hexagons": 6080,
+  "split_parents": [
+    {
+      "h3": "842b9bdffffffff",
+      "principal_place": "Toronto",
+      "population": 4434122,
+      "cells": 7,
+      "units": 7
+    },
+    {
+      "h3": "842baa5ffffffff",
+      "principal_place": "Montréal",
+      "population": 2883438,
+      "cells": 7,
+      "units": 7
+    },
+    {
+      "h3": "8428de9ffffffff",
+      "principal_place": "Vancouver",
+      "population": 1376386,
+      "cells": 5,
+      "units": 4
+    },
+    {
+      "h3": "842b83bffffffff",
+      "principal_place": "Ottawa",
+      "population": 1108673,
+      "cells": 7,
+      "units": 7
+    },
+    {
+      "h3": "842b9b5ffffffff",
+      "principal_place": "Hamilton",
+      "population": 1108214,
+      "cells": 7,
+      "units": 5
+    },
+    {
+      "h3": "8412ccdffffffff",
+      "principal_place": "Calgary",
+      "population": 896456,
+      "cells": 7,
+      "units": 4
+    },
+    {
+      "h3": "8428dedffffffff",
+      "principal_place": "Surrey",
+      "population": 892084,
+      "cells": 7,
+      "units": 5
+    },
+    {
+      "h3": "842ab49ffffffff",
+      "principal_place": "Kitchener",
+      "population": 730541,
+      "cells": 7,
+      "units": 5
+    },
+    {
+      "h3": "84271c9ffffffff",
+      "principal_place": "Winnipeg",
+      "population": 708621,
+      "cells": 7,
+      "units": 3
+    },
+    {
+      "h3": "842baa1ffffffff",
+      "principal_place": "Longueuil",
+      "population": 622026,
+      "cells": 7,
+      "units": 5
+    },
+    {
+      "h3": "8412ecdffffffff",
+      "principal_place": "Strathcona County",
+      "population": 618189,
+      "cells": 7,
+      "units": 4
+    },
+    {
+      "h3": "842b987ffffffff",
+      "principal_place": "Oshawa",
+      "population": 572759,
+      "cells": 7,
+      "units": 3
+    },
+    {
+      "h3": "842bac5ffffffff",
+      "principal_place": "Québec",
+      "population": 551000,
+      "cells": 7,
+      "units": 3
+    },
+    {
+      "h3": "842b9b7ffffffff",
+      "principal_place": "Haldimand County",
+      "population": 537890,
+      "cells": 7,
+      "units": 2
+    },
+    {
+      "h3": "8412ea7ffffffff",
+      "principal_place": "Airdrie",
+      "population": 512296,
+      "cells": 7,
+      "units": 3
+    },
+    {
+      "h3": "842ab47ffffffff",
+      "principal_place": "London",
+      "population": 510468,
+      "cells": 7,
+      "units": 4
+    }
+  ],
+  "units": 494,
+  "units_by_role": {
+    "hex": 423,
+    "core": 16,
+    "city": 55
+  },
+  "names_by_source": {
+    "parent's principal city": 16,
+    "own place": 425,
+    "riding token": 11,
+    "borrowed": 42
+  },
+  "city_hexes_without_a_place_of_their_own": 17,
+  "names_from_a_riding": [
+    {
+      "fed_id": "241367541",
+      "name": "Pontiac",
+      "riding": "24057",
+      "riding_name": "Pontiac—Kitigan Zibi",
+      "share_permille": 548
+    },
+    {
+      "fed_id": "351367535",
+      "name": "Nepean",
+      "riding": "35067",
+      "riding_name": "Nepean",
+      "share_permille": 264
+    },
+    {
+      "fed_id": "351367540",
+      "name": "Carleton",
+      "riding": "35020",
+      "riding_name": "Carleton",
+      "share_permille": 551
+    },
+    {
+      "fed_id": "351368546",
+      "name": "Flamborough",
+      "riding": "35032",
+      "riding_name": "Flamborough—Glanbrook—Brant North",
+      "share_permille": 792
+    },
+    {
+      "fed_id": "351368571",
+      "name": "Thornhill",
+      "riding": "35106",
+      "riding_name": "Thornhill",
+      "share_permille": 186
+    },
+    {
+      "fed_id": "351368572",
+      "name": "Danforth",
+      "riding": "35110",
+      "riding_name": "Toronto—Danforth",
+      "share_permille": 199
+    },
+    {
+      "fed_id": "481159048",
+      "name": "Foothills",
+      "riding": "48024",
+      "riding_name": "Foothills",
+      "share_permille": 597
+    },
+    {
+      "fed_id": "481159051",
+      "name": "Calgary Signal Hill",
+      "riding": "48013",
+      "riding_name": "Calgary Signal Hill",
+      "share_permille": 266
+    },
+    {
+      "fed_id": "481160419",
+      "name": "Fort Saskatchewan",
+      "riding": "48035",
+      "riding_name": "Sherwood Park—Fort Saskatchewan",
+      "share_permille": 715
+    },
+    {
+      "fed_id": "481160422",
+      "name": "Sherwood Park",
+      "riding": "48035",
+      "riding_name": "Sherwood Park—Fort Saskatchewan",
+      "share_permille": 998
+    },
+    {
+      "fed_id": "481160425",
+      "name": "St. Albert",
+      "riding": "48036",
+      "riding_name": "St. Albert—Sturgeon River",
+      "share_permille": 742
+    }
+  ],
+  "names_borrowed": [
+    {
+      "fed_id": "120051802",
+      "name": "Oxford",
+      "from": "842b003ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "120051806",
+      "name": "Westville",
+      "from": "842b019ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "120051872",
+      "name": "Stewiacke",
+      "from": "842b011ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "120051876",
+      "name": "West Hants",
+      "from": "842b017ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "120051888",
+      "name": "Lunenburg",
+      "from": "842b0e1ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "120051951",
+      "name": "Clare",
+      "from": "842b1d3ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "120051975",
+      "name": "Annapolis Royal",
+      "from": "842b1d9ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "120052068",
+      "name": "Guysborough",
+      "from": "842b2a9ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "120052080",
+      "name": "Trenton",
+      "from": "842b053ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "120052081",
+      "name": "Pictou",
+      "from": "842b053ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "120052084",
+      "name": "Mulgrave",
+      "from": "842b2e7ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "240052701",
+      "name": "Saint-Raymond",
+      "from": "842ba17ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "350017894",
+      "name": "Iroquois Falls",
+      "from": "840ec97ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "350051405",
+      "name": "Tillsonburg",
+      "from": "842ab43ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "350051421",
+      "name": "LaSalle",
+      "from": "842ab21ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "350051442",
+      "name": "Brant",
+      "from": "842ab4bffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "350051447",
+      "name": "West Perth",
+      "from": "842ab45ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "350052592",
+      "name": "Sables-Spanish Rivers",
+      "from": "84276c9ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "350052600",
+      "name": "French River / Rivière des Français",
+      "from": "842b931ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "350052651",
+      "name": "Whitby",
+      "from": "852b9867fffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "351367536",
+      "name": "Russell",
+      "from": "842b817ffffffff",
+      "role": "city"
+    },
+    {
+      "fed_id": "351367537",
+      "name": "Arnprior",
+      "from": "842b831ffffffff",
+      "role": "city"
+    },
+    {
+      "fed_id": "351367538",
+      "name": "Smiths Falls",
+      "from": "842b833ffffffff",
+      "role": "city"
+    },
+    {
+      "fed_id": "460047036",
+      "name": "Gimli",
+      "from": "8427029ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "460047232",
+      "name": "Gillam",
+      "from": "840e9d1ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "480021688",
+      "name": "High Level",
+      "from": "8412011ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "480022052",
+      "name": "Bondiss",
+      "from": "8412529ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "480022082",
+      "name": "La Loche",
+      "from": "8412733ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "480022903",
+      "name": "Innisfail",
+      "from": "8412ea9ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "481159047",
+      "name": "Strathmore",
+      "from": "8412cc9ffffffff",
+      "role": "city"
+    },
+    {
+      "fed_id": "481160300",
+      "name": "Crossfield",
+      "from": "8512ea73fffffff",
+      "role": "city"
+    },
+    {
+      "fed_id": "481160302",
+      "name": "Ghost Lake",
+      "from": "8412c1bffffffff",
+      "role": "city"
+    },
+    {
+      "fed_id": "590021775",
+      "name": "Pouce Coupe",
+      "from": "8412187ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "590022343",
+      "name": "Prince Rupert",
+      "from": "8412865ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "590022737",
+      "name": "Armstrong",
+      "from": "8412d11ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "590022749",
+      "name": "Enderby",
+      "from": "8412d19ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "590022758",
+      "name": "Oliver",
+      "from": "8412de5ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "590022816",
+      "name": "Rossland",
+      "from": "8412d8dffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "590022980",
+      "name": "Fort St. James",
+      "from": "8412abdffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "590049233",
+      "name": "Comox",
+      "from": "8428d8bffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "590049239",
+      "name": "Port Moody",
+      "from": "8428de1ffffffff",
+      "role": "hex"
+    },
+    {
+      "fed_id": "620018255",
+      "name": "Iqaluit",
+      "from": "840f0b1ffffffff",
+      "role": "hex"
+    }
+  ],
+  "cores": [
+    {
+      "fed_id": "241367539",
+      "name": "Ottawa",
+      "parent": "842b83bffffffff",
+      "own_places": [
+        "Gatineau"
+      ]
+    },
+    {
+      "fed_id": "241369168",
+      "name": "Longueuil",
+      "parent": "842baa1ffffffff",
+      "own_places": [
+        "Longueuil",
+        "Brossard",
+        "Boucherville"
+      ]
+    },
+    {
+      "fed_id": "241369181",
+      "name": "Montréal",
+      "parent": "842baa5ffffffff",
+      "own_places": [
+        "Montréal",
+        "Côte-Saint-Luc",
+        "Saint-Lambert"
+      ]
+    },
+    {
+      "fed_id": "241369284",
+      "name": "Québec",
+      "parent": "842bac5ffffffff",
+      "own_places": [
+        "Québec",
+        "Saint-Augustin-de-Desmaures",
+        "L'Ancienne-Lorette"
+      ]
+    },
+    {
+      "fed_id": "351360024",
+      "name": "London",
+      "parent": "842ab47ffffffff",
+      "own_places": [
+        "London"
+      ]
+    },
+    {
+      "fed_id": "351360034",
+      "name": "Kitchener",
+      "parent": "842ab49ffffffff",
+      "own_places": [
+        "Kitchener",
+        "Wilmot"
+      ]
+    },
+    {
+      "fed_id": "351368404",
+      "name": "Oshawa",
+      "parent": "842b987ffffffff",
+      "own_places": [
+        "Oshawa",
+        "Whitby",
+        "Ajax"
+      ]
+    },
+    {
+      "fed_id": "351368547",
+      "name": "Hamilton",
+      "parent": "842b9b5ffffffff",
+      "own_places": []
+    },
+    {
+      "fed_id": "351368556",
+      "name": "Haldimand County",
+      "parent": "842b9b7ffffffff",
+      "own_places": []
+    },
+    {
+      "fed_id": "351368576",
+      "name": "Toronto",
+      "parent": "842b9bdffffffff",
+      "own_places": []
+    },
+    {
+      "fed_id": "461330195",
+      "name": "Winnipeg",
+      "parent": "84271c9ffffffff",
+      "own_places": [
+        "Winnipeg"
+      ]
+    },
+    {
+      "fed_id": "481159052",
+      "name": "Calgary",
+      "parent": "8412ccdffffffff",
+      "own_places": [
+        "Calgary"
+      ]
+    },
+    {
+      "fed_id": "481160303",
+      "name": "Airdrie",
+      "parent": "8412ea7ffffffff",
+      "own_places": []
+    },
+    {
+      "fed_id": "481160421",
+      "name": "Strathcona County",
+      "parent": "8412ecdffffffff",
+      "own_places": []
+    },
+    {
+      "fed_id": "591344697",
+      "name": "Vancouver",
+      "parent": "8428de9ffffffff",
+      "own_places": [
+        "Vancouver",
+        "Musqueam 2"
+      ]
+    },
+    {
+      "fed_id": "591344713",
+      "name": "Surrey",
+      "parent": "8428dedffffffff",
+      "own_places": [
+        "Surrey"
+      ]
+    }
+  ],
+  "units_without_a_token": [
+    "350052586"
+  ],
+  "places": 2663,
+  "places_designation_ok": 2133,
+  "city_years": [
+    {
+      "parent": "8412ccdffffffff",
+      "city": "Calgary",
+      "year": 1894,
+      "source": "https://www.thecanadianencyclopedia.ca/en/article/calgary"
+    },
+    {
+      "parent": "8412ea7ffffffff",
+      "city": "Calgary",
+      "year": 1894,
+      "source": "https://www.thecanadianencyclopedia.ca/en/article/calgary"
+    },
+    {
+      "parent": "8412ecdffffffff",
+      "city": "Edmonton",
+      "year": 1904,
+      "source": "https://www.thecanadianencyclopedia.ca/en/article/edmonton"
+    },
+    {
+      "parent": "84271c9ffffffff",
+      "city": "Winnipeg",
+      "year": 1873,
+      "source": "https://www.thecanadianencyclopedia.ca/en/article/winnipeg"
+    },
+    {
+      "parent": "8428de9ffffffff",
+      "city": "Vancouver",
+      "year": 1886,
+      "source": "https://www.thecanadianencyclopedia.ca/en/article/vancouver"
+    },
+    {
+      "parent": "8428dedffffffff",
+      "city": "Vancouver",
+      "year": 1886,
+      "source": "https://www.thecanadianencyclopedia.ca/en/article/vancouver"
+    },
+    {
+      "parent": "842ab47ffffffff",
+      "city": "London",
+      "year": 1855,
+      "source": "https://www.thecanadianencyclopedia.ca/en/article/london-ont-emc"
+    },
+    {
+      "parent": "842ab49ffffffff",
+      "city": "Kitchener",
+      "year": 1912,
+      "source": "https://www.thecanadianencyclopedia.ca/en/article/kitchener-waterloo"
+    },
+    {
+      "parent": "842b83bffffffff",
+      "city": "Ottawa",
+      "year": 1855,
+      "source": "https://www.thecanadianencyclopedia.ca/en/article/ottawa"
+    },
+    {
+      "parent": "842b987ffffffff",
+      "city": "Oshawa",
+      "year": 1924,
+      "source": "https://www.thecanadianencyclopedia.ca/en/article/oshawa"
+    },
+    {
+      "parent": "842b9b5ffffffff",
+      "city": "Hamilton",
+      "year": 1846,
+      "source": "https://www.thecanadianencyclopedia.ca/en/article/hamilton"
+    },
+    {
+      "parent": "842b9b7ffffffff",
+      "city": "Hamilton",
+      "year": 1846,
+      "source": "https://www.thecanadianencyclopedia.ca/en/article/hamilton"
+    },
+    {
+      "parent": "842b9bdffffffff",
+      "city": "Toronto",
+      "year": 1834,
+      "source": "https://www.thecanadianencyclopedia.ca/en/article/toronto"
+    },
+    {
+      "parent": "842baa1ffffffff",
+      "city": "Longueuil",
+      "year": 1920,
+      "source": "https://www.thecanadianencyclopedia.ca/en/article/longueuil"
+    },
+    {
+      "parent": "842baa5ffffffff",
+      "city": "Montréal",
+      "year": 1832,
+      "source": "https://www.thecanadianencyclopedia.ca/en/article/montreal"
+    },
+    {
+      "parent": "842bac5ffffffff",
+      "city": "Québec",
+      "year": 1833,
+      "source": "https://www.thecanadianencyclopedia.ca/en/article/quebec-city"
+    }
+  ],
+  "city_years_changed": [
+    {
+      "city": "Québec",
+      "given": 1832,
+      "used": 1833,
+      "why": "TCE and the City of Québec's chronology date the first charter to 1833; 1832 is the Act's assent",
+      "sources": [
+        "https://www.thecanadianencyclopedia.ca/en/article/quebec-city",
+        "https://www.ville.quebec.qc.ca/citoyens/patrimoine/archives/jalons_historiques/chronologie_de_la_ville.aspx"
+      ]
+    }
+  ],
+  "city_years_sources_read": "through search results; the build environment's network policy refused the pages themselves",
+  "opening_overrides": [
+    {
+      "place": "Thompson",
+      "csd": "4622026",
+      "year": 1956,
+      "unit": "460017654"
+    },
+    {
+      "place": "Elliot Lake",
+      "csd": "3557041",
+      "year": 1955,
+      "unit": "350047613"
+    },
+    {
+      "place": "Chibougamau",
+      "csd": "2499025",
+      "year": 1952,
+      "unit": "240017319"
+    },
+    {
+      "place": "Wabush",
+      "csd": "1010034",
+      "year": 1955,
+      "unit": "240017415"
+    },
+    {
+      "place": "Kitimat",
+      "csd": "5949005",
+      "year": 1953,
+      "unit": "590022301"
+    }
+  ],
+  "opens_year_counts": {
+    "1867": 220,
+    "1869": 1,
+    "1870": 57,
+    "1871": 35,
+    "1873": 9,
+    "1874": 4,
+    "1875": 3,
+    "1876": 1,
+    "1877": 3,
+    "1878": 3,
+    "1879": 2,
+    "1880": 5,
+    "1881": 1,
+    "1882": 10,
+    "1883": 5,
+    "1884": 1,
+    "1885": 2,
+    "1886": 9,
+    "1887": 1,
+    "1888": 2,
+    "1889": 1,
+    "1890": 2,
+    "1891": 2,
+    "1892": 4,
+    "1893": 2,
+    "1894": 9,
+    "1895": 4,
+    "1896": 1,
+    "1897": 3,
+    "1898": 3,
+    "1899": 2,
+    "1901": 3,
+    "1902": 2,
+    "1903": 3,
+    "1904": 5,
+    "1906": 1,
+    "1908": 4,
+    "1909": 2,
+    "1910": 2,
+    "1911": 2,
+    "1912": 8,
+    "1913": 2,
+    "1914": 3,
+    "1918": 3,
+    "1919": 3,
+    "1920": 5,
+    "1923": 1,
+    "1924": 2,
+    "1926": 1,
+    "1927": 1,
+    "1928": 1,
+    "1931": 1,
+    "1932": 1,
+    "1936": 1,
+    "1937": 1,
+    "1939": 1,
+    "1944": 3,
+    "1946": 2,
+    "1947": 1,
+    "1949": 17,
+    "1952": 1,
+    "1953": 1,
+    "1955": 2,
+    "1956": 1
+  },
+  "opened_later_than_the_atlas": [
+    {
+      "fed_id": "110051799",
+      "name": "Alberton",
+      "atlas": 1873,
+      "opens_year": 1901,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "120051804",
+      "name": "Stellarton",
+      "atlas": 1867,
+      "opens_year": 1894,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "120051976",
+      "name": "Yarmouth",
+      "atlas": 1867,
+      "opens_year": 1879,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "130051810",
+      "name": "Saint Marys",
+      "atlas": 1867,
+      "opens_year": 1904,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "130051820",
+      "name": "Petitcodiac",
+      "atlas": 1867,
+      "opens_year": 1874,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "130051892",
+      "name": "Grand Falls / Grand-Sault",
+      "atlas": 1867,
+      "opens_year": 1920,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "130051972",
+      "name": "Gagetown",
+      "atlas": 1867,
+      "opens_year": 1895,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240017209",
+      "name": "Baie-Comeau",
+      "atlas": 1867,
+      "opens_year": 1937,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240017319",
+      "name": "Chibougamau",
+      "atlas": 1870,
+      "opens_year": 1952,
+      "by": [
+        "override"
+      ]
+    },
+    {
+      "fed_id": "240017415",
+      "name": "Wabush",
+      "atlas": 1867,
+      "opens_year": 1955,
+      "by": [
+        "override"
+      ]
+    },
+    {
+      "fed_id": "240051893",
+      "name": "Témiscouata-sur-le-Lac",
+      "atlas": 1867,
+      "opens_year": 1880,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240051911",
+      "name": "Saint-Siméon",
+      "atlas": 1867,
+      "opens_year": 1903,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240051919",
+      "name": "Causapscal",
+      "atlas": 1867,
+      "opens_year": 1870,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240051925",
+      "name": "Matane",
+      "atlas": 1867,
+      "opens_year": 1870,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240052012",
+      "name": "Les Îles-de-la-Madeleine",
+      "atlas": 1867,
+      "opens_year": 1875,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240052088",
+      "name": "Gaspé",
+      "atlas": 1867,
+      "opens_year": 1873,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240052479",
+      "name": "Mont-Laurier",
+      "atlas": 1867,
+      "opens_year": 1877,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240052483",
+      "name": "Rivière-Rouge",
+      "atlas": 1867,
+      "opens_year": 1886,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240052484",
+      "name": "Labelle",
+      "atlas": 1867,
+      "opens_year": 1883,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240052514",
+      "name": "Saint-Zénon",
+      "atlas": 1867,
+      "opens_year": 1895,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240052675",
+      "name": "Roberval",
+      "atlas": 1867,
+      "opens_year": 1873,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240052679",
+      "name": "Alma",
+      "atlas": 1867,
+      "opens_year": 1879,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240052681",
+      "name": "Dolbeau-Mistassini",
+      "atlas": 1867,
+      "opens_year": 1878,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240052710",
+      "name": "Saint-Fulgence",
+      "atlas": 1867,
+      "opens_year": 1923,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240052712",
+      "name": "Saint-Honoré",
+      "atlas": 1867,
+      "opens_year": 1885,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240052729",
+      "name": "Lac-Mégantic",
+      "atlas": 1867,
+      "opens_year": 1876,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240052790",
+      "name": "La Sarre",
+      "atlas": 1870,
+      "opens_year": 1918,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240052794",
+      "name": "Barraute",
+      "atlas": 1870,
+      "opens_year": 1918,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240052796",
+      "name": "Preissac",
+      "atlas": 1870,
+      "opens_year": 1918,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "240052797",
+      "name": "Malartic",
+      "atlas": 1870,
+      "opens_year": 1939,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "241369166",
+      "name": "Beloeil",
+      "atlas": 1867,
+      "opens_year": 1920,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "241369169",
+      "name": "Chambly",
+      "atlas": 1867,
+      "opens_year": 1920,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "241369170",
+      "name": "Saint-Hyacinthe",
+      "atlas": 1867,
+      "opens_year": 1920,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "241369172",
+      "name": "Sainte-Julie",
+      "atlas": 1867,
+      "opens_year": 1920,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "350017894",
+      "name": "Iroquois Falls",
+      "atlas": 1870,
+      "opens_year": 1908,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "350017912",
+      "name": "Kapuskasing",
+      "atlas": 1870,
+      "opens_year": 1911,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "350047001",
+      "name": "Kenora",
+      "atlas": 1870,
+      "opens_year": 1882,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "350047046",
+      "name": "Fort Frances",
+      "atlas": 1870,
+      "opens_year": 1899,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "350047072",
+      "name": "Dryden",
+      "atlas": 1870,
+      "opens_year": 1895,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "350047607",
+      "name": "Gore Bay",
+      "atlas": 1867,
+      "opens_year": 1884,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "350047613",
+      "name": "Elliot Lake",
+      "atlas": 1867,
+      "opens_year": 1955,
+      "by": [
+        "override"
+      ]
+    },
+    {
+      "fed_id": "350051443",
+      "name": "Sarnia",
+      "atlas": 1867,
+      "opens_year": 1878,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "350052581",
+      "name": "Temiskaming Shores",
+      "atlas": 1867,
+      "opens_year": 1888,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "350052584",
+      "name": "Mattawa",
+      "atlas": 1867,
+      "opens_year": 1882,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "350052586",
+      "name": "North Bay",
+      "atlas": 1867,
+      "opens_year": 1891,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "350052604",
+      "name": "Greater Sudbury / Grand Sudbury",
+      "atlas": 1867,
+      "opens_year": 1893,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "350052607",
+      "name": "Kirkland Lake",
+      "atlas": 1870,
+      "opens_year": 1919,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "350052608",
+      "name": "Englehart",
+      "atlas": 1867,
+      "opens_year": 1909,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "350052625",
+      "name": "Timmins",
+      "atlas": 1870,
+      "opens_year": 1912,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "350052671",
+      "name": "Midland",
+      "atlas": 1867,
+      "opens_year": 1890,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "350052672",
+      "name": "Kearney",
+      "atlas": 1867,
+      "opens_year": 1880,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "350052673",
+      "name": "Huntsville",
+      "atlas": 1867,
+      "opens_year": 1869,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "351360031",
+      "name": "Waterloo",
+      "atlas": 1867,
+      "opens_year": 1912,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "351360032",
+      "name": "Cambridge",
+      "atlas": 1867,
+      "opens_year": 1912,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "351360035",
+      "name": "Centre Wellington",
+      "atlas": 1867,
+      "opens_year": 1912,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "351360036",
+      "name": "Guelph",
+      "atlas": 1867,
+      "opens_year": 1912,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "351368405",
+      "name": "Whitchurch-Stouffville",
+      "atlas": 1867,
+      "opens_year": 1924,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "351368406",
+      "name": "Pickering",
+      "atlas": 1867,
+      "opens_year": 1924,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "460017654",
+      "name": "Thompson",
+      "atlas": 1870,
+      "opens_year": 1956,
+      "by": [
+        "override"
+      ]
+    },
+    {
+      "fed_id": "460022009",
+      "name": "Swan River",
+      "atlas": 1870,
+      "opens_year": 1901,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "460047005",
+      "name": "Teulon",
+      "atlas": 1870,
+      "opens_year": 1919,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "460047006",
+      "name": "Selkirk",
+      "atlas": 1870,
+      "opens_year": 1878,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "460047009",
+      "name": "Arborg",
+      "atlas": 1870,
+      "opens_year": 1875,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "460047018",
+      "name": "Beausejour",
+      "atlas": 1870,
+      "opens_year": 1874,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "460047093",
+      "name": "Dauphin",
+      "atlas": 1870,
+      "opens_year": 1897,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "460047098",
+      "name": "Neepawa",
+      "atlas": 1870,
+      "opens_year": 1883,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "460047110",
+      "name": "Souris-Glenwood",
+      "atlas": 1870,
+      "opens_year": 1883,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "460047115",
+      "name": "Brandon",
+      "atlas": 1870,
+      "opens_year": 1882,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "460047169",
+      "name": "Winkler",
+      "atlas": 1870,
+      "opens_year": 1882,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "460047171",
+      "name": "Steinbach",
+      "atlas": 1870,
+      "opens_year": 1874,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "461330190",
+      "name": "Headingley",
+      "atlas": 1870,
+      "opens_year": 1873,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "461330194",
+      "name": "Rosser",
+      "atlas": 1870,
+      "opens_year": 1873,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "470022003",
+      "name": "Nipawin",
+      "atlas": 1870,
+      "opens_year": 1910,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470022015",
+      "name": "Melfort",
+      "atlas": 1870,
+      "opens_year": 1892,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470022018",
+      "name": "Humboldt",
+      "atlas": 1870,
+      "opens_year": 1875,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470022099",
+      "name": "North Battleford",
+      "atlas": 1870,
+      "opens_year": 1877,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470022106",
+      "name": "Saskatoon",
+      "atlas": 1870,
+      "opens_year": 1882,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470022109",
+      "name": "Dundurn",
+      "atlas": 1870,
+      "opens_year": 1894,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470022110",
+      "name": "Rosthern",
+      "atlas": 1870,
+      "opens_year": 1887,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470022112",
+      "name": "Waldheim",
+      "atlas": 1870,
+      "opens_year": 1901,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470022133",
+      "name": "Meadow Lake",
+      "atlas": 1870,
+      "opens_year": 1931,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470022135",
+      "name": "St. Louis",
+      "atlas": 1870,
+      "opens_year": 1888,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470047133",
+      "name": "Canora",
+      "atlas": 1870,
+      "opens_year": 1885,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470047134",
+      "name": "Yorkton",
+      "atlas": 1870,
+      "opens_year": 1894,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470047873",
+      "name": "Lumsden",
+      "atlas": 1870,
+      "opens_year": 1881,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470047874",
+      "name": "Regina",
+      "atlas": 1870,
+      "opens_year": 1882,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470047875",
+      "name": "Moose Jaw",
+      "atlas": 1870,
+      "opens_year": 1903,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470047878",
+      "name": "White City",
+      "atlas": 1870,
+      "opens_year": 1882,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470047883",
+      "name": "Weyburn",
+      "atlas": 1870,
+      "opens_year": 1894,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470047911",
+      "name": "Fort Qu'Appelle",
+      "atlas": 1870,
+      "opens_year": 1880,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470047913",
+      "name": "Melville",
+      "atlas": 1870,
+      "opens_year": 1908,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470047952",
+      "name": "Estevan",
+      "atlas": 1870,
+      "opens_year": 1890,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470048003",
+      "name": "Kindersley",
+      "atlas": 1870,
+      "opens_year": 1910,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "470048007",
+      "name": "Swift Current",
+      "atlas": 1870,
+      "opens_year": 1882,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480021674",
+      "name": "Peace River",
+      "atlas": 1870,
+      "opens_year": 1919,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480021759",
+      "name": "Dawson Creek",
+      "atlas": 1870,
+      "opens_year": 1932,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480021777",
+      "name": "Beaverlodge",
+      "atlas": 1870,
+      "opens_year": 1928,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480021782",
+      "name": "Grande Prairie",
+      "atlas": 1870,
+      "opens_year": 1914,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022070",
+      "name": "Athabasca",
+      "atlas": 1870,
+      "opens_year": 1877,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022071",
+      "name": "St. Paul",
+      "atlas": 1870,
+      "opens_year": 1896,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022075",
+      "name": "Bonnyville",
+      "atlas": 1870,
+      "opens_year": 1914,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022143",
+      "name": "Lloydminster (Part)",
+      "atlas": 1870,
+      "opens_year": 1903,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022700",
+      "name": "Raymond",
+      "atlas": 1870,
+      "opens_year": 1899,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022719",
+      "name": "Chestermere",
+      "atlas": 1870,
+      "opens_year": 1883,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022841",
+      "name": "Onoway",
+      "atlas": 1870,
+      "opens_year": 1944,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022844",
+      "name": "Seba Beach",
+      "atlas": 1870,
+      "opens_year": 1913,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022846",
+      "name": "Morinville",
+      "atlas": 1870,
+      "opens_year": 1882,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022851",
+      "name": "Hinton",
+      "atlas": 1870,
+      "opens_year": 1911,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022898",
+      "name": "Irricana",
+      "atlas": 1870,
+      "opens_year": 1908,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022901",
+      "name": "Red Deer",
+      "atlas": 1870,
+      "opens_year": 1882,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022910",
+      "name": "Drumheller",
+      "atlas": 1870,
+      "opens_year": 1912,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022911",
+      "name": "Tofield",
+      "atlas": 1870,
+      "opens_year": 1909,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022913",
+      "name": "Leduc",
+      "atlas": 1870,
+      "opens_year": 1895,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022914",
+      "name": "Camrose",
+      "atlas": 1870,
+      "opens_year": 1944,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022915",
+      "name": "Lamont",
+      "atlas": 1870,
+      "opens_year": 1944,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022916",
+      "name": "Vegreville",
+      "atlas": 1870,
+      "opens_year": 1906,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022922",
+      "name": "Vermilion",
+      "atlas": 1870,
+      "opens_year": 1902,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022928",
+      "name": "Sylvan Lake",
+      "atlas": 1870,
+      "opens_year": 1898,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022929",
+      "name": "Calmar",
+      "atlas": 1870,
+      "opens_year": 1949,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480022930",
+      "name": "Wetaskiwin",
+      "atlas": 1870,
+      "opens_year": 1892,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "480047989",
+      "name": "Medicine Hat",
+      "atlas": 1870,
+      "opens_year": 1883,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "481159047",
+      "name": "Strathmore",
+      "atlas": 1870,
+      "opens_year": 1894,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "481159048",
+      "name": "Foothills",
+      "atlas": 1870,
+      "opens_year": 1894,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "481159051",
+      "name": "Calgary Signal Hill",
+      "atlas": 1870,
+      "opens_year": 1894,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "481160300",
+      "name": "Crossfield",
+      "atlas": 1870,
+      "opens_year": 1894,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "481160302",
+      "name": "Ghost Lake",
+      "atlas": 1870,
+      "opens_year": 1894,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "481160419",
+      "name": "Fort Saskatchewan",
+      "atlas": 1870,
+      "opens_year": 1904,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "481160422",
+      "name": "Sherwood Park",
+      "atlas": 1870,
+      "opens_year": 1904,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "481160425",
+      "name": "St. Albert",
+      "atlas": 1870,
+      "opens_year": 1904,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "590021799",
+      "name": "Fort St. John",
+      "atlas": 1871,
+      "opens_year": 1947,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590022301",
+      "name": "Kitimat",
+      "atlas": 1871,
+      "opens_year": 1953,
+      "by": [
+        "override"
+      ]
+    },
+    {
+      "fed_id": "590022326",
+      "name": "Terrace",
+      "atlas": 1871,
+      "opens_year": 1927,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590022330",
+      "name": "Smithers",
+      "atlas": 1871,
+      "opens_year": 1913,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590022563",
+      "name": "Vanderhoof",
+      "atlas": 1871,
+      "opens_year": 1926,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590022652",
+      "name": "Revelstoke",
+      "atlas": 1871,
+      "opens_year": 1880,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590022732",
+      "name": "Fernie",
+      "atlas": 1871,
+      "opens_year": 1904,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590022743",
+      "name": "Vernon",
+      "atlas": 1871,
+      "opens_year": 1892,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590022762",
+      "name": "West Kelowna",
+      "atlas": 1871,
+      "opens_year": 1902,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590022763",
+      "name": "Merritt",
+      "atlas": 1871,
+      "opens_year": 1893,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590022789",
+      "name": "Castlegar",
+      "atlas": 1871,
+      "opens_year": 1946,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590022814",
+      "name": "Nelson",
+      "atlas": 1871,
+      "opens_year": 1897,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590022825",
+      "name": "Cranbrook",
+      "atlas": 1871,
+      "opens_year": 1898,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590022828",
+      "name": "Grand Forks",
+      "atlas": 1871,
+      "opens_year": 1897,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590022829",
+      "name": "Osoyoos",
+      "atlas": 1871,
+      "opens_year": 1946,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590022833",
+      "name": "Penticton",
+      "atlas": 1871,
+      "opens_year": 1908,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590049173",
+      "name": "Abbotsford",
+      "atlas": 1871,
+      "opens_year": 1892,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590049196",
+      "name": "Powell River",
+      "atlas": 1871,
+      "opens_year": 1912,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590049201",
+      "name": "Courtenay",
+      "atlas": 1871,
+      "opens_year": 1889,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590049216",
+      "name": "Pemberton",
+      "atlas": 1871,
+      "opens_year": 1914,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590049225",
+      "name": "Port Alberni",
+      "atlas": 1871,
+      "opens_year": 1912,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590049226",
+      "name": "Ladysmith",
+      "atlas": 1871,
+      "opens_year": 1873,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590049227",
+      "name": "Nanaimo",
+      "atlas": 1871,
+      "opens_year": 1874,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590049238",
+      "name": "North Vancouver",
+      "atlas": 1871,
+      "opens_year": 1891,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "590049243",
+      "name": "Gibsons",
+      "atlas": 1871,
+      "opens_year": 1886,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "591344694",
+      "name": "Richmond",
+      "atlas": 1871,
+      "opens_year": 1886,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "591344696",
+      "name": "Burnaby",
+      "atlas": 1871,
+      "opens_year": 1886,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "591344700",
+      "name": "Delta",
+      "atlas": 1871,
+      "opens_year": 1886,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "591344708",
+      "name": "Maple Ridge",
+      "atlas": 1871,
+      "opens_year": 1886,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "591344709",
+      "name": "Coquitlam",
+      "atlas": 1871,
+      "opens_year": 1886,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "591344712",
+      "name": "Langley",
+      "atlas": 1871,
+      "opens_year": 1886,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "591344714",
+      "name": "Mission",
+      "atlas": 1871,
+      "opens_year": 1886,
+      "by": [
+        "city"
+      ]
+    },
+    {
+      "fed_id": "600023712",
+      "name": "Whitehorse",
+      "atlas": 1870,
+      "opens_year": 1898,
+      "by": [
+        "settled"
+      ]
+    },
+    {
+      "fed_id": "610023440",
+      "name": "Yellowknife",
+      "atlas": 1870,
+      "opens_year": 1936,
+      "by": [
+        "settled"
+      ]
+    }
+  ],
+  "units_by_year": {
+    "1867": {
+      "under_canada": 265,
+      "in_a_province": 265,
+      "open": 220
+    },
+    "1870": {
+      "under_canada": 405,
+      "in_a_province": 281,
+      "open": 278
+    },
+    "1871": {
+      "under_canada": 472,
+      "in_a_province": 348,
+      "open": 313
+    },
+    "1873": {
+      "under_canada": 477,
+      "in_a_province": 353,
+      "open": 322
+    },
+    "1885": {
+      "under_canada": 475,
+      "in_a_province": 367,
+      "open": 361
+    },
+    "1905": {
+      "under_canada": 478,
+      "in_a_province": 472,
+      "open": 420
+    },
+    "1914": {
+      "under_canada": 478,
+      "in_a_province": 475,
+      "open": 444
+    },
+    "1945": {
+      "under_canada": 478,
+      "in_a_province": 475,
+      "open": 469
+    },
+    "1949": {
+      "under_canada": 494,
+      "in_a_province": 491,
+      "open": 489
+    },
+    "1966": {
+      "under_canada": 494,
+      "in_a_province": 491,
+      "open": 494
+    }
+  },
+  "jurisdiction_spans": 984,
+  "jurisdiction_spans_dropped": [],
+  "drawing_fallback_spans": [
+    {
+      "h3": "840eeabffffffff",
+      "from": "1927-03-01",
+      "name": "District of Keewatin"
+    },
+    {
+      "h3": "842b0a7ffffffff",
+      "from": "1867-07-01",
+      "name": "Nova Scotia"
+    }
+  ],
+  "links": {
+    "hexagons": 6080,
+    "hexagons_flooded": 5275,
+    "hexagons_unreached_by_land": 805,
+    "before_cap": {
+      "land_links": 1235,
+      "mean_land_links_per_unit": "5.00",
+      "land_groups": [
+        462,
+        15,
+        10,
+        5,
+        1,
+        1
+      ],
+      "land_link_lengths": {
+        "1": 765,
+        "2": 187,
+        "3": 122,
+        "4": 50,
+        "5": 34,
+        "6": 18,
+        "7": 13,
+        "8": 12,
+        "9": 7,
+        "10": 1,
+        "11": 3,
+        "12": 4,
+        "13": 6,
+        "15": 1,
+        "17": 1,
+        "18": 1,
+        "20": 2,
+        "21": 2,
+        "22": 1,
+        "23": 1,
+        "24": 1,
+        "28": 1,
+        "29": 2
+      }
+    },
+    "after_cap": {
+      "length_cap": 6,
+      "land_links": 1182,
+      "dropped_over_cap": 53,
+      "bridges_kept_over_cap": [
+        {
+          "a": 350047046,
+          "b": 350047630,
+          "length": 7
+        },
+        {
+          "a": 460017654,
+          "b": 460022041,
+          "length": 7
+        },
+        {
+          "a": 100033568,
+          "b": 240017415,
+          "length": 10
+        },
+        {
+          "a": 350017912,
+          "b": 350047634,
+          "length": 12
+        },
+        {
+          "a": 480021688,
+          "b": 610023440,
+          "length": 13
+        },
+        {
+          "a": 590022326,
+          "b": 600023712,
+          "length": 20
+        }
+      ],
+      "water_links": 91,
+      "units_alone_given_a_water_link": [
+        {
+          "unit": 240052012,
+          "to": 110051828,
+          "length": 3,
+          "metres": 123448
+        }
+      ],
+      "land_groups": [
+        462,
+        15,
+        10,
+        5,
+        1,
+        1
+      ],
+      "groups_counting_water_links": [
+        494
+      ],
+      "mean_links_per_unit": "5.15"
+    }
+  },
+  "land_groups": [
+    {
+      "size": 462,
+      "units": [
+        "Happy Valley-Goose Bay",
+        "Amherst",
+        "Truro",
+        "Halifax",
+        "Oxford",
+        "East Hants",
+        "Stellarton",
+        "Westville",
+        "Berwick",
+        "Kentville",
+        "New Glasgow",
+        "Clark's Harbour",
+        "Barrington",
+        "Stewiacke",
+        "West Hants",
+        "Bridgewater",
+        "Queens",
+        "Lunenburg",
+        "Chester",
+        "Clare"
+      ],
+      "water_links_to": [
+        1,
+        5,
+        10,
+        15
+      ]
+    },
+    {
+      "size": 15,
+      "units": [
+        "Pouch Cove",
+        "Bay Roberts",
+        "St. John's",
+        "Holyrood",
+        "Bonavista",
+        "Clarenville",
+        "Marystown",
+        "Springdale",
+        "Lewisporte",
+        "Gander",
+        "Grand Falls-Windsor",
+        "Twillingate",
+        "Corner Brook",
+        "Mount Moriah",
+        "Stephenville"
+      ],
+      "water_links_to": [
+        462
+      ]
+    },
+    {
+      "size": 10,
+      "units": [
+        "Sidney",
+        "Victoria",
+        "Qualicum Beach",
+        "Courtenay",
+        "Campbell River",
+        "Port Alberni",
+        "Ladysmith",
+        "Nanaimo",
+        "Duncan",
+        "Comox"
+      ],
+      "water_links_to": [
+        462
+      ]
+    },
+    {
+      "size": 5,
+      "units": [
+        "Summerside",
+        "Borden-Carleton",
+        "Alberton",
+        "Three Rivers",
+        "Charlottetown"
+      ],
+      "water_links_to": [
+        1,
+        462
+      ]
+    },
+    {
+      "size": 1,
+      "units": [
+        "Les Îles-de-la-Madeleine"
+      ],
+      "water_links_to": [
+        5
+      ]
+    },
+    {
+      "size": 1,
+      "units": [
+        "Iqaluit"
+      ],
+      "water_links_to": [
+        462
+      ]
+    }
+  ],
+  "water_links_added_to_join_groups": [],
+  "links_total": {
+    "land": 1182,
+    "water": 91
+  },
+  "routes": 460,
+  "atlas_years": [
+    {
+      "from_year": 1867,
+      "to_year": 1869,
+      "jurisdictions": [
+        "British Arctic Islands",
+        "British Columbia",
+        "New Brunswick",
+        "Newfoundland",
+        "North-Western Territory",
+        "Nova Scotia",
+        "Ontario",
+        "Prince Edward Island",
+        "Quebec",
+        "Rupert's Land"
+      ]
+    },
+    {
+      "from_year": 1870,
+      "to_year": 1870,
+      "jurisdictions": [
+        "British Arctic Islands",
+        "British Columbia",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland",
+        "North-West Territories",
+        "Nova Scotia",
+        "Ontario",
+        "Prince Edward Island",
+        "Quebec"
+      ]
+    },
+    {
+      "from_year": 1871,
+      "to_year": 1872,
+      "jurisdictions": [
+        "British Arctic Islands",
+        "British Columbia",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland",
+        "North-West Territories",
+        "Nova Scotia",
+        "Ontario",
+        "Prince Edward Island",
+        "Quebec"
+      ]
+    },
+    {
+      "from_year": 1873,
+      "to_year": 1873,
+      "jurisdictions": [
+        "British Arctic Islands",
+        "British Columbia",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland",
+        "North-West Territories",
+        "Nova Scotia",
+        "Ontario",
+        "Prince Edward Island",
+        "Quebec"
+      ]
+    },
+    {
+      "from_year": 1874,
+      "to_year": 1875,
+      "jurisdictions": [
+        "British Arctic Islands",
+        "British Columbia",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland",
+        "North-West Territories",
+        "Nova Scotia",
+        "Ontario",
+        "Prince Edward Island",
+        "Quebec"
+      ]
+    },
+    {
+      "from_year": 1876,
+      "to_year": 1879,
+      "jurisdictions": [
+        "British Arctic Islands",
+        "British Columbia",
+        "District of Keewatin",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland",
+        "North-West Territories",
+        "Nova Scotia",
+        "Ontario",
+        "Prince Edward Island",
+        "Quebec"
+      ]
+    },
+    {
+      "from_year": 1880,
+      "to_year": 1880,
+      "jurisdictions": [
+        "British Columbia",
+        "District of Keewatin",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland",
+        "North-West Territories",
+        "Nova Scotia",
+        "Ontario",
+        "Prince Edward Island",
+        "Quebec"
+      ]
+    },
+    {
+      "from_year": 1881,
+      "to_year": 1881,
+      "jurisdictions": [
+        "British Columbia",
+        "District of Keewatin",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland",
+        "North-West Territories",
+        "Nova Scotia",
+        "Ontario",
+        "Ontario–Manitoba disputed area",
+        "Prince Edward Island",
+        "Quebec"
+      ]
+    },
+    {
+      "from_year": 1882,
+      "to_year": 1885,
+      "jurisdictions": [
+        "British Columbia",
+        "District of Keewatin",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland",
+        "North-West Territories",
+        "Nova Scotia",
+        "Ontario",
+        "Ontario–Manitoba disputed area",
+        "Prince Edward Island",
+        "Quebec"
+      ]
+    },
+    {
+      "from_year": 1886,
+      "to_year": 1888,
+      "jurisdictions": [
+        "British Columbia",
+        "District of Keewatin",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland",
+        "North-West Territories",
+        "Nova Scotia",
+        "Ontario",
+        "Ontario–Manitoba disputed area",
+        "Prince Edward Island",
+        "Quebec"
+      ]
+    },
+    {
+      "from_year": 1889,
+      "to_year": 1896,
+      "jurisdictions": [
+        "British Columbia",
+        "District of Keewatin",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland",
+        "North-West Territories",
+        "Nova Scotia",
+        "Ontario",
+        "Prince Edward Island",
+        "Quebec"
+      ]
+    },
+    {
+      "from_year": 1897,
+      "to_year": 1897,
+      "jurisdictions": [
+        "British Columbia",
+        "District of Keewatin",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland",
+        "North-West Territories",
+        "Nova Scotia",
+        "Ontario",
+        "Prince Edward Island",
+        "Quebec"
+      ]
+    },
+    {
+      "from_year": 1898,
+      "to_year": 1900,
+      "jurisdictions": [
+        "British Columbia",
+        "District of Keewatin",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland",
+        "North-West Territories",
+        "Nova Scotia",
+        "Ontario",
+        "Prince Edward Island",
+        "Quebec",
+        "Yukon Territory"
+      ]
+    },
+    {
+      "from_year": 1901,
+      "to_year": 1904,
+      "jurisdictions": [
+        "British Columbia",
+        "District of Keewatin",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland",
+        "North-West Territories",
+        "Nova Scotia",
+        "Ontario",
+        "Prince Edward Island",
+        "Quebec",
+        "Yukon Territory"
+      ]
+    },
+    {
+      "from_year": 1905,
+      "to_year": 1911,
+      "jurisdictions": [
+        "Alberta",
+        "British Columbia",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland",
+        "North-West Territories",
+        "Nova Scotia",
+        "Ontario",
+        "Prince Edward Island",
+        "Quebec",
+        "Saskatchewan",
+        "Yukon Territory"
+      ]
+    },
+    {
+      "from_year": 1912,
+      "to_year": 1926,
+      "jurisdictions": [
+        "Alberta",
+        "British Columbia",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland",
+        "North-West Territories",
+        "Nova Scotia",
+        "Ontario",
+        "Prince Edward Island",
+        "Quebec",
+        "Saskatchewan",
+        "Yukon Territory"
+      ]
+    },
+    {
+      "from_year": 1927,
+      "to_year": 1948,
+      "jurisdictions": [
+        "Alberta",
+        "British Columbia",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland",
+        "North-West Territories",
+        "Nova Scotia",
+        "Ontario",
+        "Prince Edward Island",
+        "Quebec",
+        "Saskatchewan",
+        "Yukon Territory"
+      ]
+    },
+    {
+      "from_year": 1949,
+      "to_year": 1998,
+      "jurisdictions": [
+        "Alberta",
+        "British Columbia",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland",
+        "North-West Territories",
+        "Nova Scotia",
+        "Ontario",
+        "Prince Edward Island",
+        "Quebec",
+        "Saskatchewan",
+        "Yukon Territory"
+      ]
+    },
+    {
+      "from_year": 1999,
+      "to_year": 2000,
+      "jurisdictions": [
+        "Alberta",
+        "British Columbia",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland",
+        "Northwest Territories",
+        "Nova Scotia",
+        "Nunavut",
+        "Ontario",
+        "Prince Edward Island",
+        "Quebec",
+        "Saskatchewan",
+        "Yukon Territory"
+      ]
+    },
+    {
+      "from_year": 2001,
+      "to_year": 2002,
+      "jurisdictions": [
+        "Alberta",
+        "British Columbia",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland and Labrador",
+        "Northwest Territories",
+        "Nova Scotia",
+        "Nunavut",
+        "Ontario",
+        "Prince Edward Island",
+        "Quebec",
+        "Saskatchewan",
+        "Yukon Territory"
+      ]
+    },
+    {
+      "from_year": 2003,
+      "to_year": null,
+      "jurisdictions": [
+        "Alberta",
+        "British Columbia",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland and Labrador",
+        "Northwest Territories",
+        "Nova Scotia",
+        "Nunavut",
+        "Ontario",
+        "Prince Edward Island",
+        "Quebec",
+        "Saskatchewan",
+        "Yukon"
+      ]
+    }
+  ],
+  "not_carried": {
+    "score.cohesion": "absent from Meridian unit tables by design; not invented",
+    "score.exposure": "not read by the game",
+    "jurisdictions[].share": "a float area overlap; not read by the game",
+    "score.gdp": "carried only as wealth_tier; an allocation, not a measurement",
+    "ecozone": "not read by the game",
+    "settledPlace, settledSource, cityYear, citySource": "read into opens_year only"
+  }
+}

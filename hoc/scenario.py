@@ -93,6 +93,11 @@ STATUS_FROZEN = "frozen"
 #                    docs/hex-trial/README.md). No scenario is played on it;
 #                    the hex preview and the trial harness build scratch
 #                    worlds on it.
+#   meridian-hex-v1.0.5  the hex board: Meridian v1.0.5's regenerated
+#                    resolution-4 hexagons with the 16 of 500,000 people or
+#                    more split into their city hexes, 494 units, opening
+#                    years and borders by year (scripts/build_world_hexboard.py,
+#                    docs/hex-trial/v2/README.md). No scenario is played on it.
 #
 # A set is never edited once a game has been played on it: moving to newer data
 # is a new key and a new directory.
@@ -100,6 +105,7 @@ REFERENCE_SETS = {
     "ne-2026": Path("data") / "reference",
     "meridian-v1.0.3": Path("data") / "reference" / "meridian" / "v1.0.3",
     "meridian-hex-v1.0.4": Path("data") / "reference" / "meridian" / "hex-v1.0.4",
+    "meridian-hex-v1.0.5": Path("data") / "reference" / "meridian" / "hex-v1.0.5",
 }
 
 # What a manifest with no `reference_data` was built against: the one set that
