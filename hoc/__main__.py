@@ -259,7 +259,8 @@ def cmd_sim(args):
         return 0
     print(f"season:   {row['season_no']} (seed {row['seed']}, rules {row['rules_version']})")
     print(f"houses:   {row['houses_after']} active")
-    print(f"ridings:  {row['ridings_after']} of 343 held")
+    total = conn.execute("SELECT COUNT(*) AS n FROM ridings").fetchone()["n"]
+    print(f"ridings:  {row['ridings_after']} of {total} held")
     print("climate:")
     for climate in conn.execute("SELECT * FROM v_current_climate ORDER BY era_cohort"):
         print(f"  {climate['era_cohort']}: {climate['cumulative_after']}")

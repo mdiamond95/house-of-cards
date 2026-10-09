@@ -16,6 +16,7 @@
 // Pure: no DOM, no engine.
 
 import { RANK_LADDER } from './beats.js';
+import { inUnitWords, unitNoun } from './words.js';
 
 const FEMALE = new Set(RANK_LADDER.map((forms) => forms[1]));
 const PARTICLES = ['of ', 'de la ', 'de ', "d'", 'du '];
@@ -208,7 +209,7 @@ const PLAIN = {
 function engineLine(beat, namer) {
   const prefix = `Season ${beat.turn} · `;
   const line = beat.line.startsWith(prefix) ? beat.line.slice(prefix.length) : beat.line;
-  return capitalise(namer.rewrite(line, beat.houses || []));
+  return capitalise(namer.rewrite(inUnitWords(line), beat.houses || []));
 }
 
 function ridingNames(feds, ridingName) {
@@ -230,13 +231,13 @@ const FAILED_BECAUSE = {
 
 function failure(beat, namer) {
   const because = FAILED_BECAUSE[beat.outcome];
-  return because ? `${namer.name(beat.houses[0])} fails, for ${because}; its ridings return to the Crown`
-    : `${namer.name(beat.houses[0])} fails; its ridings return to the Crown`;
+  return because ? `${namer.name(beat.houses[0])} fails, for ${because}; its ${unitNoun(2)} return to the Crown`
+    : `${namer.name(beat.houses[0])} fails; its ${unitNoun(2)} return to the Crown`;
 }
 
 // A riding passing between two houses, or to the Crown, from its facts.
 function transfer(beat, namer, ridingName) {
-  const riding = listWords(ridingNames(beat.ridings || [], ridingName)) || 'a riding';
+  const riding = listWords(ridingNames(beat.ridings || [], ridingName)) || `a ${unitNoun(1)}`;
   const reason = beat.outcome ? ` (${beat.outcome})` : '';
   const giver = namer.name(beat.houses[0]);
   if (beat.kind === 'riding_lost') return `${giver} gives up ${riding} to the Crown${reason}`;
@@ -291,7 +292,7 @@ export function accessionSentence(beat, ridingName) {
   const feds = beat.ridings || [];
   const n = feds.length;
   const names = n <= ACCESSION_NAMED ? `: ${listWords(ridingNames(feds, ridingName))}` : '';
-  const ridings = `${numberWords(n)} riding${n === 1 ? '' : 's'}`;
+  const ridings = `${numberWords(n)} ${unitNoun(n)}`;
   return w.change === 'extension'
     ? `${w.jurisdiction} becomes a province, and the Crown may found in ${ridings}${names}.`
     : `${w.jurisdiction} comes under Canada as a ${w.status}, opening ${ridings}${names}.`;
@@ -347,7 +348,7 @@ function mergedSentence(beat, namer, ridingName) {
     case 'cession': {
       const transfer = part(beat, 'riding_passes');
       const [giver, receiver] = transfer.houses;
-      const riding = listWords(ridingNames(transfer.ridings || [], ridingName)) || 'a riding';
+      const riding = listWords(ridingNames(transfer.ridings || [], ridingName)) || `a ${unitNoun(1)}`;
       const g = namer.name(giver);
       const r = namer.name(receiver);
       return `${g} cedes ${riding} to ${r}, settling the grievance between them`;
@@ -371,7 +372,7 @@ function mergedSentence(beat, namer, ridingName) {
       const lost = part(beat, 'riding_lost');
       const quarrel = part(beat, 'quarrel');
       const clauses = [];
-      if (lost) clauses.push(`gives up ${listWords(ridingNames(lost.ridings || [], ridingName)) || 'a riding'} to the Crown`);
+      if (lost) clauses.push(`gives up ${listWords(ridingNames(lost.ridings || [], ridingName)) || `a ${unitNoun(1)}`} to the Crown`);
       if (quarrel) clauses.push(`falls out with ${namer.name(quarrel.houses[1])}`);
       if (clauses.length) text += `; ${namer.designation(house)} ${listWords(clauses)}`;
       return text;
@@ -381,7 +382,7 @@ function mergedSentence(beat, namer, ridingName) {
       const first = sentence(parts[0], namer, ridingName);
       const because = FAILED_BECAUSE[removed.outcome];
       return `${unperiod(first)}; then ${namer.name(removed.houses[0])} fails${because ? `, for ${because}` : ''},`
-        + ' and its ridings return to the Crown';
+        + ` and its ${unitNoun(2)} return to the Crown`;
     }
     case 'claim': {
       const told = parts.map((p) => unperiod(sentence(p, namer, ridingName))).join('; ');
@@ -392,11 +393,11 @@ function mergedSentence(beat, namer, ridingName) {
       const [loser, winner] = quarrel.houses;
       const expansion = part(beat, 'expansion');
       if (expansion) {
-        const riding = listWords(ridingNames(expansion.ridings || [], ridingName)) || 'a riding';
+        const riding = listWords(ridingNames(expansion.ridings || [], ridingName)) || `a ${unitNoun(1)}`;
         const w = namer.name(winner);
         return `${w} takes ${riding} from under ${namer.name(loser)}, who carries the grievance`;
       }
-      const line = quarrel.line ? unperiod(engineLine(quarrel, namer)) : `${namer.name(loser)} loses a contested riding to ${namer.name(winner)}`;
+      const line = quarrel.line ? unperiod(engineLine(quarrel, namer)) : `${namer.name(loser)} loses a contested ${unitNoun(1)} to ${namer.name(winner)}`;
       return `${line}, and carries the grievance`;
     }
     default:

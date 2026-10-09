@@ -128,7 +128,7 @@ one draw in a million.
 p_found(room, total, coefficient) = sqrt(room / total) * coefficient
 ```
 
-with `total = 343` and `coefficient = 0.5` from `rules/founding.json`. It is written as a
+with `total` the number of units on the map (343 on both riding sets; "The hex board" below) and `coefficient = 0.5` from `rules/founding.json`. It is written as a
 **square root**, not as `(room/total) ** exponent`, because IEEE-754 requires `sqrt` to be
 correctly rounded — `math.sqrt` and `Math.sqrt` must return the same double for the same
 input — while a general `pow` carries no such guarantee and is free to differ in the last
@@ -211,7 +211,54 @@ this rule:
    place. At v1.0.3 it is 1 for 3,353 of 4,830 places, in 194 ridings.
 
 The CSVs are committed, so the rule runs once per reference-data version and both engines
-read identical integers in identical row order. Map geometry stays in decimal degrees,
+read identical integers in identical row order.
+
+## The hex board (the hex trial)
+
+The `meridian-hex-v1.0.4` set (`data/reference/meridian/hex-v1.0.4/`, docs/hex-trial/) is
+built by `scripts/build_world_hex.py` from Meridian v1.0.4's H3 resolution-4 hexagon table,
+in the same table shapes as every set. Rules 1–6 above apply to it as they stand (the
+quintiles rank 439 units, so a tier is `1 + (5 × r) // 439`). What it adds:
+
+8. **Units** are the rows with population 5,000 or more: 439.
+9. **A unit's id** is `PP × 1,000,000 + S`, eight digits: `PP` is the two-digit federal code
+   of the row's `province` (NL 10, PE 11, NS 12, NB 13, QC 24, ON 35, MB 46, SK 47, AB 48,
+   BC 59, YT 60, NT 61, NU 62), and `S` is the H3 index's 7-bit base cell and its four
+   resolution digits (each 0–6, bits 42–31 of the index) read as one base-7 number,
+   `((((base × 7) + d1) × 7 + d2) × 7 + d3) × 7 + d4`. The index must be a cell (mode 1) at
+   resolution 4 with digits 5–15 all 7, or the build stops. Ids are fixed width, so string
+   order is numeric order (the Ordering rule above), and the first two digits are the
+   province, as a FED number's are.
+10. **A unit's name.** Two type lists of `csdType` codes: towns (`C CY CV CÉ T TV V VL VN
+    VC NV NVL SV RV HAM NH`) and general municipalities (`MÉ MU M MD DM RM TP CT CU P PE RGM
+    MRM CM SM RCR ID LGD IM RMU CC CG COM SÉ SET`). Units are taken by population descending,
+    ties by id. Pass 1: each takes the first of its own places, towns before municipalities,
+    each list in the table's order (population descending), whose `name_key` no unit has
+    taken. Pass 2, for the units pass 1 left: the hexagons at land-link distance 1 from the
+    unit's, then 2, and so on (each ring in H3 order); in each ring, the place of the town
+    list, then the municipal list, with the greatest population whose name is not taken,
+    ties by hexagon then table order. A unit with no name after both passes stops the build.
+    No name is ever rewritten.
+11. **`designation_ok`** is 1 when the place's `csdType` is in either list and it does not
+    span its unit; this replaces rule 7's name tests for this set.
+12. **Territories.** Over the table's land links among all 6,011 hexagons, every unit is at
+    distance 0 and, level by level, a hexagon first reached at distance d takes the lowest
+    unit id among the hexagons at d − 1 that reach it. A hexagon no unit reaches by land has
+    no unit.
+13. **Links.** For two units whose territories meet along a land link (x, y), the length is
+    the least `dist(x) + 1 + dist(y)`; ties by (x, y) in H3 order give the route drawn.
+    Every land link of length 6 or less is kept. The others are taken by (length, a, b) and
+    one is kept only when it joins two groups the kept land links leave apart (union by
+    lowest id). Two units whose territories meet only along water links get a water link,
+    of length measured the same way. A unit with no link after that gets one water link to
+    the unit whose hexagon centre is nearest on the WGS84 ellipsoid (pyproj's geodesic,
+    ties to the lower id), of length ⌈metres / 45,000⌉: the only floating-point measure in
+    the build, taken once, and committed as the row it decides.
+
+Nothing here reaches an engine but the six tables every set has, and none holds a float.
+The founding roll's denominator (`p_found`, "The one float") is the map's unit count —
+`World.total_units`, the JavaScript engine's `map.ridings.length` — which is 343 on both
+riding sets, so their games are unchanged. Map geometry stays in decimal degrees,
 because a map is drawn in them; it is computed in the same exact decimal arithmetic
 (rounded half up to six places) and is read only by the site's map, never by an engine.
 

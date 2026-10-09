@@ -49,7 +49,7 @@ ENGINE_TOOLS = ("playtest.js",)
 # never feeds either engine, so it ships beside the engine rather than inside it.
 STORY_FILES = (
     "beats.js", "weight.js", "standings.js", "storylines.js", "text.js", "dispatch.js",
-    "view.js", "reckoning.js", "marks.js", "camera.js", "round.js", "weights.json",
+    "view.js", "reckoning.js", "marks.js", "camera.js", "round.js", "words.js", "weights.json",
 )
 
 # Exactly the rules tables `web/engine/rules.js` reads, per version. Listed

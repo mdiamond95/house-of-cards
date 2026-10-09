@@ -44,8 +44,15 @@ MAX_BYTES = 3 * 1024 * 1024
 # Lambert Conformal Conic, the projection the old map used.
 PROJECTION = "+proj=lcc +lat_1=49 +lat_2=77 +lat_0=49 +lon_0=-95 +datum=WGS84 +units=m +no_defs"
 
+# The hex trial's own drawing files (scripts/build_world_hex.py): every land
+# hexagon with the unit its land floods to, and the routes between units.
+# Only a set that declares itself a hex board (set.json `hexes`) has them.
+HEXES_FILE = "hexes.geojson"
+ROUTES_FILE = "routes.geojson"
+
 __all__ = [
     "write_maps", "DEFAULT_OUT_DIR", "UNCLAIMED_FILL", "PROJECTION",
+    "projected_hexes", "projected_routes",
     "projected_features", "projected_borders",
     "projected_site_features", "projected_site_borders",
     "viewport", "path_data", "border_path_data", "house_fills",
@@ -276,6 +283,120 @@ def projected_site_borders(reference_dir=None):
     return _project_borders(
         transformer, path=_site_path(reference_dir, SITE_BORDERS_FILE, BORDERS_FILE)
     )
+
+
+def projected_hexes(reference_dir=None):
+    """Every land hexagon of a hex set, projected: [{h3, unit, dist, rings}].
+    unit and dist are None for a hexagon no unit's land reaches. [] for a set
+    without the file (every riding set)."""
+    path = _reference(reference_dir) / HEXES_FILE
+    if not path.exists():
+        return []
+    transformer = Transformer.from_crs("EPSG:4326", PROJECTION, always_xy=True)
+    out = []
+    for feature in json.loads(path.read_text(encoding="utf-8"))["features"]:
+        if feature["geometry"] is None:
+            continue
+        rings = []
+        for polygon in _polygons(feature["geometry"]):
+            for ring in polygon:
+                xs, ys = transformer.transform([p[0] for p in ring], [p[1] for p in ring])
+                rings.append(list(zip(xs, ys)))
+        props = feature["properties"]
+        out.append({"h3": props["h3"], "unit": props["unit"], "dist": props["dist"], "rings": rings})
+    return out
+
+
+def projected_routes(reference_dir=None):
+    """A hex set's routes (links longer than one step), projected:
+    [{a, b, kind, length, line}], line running from unit a to unit b."""
+    path = _reference(reference_dir) / ROUTES_FILE
+    if not path.exists():
+        return []
+    transformer = Transformer.from_crs("EPSG:4326", PROJECTION, always_xy=True)
+    out = []
+    for feature in json.loads(path.read_text(encoding="utf-8"))["features"]:
+        coords = feature["geometry"]["coordinates"]
+        xs, ys = transformer.transform([p[0] for p in coords], [p[1] for p in coords])
+        props = feature["properties"]
+        out.append({"a": props["fed_id_a"], "b": props["fed_id_b"], "kind": props["kind"],
+                    "length": props["length"], "line": list(zip(xs, ys))})
+    return out
+
+
+def _simplify(points, tolerance):
+    """Douglas–Peucker on a ring of screen points, keeping its first and last.
+    Squared distances, no square root; for drawing only."""
+    if len(points) < 3:
+        return points
+    keep = [False] * len(points)
+    keep[0] = keep[-1] = True
+    stack = [(0, len(points) - 1)]
+    limit = tolerance * tolerance
+    while stack:
+        a, b = stack.pop()
+        ax, ay = points[a]
+        bx, by = points[b]
+        dx, dy = bx - ax, by - ay
+        length = dx * dx + dy * dy
+        worst, index = -1.0, None
+        for i in range(a + 1, b):
+            px, py = points[i]
+            if length == 0:
+                d = (px - ax) ** 2 + (py - ay) ** 2
+            else:
+                cross = dx * (py - ay) - dy * (px - ax)
+                d = cross * cross / length
+            if d > worst:
+                worst, index = d, i
+        if index is not None and worst > limit:
+            keep[index] = True
+            stack.append((a, index))
+            stack.append((index, b))
+    return [pt for pt, k in zip(points, keep) if k]
+
+
+def compact_path_data(rings, to_svg, precision=1, tolerance=0.0):
+    """Path data for the hex board's layers: each ring simplified by
+    `tolerance` map units (Douglas–Peucker), then written as relative moves at
+    `precision` decimals, with implicit line-tos — about half the bytes of
+    path_data's absolute form. Rounding is carried forward, so a ring closes
+    where it began. Display only: no engine reads a drawing."""
+    scale = 10 ** precision
+    parts = []
+    cx = cy = 0  # the pen, in integer tenths (or whatever precision gives)
+    for ring in rings:
+        points = [to_svg(x, y) for x, y in ring]
+        if tolerance > 0:
+            points = _simplify(points, tolerance)
+        ints = []
+        for x, y in points:
+            q = (round(x * scale), round(y * scale))
+            if not ints or q != ints[-1]:
+                ints.append(q)
+        if len(ints) > 1 and ints[0] == ints[-1]:
+            ints.pop()
+        if len(ints) < 3:
+            continue
+        out = []
+        for i, (x, y) in enumerate(ints):
+            dx, dy = x - cx, y - cy
+            cx, cy = x, y
+            out.append(f"{_fixed(dx, precision)},{_fixed(dy, precision)}")
+        parts.append("m" + " ".join(out) + "z")
+        # After z the pen returns to the ring's first point.
+        cx, cy = ints[0]
+    return "".join(parts)
+
+
+def _fixed(value, precision):
+    """An integer count of 10^-precision units as the shortest decimal."""
+    if precision == 0:
+        return str(value)
+    sign = "-" if value < 0 else ""
+    whole, frac = divmod(abs(value), 10 ** precision)
+    text = f"{whole}.{frac:0{precision}d}".rstrip("0").rstrip(".")
+    return sign + text
 
 
 def viewport(features, width, margin=0):

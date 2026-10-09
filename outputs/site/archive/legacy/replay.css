@@ -13,6 +13,9 @@ body.mapview { background: #c9d8e1; }
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .mv-layer { position: absolute; inset: 0; transform-origin: 0 0; will-change: transform; }
 .mv-layer #map { width: 100%; height: 100%; display: block; border: 0; background: transparent; overflow: visible; }
+.mv-layer #map-under { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; }
+/* Its own compositing layer, so a turn's fills never re-rasterise the land. */
+.mv-layer #map-under + #map { position: relative; will-change: transform; }
 /* A riding changing hands crosses from the old colour to the new. */
 #map-fills path { transition: fill 0.5s ease; cursor: default; }
 .mv-jump #map-fills path { transition: none; }
@@ -64,6 +67,16 @@ body.mapview { background: #c9d8e1; }
 .ln-claim { stroke: #a3261f; stroke-width: 2.4; stroke-dasharray: 8 4; }
 .ln-scheme { stroke: var(--ink); stroke-width: 2; }
 .ln-intent { stroke: var(--ink); stroke-opacity: 0.5; stroke-width: 1.5; stroke-dasharray: 2 4; }
+/* The hex board (the hex trial): neutral land in hexagons, units outlined on
+   it, wilderness near a held unit washed in its colour, dotted routes, and an
+   expansion drawn along its route. */
+svg[data-hexes] .hex-land { fill: #ece8df; stroke: #fbf9f4; stroke-width: 0.5px; }
+svg[data-hexes] .hex-near { transition: fill 0.5s ease; }
+svg[data-hexes] #map-fills path { stroke: #7d776b; stroke-width: 0.8px; vector-effect: non-scaling-stroke; }
+svg[data-hexes] #map-borders { display: none; }
+.mv-route-dots { fill: none; stroke: #6b665c; stroke-width: 1.6; stroke-dasharray: 0.1 4.6; stroke-linecap: round; stroke-opacity: 0.85; pointer-events: none; }
+.ln-route { stroke: var(--ink); stroke-width: 3; stroke-dasharray: 1 1; animation: mv-route 1.6s ease-out both; }
+@keyframes mv-route { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 .ln-origin { fill: #fff; stroke: var(--ink); stroke-width: 1.5; }
 .mv-arrowhead { fill: var(--ink); }
 .mv-arrowhead-faint { fill: rgba(31,28,23,0.5); }
@@ -213,5 +226,6 @@ body.mapview { background: #c9d8e1; }
 }
 @media (prefers-reduced-motion: reduce) {
   #map-fills path { transition: none; }
-  .ol-claim, .mv-seat-pulse { animation: none; }
+  .ol-claim, .mv-seat-pulse, .ln-route { animation: none; }
+  svg[data-hexes] .hex-near { transition: none; }
 }

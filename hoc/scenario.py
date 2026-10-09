@@ -87,12 +87,19 @@ STATUS_FROZEN = "frozen"
 #                    Meridian's riding unit table at tag v1.0.3, with census
 #                    places, riding statistics and jurisdictions by year
 #                    (scripts/build_world_meridian.py; CLAUDE.md, "World data").
+#   meridian-hex-v1.0.4  the hex trial: the 439 H3 resolution-4 hexagons of
+#                    Meridian v1.0.4 with 5,000 people or more, linked across
+#                    the wilderness between them (scripts/build_world_hex.py,
+#                    docs/hex-trial/README.md). No scenario is played on it;
+#                    the hex preview and the trial harness build scratch
+#                    worlds on it.
 #
 # A set is never edited once a game has been played on it: moving to newer data
 # is a new key and a new directory.
 REFERENCE_SETS = {
     "ne-2026": Path("data") / "reference",
     "meridian-v1.0.3": Path("data") / "reference" / "meridian" / "v1.0.3",
+    "meridian-hex-v1.0.4": Path("data") / "reference" / "meridian" / "hex-v1.0.4",
 }
 
 # What a manifest with no `reference_data` was built against: the one set that

@@ -280,7 +280,7 @@ function renderStatus() {
   el('play-status').innerHTML =
     `<span class="stat"><b>Season</b> ${currentSeason()}</span>`
     + `<span class="stat"><b>Houses</b> ${active}</span>`
-    + `<span class="stat"><b>Ridings</b> ${held} of 343</span>`
+    + `<span class="stat"><b>Ridings</b> ${held} of ${world.state.map.ridings.length}</span>`
     + bands;
 }
 

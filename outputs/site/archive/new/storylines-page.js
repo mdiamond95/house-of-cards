@@ -57,6 +57,7 @@ async function boot() {
     weights, baseline: index.baseline, unit,
     styleOf: (house) => styles[house] || null, ridings: index.ridings || {},
     watch: Boolean(index.succession_watch), calendar, reckoning: index.reckoning || null,
+    unitWord: index.unit_word || null,
   });
   for (let turn = 1; turn <= index.turns; turn += 1) {
     story.step(turn, byTurn[String(turn)] || [], { prestige: prestige[String(turn)] || null });

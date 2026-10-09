@@ -5,6 +5,7 @@
     outputs/site/preview/replay.html       the preview told one turn at a time
     outputs/site/preview/storylines.html   its storylines
     outputs/site/preview/reckoning.html    its reckoning, for a game that ends in one
+    outputs/site/preview-hex/              the same, played on the hex board (the hex trial)
 
 docs/STORY_DESIGN.md Phase C2, and D1. While a draft rules version exists
 (rules/README.md, "A draft version": the one directory newer than
@@ -34,16 +35,19 @@ from hoc.export import beats as beats_export, site  # noqa: E402
 SEED = 1867
 SEASONS = 100
 REFERENCE = "meridian-v1.0.3"
+# The hex trial (docs/hex-trial/README.md): the same draft and seed played on
+# the hex board, published beside the riding preview at preview-hex/.
+HEX_REFERENCE = "meridian-hex-v1.0.4"
 
 
-def play_preview(db_path, version, seed=SEED, seasons=SEASONS, records=None):
+def play_preview(db_path, version, seed=SEED, seasons=SEASONS, records=None, reference=REFERENCE):
     """A scratch world, played `seasons` seasons under `version`. Returns the
     open connection. Each season's record is appended to `records`, if given:
     the preview writes no season file, and the exporter reads the records'
     `order` (rules 1.0 `round_record`) from them."""
     import load_seed
 
-    conn = load_seed.build(db_path, seed=scenario.blank_seed_dir(), reference_data=REFERENCE)
+    conn = load_seed.build(db_path, seed=scenario.blank_seed_dir(), reference_data=reference)
     world = sim.World(conn, rules=rules_data.load_rules(version=version), world_seed=seed)
     kept = records if records is not None else []
     with conn:
@@ -65,28 +69,36 @@ def build_preview(out_dir=site.DEFAULT_OUT_DIR, verbose=False):
     """Render the preview, or remove it when there is no draft. Returns the
     paths written."""
     version = rules_data.draft_version()
-    preview_dir = Path(out_dir) / site.SITE_DIRNAME / site.PREVIEW_DIRNAME
+    boards = ((site.PREVIEW_DIRNAME, REFERENCE), (site.HEX_PREVIEW_DIRNAME, HEX_REFERENCE))
     if version is None:
-        shutil.rmtree(preview_dir, ignore_errors=True)
+        for dirname, _ in boards:
+            shutil.rmtree(Path(out_dir) / site.SITE_DIRNAME / dirname, ignore_errors=True)
         if verbose:
-            print("preview: no draft rules version; preview/ removed")
+            print("preview: no draft rules version; preview/ and preview-hex/ removed")
         return []
-    with tempfile.TemporaryDirectory(prefix="hoc-preview-") as workspace:
-        seasons = preview_length(version)
-        records = []
-        conn = play_preview(Path(workspace) / "preview.db", version, seasons=seasons, records=records)
-        written = site.write_preview(conn, version, out_dir=out_dir, seed=SEED, seasons=seasons,
-                                     orders=beats_export.orders_from_records(records))
-        conn.close()
-    if verbose:
-        print(f"preview: {seasons} turns under rules {version} (draft), {len(written)} files")
+    written = []
+    seasons = preview_length(version)
+    for dirname, reference in boards:
+        with tempfile.TemporaryDirectory(prefix="hoc-preview-") as workspace:
+            records = []
+            conn = play_preview(Path(workspace) / "preview.db", version, seasons=seasons,
+                                records=records, reference=reference)
+            files = site.write_preview(conn, version, out_dir=out_dir, seed=SEED, seasons=seasons,
+                                       orders=beats_export.orders_from_records(records),
+                                       dirname=dirname)
+            conn.close()
+        written.extend(files)
+        if verbose:
+            print(f"{dirname}: {seasons} turns under rules {version} (draft) on {reference},"
+                  f" {len(files)} files")
     return written
 
 
 def main():
     out_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else site.DEFAULT_OUT_DIR
     build_preview(out_dir, verbose=True)
-    print(f"wrote {Path(out_dir) / site.SITE_DIRNAME / site.PREVIEW_DIRNAME}")
+    print(f"wrote {Path(out_dir) / site.SITE_DIRNAME / site.PREVIEW_DIRNAME} and"
+          f" {site.HEX_PREVIEW_DIRNAME}/")
     return 0
 
 

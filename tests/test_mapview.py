@@ -62,7 +62,7 @@ def served_preview(tmp_path_factory):
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
-        yield f"http://127.0.0.1:{server.server_address[1]}/{site.PREVIEW_DIRNAME}"
+        yield f"http://127.0.0.1:{server.server_address[1]}"
     finally:
         server.shutdown()
 
@@ -72,9 +72,12 @@ class _Quiet(http.server.SimpleHTTPRequestHandler):
         pass
 
 
-def test_the_map_view_works_on_a_phone_an_ipad_and_a_desktop(served_preview):
+# The riding preview, and the hex trial's preview on the hex board
+# (docs/hex-trial/README.md), which must pass the same checks.
+@pytest.mark.parametrize("dirname", ["preview", "preview-hex"])
+def test_the_map_view_works_on_a_phone_an_ipad_and_a_desktop(served_preview, dirname):
     result = subprocess.run(
-        [NODE, str(ROOT / "tests" / "js" / "mapview.e2e.mjs"), served_preview],
+        [NODE, str(ROOT / "tests" / "js" / "mapview.e2e.mjs"), f"{served_preview}/{dirname}"],
         cwd=ROOT, capture_output=True, text=True, timeout=900,
     )
     lines = [line for line in result.stdout.splitlines() if line.startswith("{")]

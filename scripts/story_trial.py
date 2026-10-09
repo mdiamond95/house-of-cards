@@ -4,7 +4,8 @@
     python scripts/story_trial.py --matrix [--markdown FILE]
 
 Plays `--turns` turns (default 100) on scratch copies of the Meridian world
-(`meridian-v1.0.3`) for each seed in `--seeds` (default 1867-1876) under a named
+(`meridian-v1.0.3`, or the set `--reference` names: `meridian-hex-v1.0.4` for
+the hex trial, docs/hex-trial/README.md) for each seed in `--seeds` (default 1867-1876) under a named
 rules version, with any of its feature flags overridden, builds the game's beats
 (hoc/export/beats.py), replays them as dispatches with the story layer
 (tests/js/story_report.mjs), and prints one table of mean and range across the
@@ -101,8 +102,8 @@ def _counts(conn):
     return houses, ridings
 
 
-def play_one(version, overrides, seed, turns=TURNS):
-    """One seed: the trial's raw numbers for it."""
+def play_one(version, overrides, seed, turns=TURNS, reference=REFERENCE):
+    """One seed: the trial's raw numbers for it, on the `reference` set."""
     import load_seed
 
     from hoc import sim
@@ -110,7 +111,7 @@ def play_one(version, overrides, seed, turns=TURNS):
     with tempfile.TemporaryDirectory(prefix="hoc-trial-") as work:
         work = Path(work)
         conn = load_seed.build(
-            work / "trial.db", seed=scenario.blank_seed_dir(), reference_data=REFERENCE,
+            work / "trial.db", seed=scenario.blank_seed_dir(), reference_data=reference,
         )
         rules = rules_data.load_rules(version=version)
         rules.features.update(overrides)
@@ -140,6 +141,15 @@ def play_one(version, overrides, seed, turns=TURNS):
                     held = {r["fed_id"] for r in conn.execute(
                         "SELECT fed_id FROM holdings WHERE released_event_id IS NULL")}
                     at[f"inplay{season}"] = len(held & play) / len(play)
+                    # The hex trial: the share of every unit of the map held,
+                    # by the founding regions (hoc/sim.py PROVINCE_REGION).
+                    regions = {}
+                    for r in conn.execute("SELECT fed_id, province FROM ridings"):
+                        region = sim.PROVINCE_REGION.get(r["province"], "north")
+                        total, mine = regions.get(region, (0, 0))
+                        regions[region] = (total + 1, mine + (1 if r["fed_id"] in held else 0))
+                    at[f"regions{season}"] = {k: v[1] / v[0] for k, v in sorted(regions.items())}
+                    at[f"held{season}"] = len(held) / len(feds)
                 if season == 60:
                     ranked = sorted((-world.standing(r["house"]), r["house"]) for r in world.active_houses())
                     top = [world.rank_index.get(world.house_row(h)["rank"], 0) for _, h in ranked[:8]]
@@ -240,6 +250,10 @@ def play_one(version, overrides, seed, turns=TURNS):
         "open_claimed_60": at["open60"],
         "in_play_25": at["inplay25"], "in_play_50": at["inplay50"],
         "in_play_75": at["inplay75"], "in_play_100": at["inplay100"],
+        "held_25": at["held25"], "held_50": at["held50"],
+        "held_75": at["held75"], "held_100": at["held100"],
+        "region_held_25": at["regions25"], "region_held_50": at["regions50"],
+        "region_held_75": at["regions75"], "region_held_100": at["regions100"],
         "five_plus": story["fivePlus"],
         "rise_decline": story["byType"].get("rise", 0) + story["byType"].get("decline", 0),
         "pause_share": report["summary"]["paused"] / max(1, report["summary"]["turns"]),
@@ -260,8 +274,8 @@ def play_one(version, overrides, seed, turns=TURNS):
     }
 
 
-def run_config(label, version, overrides, seeds=SEEDS, turns=TURNS):
-    return label, [play_one(version, overrides, seed, turns) for seed in seeds]
+def run_config(label, version, overrides, seeds=SEEDS, turns=TURNS, reference=REFERENCE):
+    return label, [play_one(version, overrides, seed, turns, reference) for seed in seeds]
 
 
 # --------------------------------------------------------------------- table --
@@ -305,6 +319,10 @@ ROWS = (
     ("§6 closed storylines without an outcome (target 0)", "closed_without_outcome", "num"),
     ("houses active at turn 25", "houses_25", "num"),
     ("houses active at turn 50", "houses_50", "num"),
+    ("units of the whole map held at turn 25", "held_25", "pct"),
+    ("units of the whole map held at turn 50", "held_50", "pct"),
+    ("units of the whole map held at turn 75", "held_75", "pct"),
+    ("units of the whole map held at turn 100", "held_100", "pct"),
     ("ridings claimed at turn 25", "ridings_25", "num"),
     ("ridings claimed at turn 50", "ridings_50", "num"),
     ("ridings claimed at turn 100", "ridings_100", "num"),
@@ -354,10 +372,12 @@ def table(configs, markdown=True):
     extra = sorted({k for f in flats for k in f if "." in k})
     for key in extra:
         group, sub = key.split(".", 1)
-        style = "pct" if group == "headline_types" else "num"
+        style = "pct" if group == "headline_types" or group.startswith("region_held") else "num"
         title = {
             "five_plus_by_type": "storylines of 5+ beats", "headline_types": "headlines in",
             "rivalry_outcomes": "rivalries",
+            "region_held_25": "held at turn 25 in", "region_held_50": "held at turn 50 in",
+            "region_held_75": "held at turn 75 in", "region_held_100": "held at turn 100 in",
         }[group]
         rows.append((f"{title}: {sub}", key, style))
     out = ["| metric | " + " | ".join(labels) + " |", "|---|" + "---|" * len(labels)]
@@ -438,6 +458,9 @@ def main(argv=None):
     parser.add_argument("--markdown", default=None, help="also write the table here")
     parser.add_argument("--json", default=None, help="also write the raw results here")
     parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument("--reference", default=REFERENCE,
+                        help=f"the reference-data set to play on (default {REFERENCE};"
+                        " meridian-hex-v1.0.4 for the hex trial)")
     args = parser.parse_args(argv)
     if shutil.which("node") is None:
         raise SystemExit("node is not on PATH: the story report needs it")
@@ -454,8 +477,11 @@ def main(argv=None):
         version = args.rules_version or rules_data.current_version()
         overrides = _parse_flags(args.flags)
         label = version + (f" {args.flags}" if args.flags else "")
+        if args.reference != REFERENCE:
+            label += f" on {args.reference}"
         with ProcessPoolExecutor(max_workers=args.workers) as pool:
-            results = list(pool.map(play_one, *zip(*[(version, overrides, seed, args.turns)
+            results = list(pool.map(play_one, *zip(*[(version, overrides, seed, args.turns,
+                                                      args.reference)
                                                      for seed in seeds])))
         configs = [(label, results)]
     if args.prepend:

@@ -31,6 +31,7 @@
 import { compareText } from './beats.js';
 import { applyBeats } from './standings.js';
 import { verbFirst } from './text.js';
+import { unitNoun } from './words.js';
 
 // Four paces (Phase V3), lowest first. Which beat kinds belong to which, how
 // long Auto shows each and how long the camera takes to reach it are in
@@ -174,8 +175,8 @@ export function yearCounts(entries, owners = {}) {
   }
   const plural = (count, one, many) => `${count} ${count === 1 ? one : many}`;
   return [
-    ['taken', plural(n.taken, 'riding taken', 'ridings taken')],
-    ['hands', plural(n.hands, 'riding changing hands', 'ridings changing hands')],
+    ['taken', plural(n.taken, `${unitNoun(1)} taken`, `${unitNoun(2)} taken`)],
+    ['hands', plural(n.hands, `${unitNoun(1)} changing hands`, `${unitNoun(2)} changing hands`)],
     ['contests', plural(n.contests, 'contest decided', 'contests decided')],
     ['successions', plural(n.successions, 'succession', 'successions')],
     ['elevations', plural(n.elevations, 'elevation', 'elevations')],
@@ -402,7 +403,7 @@ export function houseCard(part, before, {
 
 // The small line under a house's card: "4 ridings · Earl · 3rd of 24".
 export function houseLine({ ridings, rank, place, of }) {
-  const bits = [`${ridings} riding${ridings === 1 ? '' : 's'}`];
+  const bits = [`${ridings} ${unitNoun(ridings)}`];
   if (rank) bits.push(rank);
   if (place) bits.push(`${placeWord(place)} of ${of}`);
   return bits.join(' · ');

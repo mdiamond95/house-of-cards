@@ -32,7 +32,7 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
-from hoc import rules as mechanics
+from hoc import places, rules as mechanics
 
 __all__ = [
     "build_story", "write_beats", "turn_inputs", "type_turn", "BEAT_KINDS", "CHUNK_BUDGET",
@@ -816,6 +816,11 @@ def write_beats(conn, data_dir, title=None, orders=None):
         orders = None
     index, beats = build_story(conn, orders)
     index["title"] = title
+    # What a unit of the map is called, where the set names it (the hex
+    # trial's "holding"); a riding set's index has no key and reads "riding".
+    unit_word = places.set_info(places.reference_dir_for(conn)).get("unit_word")
+    if unit_word:
+        index["unit_word"] = unit_word
     if told_by_round:
         index["round"] = True
     prestige = prestige_by_turn(conn)

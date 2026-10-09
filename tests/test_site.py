@@ -661,6 +661,30 @@ def test_the_preview_has_a_replay_and_a_storylines_page_and_says_it_is_a_draft(p
         assert "plans" in body and "prestige" in body
 
 
+def test_the_hex_preview_sits_beside_the_riding_preview_and_draws_the_hex_board(preview_site):
+    """The hex trial (docs/hex-trial/README.md): preview-hex/ is the same draft on
+    the hex board, the two previews link to each other, and only the hex one
+    draws hexagons, routes and the set's word for a unit."""
+    hexes = preview_site.parent / site.HEX_PREVIEW_DIRNAME
+    riding_html = (preview_site / "replay.html").read_text(encoding="utf-8")
+    hex_html = (hexes / "replay.html").read_text(encoding="utf-8")
+    assert 'href="../preview-hex/replay.html">Preview on hexes (trial)</a>' in riding_html
+    assert 'href="../preview/replay.html">Preview on ridings</a>' in hex_html
+    assert "data-hexes" not in riding_html and 'id="mv-land"' not in riding_html
+    assert 'aria-label="Map of the 343 federal ridings, coloured by house"' in riding_html
+    assert 'data-hexes="1"' in hex_html and 'id="mv-land"' in hex_html and 'id="mv-routes"' in hex_html
+    assert hex_html.count("data-near=") == 372  # units with wilderness within one or two hexagons
+    assert "Hex-board trial — rules" in hex_html and "not a game of record" in hex_html
+    index = json.loads((hexes / "data" / "beats" / "index.json").read_text(encoding="utf-8"))
+    assert index["unit_word"] == {"singular": "holding", "plural": "holdings"}
+    assert "unit_word" not in json.loads((preview_site / "data" / "beats" / "index.json").read_text(encoding="utf-8"))
+    assert len(index["ridings"]) == 439
+    routes = json.loads((hexes / "data" / "routes.json").read_text(encoding="utf-8"))
+    assert len(routes["lines"]) == 412 and len(routes["links"]) == 1111
+    assert not (preview_site / "data" / "routes.json").exists()
+    assert len(hex_html.encode("utf-8")) < 700_000, "the hex page stays light enough for a phone"
+
+
 def test_the_preview_writes_nothing_to_any_scenario_or_season_record(preview_site, tmp_path):
     import hashlib
     import build_preview
