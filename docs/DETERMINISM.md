@@ -262,6 +262,58 @@ riding sets, so their games are unchanged. Map geometry stays in decimal degrees
 because a map is drawn in them; it is computed in the same exact decimal arithmetic
 (rounded half up to six places) and is read only by the site's map, never by an engine.
 
+## The hex board on v1.0.5
+
+The `meridian-hex-v1.0.5` set (`data/reference/meridian/hex-v1.0.5/`, docs/hex-trial/v2/) is
+built by `scripts/build_world_hexboard.py` from Meridian v1.0.5's `hexes.r4.v1.2` and
+`hexes.r5.v1` tables. Rules 1–6 and 10–13 above apply as they stand (quintiles over 494
+units), except as follows.
+
+14. **The board.** A resolution-4 row of 500,000 people or more is *split*: its
+    resolution-5 rows (`parent` equal to its id) replace it. The board's hexagons are the
+    unsplit resolution-4 rows and the split parents' cells. Two board hexagons are linked by
+    the table's own entry when both are resolution-4 rows, or both cells. A cell and an
+    unsplit hexagon are linked by the cell's entries whose `parent` is that hexagon: land if
+    any is land. Entries for a cell that is not a row (no land) are skipped.
+15. **Units.** An unsplit row of 5,000 people or more (423), and, of each split parent's
+    cells, those of 25,000 or more and the most populous (the core; ties to the lower index):
+    71. 494 in all.
+16. **Ids** are nine digits, `PP × 10,000,000 + T`. `PP` is as in rule 9. `T` is rule 9's
+    `S` for a resolution-4 unit. For a cell it is `1,000,000 +` its base cell and five
+    resolution digits read as one base-7 number (the index must be a resolution-5 cell with
+    digits 6–15 all 7). So `(T − 1,000,000) // 7` is the parent's `S`.
+17. **Names.** Rule 10, with these steps first and in between:
+    - First, every core takes its parent's first place (the most populous).
+    - Then pass 1 runs, over the other units.
+    - Then each cell still unnamed takes the first token, by `token_order` in
+      `data/reference/riding_tokens.csv`, whose `name_key` is unused, of the 2023 riding
+      holding the largest area of the cell's land.
+    - Then pass 2 runs.
+
+    The area is measured once, at build time, in floating point (shapely, pyproj,
+    EPSG:3347, ties to the lower fed id) on Meridian v1.0.3's riding layer. Like rule 13's
+    nearest unit, what it decides is committed (`units.csv` `name_riding`), and no engine
+    sees the measure.
+18. **`opens_year`** is the greatest of these:
+    - the first `from_year` of the unit's spans whose sovereign is `Canada`;
+    - the resolution-4 row's `settledYear` where it is not null (cells have none);
+    - for a cell that is not a core, its parent's city year (`CITY_YEARS` in the script,
+      each with its source);
+    - a director's override, matched by census subdivision code (`OPENING_OVERRIDES`).
+
+    Integers throughout. `units.csv` records each part. Neither engine reads `opens_year`
+    under `world_calendar` (docs/hex-trial/v2/README.md, "Where this stopped").
+19. **Joining groups.** After rule 13, while the units fall into more than one group counting
+    water links, the smallest group (ties by its lowest id) gets one water link: from its
+    unit nearest a unit outside it, to that unit, measured as in rule 13. At v1.0.5 no group
+    needs one.
+
+The drawing files (`hexes.geojson`, `routes.geojson` through each hexagon's `landPoint`,
+`jurisdictions.geojson`) are read by no engine. `jurisdictions.geojson` takes every board
+hexagon's span at each year from 1867, a district of the North-West Territories being
+drawn as the Territories (Keewatin apart, 1876–1904), and starts a new feature set whenever
+any hexagon's first-order jurisdiction, name, sovereign or status changes.
+
 ## Worked examples
 
 All values below are produced by both engines. `tests/test_prng.py` pins them as literals.
