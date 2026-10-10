@@ -11,6 +11,7 @@ It is a generated view: nothing here is ever read back as input.
 import html
 import shutil
 import json
+import re
 import unicodedata
 from pathlib import Path
 
@@ -66,8 +67,8 @@ _PREVIEW = None
 # Whether the preview game ended in a reckoning (rules 1.0 `world_calendar`).
 _PREVIEW_RECKONING = False
 PREVIEW_DIRNAME = "preview"
-# The hex trial's preview (docs/hex-trial/README.md): the same draft played on
-# the hex board, meridian-hex-v1.0.4, published beside the riding preview.
+# The hex board's preview (docs/hex-trial/v2/README.md): the same draft played
+# on the hex board, meridian-hex-v1.0.5, published beside the riding preview.
 HEX_PREVIEW_DIRNAME = "preview-hex"
 # Which of the two previews is being rendered.
 _PREVIEW_DIR = PREVIEW_DIRNAME
@@ -81,12 +82,46 @@ HEX_PRECISION = 1
 # (about a kilometre and a half): the Arctic coast is most of the backdrop's
 # points, and at this the page stays light enough for a phone.
 HEX_TOLERANCE = 0.3
+# Set while a site is rendered for a game played under rules 1.0's
+# `world_calendar` (Phase D2): its calendar ({start_year, turns, ...}), so a
+# page says years where it would say seasons. None for any other game.
+_CALENDAR = None
+# The reference set's own word for a unit (set.json `unit_word`): "holding" on
+# the hex board, "riding" on the riding sets.
+_UNIT = {"singular": "riding", "plural": "ridings"}
+# Whether the live site is told as a story (Phase D2): a live game under
+# `world_calendar`, whose home page is the map Replay, beside Storylines and,
+# after the last turn, the Reckoning.
+_LIVE_STORY = False
+_LIVE_RECKONING = False
+# The story pages the live site writes, swept when it no longer tells a story.
+LIVE_STORY_FILES = (
+    "replay.html", "replay.js", "replay.css", "replay-text.html", "replay-text.js",
+    "storylines.html", "storylines-page.js", "reckoning.html", "reckoning-page.js", "map.html",
+)
+
+
+def _units(n=2):
+    """The set's word for a unit, singular for one."""
+    return _UNIT["singular"] if n == 1 else _UNIT["plural"]
+
+
+def _year_of(season):
+    """The world year of a season under `world_calendar`, else None."""
+    return _CALENDAR["start_year"] + season - 1 if _CALENDAR else None
+
+
+def _when(season, capital=False):
+    """"1867" under `world_calendar`, else "season 1" ("Season 1")."""
+    if _CALENDAR:
+        return str(_year_of(season))
+    return f"{'Season' if capital else 'season'} {season}"
 
 
 def preview_banner(version):
     if _HEX:
         return (
-            f"Hex-board trial — rules {version} (draft) on Meridian v1.0.4's hexagons. Not a"
+            f"Hex-board preview — rules {version} (draft) on Meridian {_HEX['tag']}'s hexagons. Not a"
             " game of record: it is played afresh on a scratch world every time the site is"
             " exported, so it changes whenever the draft does."
         )
@@ -155,11 +190,21 @@ def _nav(depth=0):
     nav = [
         ("index.html", "Map"),
         ("play.html", "Play"),
-        ("ridings.html", "Ridings"),
+        ("ridings.html", _units().capitalize()),
         ("chronicle.html", "Chronicle"),
         ("climate.html", "Climate"),
         ("about.html", "About"),
     ]
+    if _LIVE_STORY and not _PREVIEW and not _ARCHIVE:
+        # Phase D2: a live game under the world calendar leads with its map
+        # Replay; the plain map moves to map.html.
+        nav = (
+            [("index.html", "Replay"), ("replay-text.html", "Replay (text)"),
+             ("storylines.html", "Storylines")]
+            + ([("reckoning.html", "Reckoning")] if _LIVE_RECKONING else [])
+            + [("map.html", "Map")]
+            + nav[1:]
+        )
     if _PREVIEW:
         # The preview is three pages (four, with a reckoning) and a way back out.
         nav = [
@@ -296,12 +341,14 @@ def _jurisdiction_attrs(fed_id, row, stats, jurisdictions):
     personal year (rules 0.9); an unclaimed one that opens after 1867 says
     when, since no Crown grant may seat a house there."""
     attrs = ""
-    if row is not None and row["house"] and row["personal_year"] is not None:
-        name = places.jurisdiction_at(jurisdictions.get(fed_id), row["personal_year"])
+    # Under `world_calendar` every house reads the map at the world year.
+    year = _CALENDAR["now"] if _CALENDAR else (row["personal_year"] if row is not None else None)
+    if row is not None and row["house"] and year is not None:
+        name = places.jurisdiction_at(jurisdictions.get(fed_id), year)
         if name:
             attrs += (
                 f' data-jurisdiction="{esc(name)}"'
-                f' data-year="{esc(row["personal_year"])}"'
+                f' data-year="{esc(year)}"'
             )
     opens = (stats.get(fed_id) or {}).get("opens_year")
     if opens is not None and opens > 1867 and not (row is not None and row["house"]):
@@ -449,7 +496,7 @@ def _status_strip(conn):
     # show whichever the active scenario actually has, and say which game it is,
     # so a page never leaves the reader guessing which world they are looking at.
     if season is not None:
-        progress_text = f"season {season}"
+        progress_text = _when(season)
     elif turn is not None:
         progress_text = f"turn {turn:04d}"
     else:
@@ -459,7 +506,7 @@ def _status_strip(conn):
         f'<span class="stat scenario">scenario <b>{esc(_ARCHIVE_NAME if _ARCHIVE else scenario.current_name())}</b></span>'
         f'<span class="stat"><b>{counts["active"]}</b> active houses</span>'
         f'<span class="stat"><b>{counts["removed"]}</b> removed</span>'
-        f'<span class="stat"><b>{counts["claimed"]}</b> of {counts["ridings"]} ridings held</span>'
+        f'<span class="stat"><b>{counts["claimed"]}</b> of {counts["ridings"]} {_units()} held</span>'
         f"{climate}"
         f'<span class="stat">{esc(progress_text)}</span>'
         "</div>"
@@ -487,7 +534,10 @@ def _index(conn, features, borders, slugs):
     southern_rings = []
     for feature in features:
         fed_id = feature["fed_id"]
-        data = map_export.path_data(feature["rings"], to_svg, MAP_PRECISION)
+        data = (
+            map_export.compact_path_data(feature["rings"], to_svg, HEX_PRECISION, HEX_TOLERANCE) if _HEX
+            else map_export.path_data(feature["rings"], to_svg, MAP_PRECISION)
+        )
         if not data:
             continue
         row = lookup.get(fed_id)
@@ -534,13 +584,21 @@ def _index(conn, features, borders, slugs):
     zoom_factor = MAP_WIDTH / (bottom_right[0] - top_left[0])
     south_stroke_width = BASE_STROKE_WIDTH / zoom_factor
 
+    label = (
+        f"Map of the {len(lookup)} {_units()} of the hex board, coloured by house" if _HEX
+        else "Map of the 343 federal ridings, coloured by house"
+    )
+    under = _hex_layers(to_svg, HEX_PRECISION) if _HEX else ""
     svg = (
         f'<svg id="map" viewBox="{south_view_box}" role="img"'
-        ' aria-label="Map of the 343 federal ridings, coloured by house"'
+        f' aria-label="{esc(label)}"'
         f' data-view-south="{south_view_box}" data-view-full="{full_view_box}"'
         f' data-stroke-south="{south_stroke_width:.4f}" data-stroke-full="{BASE_STROKE_WIDTH}"'
-        ' xmlns="http://www.w3.org/2000/svg">'
-        '<g stroke="none">' + "".join(paths) + "</g>"
+        + (f' data-unit="{esc(_units(1))}"' if _HEX else "")
+        + (' data-calendar="1"' if _CALENDAR else "")
+        + ' xmlns="http://www.w3.org/2000/svg">'
+        + under
+        + '<g stroke="none">' + "".join(paths) + "</g>"
         f'<path id="map-borders" fill="none" stroke="#ffffff" stroke-width="{south_stroke_width:.4f}"'
         f' stroke-linejoin="round" stroke-linecap="round" pointer-events="none" d="{border_data}"/>'
         "</svg>"
@@ -563,8 +621,9 @@ def _index(conn, features, borders, slugs):
             '<div class="scrubber">'
             '<button id="play" type="button">Play</button>'
             f'<input id="season" type="range" min="1" max="{latest}" value="{latest}"'
-            ' step="1" aria-label="Season">'
-            f'<output id="season-label" for="season">season {latest}</output>'
+            f' step="1" aria-label="{"Year" if _CALENDAR else "Season"}"'
+            + (f' data-start-year="{_CALENDAR["start_year"]}"' if _CALENDAR else "") + '>'
+            f'<output id="season-label" for="season">{esc(_when(latest))}</output>'
             "</div>"
         )
 
@@ -577,8 +636,8 @@ def _index(conn, features, borders, slugs):
         '<div id="panel" class="panel" hidden>'
         '<button id="panel-close" type="button" aria-label="Close">×</button>'
         '<div id="panel-body"></div></div>\n'
-        '<p class="hint">Tap a riding for its holder. Grey ridings are unclaimed.</p>\n'
-        "<h2>Houses by ridings held</h2>\n"
+        f'<p class="hint">Tap a {_units(1)} for its holder. Grey {_units()} are unclaimed.</p>\n'
+        f"<h2>Houses by {_units()} held</h2>\n"
         f'<ul id="legend" class="legend">{legend_rows}</ul>\n'
         '<script src="map.js"></script>'
     )
@@ -591,6 +650,8 @@ MAP_JS = """(function () {
   var body = document.getElementById('panel-body');
   var close = document.getElementById('panel-close');
   if (!map || !panel || !body || !close) return;
+  // Rules 1.0 `world_calendar`: one year for every house, not a personal one.
+  var calendar = map.hasAttribute('data-calendar');
 
   function show(path) {
     var house = path.getAttribute('data-house');
@@ -603,7 +664,7 @@ MAP_JS = """(function () {
     var rows = [
       '<h3>' + path.getAttribute('data-riding') + '</h3>',
       '<p class="panel-meta">' + path.getAttribute('data-province') +
-        (jurisdiction ? ' &middot; ' + jurisdiction + ' in personal year ' + year : '') +
+        (jurisdiction ? ' &middot; ' + jurisdiction + (calendar ? ' in ' : ' in personal year ') + year : '') +
         '</p>'
     ];
     if (house) {
@@ -612,7 +673,7 @@ MAP_JS = """(function () {
       rows.push('<p class="panel-meta">' + (holder || 'holder not recovered') + '</p>');
     } else {
       rows.push('<p class="panel-meta">Unclaimed' +
-                (opens ? ' &middot; opens to a house at personal year ' + opens : '') +
+                (opens ? (calendar ? ' &middot; opens in ' : ' &middot; opens to a house at personal year ') + opens : '') +
                 '</p>');
     }
     body.innerHTML = rows.join('');
@@ -620,7 +681,7 @@ MAP_JS = """(function () {
   }
 
   map.addEventListener('click', function (event) {
-    var path = event.target.closest('path');
+    var path = event.target.closest('path[data-fed]');
     if (path) show(path);
   });
   close.addEventListener('click', function () { panel.hidden = true; });
@@ -685,7 +746,8 @@ MAP_JS = """(function () {
       if (house) counts[house] = (counts[house] || 0) + 1;
     }
 
-    if (label) label.textContent = 'season ' + season;
+    var start = slider.getAttribute('data-start-year');
+    if (label) label.textContent = start ? String(Number(start) + season - 1) : 'season ' + season;
 
     var tally = timeline.counts[String(season)];
     if (strip && tally) {
@@ -868,6 +930,34 @@ def _hex_routes_json(geometry):
     return json.dumps({"links": _HEX["links"], "lines": lines}, separators=(",", ":"), sort_keys=True) + "\n"
 
 
+def _hex_borders_json(geometry):
+    """data/borders.json for a hex board with jurisdictions by year: the lines
+    between first-order jurisdictions along hexagon edges and each
+    jurisdiction's name at its label point, for each span of years the atlas
+    holds still, in the map's own coordinates. A line drawn in several spans is
+    written once (`lines`) and named by index. The page draws the span of the
+    year on screen; display only."""
+    to_svg = geometry["to_svg"]
+    precision = geometry.get("precision", HEX_PRECISION)
+    lines, index, spans = [], {}, {}
+    for b in _HEX["borders"]:
+        d = map_export.border_path_data(b["lines"], to_svg, precision)
+        if d not in index:
+            index[d] = len(lines)
+            lines.append(d)
+        span = spans.setdefault((b["from"], b["to"]), {"from": b["from"], "to": b["to"], "lines": [], "labels": []})
+        span["lines"].append(index[d])
+    for label in _HEX["labels"]:
+        span = spans.setdefault((label["from"], label["to"]),
+                                {"from": label["from"], "to": label["to"], "lines": [], "labels": []})
+        x, y = to_svg(*label["point"])
+        span["labels"].append({"name": label["name"], "key": label["key"], "sovereign": label["sovereign"],
+                               "status": label["status"], "x": round(x, precision), "y": round(y, precision)})
+    ordered = [spans[k] for k in sorted(spans, key=lambda k: k[0])]
+    return json.dumps({"lines": lines, "spans": ordered}, ensure_ascii=False,
+                      separators=(",", ":"), sort_keys=True) + "\n"
+
+
 def _map_svg(features, geometry, lookup):
     """The map both story pages draw: every riding unclaimed until the page's
     script paints it, the same projection and north/south viewBox pair as the
@@ -893,9 +983,11 @@ def _map_svg(features, geometry, lookup):
     if _HEX:
         label = (
             f"Map of the {len(lookup)} {_HEX['word']['plural']} of the hex board, hexagons of"
-            " 5,000 people or more, coloured by house, on all the land"
+            " 5,000 people or more"
+            + (" and the cities' smaller hexagons" if _HEX["city_hexes"] else "")
+            + ", coloured by house, on all the land"
         )
-        hexes = ' data-hexes="1"'
+        hexes = ' data-hexes="1"' + (' data-city-hexes="1"' if _HEX["city_hexes"] else "")
         under = _hex_layers(to_svg, precision)
     else:
         label = "Map of the 343 federal ridings, coloured by house"
@@ -1036,7 +1128,7 @@ def _map_detail(features, borders, geometry):
 def _short_banner():
     """The few words the map view keeps on screen to say what this game is."""
     if _PREVIEW and _HEX:
-        return f"Hex trial · draft rules {_PREVIEW} · not a game of record"
+        return f"Hex board · draft rules {_PREVIEW} · not a game of record"
     if _PREVIEW:
         return f"Draft rules {_PREVIEW} · not a game of record"
     if _ARCHIVE:
@@ -1189,7 +1281,7 @@ def _reckoning_page():
     body = (
         '<p class="lede prose">The game ends with a reckoning: the final standings by'
         " prestige, and for every house that ever stood among the first eight a short"
-        " epilogue built from the record's facts — its place, rank and ridings, the"
+        f" epilogue built from the record's facts — its place, rank and {_units()}, the"
         " year it stood highest, the contests it won and lost, and its successions.</p>\n"
         '<p id="reckoning-load" class="meta" role="status">Reading the record…</p>\n'
         '<div id="reckoning-body"></div>\n'
@@ -1290,29 +1382,35 @@ def _play_page(conn, features, borders, slugs):
         for name in sorted(STOP_CONDITIONS)
     )
 
+    word = "year" if _CALENDAR else "season"
+    end = (
+        f" The game runs from {_CALENDAR['start_year']} to"
+        f" {_CALENDAR['start_year'] + _CALENDAR['turns'] - 1} and ends with its reckoning."
+        if _CALENDAR else ""
+    )
     body = (
-        '<p class="lede prose">The game, played here in this browser. Every season is'
+        f'<p class="lede prose">The game, played here in this browser. Every {word} is'
         ' computed on this device by the same engine that plays it in the repository —'
-        ' nothing is fetched per season. What you play stays in this browser until you'
+        f' nothing is fetched per {word}. What you play stays in this browser until you'
         ' save it, and what you save is published only once the Python engine has'
-        ' replayed it and agreed.</p>\n'
+        f' replayed it and agreed.{end}</p>\n'
         '<p id="load-progress" class="meta" role="status">Loading the engine…</p>\n'
         '<div id="play-app" hidden>\n'
         '<p id="unsaved" class="banner unsaved" hidden></p>\n'
         '<div id="play-status" class="status"></div>\n'
-        + _story_controls("season")
+        + _story_controls(word)
         + '<div class="play-controls">'
         '<button type="button" id="play-toggle" class="primary">Play</button>'
         '<button type="button" id="play-step">Step</button>'
-        f'<span class="speed-group" role="group" aria-label="Seasons per second">{speeds}</span>'
+        f'<span class="speed-group" role="group" aria-label="{word.capitalize()}s per second">{speeds}</span>'
         "</div>\n"
         f'<div class="play-run"><span class="meta">Run on:</span>{runs}</div>\n'
         '<details class="play-stops"><summary>Stop early on</summary>'
         f'<div class="checks">{stops}</div></details>\n'
         '<div class="scrubber">'
         '<input id="play-season" type="range" min="1" max="1" value="1" step="1"'
-        ' aria-label="Season">'
-        '<output id="play-season-label" for="play-season">season 1</output>'
+        f' aria-label="{word.capitalize()}">'
+        f'<output id="play-season-label" for="play-season">{esc(_when(1))}</output>'
         '<button type="button" id="play-undo">Undo to here</button>'
         "</div>\n"
         + STORY_STRIP
@@ -1322,13 +1420,15 @@ def _play_page(conn, features, borders, slugs):
         '<div id="panel" class="panel" hidden>'
         '<button id="panel-close" type="button" aria-label="Close">×</button>'
         '<div id="panel-body"></div></div>\n'
-        '<p class="hint">Tap a riding for its house. Grey ridings are unclaimed.</p>\n'
+        f'<p class="hint">Tap a {_units(1)} for its house. Grey {_units()} are unclaimed.</p>\n'
         # The dispatch is the season as told (docs/STORY_DESIGN.md §3.2); the
         # chronicle it is told from stays, collapsed, as the full record.
         + STORY_DISPATCH
+        # Rules 1.0 `round_record`: the year just played, house by house.
+        + '<details id="play-round" class="play-round" open hidden></details>\n'
         + STORY_PLANS
         + STORY_AFOOT
-        + '<ol id="story-log" class="dispatch-log" aria-label="Earlier seasons"></ol>\n'
+        + f'<ol id="story-log" class="dispatch-log" aria-label="Earlier {word}s"></ol>\n'
         '<details id="full-record" class="full-record"><summary>Full record</summary>'
         '<div class="feed-controls">'
         '<label for="feed-filter">Only</label>'
@@ -1337,7 +1437,7 @@ def _play_page(conn, features, borders, slugs):
         '<ol id="feed" class="feed" aria-live="polite"></ol></details>\n'
         f"{_save_block()}\n"
         f"{_intervene_forms(conn)}\n"
-        "<h2>Houses by ridings held</h2>\n"
+        f"<h2>Houses by {_units()} held</h2>\n"
         '<ul id="play-legend" class="legend"></ul>\n'
         '<script type="module" src="play.js"></script>'
         "</div>"
@@ -1473,13 +1573,13 @@ def _house_engine_sections(conn, house, slugs):
     parts.append(f"<dt>Community</dt><dd>{text_or(stats['community'])}</dd>")
     parts.append(f"<dt>Region</dt><dd>{text_or(stats['region'])}</dd>")
     founded = stats["founded_season"]
-    founded_text = "—" if founded is None else f"season {founded}"
+    founded_text = "—" if founded is None else _when(founded)
     parts.append(f"<dt>Founded</dt><dd>{esc(founded_text)}</dd>")
     if stats["removed_season"] is not None:
-        parts.append(f"<dt>Removed</dt><dd>season {stats['removed_season']}</dd>")
+        parts.append(f"<dt>Removed</dt><dd>{esc(_when(stats['removed_season']))}</dd>")
     parts.append(
         f"<dt>Enclosed</dt><dd>{'yes' if stats['enclosed'] else 'no'}"
-        + (f" (since season {stats['enclosed_since']})" if stats["enclosed_since"] else "")
+        + (f" (since {_when(stats['enclosed_since'])})" if stats["enclosed_since"] else "")
         + "</dd>"
     )
     # Rules 1.0 `prestige` and `holder_traits`, where the record carries them.
@@ -1684,12 +1784,15 @@ def _house_page(conn, house_row, slugs):
         )
         parts.append(f"<dt>Predecessor</dt><dd>{text_or(holder['predecessor'])}</dd>")
         parts.append(f"<dt>Heir apparent</dt><dd>{text_or(holder['heir_apparent'])}</dd>")
-        parts.append(
-            "<dt>Personal clock</dt><dd>"
-            + (text_or(None) if clock is None else
-               f"{text_or(clock['personal_year'])} — {text_or(clock['basis'])}")
-            + "</dd>"
-        )
+        if not _CALENDAR:
+            # Under `world_calendar` a personal clock is a reign year that
+            # nothing reads, and every house reads the world year instead.
+            parts.append(
+                "<dt>Personal clock</dt><dd>"
+                + (text_or(None) if clock is None else
+                   f"{text_or(clock['personal_year'])} — {text_or(clock['basis'])}")
+                + "</dd>"
+            )
         parts.append(
             f"<dt>Source</dt><dd>{text_or(holder['source'])}"
             f" <span class=\"confidence\">confidence: {text_or(holder['confidence'])}</span></dd>"
@@ -1700,10 +1803,10 @@ def _house_page(conn, house_row, slugs):
     _, jurisdictions = _reference(conn)
     # Rules 0.9: each riding named by the jurisdiction it lay under at this
     # house's own personal year, where the reference set records them.
-    year = None if clock is None else clock["personal_year"]
+    year = _CALENDAR["now"] if _CALENDAR else (None if clock is None else clock["personal_year"])
     show_jurisdiction = bool(jurisdictions) and year is not None
     if not holdings:
-        parts.append("<p>This house holds no ridings.</p>")
+        parts.append(f"<p>This house holds no {_units()}.</p>")
     else:
         rows = "".join(
             f"<tr><td>{row['seat_order']}</td><td>{esc(row['name_en'])}</td>"
@@ -1720,11 +1823,13 @@ def _house_page(conn, house_row, slugs):
             f"<th>Jurisdiction in {esc(year)}</th>" if show_jurisdiction else ""
         )
         parts.append(
-            '<table><thead><tr><th>Seat</th><th>Riding</th><th>Prov.</th>'
+            f'<table><thead><tr><th>Seat</th><th>{_units(1).capitalize()}</th><th>Prov.</th>'
             f"{jurisdiction_head}<th>Colour</th></tr>"
             f"</thead><tbody>{rows}</tbody></table>"
         )
-        if show_jurisdiction:
+        if show_jurisdiction and _CALENDAR:
+            parts.append(f'<p class="footnote">Jurisdictions are as they stood in {esc(year)}.</p>')
+        elif show_jurisdiction:
             parts.append(
                 '<p class="footnote">Jurisdictions are as they stood at this house\'s own'
                 f" personal year, {esc(year)}; there is no universal calendar.</p>"
@@ -1787,7 +1892,7 @@ def _house_page(conn, house_row, slugs):
                     "SELECT mechanical_delta FROM events WHERE id = ?", (row["event_id"],)
                 ).fetchone()
                 season = _event_season(event) if event is not None else None
-            when = f"season {season} &middot; " if season else ""
+            when = f"{esc(_when(season))} &middot; " if season else ""
             items.append(
                 f'<li><span class="marker">{text_or(row["marker"], "—")}</span> {link}'
                 f'<span class="meta">{when}{text_or(row["event_text"])}</span></li>'
@@ -1840,9 +1945,21 @@ def _ridings_page(conn, slugs):
         by_province.setdefault(row["province"], []).append(row)
     stats, _ = _reference(conn)
 
-    parts = [f'<p class="lede">All {len(rows)} ridings of the 2023 Representation Order,'
-             " by province.</p>"]
-    if stats:
+    if _HEX:
+        parts = [f'<p class="lede">All {len(rows)} {_units()} of the hex board, by province:'
+                 " the hexagons of Meridian's map with 5,000 people or more, and the cities'"
+                 " smaller hexagons.</p>"]
+    else:
+        parts = [f'<p class="lede">All {len(rows)} ridings of the 2023 Representation Order,'
+                 " by province.</p>"]
+    if stats and _CALENDAR:
+        parts.append(
+            f'<p class="footnote">From the Meridian table this game is played on.'
+            f" <b>Resource tier</b> is a quintile, 1 to 5, of the {_units(1)}'s resource"
+            f" score; nothing in the game reads it yet. <b>Opens</b> marks a {_units(1)} no"
+            " house may take, and no Crown grant may seat a house on, before that year.</p>"
+        )
+    elif stats:
         parts.append(
             '<p class="footnote">From the Meridian riding table this game is played on.'
             " <b>Resource tier</b> is a quintile, 1 to 5, of the riding's resource"
@@ -1881,17 +1998,26 @@ def _ridings_page(conn, slugs):
                 f'<li><span class="riding">{esc(row["name_en"])}</span>{holder}{extra}</li>'
             )
         parts.append(f'<ul class="ridings">{"".join(items)}</ul>')
-    return page("Ridings", "\n".join(parts), depth=0)
+    return page(_units().capitalize(), "\n".join(parts), depth=0)
 
 
 def _climate_page(conn):
-    parts = [
-        '<p class="lede prose">The game runs more than one era-cohort of societal events at'
-        " once, and the ledgers are kept apart. A climate value only means something next to"
-        " the cohort it belongs to; the cohorts are never added together or averaged. The"
-        " per-event calculator that produced these movements was lost with the workbook, so"
-        " each cumulative value is recorded exactly as its source stated it.</p>"
-    ]
+    if _CALENDAR:
+        # Rules 1.0 `world_calendar`: one ledger for the whole world.
+        parts = [
+            '<p class="lede prose">Under the world calendar the game keeps one climate'
+            " ledger, the world's. Each societal event of the deck moves it in the year it"
+            " falls, by its magnitude, towards its tag: progressive above nought, conservative"
+            " below. A crisis moves it the way the camp that carried it stood.</p>"
+        ]
+    else:
+        parts = [
+            '<p class="lede prose">The game runs more than one era-cohort of societal events at'
+            " once, and the ledgers are kept apart. A climate value only means something next to"
+            " the cohort it belongs to; the cohorts are never added together or averaged. The"
+            " per-event calculator that produced these movements was lost with the workbook, so"
+            " each cumulative value is recorded exactly as its source stated it.</p>"
+        ]
 
     current = {
         row["era_cohort"]: row["cumulative_after"]
@@ -1997,6 +2123,9 @@ def _narrative_html(entry):
     )
 
 
+_SEASON_PREFIX = re.compile(r"^Season \d+ · ")
+
+
 def _season_chronicle(conn, slugs):
     """The engine's chronicle: one line per thing that happened, newest season
     first, with a jump control because three hundred seasons is a long scroll."""
@@ -2013,26 +2142,30 @@ def _season_chronicle(conn, slugs):
         by_season.setdefault(season, []).append(row)
 
     if not by_season:
-        return page("Chronicle", "<p>No season has been played yet.</p>", depth=0)
+        return page("Chronicle", f"<p>No {'year' if _CALENDAR else 'season'} has been played yet.</p>",
+                    depth=0)
 
     seasons = sorted(by_season, reverse=True)
-    options = "".join(f'<option value="season-{s}">Season {s}</option>' for s in seasons)
+    options = "".join(f'<option value="season-{s}">{esc(_when(s, capital=True))}</option>' for s in seasons)
     parts = [
-        '<p class="lede">Every season, newest first.</p>',
+        f'<p class="lede">Every {"year" if _CALENDAR else "season"}, newest first.</p>',
         '<div class="jump"><label for="jump-season">Jump to</label>'
         f'<select id="jump-season">{options}</select></div>',
     ]
     narratives = _narratives()
     for season in seasons:
         parts.append(f'<article class="season" id="season-{season}">')
-        parts.append(f"<h2>Season {season}</h2>")
+        parts.append(f"<h2>{esc(_when(season, capital=True))}</h2>")
         # A narrative is offered on the newest season it covers, which is where a
         # reader working backwards meets the range first.
         for entry in narratives:
             if entry["to"] == season:
                 parts.append(_narrative_html(entry))
+        # Under `world_calendar` the year heads the list, so a line's own
+        # "Season N · " (the engine's record, unchanged) is not repeated.
         lines = "".join(
-            f'<li class="{esc(row["kind"])}">{_link_houses(row["narrative"], slugs, 0)}</li>'
+            f'<li class="{esc(row["kind"])}">'
+            f'{_link_houses(_SEASON_PREFIX.sub("", row["narrative"]) if _CALENDAR else row["narrative"], slugs, 0)}</li>'
             for row in by_season[season]
         )
         parts.append(f'<ul class="chronicle">{lines}</ul>')
@@ -2108,12 +2241,35 @@ def _about_page(conn, slugs):
         )
         return f'<p class="house-list">{links}</p>'
 
+    if _CALENDAR and _HEX:
+        lede = (
+            '<p class="lede prose">House of Cards is a long-running alternate history of the 1867'
+            f" Canadian Confederation. Fictional noble houses hold peerages over the {_counts(conn)['ridings']}"
+            f" {_units()} of a hex board drawn from Meridian's map of Canada: hexagons of 5,000 people"
+            " or more, and the cities' smaller hexagons. One turn is one year for every house, from"
+            f" {_CALENDAR['start_year']} to {_CALENDAR['start_year'] + _CALENDAR['turns'] - 1}; land"
+            " opens in the year it was settled, and the game ends with a reckoning. This site is"
+            " generated from the game's record and is read-only.</p>\n"
+        )
+    elif _CALENDAR:
+        lede = (
+            '<p class="lede prose">House of Cards is a long-running alternate history of the 1867'
+            " Canadian Confederation. Fictional noble houses hold peerages over the 343 real federal"
+            " electoral districts of the 2023 Representation Order. One turn is one year for every"
+            f" house, from {_CALENDAR['start_year']} to"
+            f" {_CALENDAR['start_year'] + _CALENDAR['turns'] - 1}, and the game ends with a reckoning."
+            " This site is generated from the game's record and is read-only.</p>\n"
+        )
+    else:
+        lede = (
+            '<p class="lede prose">House of Cards is a long-running alternate history of the 1867'
+            " Canadian Confederation. Fictional noble houses hold peerages over the 343 real federal"
+            " electoral districts of the 2023 Representation Order. Each house keeps its own personal"
+            " clock beginning at 1867 — there is no shared calendar, and clocks meet only when houses"
+            " do. This site is generated from the game database and is read-only.</p>\n"
+        )
     body = (
-        '<p class="lede prose">House of Cards is a long-running alternate history of the 1867'
-        " Canadian Confederation. Fictional noble houses hold peerages over the 343 real federal"
-        " electoral districts of the 2023 Representation Order. Each house keeps its own personal"
-        " clock beginning at 1867 — there is no shared calendar, and clocks meet only when houses"
-        " do. This site is generated from the game database and is read-only.</p>\n"
+        lede
         + (
             '<h2>Reconstruction</h2>\n'
             '<p class="prose">The original workbook was lost, and the game state here was rebuilt from'
@@ -3239,6 +3395,12 @@ footer { margin-top: 3rem; padding-top: 0.8rem; border-top: 1px solid var(--rule
 .dispatch-secondary li { margin: 0.15rem 0; }
 .dispatch-ledger, .dispatch-quiet { font-family: var(--serif); font-style: italic; color: var(--muted); }
 .dispatch-quiet { font-size: 1.02rem; }
+.play-round { margin: 0.4rem 0 0.6rem; font-size: 0.92rem; }
+.play-round summary { cursor: pointer; color: var(--muted, #6b6b6b); }
+.play-round-list { padding-left: 1.4rem; margin: 0.3rem 0 0; }
+.play-round-list li { margin: 0.15rem 0; }
+.play-round-list li.round-cap { list-style: none; margin-left: -1.4rem; font-style: italic; }
+.play-round-list li.pace-quiet { color: var(--muted, #6b6b6b); }
 .dispatch-log { list-style: none; padding: 0; margin: 0.6rem 0 0; }
 .dispatch-log > li { border-top: 1px solid var(--rule); padding: 0.5rem 0; }
 .dispatch-kicker { margin: 0 0 0.15rem; font-size: 0.75rem; text-transform: uppercase;
@@ -3307,10 +3469,21 @@ def write_archive_index(out_dir, entries):
     database. The page is rendered in the live site's shell, one directory down —
     it is the way into the archive, not part of any game in it.
     """
-    global _GENERATED_FROM
+    global _GENERATED_FROM, _LIVE_STORY, _LIVE_RECKONING, _UNIT
     archive_dir = Path(out_dir) / SITE_DIRNAME / ARCHIVE_DIRNAME
     archive_dir.mkdir(parents=True, exist_ok=True)
     _GENERATED_FROM = ""
+    # The live site's shell: told as a story (Phase D2) when the live export
+    # wrote its map at map.html, in the live game's word for a unit.
+    root = Path(out_dir) / SITE_DIRNAME
+    try:
+        live = scenario.live_name()
+    except scenario.ScenarioError:
+        live = None  # more than one: the page keeps the plain shell
+    _LIVE_STORY = live is not None and (root / "map.html").exists()
+    _LIVE_RECKONING = _LIVE_STORY and (root / "reckoning.html").exists()
+    if live is not None:
+        _UNIT = places.set_info(scenario.reference_dir(live)).get("unit_word") or _UNIT
 
     def progress(entry):
         if entry["seasons"]:
@@ -3346,7 +3519,11 @@ def write_archive_index(out_dir, entries):
         f'<ul class="archive-games">{"".join(cards) or "<li>No game has been archived.</li>"}</ul>\n'
     )
     path = archive_dir / "index.html"
-    path.write_text(page("Archive", body, depth=1), encoding="utf-8")
+    try:
+        path.write_text(page("Archive", body, depth=1), encoding="utf-8")
+    finally:
+        _LIVE_STORY = _LIVE_RECKONING = False
+        _UNIT = {"singular": "riding", "plural": "ridings"}
     return path
 
 
@@ -3376,6 +3553,8 @@ def _write_replay(conn, site_dir, features, borders, reference_dir, key, write):
     )
     if _HEX:
         write(site_dir / "data" / "routes.json", _hex_routes_json(geometry))
+        if _HEX["borders"] or _HEX["labels"]:
+            write(site_dir / "data" / "borders.json", _hex_borders_json(geometry))
     write(site_dir / "replay-text.html", _replay_page(conn, features, borders))
     write(
         site_dir / "replay-text.js",
@@ -3398,11 +3577,17 @@ def _hex_board(reference_dir):
             [row["fed_id_a"], row["fed_id_b"], int(row["length"]), row["adjacency_type"]]
             for row in csv.DictReader(f)
         ]
+    borders, labels = map_export.projected_jurisdictions(reference_dir)
     return {
+        "key": info.get("key", ""),
+        "tag": info.get("key", "").rsplit("-", 1)[-1],
         "hexes": map_export.projected_hexes(reference_dir),
         "routes": map_export.projected_routes(reference_dir),
         "links": links,
         "word": info.get("unit_word") or {"singular": "riding", "plural": "ridings"},
+        "city_hexes": bool(info.get("city_hexes")),
+        "borders": borders,
+        "labels": labels,
     }
 
 
@@ -3427,7 +3612,7 @@ def write_preview(conn, version, out_dir=DEFAULT_OUT_DIR, seed=None, seasons=Non
         f"the whole game, {calendar['start_year']}–{calendar['start_year'] + seasons - 1},"
         if calendar else f"{seasons} seasons"
     )
-    board = " on the hex board (meridian-hex-v1.0.4)" if _HEX else ""
+    board = f" on the hex board ({_HEX['key']})" if _HEX else ""
     _GENERATED_FROM = (
         f"a draft-rules preview: {length} under rules {version} (draft){board}, seed {seed},"
         " played afresh on every export — not a game of record"
@@ -3476,6 +3661,7 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
     houses_dir.mkdir(parents=True, exist_ok=True)
 
     global _GENERATED_FROM, _ARCHIVE, _ARCHIVE_NAME, _ARCHIVE_TITLE
+    global _HEX, _UNIT, _CALENDAR, _LIVE_STORY, _LIVE_RECKONING
     _ARCHIVE = archive
     if archive:
         if archive_name is None:
@@ -3484,7 +3670,15 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
         _ARCHIVE_TITLE = scenario.title(archive_name)
     turn = _latest_turn(conn)
     season = _latest_season(conn)
-    if season:
+    # Phase D2: a game under rules 1.0's `world_calendar` says years, and a
+    # hex board its own word for a unit, on every page.
+    calendar = beats_export.calendar_of(conn)
+    _CALENDAR = dict(calendar, now=calendar["start_year"] + (season or 1) - 1) if calendar else None
+    _HEX = _hex_board(places.reference_dir_for(conn))
+    _UNIT = _HEX["word"] if _HEX else {"singular": "riding", "plural": "ridings"}
+    if season and _CALENDAR:
+        _GENERATED_FROM = f"generated in {_year_of(season)}"
+    elif season:
         _GENERATED_FROM = f"generated at season {season}"
     elif turn is not None:
         _GENERATED_FROM = f"generated from turn {turn:04d}"
@@ -3515,7 +3709,34 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
             f"warning: {timeline_path} is {timeline_bytes:,} bytes, over the"
             f" {timeline_export.SIZE_BUDGET:,} budget — snapshot less often"
         )
-    write(site_dir / "index.html", _index(conn, index_features, index_borders, slugs))
+    # Phase D2: the live game under the world calendar is told as a story. Its
+    # home page is the map Replay, beside Storylines and, after its last turn,
+    # the Reckoning; the plain map is map.html.
+    live_name = None if archive else scenario.live_name()
+    _LIVE_STORY = bool(not archive and _CALENDAR and live_name == scenario.current_name())
+    _LIVE_RECKONING = bool(_LIVE_STORY and beats_export.reckoning_of(conn) is not None)
+    if _LIVE_STORY:
+        write(site_dir / "map.html", _index(conn, index_features, index_borders, slugs))
+        _write_replay(conn, site_dir, index_features, index_borders, reference_dir, live_name, write)
+        write(site_dir / "index.html", (site_dir / "replay.html").read_text(encoding="utf-8"))
+        write(site_dir / "storylines.html", _storylines_page())
+        write(site_dir / "storylines-page.js", STORYLINES_JS)
+        if _LIVE_RECKONING:
+            write(site_dir / "reckoning.html", _reckoning_page())
+            write(site_dir / "reckoning-page.js", RECKONING_JS)
+        written.extend(beats_export.write_beats(
+            conn, site_dir / "data", title=_game_title(),
+            # Rules 1.0 `round_record`: the playing order each season record
+            # keeps, which the database does not.
+            orders=beats_export.orders_from_dir(scenario.seasons_dir(live_name)),
+        ))
+        written.extend(play_export.write_story_assets(site_dir, scenario.REPO_ROOT))
+    else:
+        if not archive:
+            # A game no longer told as a story leaves none of its pages behind.
+            for name in LIVE_STORY_FILES:
+                (site_dir / name).unlink(missing_ok=True)
+        write(site_dir / "index.html", _index(conn, index_features, index_borders, slugs))
     # The play page and the console write to the live scenario, and only to it.
     # With no live scenario — or a live one that hoc.db does not hold, which the
     # page could not play — they are notices that say so, and none of the
@@ -3541,6 +3762,7 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
             .replace("__UNCLAIMED_FILL__", map_export.UNCLAIMED_FILL)
             .replace("__DEFAULT_SPEED__", str(PLAY_SPEEDS[0]))
             .replace("__REPO__", REPO_SLUG)
+            .replace("__UNIT_WORD__", json.dumps(_UNIT))
             .replace("__SCENARIO__", scenario_json),
         )
         assets, asset_bytes = play_export.write_play_assets(
@@ -3592,4 +3814,7 @@ def write_site(conn, out_dir=DEFAULT_OUT_DIR, subdir=SITE_DIRNAME, archive=False
     write(site_dir / ".nojekyll", "")
     _ARCHIVE = False
     _ARCHIVE_NAME = _ARCHIVE_TITLE = None
+    _HEX = _CALENDAR = None
+    _UNIT = {"singular": "riding", "plural": "ridings"}
+    _LIVE_STORY = _LIVE_RECKONING = False
     return written

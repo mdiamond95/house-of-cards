@@ -281,8 +281,9 @@ def test_the_first_dominion_storylines_meet_the_phase_b_gates(frozen_games):
 
 @pytest.fixture(scope="module")
 def scheme_game(tmp_path_factory):
-    """Forty seasons under the draft rules 1.0 on a scratch Meridian world, as
-    the preview plays them, with the engine's own season records kept."""
+    """Fifty seasons under the draft rules 1.0 on a scratch Meridian world, as
+    the preview plays them, with the engine's own season records kept. (Fifty:
+    the tuned draft's first contest on this seed comes in season 50.)"""
     import load_seed
 
     from hoc import rules_data, scenario, sim
@@ -292,7 +293,7 @@ def scheme_game(tmp_path_factory):
                            reference_data="meridian-v1.0.3")
     world = sim.World(conn, rules=rules_data.load_rules(version="1.0"), world_seed=1867)
     with conn:
-        records = [world.initialise(1867)] + [world.run_season() for _ in range(39)]
+        records = [world.initialise(1867)] + [world.run_season() for _ in range(49)]
     beats_export.write_beats(conn, work / "data", title="schemes")
     yield conn, work, records
     conn.close()

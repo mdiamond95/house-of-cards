@@ -96,6 +96,10 @@ const app = {
   links: new Map(),
   lines: new Map(),
   layoutAt: 0,
+  // The hex board's first-order borders and names by span of years
+  // (data/borders.json), and the span drawn.
+  borders: null,
+  bordersShown: null,
 };
 
 // The hex board's colours: its land, a unit no house holds, and how much of a
@@ -268,11 +272,14 @@ function measure() {
 
 // How close the camera may come, in map units across: a few kilometres on a
 // riding map, where a city's ridings are that small; on the hex board about
-// ten hexagons, since no unit is smaller than one.
+// ten hexagons, since no unit is smaller than one — or, where the board has
+// city hexes (a seventh of a hexagon's area), about seven of those.
 const HEX_MIN_W = 90;
+const CITY_HEX_MIN_W = 24;
 
 function limits() {
-  return limitsFor(app.world, app.screen, { minW: app.hexes ? HEX_MIN_W : 3 });
+  const minW = app.hexes ? (el('map').hasAttribute('data-city-hexes') ? CITY_HEX_MIN_W : HEX_MIN_W) : 3;
+  return limitsFor(app.world, app.screen, { minW });
 }
 
 // Show `view`: during a gesture or a flight the drawn map is moved by a CSS
@@ -396,10 +403,26 @@ function homeView() {
 // ------------------------------------------------------------- the board --
 
 function closedAt(fed, year) {
+  if (year === null) return false;
+  // Rules 1.0 `dated_openings`: closed until its opening year, open for good
+  // from it, whatever the atlas says of a later year.
+  if (app.atlas.opens) {
+    const opens = app.atlas.opens[fed];
+    return opens === null || (opens !== undefined && year < opens);
+  }
   const spans = app.atlas.jurisdictions && app.atlas.jurisdictions[fed];
-  if (!spans || year === null) return false;
+  if (!spans) return false;
   const span = spans.find(([from, to]) => from <= year && (to === null || year <= to));
   return Boolean(span) && span[4] !== 'Canada';
+}
+
+// Whether the atlas has the unit under Canada in `year` (it may still be
+// closed: dated_openings).
+function canadianAt(fed, year) {
+  const spans = app.atlas.jurisdictions && app.atlas.jurisdictions[fed];
+  if (!spans || year === null) return true;
+  const span = spans.find(([from, to]) => from <= year && (to === null || year <= to));
+  return Boolean(span) && span[4] === 'Canada';
 }
 
 function jurisdictionAt(fed, year) {
@@ -426,9 +449,26 @@ function boardNow() {
   return app.story.board;
 }
 
+// The hex board's first-order borders for `year`: the span in force, drawn
+// over the land and under the units' outlines. Redrawn only when the span
+// changes.
+function bordersSpan(year) {
+  if (!app.borders || year === null) return null;
+  return app.borders.spans.find((s) => s.from <= year && (s.to === null || year <= s.to)) || null;
+}
+
+function drawBorders(year) {
+  const span = bordersSpan(year);
+  if (span === app.bordersShown) return;
+  app.bordersShown = span;
+  const path = document.getElementById('mv-juris');
+  if (path) path.setAttribute('d', span ? span.lines.map((i) => app.borders.lines[i]).join('') : '');
+}
+
 function paint() {
   const owners = boardNow().owners;
   const year = calendar() ? yearOf(Math.max(1, app.turn)) : null;
+  drawBorders(year);
   const unclaimed = app.hexes ? HEX_UNCLAIMED : UNCLAIMED_FILL;
   for (const [fed, path] of app.paths) {
     const house = owners[fed];
@@ -491,6 +531,53 @@ function drawRoutes(layer) {
     }
   }
   if (parts.length) layer.appendChild(svgEl('path', { d: parts.join(''), class: 'mv-route-dots' }));
+}
+
+// The hex board: each first-order jurisdiction's name, at wide zoom only (the
+// camera wider than JURIS_NAMES_ABOVE map units), the larger first where two
+// would overlap. Land not under Canada is named in italic.
+const JURIS_NAMES_ABOVE = 260;
+// A name keeps this many pixels clear of every other name and mark around it;
+// one that cannot is hidden rather than crowded in.
+const JURIS_GAP = 6;
+
+// A name is moved inside the screen and hidden where it would come within
+// JURIS_GAP of a badge, a mark's label, the turn's houses' names or a
+// jurisdiction already named. Its width is the drawn text's own, measured
+// once it is in the page (an estimate where the page draws nothing).
+// `blocked` holds boxes ({x0, y0, x1, y1} or [x0, y0, x1, y1]). Returns the
+// boxes it placed.
+function drawJurisdictionNames(group, blocked, screen) {
+  const span = app.bordersShown;
+  if (!span || !app.view || app.view.w < JURIS_NAMES_ABOVE) return [];
+  const mine = [];
+  const boxes = blocked.map((b) => (Array.isArray(b) ? b : [b.x0, b.y0, b.x1, b.y1]));
+  const g = JURIS_GAP;
+  const hits = (box) => boxes.some((b) => box[0] - g < b[2] && b[0] < box[2] + g && box[1] - g < b[3] && b[1] < box[3] + g);
+  const top = bars().top;
+  for (const label of span.labels) {
+    const p = toScreen(app.view, app.screen, [label.x, label.y]);
+    if (!onScreen(p, -12) || p[1] < top + 10 || p[1] > screen.h - 10) continue;
+    const text = svgEl('text', {
+      x: p[0].toFixed(1), y: (p[1] + 4).toFixed(1), 'text-anchor': 'middle',
+      class: label.sovereign === 'Canada' ? 'mv-juris-name' : 'mv-juris-name mv-juris-other',
+    });
+    text.textContent = label.name;
+    group.appendChild(text);
+    // Upper case at 11 px with its letter spacing, about 7.6 px a letter,
+    // where the page cannot measure it.
+    let w = 0;
+    try { w = text.getComputedTextLength(); } catch (error) { w = 0; }
+    w = (w > 0 ? w : label.name.length * 7.6) + 4;
+    if (w > screen.w - 8) { text.remove(); continue; }
+    const x = Math.min(screen.w - w / 2 - 4, Math.max(w / 2 + 4, p[0]));
+    const box = [x - w / 2, p[1] - 7, x + w / 2, p[1] + 7];
+    if (hits(box)) { text.remove(); continue; }
+    text.setAttribute('x', x.toFixed(1));
+    boxes.push(box);
+    mine.push(box);
+  }
+  return mine;
 }
 
 // The hex board: the route an expansion into `target` came along — from the
@@ -712,6 +799,8 @@ function drawMarks() {
   app.labels = [];
   if (!app.view || !app.story) return;
   if (app.hexes) drawRoutes(layer);
+  const juris = svgEl('g', { class: 'mv-juris-names' });
+  layer.appendChild(juris);
   const layout = app.layout;
   const lines = svgEl('g', { class: 'mv-lines' });
   const badges = svgEl('g', { class: 'mv-badges' });
@@ -828,7 +917,23 @@ function drawMarks() {
   // other, a badge or a mark's label; the lower-ranked name is the one dropped.
   const b = bars();
   const screen = { w: app.screen.w, h: app.screen.h - b.bottom };
-  app.labels = placeLabels(labelCandidates(), { blocked: taken, screen, size: 12 });
+  // In two passes on the hex board: the turn's own houses first, then the
+  // jurisdictions' names at wide zoom, then the standings' houses where room
+  // is left. With no jurisdiction to name it places exactly as one pass does.
+  const candidates = labelCandidates();
+  const first = placeLabels(candidates.filter((c) => c.priority < 2), { blocked: taken, screen, size: 12 });
+  const jurisBoxes = drawJurisdictionNames(juris, [...taken, ...first], screen);
+  const rest = placeLabels(
+    candidates.filter((c) => c.priority >= 2 && !first.some((f) => f.house === c.house)),
+    {
+      blocked: [...taken, ...first, ...jurisBoxes.map(([x0, y0, x1, y1]) => ({
+        x0: x0 - JURIS_GAP, y0: y0 - JURIS_GAP, x1: x1 + JURIS_GAP, y1: y1 + JURIS_GAP,
+      }))],
+      screen,
+      size: 12,
+    },
+  );
+  app.labels = [...first, ...rest];
   for (const l of app.labels) {
     const g = svgEl('g', { class: `mv-name${l.priority === 0 ? ' mv-name-turn' : ''}`, 'data-house': l.house });
     const text = svgEl('text', { x: ((l.x0 + l.x1) / 2).toFixed(1), y: (l.y1 - 5).toFixed(1) });
@@ -875,7 +980,10 @@ function ridingCardHtml(fed) {
       + `${seat ? ', <b>its seat</b>' : ''}.</p>`
       + `<button type="button" class="mv-sheet-link" data-house="${escapeHtml(house)}">The house</button>`;
   } else if (closedAt(fed, year)) {
-    holder = '<p class="mv-card-text">Not yet under Canada: closed to every house.</p>';
+    const opens = app.atlas.opens ? app.atlas.opens[fed] : null;
+    holder = canadianAt(fed, year) && opens
+      ? `<p class="mv-card-text">Not yet open: it opens in ${escapeHtml(String(opens))}.</p>`
+      : '<p class="mv-card-text">Not yet under Canada: closed to every house.</p>';
   } else {
     holder = '<p class="mv-card-text">Unclaimed.</p>';
   }
@@ -1211,8 +1319,10 @@ function renderRound() {
   if (!app.round) { box.hidden = true; return; }
   box.hidden = false;
   if (!app.d || !app.d.round) {
-    box.innerHTML = '<li class="mv-rchip mv-rchip-cap todo">The world</li><li class="mv-rchip todo">each house in turn</li>'
-      + '<li class="mv-rchip mv-rchip-cap todo">The close</li>';
+    // Before the first year: the shape of a round, as chips that do nothing yet.
+    box.innerHTML = ['The world', 'each house in turn', 'The close'].map((label, i) => (
+      `<li class="mv-rchip todo${i === 1 ? '' : ' mv-rchip-cap'}"><button type="button" disabled>`
+      + `<span class="mv-rchip-name">${label}</span></button></li>`)).join('');
     return;
   }
   const chips = stripOf(app.d.round, app.step);
@@ -1221,14 +1331,19 @@ function renderRound() {
     const cls = `mv-rchip ${c.state} pace-${c.pace}${c.kind !== 'house' ? ' mv-rchip-cap' : ''}${c.gone ? ' gone' : ''}`
       + `${c.house && c.house === app.follow ? ' followed' : ''}`;
     const dot = c.house ? swatch(c.house) : '';
+    // A long name is cut short with an ellipsis, so a chip never outgrows a
+    // phone's strip; the whole name is its title.
     return `<li class="${cls}"><button type="button" data-step="${i}"${c.house ? ` data-house="${escapeHtml(c.house)}"` : ''}`
-      + `${c.state === 'current' ? ' aria-current="step"' : ''}>${dot}${escapeHtml(label)}</button></li>`;
+      + ` title="${escapeHtml(label)}"${c.state === 'current' ? ' aria-current="step"' : ''}>${dot}`
+      + `<span class="mv-rchip-name">${escapeHtml(label)}</span></button></li>`;
   }).join('');
-  // Keep the current chip in view.
+  // Keep the current chip in view, centred: measured against the strip itself,
+  // whatever its offset parent.
   const current = box.querySelector('[aria-current="step"]');
   if (current) {
     const li = current.parentElement;
-    const left = li.offsetLeft - (box.clientWidth - li.offsetWidth) / 2;
+    const at = li.getBoundingClientRect().left - box.getBoundingClientRect().left + box.scrollLeft;
+    const left = at - (box.clientWidth - li.offsetWidth) / 2;
     box.scrollTo({ left: Math.max(0, left), behavior: reduced() ? 'auto' : 'smooth' });
   }
 }
@@ -1737,6 +1852,15 @@ function prepareMap() {
     // was dashed in full at every redraw.
     const routes = document.getElementById('mv-routes');
     if (routes) routes.remove();
+    // The year's first-order borders, over the units' edges and under the
+    // holders' outlines.
+    const juris = document.createElementNS(SVGNS, 'path');
+    juris.id = 'mv-juris';
+    juris.setAttribute('fill', 'none');
+    juris.setAttribute('class', 'mv-juris');
+    juris.setAttribute('vector-effect', 'non-scaling-stroke');
+    juris.setAttribute('pointer-events', 'none');
+    map.insertBefore(juris, el('map-borders').nextSibling);
     for (const path of map.querySelectorAll('[data-near]')) {
       const fed = path.getAttribute('data-near');
       if (!app.near.has(fed)) app.near.set(fed, []);
@@ -1772,6 +1896,11 @@ async function boot() {
       for (const [key, line] of Object.entries(routes.lines)) app.lines.set(key, line);
     } catch (error) {
       app.links.clear();
+    }
+    try {
+      app.borders = await fetchJson('data/borders.json');
+    } catch (error) {
+      app.borders = null;
     }
   }
   app.round = Boolean(app.index.round);
@@ -1832,6 +1961,41 @@ async function boot() {
     holdMs: () => { const part = partNow(); return part ? holdMs(part) : null; },
     flightMs: () => { const part = partNow(); return part ? flightMs(part) : null; },
     tints: () => document.querySelectorAll('#mv-outlines .tint').length,
+    // The hex board: the camera held on a unit (by name or id) at `w` map
+    // units across, or on the whole country; the borders drawn; whether a
+    // unit is drawn closed in the year on screen.
+    look: (name, w) => {
+      const fed = app.ridingIds[name] || name;
+      const p = pointOf(fed);
+      if (!p) return false;
+      takeCamera();
+      setFree(true);
+      const h = (w * app.screen.h) / app.screen.w;
+      applyView(clampView({ x: p[0] - w / 2, y: p[1] - h / 2, w, h }, app.world, app.screen, limits()), { commit: true });
+      return true;
+    },
+    whole: () => {
+      takeCamera();
+      setFree(true);
+      const r = frameRect();
+      applyView(frameView([app.world.x, app.world.y, app.world.w, app.world.h],
+        app.screen, r, app.world, { pad: 0.02, limits: limits() }), { commit: true });
+      return true;
+    },
+    borders: () => (app.bordersShown
+      ? { from: app.bordersShown.from, to: app.bordersShown.to, names: app.bordersShown.labels.map((l) => l.name),
+        drawn: document.querySelectorAll('.mv-juris-name').length,
+        // Each drawn name's box on the screen, as the page measured it.
+        boxes: [...document.querySelectorAll('.mv-juris-name')].map((n) => {
+          const r = n.getBoundingClientRect();
+          return [r.left, r.top, r.right, r.bottom];
+        }),
+        d: (document.getElementById('mv-juris') || { getAttribute: () => '' }).getAttribute('d').length }
+      : null),
+    closed: (name) => {
+      const fed = app.ridingIds[name] || name;
+      return closedAt(fed, calendar() ? yearOf(Math.max(1, app.turn)) : null);
+    },
   };
   const start = hashTurn();
   if (start !== null) goTo(start);

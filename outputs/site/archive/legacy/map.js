@@ -4,6 +4,8 @@
   var body = document.getElementById('panel-body');
   var close = document.getElementById('panel-close');
   if (!map || !panel || !body || !close) return;
+  // Rules 1.0 `world_calendar`: one year for every house, not a personal one.
+  var calendar = map.hasAttribute('data-calendar');
 
   function show(path) {
     var house = path.getAttribute('data-house');
@@ -16,7 +18,7 @@
     var rows = [
       '<h3>' + path.getAttribute('data-riding') + '</h3>',
       '<p class="panel-meta">' + path.getAttribute('data-province') +
-        (jurisdiction ? ' &middot; ' + jurisdiction + ' in personal year ' + year : '') +
+        (jurisdiction ? ' &middot; ' + jurisdiction + (calendar ? ' in ' : ' in personal year ') + year : '') +
         '</p>'
     ];
     if (house) {
@@ -25,7 +27,7 @@
       rows.push('<p class="panel-meta">' + (holder || 'holder not recovered') + '</p>');
     } else {
       rows.push('<p class="panel-meta">Unclaimed' +
-                (opens ? ' &middot; opens to a house at personal year ' + opens : '') +
+                (opens ? (calendar ? ' &middot; opens in ' : ' &middot; opens to a house at personal year ') + opens : '') +
                 '</p>');
     }
     body.innerHTML = rows.join('');
@@ -33,7 +35,7 @@
   }
 
   map.addEventListener('click', function (event) {
-    var path = event.target.closest('path');
+    var path = event.target.closest('path[data-fed]');
     if (path) show(path);
   });
   close.addEventListener('click', function () { panel.hidden = true; });
@@ -98,7 +100,8 @@
       if (house) counts[house] = (counts[house] || 0) + 1;
     }
 
-    if (label) label.textContent = 'season ' + season;
+    var start = slider.getAttribute('data-start-year');
+    if (label) label.textContent = start ? String(Number(start) + season - 1) : 'season ' + season;
 
     var tally = timeline.counts[String(season)];
     if (strip && tally) {

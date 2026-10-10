@@ -215,6 +215,10 @@ read identical integers in identical row order.
 
 ## The hex board (the hex trial)
 
+The rules in this section were written for `meridian-hex-v1.0.4`, the first hex trial's set,
+removed on 10 October 2026. Rules 9–13 stand, as `meridian-hex-v1.0.5` builds by them
+(next section).
+
 The `meridian-hex-v1.0.4` set (`data/reference/meridian/hex-v1.0.4/`, docs/hex-trial/) is
 built by `scripts/build_world_hex.py` from Meridian v1.0.4's H3 resolution-4 hexagon table,
 in the same table shapes as every set. Rules 1–6 above apply to it as they stand (the
@@ -261,6 +265,129 @@ The founding roll's denominator (`p_found`, "The one float") is the map's unit c
 riding sets, so their games are unchanged. Map geometry stays in decimal degrees,
 because a map is drawn in them; it is computed in the same exact decimal arithmetic
 (rounded half up to six places) and is read only by the site's map, never by an engine.
+
+## The hex board on v1.0.5
+
+The `meridian-hex-v1.0.5` set (`data/reference/meridian/hex-v1.0.5/`, docs/hex-trial/v2/) is
+built by `scripts/build_world_hexboard.py` from Meridian v1.0.5's `hexes.r4.v1.2` and
+`hexes.r5.v1` tables. Rules 1–6 and 10–13 above apply as they stand (quintiles over 494
+units), except as follows.
+
+14. **The board.** A resolution-4 row of 500,000 people or more is *split*: its
+    resolution-5 rows (`parent` equal to its id) replace it. The board's hexagons are the
+    unsplit resolution-4 rows and the split parents' cells. Two board hexagons are linked by
+    the table's own entry when both are resolution-4 rows, or both cells. A cell and an
+    unsplit hexagon are linked by the cell's entries whose `parent` is that hexagon: land if
+    any is land. Entries for a cell that is not a row (no land) are skipped.
+15. **Units.** An unsplit row of 5,000 people or more (423), and, of each split parent's
+    cells, those of 25,000 or more and the most populous (the core; ties to the lower index):
+    71. 494 in all.
+16. **Ids** are nine digits, `PP × 10,000,000 + T`. `PP` is as in rule 9. `T` is rule 9's
+    `S` for a resolution-4 unit. For a cell it is `1,000,000 +` its base cell and five
+    resolution digits read as one base-7 number (the index must be a resolution-5 cell with
+    digits 6–15 all 7). So `(T − 1,000,000) // 7` is the parent's `S`.
+17. **Names.** A resolution-4 unit is named by rule 10. A city or core hex is named for
+    its *municipality*, the first of:
+    1. the census subdivision Meridian v1.0.5's mesh (`mesh.v1.json.gz`, pinned by hash)
+       gives its cell, when that municipality has at least as many people as the cell and
+       no town-type place in the cell has more;
+    2. the cell's own most populous place of a town or municipal type, when it holds at
+       least a tenth of the cell's people;
+    3. of the municipalities the mesh gives the cell's neighbouring cells in its province
+       with at least as many people as the cell, the one the most neighbours carry (ties
+       to the more populous, then the lower code).
+
+    A cell none of these names borrows by rule 10's pass 2.
+    - Where several units carry one municipality, the unit holding the municipality's
+      own place keeps the plain name. A resolution-4 unit holding it is named for it by
+      rule 10's pass 1. When no unit takes the plain name that way, the most populous
+      city hex of the municipality does.
+    - Every other unit adds the compass word of its bearing from the plain-named unit:
+      North, North-East, East, South-East, South, South-West, West or North-West. The
+      bearing is pyproj's WGS84 forward azimuth between the H3 centres, in eighths of
+      a turn, a half-eighth rounding clockwise.
+    - Where two share a word, the nearer in hexagon steps over the board's links
+      (ties to the lower id) keeps it; the next is "Outer", and past that a numeral. A
+      name another unit holds is passed over for the next.
+    - The order is: plain city names, largest first; rule 10's pass 1 for the
+      resolution-4 units; the compass names; rule 10's pass 2. A resolution-4 unit never
+      borrows a city hex's municipality's name; the build fails if one would.
+
+    The azimuth is measured once, at build time, in floating point. As with rule 13's
+    nearest unit, what it decides is committed (`ridings.csv`, `units.csv` `compass`),
+    and no engine sees it.
+18. **`opens_year`** is the greatest of the atlas year, a counting settledYear and the
+    city year. A director's override (`OPENING_OVERRIDES`, by census subdivision)
+    replaces it outright.
+    - **The atlas year** is the first `from_year` of the unit's spans whose sovereign
+      is `Canada`.
+    - **settledYear** is the resolution-4 row's own. A city or core hex takes that of
+      the municipality it is named for, which the tables date only where some row
+      names it as its `settledPlace`.
+    - **settledYear counts** only when the atlas year is after 1867 and settledYear is
+      1930 or earlier.
+    - **The city year** is that of the `CITY_YEARS` municipality the hex is named for,
+      and applies only to a city hex that is not a core. A core opens at its
+      municipality's settled year.
+
+    `units.csv` records each part. `riding_stats.csv` also carries each unit's
+    `resolution` (4, or 5 for a city hex), which rules 1.0's `block_grants` reads.
+19. **Water rows.** `adjacency.csv` keeps a water link only when its length is 3 or less,
+    or when it is a director's ferry (`FERRIES`, between the units whose hinterlands hold
+    two named places' points). `links.csv` keeps every link, with `in_adjacency` and
+    `ferry`.
+20. **Joining groups.** After rule 13, while the units fall into more than one group counting
+    water links, the smallest group (ties by its lowest id) gets one water link: from its
+    unit nearest a unit outside it, to that unit, measured as in rule 13. At v1.0.5 no group
+    needs one.
+
+The drawing files (`hexes.geojson`, `routes.geojson` through each hexagon's `landPoint`,
+`jurisdictions.geojson`) are read by no engine. `jurisdictions.geojson` takes every board
+hexagon's span at each year from 1867, a district of the North-West Territories being
+drawn as the Territories (Keewatin apart, 1876–1904), and starts a new feature set whenever
+any hexagon's first-order jurisdiction, name, sovereign or status changes.
+
+## The hex board's flags (rules 1.0)
+
+- **`water_crossings`.** Both engines read the adjacency rows with `adjacency_type` in
+  `('land', 'water')` where the flag joins two houses' ground. That covers expansion
+  targets, claim targets, neighbouring houses, bordering pairs, an adjacent holding and
+  a forced sale's buyer. Everything else reads `'land'` alone.
+  - The JavaScript engine's `ReferenceMap.linked(fedId, water)` is the land list, or
+    the sorted union of the land and water lists.
+  - An Expand's cost is read before the riding is taken. It is 15 + (wealth_tier − 3),
+    plus `board.json` `water_crossings.expand_cost` when a water row joins the target
+    to one of the house's holdings and no land row does.
+- **`block_grants`.** After a Crown founding seats a house on `fed_id`, and only when
+  `riding_stats.csv` gives it `resolution` 4, the block is the seat's land neighbours
+  (in fed_id order) that have `resolution` 4, no holder, and are open at the founding
+  year (`riding_open`).
+  - They are sorted by population descending, ties to the lower fed_id, and the first
+    `board.json` `block_grants.extra_hexes` are taken.
+  - They become the house's holdings 2, 3, … in that order, each acquired by the
+    founding event, which names them (`block`).
+  - No draw is made, so the season's draws are those of a founding without the block.
+- **`land_rush`.** Under `world_calendar`, on a set whose `riding_stats.csv` carries
+  `resolution` (or any set when `board.json` `land_rush.riding_sets` is 1).
+  - **The rushes.** For each `unit` key of `riding_jurisdictions.csv` with a span whose
+    status is `province` and sovereign `Canada`, its first `from_year` (ties to the
+    lower name). The rushes are those after `game.json` `start_year`, sorted by
+    (year, unit key, name). Each runs from that year for `land_rush.years` years.
+  - **A province's units** in a year are the fed_ids, in order, whose span that year
+    has the rush's `unit`, status `province` and sovereign `Canada`, and that are open
+    (`riding_open`).
+  - **The world's turn**, after the accessions: a rush running this year records one
+    event per rush, in rush order. The first year (`world: "rush"`) names the units;
+    a later one (`"rush_continues"`) does not. No draw is made.
+  - **The close**, after the founding roll: for each rush running, in rush order, a
+    logged draw `rush.<unit>` of {held, open}. Then, only when `held * 100 <
+    until_held_pct * open`, `chance(roll_pct)` as `rush.roll.<unit>`. On success a
+    Crown founding is seated by `choice` (`rush.seat`) among the province's units
+    with no holder that the Crown may found on. The rest of the founding draws as any
+    founding does, block included. The houses are the season record's `rushed`, left
+    out when there are none.
+  - **An Expand's cost** is `land_rush.expand_discount` less when the target's span in
+    the world year is a province with a rush running that year.
 
 ## Worked examples
 

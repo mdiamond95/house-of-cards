@@ -1054,9 +1054,12 @@ def test_each_accession_is_a_world_event_naming_its_ridings(calendar_game):
     assert len(opened[(1873, "Prince Edward Island", "accession")]["ridings"]) == 4
     assert {k[1] for k in opened if k[0] == 1905} >= {"Alberta", "Saskatchewan"}
     # Seven ridings join with Newfoundland; Labrador had been Canada's before
-    # 1927, so six are new to play (343 in all from 1949).
+    # 1927, so six are new to play (343 in all from 1949). Under
+    # `dated_openings` Labrador stays open from then, and a unit already open
+    # is not named again: the 1949 line names the six.
     newfoundland = [d for k, d in opened.items() if k[0] == 1949 and k[2] == "accession"]
-    assert sum(len(d["ridings"]) for d in newfoundland) == 7
+    assert sum(len(d["ridings"]) for d in newfoundland) == 6
+    assert all(world._riding_name("10004") not in d["ridings"] for d in newfoundland)
     for d in opened.values():
         assert d["ridings"] == [world._riding_name(f) for f in d["fed_ids"]]
 

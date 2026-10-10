@@ -72,8 +72,8 @@ class _Quiet(http.server.SimpleHTTPRequestHandler):
         pass
 
 
-# The riding preview, and the hex trial's preview on the hex board
-# (docs/hex-trial/README.md), which must pass the same checks.
+# The riding preview, and the hex board's preview (docs/hex-trial/v2/README.md),
+# which must pass the same checks.
 @pytest.mark.parametrize("dirname", ["preview", "preview-hex"])
 def test_the_map_view_works_on_a_phone_an_ipad_and_a_desktop(served_preview, dirname):
     result = subprocess.run(
@@ -87,4 +87,21 @@ def test_the_map_view_works_on_a_phone_an_ipad_and_a_desktop(served_preview, dir
         pytest.skip(report.get("skipped", "playwright unavailable"))
     assert report["ok"], report["failures"]
     assert report["checks"] >= 100
+    assert report["errors"] == []
+
+
+def test_the_hex_board_draws_city_hexes_openings_and_borders_by_year(served_preview):
+    """tests/js/hexboard.e2e.mjs: the city hexes in reach of the camera, a unit
+    closed until its opening year, and the borders and names of the year."""
+    result = subprocess.run(
+        [NODE, str(ROOT / "tests" / "js" / "hexboard.e2e.mjs"), f"{served_preview}/preview-hex"],
+        cwd=ROOT, capture_output=True, text=True, timeout=900,
+    )
+    lines = [line for line in result.stdout.splitlines() if line.startswith("{")]
+    assert lines, f"no report: {result.stdout[-2000:]} {result.stderr[-2000:]}"
+    report = json.loads(lines[-1])
+    if report.get("ok") is None:
+        pytest.skip(report.get("skipped", "playwright unavailable"))
+    assert report["ok"], report["failures"]
+    assert report["checks"] >= 25
     assert report["errors"] == []

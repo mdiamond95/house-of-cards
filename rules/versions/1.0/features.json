@@ -16,5 +16,9 @@
   "distinct_surnames": true,
   "world_calendar": true,
   "crises": true,
-  "round_record": true
+  "round_record": true,
+  "dated_openings": true,
+  "water_crossings": true,
+  "block_grants": true,
+  "land_rush": true
 }

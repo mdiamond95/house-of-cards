@@ -292,6 +292,12 @@ footer { margin-top: 3rem; padding-top: 0.8rem; border-top: 1px solid var(--rule
 .dispatch-secondary li { margin: 0.15rem 0; }
 .dispatch-ledger, .dispatch-quiet { font-family: var(--serif); font-style: italic; color: var(--muted); }
 .dispatch-quiet { font-size: 1.02rem; }
+.play-round { margin: 0.4rem 0 0.6rem; font-size: 0.92rem; }
+.play-round summary { cursor: pointer; color: var(--muted, #6b6b6b); }
+.play-round-list { padding-left: 1.4rem; margin: 0.3rem 0 0; }
+.play-round-list li { margin: 0.15rem 0; }
+.play-round-list li.round-cap { list-style: none; margin-left: -1.4rem; font-style: italic; }
+.play-round-list li.pace-quiet { color: var(--muted, #6b6b6b); }
 .dispatch-log { list-style: none; padding: 0; margin: 0.6rem 0 0; }
 .dispatch-log > li { border-top: 1px solid var(--rule); padding: 0.5rem 0; }
 .dispatch-kicker { margin: 0 0 0.15rem; font-size: 0.75rem; text-transform: uppercase;

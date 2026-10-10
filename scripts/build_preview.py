@@ -5,7 +5,7 @@
     outputs/site/preview/replay.html       the preview told one turn at a time
     outputs/site/preview/storylines.html   its storylines
     outputs/site/preview/reckoning.html    its reckoning, for a game that ends in one
-    outputs/site/preview-hex/              the same, played on the hex board (the hex trial)
+    outputs/site/preview-hex/              the same, played on the hex board
 
 docs/STORY_DESIGN.md Phase C2, and D1. While a draft rules version exists
 (rules/README.md, "A draft version": the one directory newer than
@@ -35,9 +35,9 @@ from hoc.export import beats as beats_export, site  # noqa: E402
 SEED = 1867
 SEASONS = 100
 REFERENCE = "meridian-v1.0.3"
-# The hex trial (docs/hex-trial/README.md): the same draft and seed played on
-# the hex board, published beside the riding preview at preview-hex/.
-HEX_REFERENCE = "meridian-hex-v1.0.4"
+# The hex board (docs/hex-trial/v2/README.md): the same draft and seed played
+# on the hex board, published beside the riding preview at preview-hex/.
+HEX_REFERENCE = "meridian-hex-v1.0.5"
 
 
 def play_preview(db_path, version, seed=SEED, seasons=SEASONS, records=None, reference=REFERENCE):

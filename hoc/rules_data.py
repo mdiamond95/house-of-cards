@@ -135,6 +135,31 @@ FEATURE_DEFAULTS = {
     # is, or "close" — and each season record carries `order`, the playing
     # order fixed at the start of the house turns.
     "round_record": False,
+    # The hex board (docs/hex-trial/v2/README.md). Under world_calendar a unit
+    # takes no grant, no expansion and no claim before its opening year — the
+    # later of riding_stats.csv's opens_year and the first year the atlas has
+    # it under Canada — and from that year it is open for good, whatever the
+    # atlas says of a later year. A Crown founding still needs a province that
+    # year. A unit that opens after it came under Canada opens as a quiet world
+    # event. On a set whose opens_year repeats the atlas it changes nothing.
+    "dated_openings": False,
+    # The hex board (docs/hex-trial/v2/README.md, step 3). A water row of
+    # adjacency.csv joins two units for expansion targets, claim targets and
+    # neighbouring houses; an Expand across water costs board.json's
+    # water_crossings.expand_cost more. Enclosure, cohesion and contiguity
+    # stay land only. On a set with no water rows it changes nothing.
+    "water_crossings": False,
+    # A Crown founding on a resolution-4 hexagon also grants up to board.json's
+    # block_grants.extra_hexes beside it that are open, unclaimed and
+    # resolution 4 (riding_stats.csv `resolution`), the most populous first.
+    # On a set without the column it changes nothing.
+    "block_grants": False,
+    # Under world_calendar, a jurisdiction first becoming a province after the
+    # start year has a rush there for board.json's land_rush.years: an extra
+    # Crown founding roll among its open, unclaimed units while few are held,
+    # and a cheaper Expand into it. On the hex board only, unless board.json's
+    # land_rush.riding_sets is 1.
+    "land_rush": False,
 }
 
 
@@ -371,6 +396,8 @@ class RulesBundle:
     scheme_rules: dict = field(default_factory=dict)
     # Phase D1: game.json (the calendar, chapters and crisis terms).
     game: dict = field(default_factory=dict)
+    # The hex board: board.json (water_crossings, block_grants).
+    board: dict = field(default_factory=dict)
 
     def feature(self, name):
         """Whether this version turns on a named behaviour."""
@@ -762,6 +789,19 @@ def _load_scheme_rules(rules_dir):
     return _read_json(path) if path.exists() else {}
 
 
+def _load_board(rules_dir):
+    """board.json, the hex board's terms; empty for a version without it."""
+    path = rules_dir / "board.json"
+    board = _read_json(path) if path.exists() else {}
+    for section, key in (("water_crossings", "expand_cost"), ("block_grants", "extra_hexes"),
+                         ("land_rush", "years"), ("land_rush", "roll_pct"),
+                         ("land_rush", "until_held_pct"), ("land_rush", "expand_discount"),
+                         ("land_rush", "riding_sets")):
+        if section in board and not isinstance(board[section].get(key), int):
+            raise RulesDataError(f"board.json: {section}.{key} must be an integer")
+    return board
+
+
 def _load_game(rules_dir):
     """Rules 1.0 `world_calendar` (docs/STORY_DESIGN.md §5): the calendar,
     the chapters and the crisis terms. Empty for a version without game.json."""
@@ -829,6 +869,7 @@ def load_rules(path=None, version=None, root=None):
     schemes = _load_schemes(rules_dir, action_names)
     scheme_rules = _load_scheme_rules(rules_dir)
     game = _load_game(rules_dir)
+    board = _load_board(rules_dir)
 
     return RulesBundle(
         actions=actions,
@@ -851,4 +892,5 @@ def load_rules(path=None, version=None, root=None):
         schemes=schemes,
         scheme_rules=scheme_rules,
         game=game,
+        board=board,
     )

@@ -1,0 +1,985 @@
+fed_id,from_year,to_year,unit,name,status,sovereign
+100032095,1867,1948,newfoundland,Newfoundland,colony,Britain
+100032095,1949,2000,newfoundland,Newfoundland,province,Canada
+100032095,2001,,newfoundland,Newfoundland and Labrador,province,Canada
+100032097,1867,1948,newfoundland,Newfoundland,colony,Britain
+100032097,1949,2000,newfoundland,Newfoundland,province,Canada
+100032097,2001,,newfoundland,Newfoundland and Labrador,province,Canada
+100032098,1867,1948,newfoundland,Newfoundland,colony,Britain
+100032098,1949,2000,newfoundland,Newfoundland,province,Canada
+100032098,2001,,newfoundland,Newfoundland and Labrador,province,Canada
+100032114,1867,1948,newfoundland,Newfoundland,colony,Britain
+100032114,1949,2000,newfoundland,Newfoundland,province,Canada
+100032114,2001,,newfoundland,Newfoundland and Labrador,province,Canada
+100032126,1867,1948,newfoundland,Newfoundland,colony,Britain
+100032126,1949,2000,newfoundland,Newfoundland,province,Canada
+100032126,2001,,newfoundland,Newfoundland and Labrador,province,Canada
+100032142,1867,1948,newfoundland,Newfoundland,colony,Britain
+100032142,1949,2000,newfoundland,Newfoundland,province,Canada
+100032142,2001,,newfoundland,Newfoundland and Labrador,province,Canada
+100032229,1867,1948,newfoundland,Newfoundland,colony,Britain
+100032229,1949,2000,newfoundland,Newfoundland,province,Canada
+100032229,2001,,newfoundland,Newfoundland and Labrador,province,Canada
+100033423,1867,1948,newfoundland,Newfoundland,colony,Britain
+100033423,1949,2000,newfoundland,Newfoundland,province,Canada
+100033423,2001,,newfoundland,Newfoundland and Labrador,province,Canada
+100033425,1867,1948,newfoundland,Newfoundland,colony,Britain
+100033425,1949,2000,newfoundland,Newfoundland,province,Canada
+100033425,2001,,newfoundland,Newfoundland and Labrador,province,Canada
+100033426,1867,1948,newfoundland,Newfoundland,colony,Britain
+100033426,1949,2000,newfoundland,Newfoundland,province,Canada
+100033426,2001,,newfoundland,Newfoundland and Labrador,province,Canada
+100033427,1867,1948,newfoundland,Newfoundland,colony,Britain
+100033427,1949,2000,newfoundland,Newfoundland,province,Canada
+100033427,2001,,newfoundland,Newfoundland and Labrador,province,Canada
+100033429,1867,1948,newfoundland,Newfoundland,colony,Britain
+100033429,1949,2000,newfoundland,Newfoundland,province,Canada
+100033429,2001,,newfoundland,Newfoundland and Labrador,province,Canada
+100033436,1867,1948,newfoundland,Newfoundland,colony,Britain
+100033436,1949,2000,newfoundland,Newfoundland,province,Canada
+100033436,2001,,newfoundland,Newfoundland and Labrador,province,Canada
+100033438,1867,1948,newfoundland,Newfoundland,colony,Britain
+100033438,1949,2000,newfoundland,Newfoundland,province,Canada
+100033438,2001,,newfoundland,Newfoundland and Labrador,province,Canada
+100033568,1867,1948,newfoundland,Newfoundland,colony,Britain
+100033568,1949,2000,newfoundland,Newfoundland,province,Canada
+100033568,2001,,newfoundland,Newfoundland and Labrador,province,Canada
+100052022,1867,1948,newfoundland,Newfoundland,colony,Britain
+100052022,1949,2000,newfoundland,Newfoundland,province,Canada
+100052022,2001,,newfoundland,Newfoundland and Labrador,province,Canada
+110051797,1867,1872,prince_edward_island,Prince Edward Island,colony,Britain
+110051797,1873,,prince_edward_island,Prince Edward Island,province,Canada
+110051798,1867,1872,prince_edward_island,Prince Edward Island,colony,Britain
+110051798,1873,,prince_edward_island,Prince Edward Island,province,Canada
+110051799,1867,1872,prince_edward_island,Prince Edward Island,colony,Britain
+110051799,1873,,prince_edward_island,Prince Edward Island,province,Canada
+110051828,1867,1872,prince_edward_island,Prince Edward Island,colony,Britain
+110051828,1873,,prince_edward_island,Prince Edward Island,province,Canada
+110051830,1867,1872,prince_edward_island,Prince Edward Island,colony,Britain
+110051830,1873,,prince_edward_island,Prince Edward Island,province,Canada
+120051794,1867,,nova_scotia,Nova Scotia,province,Canada
+120051800,1867,,nova_scotia,Nova Scotia,province,Canada
+120051801,1867,,nova_scotia,Nova Scotia,province,Canada
+120051802,1867,,nova_scotia,Nova Scotia,province,Canada
+120051803,1867,,nova_scotia,Nova Scotia,province,Canada
+120051804,1867,,nova_scotia,Nova Scotia,province,Canada
+120051806,1867,,nova_scotia,Nova Scotia,province,Canada
+120051815,1867,,nova_scotia,Nova Scotia,province,Canada
+120051819,1867,,nova_scotia,Nova Scotia,province,Canada
+120051829,1867,,nova_scotia,Nova Scotia,province,Canada
+120051856,1867,,nova_scotia,Nova Scotia,province,Canada
+120051858,1867,,nova_scotia,Nova Scotia,province,Canada
+120051872,1867,,nova_scotia,Nova Scotia,province,Canada
+120051876,1867,,nova_scotia,Nova Scotia,province,Canada
+120051884,1867,,nova_scotia,Nova Scotia,province,Canada
+120051887,1867,,nova_scotia,Nova Scotia,province,Canada
+120051888,1867,,nova_scotia,Nova Scotia,province,Canada
+120051890,1867,,nova_scotia,Nova Scotia,province,Canada
+120051951,1867,,nova_scotia,Nova Scotia,province,Canada
+120051975,1867,,nova_scotia,Nova Scotia,province,Canada
+120051976,1867,,nova_scotia,Nova Scotia,province,Canada
+120051979,1867,,nova_scotia,Nova Scotia,province,Canada
+120052058,1867,,nova_scotia,Nova Scotia,province,Canada
+120052068,1867,,nova_scotia,Nova Scotia,province,Canada
+120052080,1867,,nova_scotia,Nova Scotia,province,Canada
+120052081,1867,,nova_scotia,Nova Scotia,province,Canada
+120052083,1867,,nova_scotia,Nova Scotia,province,Canada
+120052084,1867,,nova_scotia,Nova Scotia,province,Canada
+120052085,1867,,nova_scotia,Nova Scotia,province,Canada
+130051793,1867,,new_brunswick,New Brunswick,province,Canada
+130051795,1867,,new_brunswick,New Brunswick,province,Canada
+130051796,1867,,new_brunswick,New Brunswick,province,Canada
+130051808,1867,,new_brunswick,New Brunswick,province,Canada
+130051810,1867,,new_brunswick,New Brunswick,province,Canada
+130051811,1867,,new_brunswick,New Brunswick,province,Canada
+130051812,1867,,new_brunswick,New Brunswick,province,Canada
+130051813,1867,,new_brunswick,New Brunswick,province,Canada
+130051816,1867,,new_brunswick,New Brunswick,province,Canada
+130051820,1867,,new_brunswick,New Brunswick,province,Canada
+130051835,1867,,new_brunswick,New Brunswick,province,Canada
+130051837,1867,,new_brunswick,New Brunswick,province,Canada
+130051838,1867,,new_brunswick,New Brunswick,province,Canada
+130051841,1867,,new_brunswick,New Brunswick,province,Canada
+130051891,1867,,new_brunswick,New Brunswick,province,Canada
+130051892,1867,,new_brunswick,New Brunswick,province,Canada
+130051898,1867,,new_brunswick,New Brunswick,province,Canada
+130051899,1867,,new_brunswick,New Brunswick,province,Canada
+130051901,1867,,new_brunswick,New Brunswick,province,Canada
+130051903,1867,,new_brunswick,New Brunswick,province,Canada
+130051904,1867,,new_brunswick,New Brunswick,province,Canada
+130051930,1867,,new_brunswick,New Brunswick,province,Canada
+130051932,1867,,new_brunswick,New Brunswick,province,Canada
+130051969,1867,,new_brunswick,New Brunswick,province,Canada
+130051971,1867,,new_brunswick,New Brunswick,province,Canada
+130051972,1867,,new_brunswick,New Brunswick,province,Canada
+130051973,1867,,new_brunswick,New Brunswick,province,Canada
+130051974,1867,,new_brunswick,New Brunswick,province,Canada
+130052109,1867,,new_brunswick,New Brunswick,province,Canada
+240017206,1867,,quebec,Quebec,province,Canada
+240017209,1867,,quebec,Quebec,province,Canada
+240017235,1867,,quebec,Quebec,province,Canada
+240017239,1867,,quebec,Quebec,province,Canada
+240017319,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+240017319,1870,1894,northwest_territories,North-West Territories,territory,Canada
+240017319,1895,1897,district_of_ungava,District of Ungava,district,Canada
+240017319,1898,,quebec,Quebec,province,Canada
+240017415,1867,,quebec,Quebec,province,Canada
+240051893,1867,,quebec,Quebec,province,Canada
+240051905,1867,,quebec,Quebec,province,Canada
+240051907,1867,,quebec,Quebec,province,Canada
+240051908,1867,,quebec,Quebec,province,Canada
+240051909,1867,,quebec,Quebec,province,Canada
+240051911,1867,,quebec,Quebec,province,Canada
+240051919,1867,,quebec,Quebec,province,Canada
+240051920,1867,,quebec,Quebec,province,Canada
+240051921,1867,,quebec,Quebec,province,Canada
+240051924,1867,,quebec,Quebec,province,Canada
+240051925,1867,,quebec,Quebec,province,Canada
+240051933,1867,,quebec,Quebec,province,Canada
+240051934,1867,,quebec,Quebec,province,Canada
+240051936,1867,,quebec,Quebec,province,Canada
+240051937,1867,,quebec,Quebec,province,Canada
+240051938,1867,,quebec,Quebec,province,Canada
+240052012,1867,,quebec,Quebec,province,Canada
+240052088,1867,,quebec,Quebec,province,Canada
+240052096,1867,,quebec,Quebec,province,Canada
+240052104,1867,,quebec,Quebec,province,Canada
+240052108,1867,,quebec,Quebec,province,Canada
+240052111,1867,,quebec,Quebec,province,Canada
+240052479,1867,,quebec,Quebec,province,Canada
+240052482,1867,,quebec,Quebec,province,Canada
+240052483,1867,,quebec,Quebec,province,Canada
+240052484,1867,,quebec,Quebec,province,Canada
+240052488,1867,,quebec,Quebec,province,Canada
+240052490,1867,,quebec,Quebec,province,Canada
+240052491,1867,,quebec,Quebec,province,Canada
+240052492,1867,,quebec,Quebec,province,Canada
+240052494,1867,,quebec,Quebec,province,Canada
+240052504,1867,,quebec,Quebec,province,Canada
+240052506,1867,,quebec,Quebec,province,Canada
+240052514,1867,,quebec,Quebec,province,Canada
+240052515,1867,,quebec,Quebec,province,Canada
+240052517,1867,,quebec,Quebec,province,Canada
+240052519,1867,,quebec,Quebec,province,Canada
+240052562,1867,,quebec,Quebec,province,Canada
+240052605,1867,,quebec,Quebec,province,Canada
+240052675,1867,,quebec,Quebec,province,Canada
+240052679,1867,,quebec,Quebec,province,Canada
+240052680,1867,,quebec,Quebec,province,Canada
+240052681,1867,,quebec,Quebec,province,Canada
+240052683,1867,,quebec,Quebec,province,Canada
+240052701,1867,,quebec,Quebec,province,Canada
+240052710,1867,,quebec,Quebec,province,Canada
+240052712,1867,,quebec,Quebec,province,Canada
+240052713,1867,,quebec,Quebec,province,Canada
+240052724,1867,,quebec,Quebec,province,Canada
+240052726,1867,,quebec,Quebec,province,Canada
+240052727,1867,,quebec,Quebec,province,Canada
+240052728,1867,,quebec,Quebec,province,Canada
+240052729,1867,,quebec,Quebec,province,Canada
+240052730,1867,,quebec,Quebec,province,Canada
+240052739,1867,,quebec,Quebec,province,Canada
+240052741,1867,,quebec,Quebec,province,Canada
+240052742,1867,,quebec,Quebec,province,Canada
+240052743,1867,,quebec,Quebec,province,Canada
+240052744,1867,,quebec,Quebec,province,Canada
+240052751,1867,,quebec,Quebec,province,Canada
+240052752,1867,,quebec,Quebec,province,Canada
+240052753,1867,,quebec,Quebec,province,Canada
+240052755,1867,,quebec,Quebec,province,Canada
+240052756,1867,,quebec,Quebec,province,Canada
+240052758,1867,,quebec,Quebec,province,Canada
+240052766,1867,,quebec,Quebec,province,Canada
+240052767,1867,,quebec,Quebec,province,Canada
+240052768,1867,,quebec,Quebec,province,Canada
+240052769,1867,,quebec,Quebec,province,Canada
+240052770,1867,,quebec,Quebec,province,Canada
+240052771,1867,,quebec,Quebec,province,Canada
+240052772,1867,,quebec,Quebec,province,Canada
+240052790,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+240052790,1870,1894,northwest_territories,North-West Territories,territory,Canada
+240052790,1895,1897,district_of_ungava,District of Ungava,district,Canada
+240052790,1898,,quebec,Quebec,province,Canada
+240052794,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+240052794,1870,1894,northwest_territories,North-West Territories,territory,Canada
+240052794,1895,1897,district_of_ungava,District of Ungava,district,Canada
+240052794,1898,,quebec,Quebec,province,Canada
+240052796,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+240052796,1870,1894,northwest_territories,North-West Territories,territory,Canada
+240052796,1895,1897,district_of_ungava,District of Ungava,district,Canada
+240052796,1898,,quebec,Quebec,province,Canada
+240052797,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+240052797,1870,1894,northwest_territories,North-West Territories,territory,Canada
+240052797,1895,1897,district_of_ungava,District of Ungava,district,Canada
+240052797,1898,,quebec,Quebec,province,Canada
+241367539,1867,,quebec,Quebec,province,Canada
+241367541,1867,,quebec,Quebec,province,Canada
+241369166,1867,,quebec,Quebec,province,Canada
+241369168,1867,,quebec,Quebec,province,Canada
+241369169,1867,,quebec,Quebec,province,Canada
+241369170,1867,,quebec,Quebec,province,Canada
+241369172,1867,,quebec,Quebec,province,Canada
+241369180,1867,,quebec,Quebec,province,Canada
+241369181,1867,,quebec,Quebec,province,Canada
+241369182,1867,,quebec,Quebec,province,Canada
+241369183,1867,,quebec,Quebec,province,Canada
+241369184,1867,,quebec,Quebec,province,Canada
+241369185,1867,,quebec,Quebec,province,Canada
+241369186,1867,,quebec,Quebec,province,Canada
+241369278,1867,,quebec,Quebec,province,Canada
+241369282,1867,,quebec,Quebec,province,Canada
+241369284,1867,,quebec,Quebec,province,Canada
+350017894,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+350017894,1870,1873,northwest_territories,North-West Territories,territory,Canada
+350017894,1874,,ontario,Ontario,province,Canada
+350017912,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+350017912,1870,1873,northwest_territories,North-West Territories,territory,Canada
+350017912,1874,,ontario,Ontario,province,Canada
+350047001,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+350047001,1870,1875,northwest_territories,North-West Territories,territory,Canada
+350047001,1876,1880,district_of_keewatin,District of Keewatin,district,Canada
+350047001,1881,1888,ontario_manitoba_disputed_area,Ontario–Manitoba disputed area,disputed,Canada (Ontario and Manitoba)
+350047001,1889,,ontario,Ontario,province,Canada
+350047046,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+350047046,1870,1875,northwest_territories,North-West Territories,territory,Canada
+350047046,1876,1880,district_of_keewatin,District of Keewatin,district,Canada
+350047046,1881,1888,ontario_manitoba_disputed_area,Ontario–Manitoba disputed area,disputed,Canada (Ontario and Manitoba)
+350047046,1889,,ontario,Ontario,province,Canada
+350047072,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+350047072,1870,1875,northwest_territories,North-West Territories,territory,Canada
+350047072,1876,1880,district_of_keewatin,District of Keewatin,district,Canada
+350047072,1881,1888,ontario_manitoba_disputed_area,Ontario–Manitoba disputed area,disputed,Canada (Ontario and Manitoba)
+350047072,1889,,ontario,Ontario,province,Canada
+350047556,1867,,ontario,Ontario,province,Canada
+350047586,1867,,ontario,Ontario,province,Canada
+350047587,1867,,ontario,Ontario,province,Canada
+350047590,1867,,ontario,Ontario,province,Canada
+350047591,1867,,ontario,Ontario,province,Canada
+350047607,1867,,ontario,Ontario,province,Canada
+350047611,1867,,ontario,Ontario,province,Canada
+350047613,1867,,ontario,Ontario,province,Canada
+350047615,1867,,ontario,Ontario,province,Canada
+350047630,1867,,ontario,Ontario,province,Canada
+350047634,1867,,ontario,Ontario,province,Canada
+350051403,1867,,ontario,Ontario,province,Canada
+350051405,1867,,ontario,Ontario,province,Canada
+350051407,1867,,ontario,Ontario,province,Canada
+350051415,1867,,ontario,Ontario,province,Canada
+350051419,1867,,ontario,Ontario,province,Canada
+350051420,1867,,ontario,Ontario,province,Canada
+350051421,1867,,ontario,Ontario,province,Canada
+350051429,1867,,ontario,Ontario,province,Canada
+350051430,1867,,ontario,Ontario,province,Canada
+350051431,1867,,ontario,Ontario,province,Canada
+350051434,1867,,ontario,Ontario,province,Canada
+350051435,1867,,ontario,Ontario,province,Canada
+350051442,1867,,ontario,Ontario,province,Canada
+350051443,1867,,ontario,Ontario,province,Canada
+350051444,1867,,ontario,Ontario,province,Canada
+350051447,1867,,ontario,Ontario,province,Canada
+350051448,1867,,ontario,Ontario,province,Canada
+350052486,1867,,ontario,Ontario,province,Canada
+350052487,1867,,ontario,Ontario,province,Canada
+350052489,1867,,ontario,Ontario,province,Canada
+350052496,1867,,ontario,Ontario,province,Canada
+350052500,1867,,ontario,Ontario,province,Canada
+350052501,1867,,ontario,Ontario,province,Canada
+350052502,1867,,ontario,Ontario,province,Canada
+350052570,1867,,ontario,Ontario,province,Canada
+350052572,1867,,ontario,Ontario,province,Canada
+350052573,1867,,ontario,Ontario,province,Canada
+350052574,1867,,ontario,Ontario,province,Canada
+350052576,1867,,ontario,Ontario,province,Canada
+350052581,1867,,ontario,Ontario,province,Canada
+350052584,1867,,ontario,Ontario,province,Canada
+350052586,1867,,ontario,Ontario,province,Canada
+350052587,1867,,ontario,Ontario,province,Canada
+350052592,1867,,ontario,Ontario,province,Canada
+350052600,1867,,ontario,Ontario,province,Canada
+350052602,1867,,ontario,Ontario,province,Canada
+350052604,1867,,ontario,Ontario,province,Canada
+350052607,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+350052607,1870,1873,northwest_territories,North-West Territories,territory,Canada
+350052607,1874,,ontario,Ontario,province,Canada
+350052608,1867,,ontario,Ontario,province,Canada
+350052625,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+350052625,1870,1873,northwest_territories,North-West Territories,territory,Canada
+350052625,1874,,ontario,Ontario,province,Canada
+350052626,1867,,ontario,Ontario,province,Canada
+350052627,1867,,ontario,Ontario,province,Canada
+350052628,1867,,ontario,Ontario,province,Canada
+350052630,1867,,ontario,Ontario,province,Canada
+350052631,1867,,ontario,Ontario,province,Canada
+350052632,1867,,ontario,Ontario,province,Canada
+350052639,1867,,ontario,Ontario,province,Canada
+350052640,1867,,ontario,Ontario,province,Canada
+350052641,1867,,ontario,Ontario,province,Canada
+350052642,1867,,ontario,Ontario,province,Canada
+350052643,1867,,ontario,Ontario,province,Canada
+350052644,1867,,ontario,Ontario,province,Canada
+350052645,1867,,ontario,Ontario,province,Canada
+350052646,1867,,ontario,Ontario,province,Canada
+350052647,1867,,ontario,Ontario,province,Canada
+350052648,1867,,ontario,Ontario,province,Canada
+350052651,1867,,ontario,Ontario,province,Canada
+350052655,1867,,ontario,Ontario,province,Canada
+350052657,1867,,ontario,Ontario,province,Canada
+350052658,1867,,ontario,Ontario,province,Canada
+350052661,1867,,ontario,Ontario,province,Canada
+350052662,1867,,ontario,Ontario,province,Canada
+350052663,1867,,ontario,Ontario,province,Canada
+350052664,1867,,ontario,Ontario,province,Canada
+350052665,1867,,ontario,Ontario,province,Canada
+350052666,1867,,ontario,Ontario,province,Canada
+350052668,1867,,ontario,Ontario,province,Canada
+350052669,1867,,ontario,Ontario,province,Canada
+350052670,1867,,ontario,Ontario,province,Canada
+350052671,1867,,ontario,Ontario,province,Canada
+350052672,1867,,ontario,Ontario,province,Canada
+350052673,1867,,ontario,Ontario,province,Canada
+350052674,1867,,ontario,Ontario,province,Canada
+351360024,1867,,ontario,Ontario,province,Canada
+351360025,1867,,ontario,Ontario,province,Canada
+351360028,1867,,ontario,Ontario,province,Canada
+351360030,1867,,ontario,Ontario,province,Canada
+351360031,1867,,ontario,Ontario,province,Canada
+351360032,1867,,ontario,Ontario,province,Canada
+351360034,1867,,ontario,Ontario,province,Canada
+351360035,1867,,ontario,Ontario,province,Canada
+351360036,1867,,ontario,Ontario,province,Canada
+351367535,1867,,ontario,Ontario,province,Canada
+351367536,1867,,ontario,Ontario,province,Canada
+351367537,1867,,ontario,Ontario,province,Canada
+351367538,1867,,ontario,Ontario,province,Canada
+351367540,1867,,ontario,Ontario,province,Canada
+351368404,1867,,ontario,Ontario,province,Canada
+351368405,1867,,ontario,Ontario,province,Canada
+351368406,1867,,ontario,Ontario,province,Canada
+351368543,1867,,ontario,Ontario,province,Canada
+351368544,1867,,ontario,Ontario,province,Canada
+351368546,1867,,ontario,Ontario,province,Canada
+351368547,1867,,ontario,Ontario,province,Canada
+351368548,1867,,ontario,Ontario,province,Canada
+351368554,1867,,ontario,Ontario,province,Canada
+351368556,1867,,ontario,Ontario,province,Canada
+351368571,1867,,ontario,Ontario,province,Canada
+351368572,1867,,ontario,Ontario,province,Canada
+351368573,1867,,ontario,Ontario,province,Canada
+351368574,1867,,ontario,Ontario,province,Canada
+351368575,1867,,ontario,Ontario,province,Canada
+351368576,1867,,ontario,Ontario,province,Canada
+351368577,1867,,ontario,Ontario,province,Canada
+460017654,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460017654,1870,1875,northwest_territories,North-West Territories,territory,Canada
+460017654,1876,1911,district_of_keewatin,District of Keewatin,district,Canada
+460017654,1912,,manitoba,Manitoba,province,Canada
+460022009,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460022009,1870,1880,northwest_territories,North-West Territories,territory,Canada
+460022009,1881,,manitoba,Manitoba,province,Canada
+460022041,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460022041,1870,1881,northwest_territories,North-West Territories,territory,Canada
+460022041,1882,1904,district_of_saskatchewan,District of Saskatchewan,district,Canada
+460022041,1905,1911,district_of_keewatin,District of Keewatin,district,Canada
+460022041,1912,,manitoba,Manitoba,province,Canada
+460047005,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047005,1870,1875,northwest_territories,North-West Territories,territory,Canada
+460047005,1876,1880,district_of_keewatin,District of Keewatin,district,Canada
+460047005,1881,,manitoba,Manitoba,province,Canada
+460047006,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047006,1870,,manitoba,Manitoba,province,Canada
+460047008,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047008,1870,,manitoba,Manitoba,province,Canada
+460047009,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047009,1870,1875,northwest_territories,North-West Territories,territory,Canada
+460047009,1876,1880,district_of_keewatin,District of Keewatin,district,Canada
+460047009,1881,,manitoba,Manitoba,province,Canada
+460047010,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047010,1870,,manitoba,Manitoba,province,Canada
+460047014,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047014,1870,,manitoba,Manitoba,province,Canada
+460047015,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047015,1870,,manitoba,Manitoba,province,Canada
+460047018,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047018,1870,,manitoba,Manitoba,province,Canada
+460047036,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047036,1870,1875,northwest_territories,North-West Territories,territory,Canada
+460047036,1876,1880,district_of_keewatin,District of Keewatin,district,Canada
+460047036,1881,,manitoba,Manitoba,province,Canada
+460047093,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047093,1870,1880,northwest_territories,North-West Territories,territory,Canada
+460047093,1881,,manitoba,Manitoba,province,Canada
+460047097,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047097,1870,,manitoba,Manitoba,province,Canada
+460047098,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047098,1870,1880,northwest_territories,North-West Territories,territory,Canada
+460047098,1881,,manitoba,Manitoba,province,Canada
+460047101,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047101,1870,,manitoba,Manitoba,province,Canada
+460047110,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047110,1870,1880,northwest_territories,North-West Territories,territory,Canada
+460047110,1881,,manitoba,Manitoba,province,Canada
+460047114,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047114,1870,1880,northwest_territories,North-West Territories,territory,Canada
+460047114,1881,,manitoba,Manitoba,province,Canada
+460047115,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047115,1870,1880,northwest_territories,North-West Territories,territory,Canada
+460047115,1881,,manitoba,Manitoba,province,Canada
+460047116,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047116,1870,1880,northwest_territories,North-West Territories,territory,Canada
+460047116,1881,,manitoba,Manitoba,province,Canada
+460047166,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047166,1870,,manitoba,Manitoba,province,Canada
+460047168,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047168,1870,,manitoba,Manitoba,province,Canada
+460047169,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047169,1870,,manitoba,Manitoba,province,Canada
+460047171,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047171,1870,,manitoba,Manitoba,province,Canada
+460047172,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047172,1870,,manitoba,Manitoba,province,Canada
+460047232,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+460047232,1870,1875,northwest_territories,North-West Territories,territory,Canada
+460047232,1876,1911,district_of_keewatin,District of Keewatin,district,Canada
+460047232,1912,,manitoba,Manitoba,province,Canada
+461330190,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+461330190,1870,,manitoba,Manitoba,province,Canada
+461330194,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+461330194,1870,,manitoba,Manitoba,province,Canada
+461330195,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+461330195,1870,,manitoba,Manitoba,province,Canada
+470022003,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470022003,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470022003,1882,1904,district_of_saskatchewan,District of Saskatchewan,district,Canada
+470022003,1905,,saskatchewan,Saskatchewan,province,Canada
+470022015,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470022015,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470022015,1882,1904,district_of_saskatchewan,District of Saskatchewan,district,Canada
+470022015,1905,,saskatchewan,Saskatchewan,province,Canada
+470022018,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470022018,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470022018,1882,1904,district_of_saskatchewan,District of Saskatchewan,district,Canada
+470022018,1905,,saskatchewan,Saskatchewan,province,Canada
+470022021,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470022021,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470022021,1882,1904,district_of_saskatchewan,District of Saskatchewan,district,Canada
+470022021,1905,,saskatchewan,Saskatchewan,province,Canada
+470022099,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470022099,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470022099,1882,1904,district_of_saskatchewan,District of Saskatchewan,district,Canada
+470022099,1905,,saskatchewan,Saskatchewan,province,Canada
+470022106,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470022106,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470022106,1882,1904,district_of_saskatchewan,District of Saskatchewan,district,Canada
+470022106,1905,,saskatchewan,Saskatchewan,province,Canada
+470022109,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470022109,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470022109,1882,1904,district_of_assiniboia,District of Assiniboia,district,Canada
+470022109,1905,,saskatchewan,Saskatchewan,province,Canada
+470022110,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470022110,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470022110,1882,1904,district_of_saskatchewan,District of Saskatchewan,district,Canada
+470022110,1905,,saskatchewan,Saskatchewan,province,Canada
+470022112,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470022112,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470022112,1882,1904,district_of_saskatchewan,District of Saskatchewan,district,Canada
+470022112,1905,,saskatchewan,Saskatchewan,province,Canada
+470022133,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470022133,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470022133,1882,1904,district_of_saskatchewan,District of Saskatchewan,district,Canada
+470022133,1905,,saskatchewan,Saskatchewan,province,Canada
+470022135,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470022135,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470022135,1882,1904,district_of_saskatchewan,District of Saskatchewan,district,Canada
+470022135,1905,,saskatchewan,Saskatchewan,province,Canada
+470022139,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470022139,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470022139,1882,1904,district_of_saskatchewan,District of Saskatchewan,district,Canada
+470022139,1905,,saskatchewan,Saskatchewan,province,Canada
+470047133,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470047133,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470047133,1882,1904,district_of_assiniboia,District of Assiniboia,district,Canada
+470047133,1905,,saskatchewan,Saskatchewan,province,Canada
+470047134,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470047134,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470047134,1882,1904,district_of_assiniboia,District of Assiniboia,district,Canada
+470047134,1905,,saskatchewan,Saskatchewan,province,Canada
+470047873,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470047873,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470047873,1882,1904,district_of_assiniboia,District of Assiniboia,district,Canada
+470047873,1905,,saskatchewan,Saskatchewan,province,Canada
+470047874,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470047874,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470047874,1882,1904,district_of_assiniboia,District of Assiniboia,district,Canada
+470047874,1905,,saskatchewan,Saskatchewan,province,Canada
+470047875,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470047875,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470047875,1882,1904,district_of_assiniboia,District of Assiniboia,district,Canada
+470047875,1905,,saskatchewan,Saskatchewan,province,Canada
+470047878,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470047878,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470047878,1882,1904,district_of_assiniboia,District of Assiniboia,district,Canada
+470047878,1905,,saskatchewan,Saskatchewan,province,Canada
+470047883,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470047883,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470047883,1882,1904,district_of_assiniboia,District of Assiniboia,district,Canada
+470047883,1905,,saskatchewan,Saskatchewan,province,Canada
+470047911,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470047911,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470047911,1882,1904,district_of_assiniboia,District of Assiniboia,district,Canada
+470047911,1905,,saskatchewan,Saskatchewan,province,Canada
+470047913,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470047913,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470047913,1882,1904,district_of_assiniboia,District of Assiniboia,district,Canada
+470047913,1905,,saskatchewan,Saskatchewan,province,Canada
+470047952,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470047952,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470047952,1882,1904,district_of_assiniboia,District of Assiniboia,district,Canada
+470047952,1905,,saskatchewan,Saskatchewan,province,Canada
+470048003,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470048003,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470048003,1882,1904,district_of_assiniboia,District of Assiniboia,district,Canada
+470048003,1905,,saskatchewan,Saskatchewan,province,Canada
+470048007,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+470048007,1870,1881,northwest_territories,North-West Territories,territory,Canada
+470048007,1882,1904,district_of_assiniboia,District of Assiniboia,district,Canada
+470048007,1905,,saskatchewan,Saskatchewan,province,Canada
+480021674,1867,1869,north_western_territory,North-Western Territory,unorganized,Britain
+480021674,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480021674,1882,1904,district_of_athabasca,District of Athabaska,district,Canada
+480021674,1905,,alberta,Alberta,province,Canada
+480021688,1867,1869,north_western_territory,North-Western Territory,unorganized,Britain
+480021688,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480021688,1882,1904,district_of_athabasca,District of Athabaska,district,Canada
+480021688,1905,,alberta,Alberta,province,Canada
+480021759,1867,1869,north_western_territory,North-Western Territory,unorganized,Britain
+480021759,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480021759,1882,1904,district_of_athabasca,District of Athabaska,district,Canada
+480021759,1905,,alberta,Alberta,province,Canada
+480021777,1867,1869,north_western_territory,North-Western Territory,unorganized,Britain
+480021777,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480021777,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480021777,1905,,alberta,Alberta,province,Canada
+480021782,1867,1869,north_western_territory,North-Western Territory,unorganized,Britain
+480021782,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480021782,1882,1904,district_of_athabasca,District of Athabaska,district,Canada
+480021782,1905,,alberta,Alberta,province,Canada
+480022052,1867,1869,north_western_territory,North-Western Territory,unorganized,Britain
+480022052,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022052,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022052,1905,,alberta,Alberta,province,Canada
+480022059,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022059,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022059,1882,1904,district_of_saskatchewan,District of Saskatchewan,district,Canada
+480022059,1905,,alberta,Alberta,province,Canada
+480022067,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022067,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022067,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022067,1905,,alberta,Alberta,province,Canada
+480022070,1867,1869,north_western_territory,North-Western Territory,unorganized,Britain
+480022070,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022070,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022070,1905,,alberta,Alberta,province,Canada
+480022071,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022071,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022071,1882,1904,district_of_saskatchewan,District of Saskatchewan,district,Canada
+480022071,1905,,alberta,Alberta,province,Canada
+480022075,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022075,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022075,1882,1904,district_of_saskatchewan,District of Saskatchewan,district,Canada
+480022075,1905,,alberta,Alberta,province,Canada
+480022076,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022076,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022076,1882,1904,district_of_saskatchewan,District of Saskatchewan,district,Canada
+480022076,1905,,alberta,Alberta,province,Canada
+480022082,1867,1869,north_western_territory,North-Western Territory,unorganized,Britain
+480022082,1870,1894,northwest_territories,North-West Territories,territory,Canada
+480022082,1895,1904,district_of_athabasca,District of Athabaska,district,Canada
+480022082,1905,,alberta,Alberta,province,Canada
+480022143,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022143,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022143,1882,1904,district_of_saskatchewan,District of Saskatchewan,district,Canada
+480022143,1905,,alberta,Alberta,province,Canada
+480022645,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022645,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022645,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022645,1905,,alberta,Alberta,province,Canada
+480022650,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022650,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022650,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022650,1905,,alberta,Alberta,province,Canada
+480022678,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022678,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022678,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022678,1905,,alberta,Alberta,province,Canada
+480022687,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022687,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022687,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022687,1905,,alberta,Alberta,province,Canada
+480022688,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022688,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022688,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022688,1905,,alberta,Alberta,province,Canada
+480022689,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022689,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022689,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022689,1905,,alberta,Alberta,province,Canada
+480022691,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022691,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022691,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022691,1905,,alberta,Alberta,province,Canada
+480022692,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022692,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022692,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022692,1905,,alberta,Alberta,province,Canada
+480022700,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022700,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022700,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022700,1905,,alberta,Alberta,province,Canada
+480022715,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022715,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022715,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022715,1905,,alberta,Alberta,province,Canada
+480022717,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022717,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022717,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022717,1905,,alberta,Alberta,province,Canada
+480022719,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022719,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022719,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022719,1905,,alberta,Alberta,province,Canada
+480022724,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022724,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022724,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022724,1905,,alberta,Alberta,province,Canada
+480022725,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022725,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022725,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022725,1905,,alberta,Alberta,province,Canada
+480022726,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022726,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022726,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022726,1905,,alberta,Alberta,province,Canada
+480022730,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022730,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022730,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022730,1905,,alberta,Alberta,province,Canada
+480022835,1867,1869,north_western_territory,North-Western Territory,unorganized,Britain
+480022835,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022835,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022835,1905,,alberta,Alberta,province,Canada
+480022841,1867,1869,north_western_territory,North-Western Territory,unorganized,Britain
+480022841,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022841,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022841,1905,,alberta,Alberta,province,Canada
+480022842,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022842,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022842,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022842,1905,,alberta,Alberta,province,Canada
+480022844,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022844,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022844,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022844,1905,,alberta,Alberta,province,Canada
+480022845,1867,1869,north_western_territory,North-Western Territory,unorganized,Britain
+480022845,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022845,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022845,1905,,alberta,Alberta,province,Canada
+480022846,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022846,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022846,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022846,1905,,alberta,Alberta,province,Canada
+480022851,1867,1869,north_western_territory,North-Western Territory,unorganized,Britain
+480022851,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022851,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022851,1905,,alberta,Alberta,province,Canada
+480022860,1867,1869,north_western_territory,North-Western Territory,unorganized,Britain
+480022860,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022860,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022860,1905,,alberta,Alberta,province,Canada
+480022861,1867,1869,north_western_territory,North-Western Territory,unorganized,Britain
+480022861,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022861,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022861,1905,,alberta,Alberta,province,Canada
+480022873,1867,1869,north_western_territory,North-Western Territory,unorganized,Britain
+480022873,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022873,1882,1894,district_of_athabasca,District of Athabaska,district,Canada
+480022873,1895,1904,district_of_alberta,District of Alberta,district,Canada
+480022873,1905,,alberta,Alberta,province,Canada
+480022883,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022883,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022883,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022883,1905,,alberta,Alberta,province,Canada
+480022889,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022889,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022889,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022889,1905,,alberta,Alberta,province,Canada
+480022897,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022897,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022897,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022897,1905,,alberta,Alberta,province,Canada
+480022898,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022898,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022898,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022898,1905,,alberta,Alberta,province,Canada
+480022899,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022899,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022899,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022899,1905,,alberta,Alberta,province,Canada
+480022901,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022901,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022901,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022901,1905,,alberta,Alberta,province,Canada
+480022902,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022902,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022902,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022902,1905,,alberta,Alberta,province,Canada
+480022903,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022903,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022903,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022903,1905,,alberta,Alberta,province,Canada
+480022910,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022910,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022910,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022910,1905,,alberta,Alberta,province,Canada
+480022911,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022911,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022911,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022911,1905,,alberta,Alberta,province,Canada
+480022913,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022913,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022913,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022913,1905,,alberta,Alberta,province,Canada
+480022914,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022914,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022914,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022914,1905,,alberta,Alberta,province,Canada
+480022915,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022915,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022915,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022915,1905,,alberta,Alberta,province,Canada
+480022916,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022916,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022916,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022916,1905,,alberta,Alberta,province,Canada
+480022918,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022918,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022918,1882,1904,district_of_saskatchewan,District of Saskatchewan,district,Canada
+480022918,1905,,alberta,Alberta,province,Canada
+480022922,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022922,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022922,1882,1904,district_of_saskatchewan,District of Saskatchewan,district,Canada
+480022922,1905,,alberta,Alberta,province,Canada
+480022925,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022925,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022925,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022925,1905,,alberta,Alberta,province,Canada
+480022926,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022926,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022926,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022926,1905,,alberta,Alberta,province,Canada
+480022928,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022928,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022928,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022928,1905,,alberta,Alberta,province,Canada
+480022929,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022929,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022929,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022929,1905,,alberta,Alberta,province,Canada
+480022930,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480022930,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480022930,1882,1904,district_of_alberta,District of Alberta,district,Canada
+480022930,1905,,alberta,Alberta,province,Canada
+480047989,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+480047989,1870,1881,northwest_territories,North-West Territories,territory,Canada
+480047989,1882,1904,district_of_assiniboia,District of Assiniboia,district,Canada
+480047989,1905,,alberta,Alberta,province,Canada
+481159047,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+481159047,1870,1881,northwest_territories,North-West Territories,territory,Canada
+481159047,1882,1904,district_of_alberta,District of Alberta,district,Canada
+481159047,1905,,alberta,Alberta,province,Canada
+481159048,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+481159048,1870,1881,northwest_territories,North-West Territories,territory,Canada
+481159048,1882,1904,district_of_alberta,District of Alberta,district,Canada
+481159048,1905,,alberta,Alberta,province,Canada
+481159051,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+481159051,1870,1881,northwest_territories,North-West Territories,territory,Canada
+481159051,1882,1904,district_of_alberta,District of Alberta,district,Canada
+481159051,1905,,alberta,Alberta,province,Canada
+481159052,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+481159052,1870,1881,northwest_territories,North-West Territories,territory,Canada
+481159052,1882,1904,district_of_alberta,District of Alberta,district,Canada
+481159052,1905,,alberta,Alberta,province,Canada
+481160300,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+481160300,1870,1881,northwest_territories,North-West Territories,territory,Canada
+481160300,1882,1904,district_of_alberta,District of Alberta,district,Canada
+481160300,1905,,alberta,Alberta,province,Canada
+481160302,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+481160302,1870,1881,northwest_territories,North-West Territories,territory,Canada
+481160302,1882,1904,district_of_alberta,District of Alberta,district,Canada
+481160302,1905,,alberta,Alberta,province,Canada
+481160303,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+481160303,1870,1881,northwest_territories,North-West Territories,territory,Canada
+481160303,1882,1904,district_of_alberta,District of Alberta,district,Canada
+481160303,1905,,alberta,Alberta,province,Canada
+481160419,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+481160419,1870,1881,northwest_territories,North-West Territories,territory,Canada
+481160419,1882,1904,district_of_alberta,District of Alberta,district,Canada
+481160419,1905,,alberta,Alberta,province,Canada
+481160421,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+481160421,1870,1881,northwest_territories,North-West Territories,territory,Canada
+481160421,1882,1904,district_of_alberta,District of Alberta,district,Canada
+481160421,1905,,alberta,Alberta,province,Canada
+481160422,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+481160422,1870,1881,northwest_territories,North-West Territories,territory,Canada
+481160422,1882,1904,district_of_alberta,District of Alberta,district,Canada
+481160422,1905,,alberta,Alberta,province,Canada
+481160425,1867,1869,ruperts_land,Rupert's Land,hbc_charter,Hudson's Bay Company
+481160425,1870,1881,northwest_territories,North-West Territories,territory,Canada
+481160425,1882,1904,district_of_alberta,District of Alberta,district,Canada
+481160425,1905,,alberta,Alberta,province,Canada
+590021775,1867,1870,british_columbia,British Columbia,colony,Britain
+590021775,1871,,british_columbia,British Columbia,province,Canada
+590021799,1867,1870,british_columbia,British Columbia,colony,Britain
+590021799,1871,,british_columbia,British Columbia,province,Canada
+590022301,1867,1870,british_columbia,British Columbia,colony,Britain
+590022301,1871,,british_columbia,British Columbia,province,Canada
+590022326,1867,1870,british_columbia,British Columbia,colony,Britain
+590022326,1871,,british_columbia,British Columbia,province,Canada
+590022330,1867,1870,british_columbia,British Columbia,colony,Britain
+590022330,1871,,british_columbia,British Columbia,province,Canada
+590022343,1867,1870,british_columbia,British Columbia,colony,Britain
+590022343,1871,,british_columbia,British Columbia,province,Canada
+590022356,1867,1870,british_columbia,British Columbia,colony,Britain
+590022356,1871,,british_columbia,British Columbia,province,Canada
+590022380,1867,1870,british_columbia,British Columbia,colony,Britain
+590022380,1871,,british_columbia,British Columbia,province,Canada
+590022562,1867,1870,british_columbia,British Columbia,colony,Britain
+590022562,1871,,british_columbia,British Columbia,province,Canada
+590022563,1867,1870,british_columbia,British Columbia,colony,Britain
+590022563,1871,,british_columbia,British Columbia,province,Canada
+590022641,1867,1870,british_columbia,British Columbia,colony,Britain
+590022641,1871,,british_columbia,British Columbia,province,Canada
+590022652,1867,1870,british_columbia,British Columbia,colony,Britain
+590022652,1871,,british_columbia,British Columbia,province,Canada
+590022664,1867,1870,british_columbia,British Columbia,colony,Britain
+590022664,1871,,british_columbia,British Columbia,province,Canada
+590022732,1867,1870,british_columbia,British Columbia,colony,Britain
+590022732,1871,,british_columbia,British Columbia,province,Canada
+590022736,1867,1870,british_columbia,British Columbia,colony,Britain
+590022736,1871,,british_columbia,British Columbia,province,Canada
+590022737,1867,1870,british_columbia,British Columbia,colony,Britain
+590022737,1871,,british_columbia,British Columbia,province,Canada
+590022741,1867,1870,british_columbia,British Columbia,colony,Britain
+590022741,1871,,british_columbia,British Columbia,province,Canada
+590022743,1867,1870,british_columbia,British Columbia,colony,Britain
+590022743,1871,,british_columbia,British Columbia,province,Canada
+590022746,1867,1870,british_columbia,British Columbia,colony,Britain
+590022746,1871,,british_columbia,British Columbia,province,Canada
+590022747,1867,1870,british_columbia,British Columbia,colony,Britain
+590022747,1871,,british_columbia,British Columbia,province,Canada
+590022749,1867,1870,british_columbia,British Columbia,colony,Britain
+590022749,1871,,british_columbia,British Columbia,province,Canada
+590022758,1867,1870,british_columbia,British Columbia,colony,Britain
+590022758,1871,,british_columbia,British Columbia,province,Canada
+590022762,1867,1870,british_columbia,British Columbia,colony,Britain
+590022762,1871,,british_columbia,British Columbia,province,Canada
+590022763,1867,1870,british_columbia,British Columbia,colony,Britain
+590022763,1871,,british_columbia,British Columbia,province,Canada
+590022764,1867,1870,british_columbia,British Columbia,colony,Britain
+590022764,1871,,british_columbia,British Columbia,province,Canada
+590022774,1867,1870,british_columbia,British Columbia,colony,Britain
+590022774,1871,,british_columbia,British Columbia,province,Canada
+590022789,1867,1870,british_columbia,British Columbia,colony,Britain
+590022789,1871,,british_columbia,British Columbia,province,Canada
+590022791,1867,1870,british_columbia,British Columbia,colony,Britain
+590022791,1871,,british_columbia,British Columbia,province,Canada
+590022814,1867,1870,british_columbia,British Columbia,colony,Britain
+590022814,1871,,british_columbia,British Columbia,province,Canada
+590022816,1867,1870,british_columbia,British Columbia,colony,Britain
+590022816,1871,,british_columbia,British Columbia,province,Canada
+590022823,1867,1870,british_columbia,British Columbia,colony,Britain
+590022823,1871,,british_columbia,British Columbia,province,Canada
+590022825,1867,1870,british_columbia,British Columbia,colony,Britain
+590022825,1871,,british_columbia,British Columbia,province,Canada
+590022828,1867,1870,british_columbia,British Columbia,colony,Britain
+590022828,1871,,british_columbia,British Columbia,province,Canada
+590022829,1867,1870,british_columbia,British Columbia,colony,Britain
+590022829,1871,,british_columbia,British Columbia,province,Canada
+590022833,1867,1870,british_columbia,British Columbia,colony,Britain
+590022833,1871,,british_columbia,British Columbia,province,Canada
+590022980,1867,1870,british_columbia,British Columbia,colony,Britain
+590022980,1871,,british_columbia,British Columbia,province,Canada
+590049155,1867,1870,british_columbia,British Columbia,colony,Britain
+590049155,1871,,british_columbia,British Columbia,province,Canada
+590049157,1867,1870,british_columbia,British Columbia,colony,Britain
+590049157,1871,,british_columbia,British Columbia,province,Canada
+590049159,1867,1870,british_columbia,British Columbia,colony,Britain
+590049159,1871,,british_columbia,British Columbia,province,Canada
+590049168,1867,1870,british_columbia,British Columbia,colony,Britain
+590049168,1871,,british_columbia,British Columbia,province,Canada
+590049169,1867,1870,british_columbia,British Columbia,colony,Britain
+590049169,1871,,british_columbia,British Columbia,province,Canada
+590049171,1867,1870,british_columbia,British Columbia,colony,Britain
+590049171,1871,,british_columbia,British Columbia,province,Canada
+590049173,1867,1870,british_columbia,British Columbia,colony,Britain
+590049173,1871,,british_columbia,British Columbia,province,Canada
+590049196,1867,1870,british_columbia,British Columbia,colony,Britain
+590049196,1871,,british_columbia,British Columbia,province,Canada
+590049200,1867,1870,british_columbia,British Columbia,colony,Britain
+590049200,1871,,british_columbia,British Columbia,province,Canada
+590049201,1867,1870,british_columbia,British Columbia,colony,Britain
+590049201,1871,,british_columbia,British Columbia,province,Canada
+590049202,1867,1870,british_columbia,British Columbia,colony,Britain
+590049202,1871,,british_columbia,British Columbia,province,Canada
+590049209,1867,1870,british_columbia,British Columbia,colony,Britain
+590049209,1871,,british_columbia,British Columbia,province,Canada
+590049216,1867,1870,british_columbia,British Columbia,colony,Britain
+590049216,1871,,british_columbia,British Columbia,province,Canada
+590049225,1867,1870,british_columbia,British Columbia,colony,Britain
+590049225,1871,,british_columbia,British Columbia,province,Canada
+590049226,1867,1870,british_columbia,British Columbia,colony,Britain
+590049226,1871,,british_columbia,British Columbia,province,Canada
+590049227,1867,1870,british_columbia,British Columbia,colony,Britain
+590049227,1871,,british_columbia,British Columbia,province,Canada
+590049230,1867,1870,british_columbia,British Columbia,colony,Britain
+590049230,1871,,british_columbia,British Columbia,province,Canada
+590049233,1867,1870,british_columbia,British Columbia,colony,Britain
+590049233,1871,,british_columbia,British Columbia,province,Canada
+590049238,1867,1870,british_columbia,British Columbia,colony,Britain
+590049238,1871,,british_columbia,British Columbia,province,Canada
+590049239,1867,1870,british_columbia,British Columbia,colony,Britain
+590049239,1871,,british_columbia,British Columbia,province,Canada
+590049241,1867,1870,british_columbia,British Columbia,colony,Britain
+590049241,1871,,british_columbia,British Columbia,province,Canada
+590049243,1867,1870,british_columbia,British Columbia,colony,Britain
+590049243,1871,,british_columbia,British Columbia,province,Canada
+591344694,1867,1870,british_columbia,British Columbia,colony,Britain
+591344694,1871,,british_columbia,British Columbia,province,Canada
+591344696,1867,1870,british_columbia,British Columbia,colony,Britain
+591344696,1871,,british_columbia,British Columbia,province,Canada
+591344697,1867,1870,british_columbia,British Columbia,colony,Britain
+591344697,1871,,british_columbia,British Columbia,province,Canada
+591344700,1867,1870,british_columbia,British Columbia,colony,Britain
+591344700,1871,,british_columbia,British Columbia,province,Canada
+591344708,1867,1870,british_columbia,British Columbia,colony,Britain
+591344708,1871,,british_columbia,British Columbia,province,Canada
+591344709,1867,1870,british_columbia,British Columbia,colony,Britain
+591344709,1871,,british_columbia,British Columbia,province,Canada
+591344712,1867,1870,british_columbia,British Columbia,colony,Britain
+591344712,1871,,british_columbia,British Columbia,province,Canada
+591344713,1867,1870,british_columbia,British Columbia,colony,Britain
+591344713,1871,,british_columbia,British Columbia,province,Canada
+591344714,1867,1870,british_columbia,British Columbia,colony,Britain
+591344714,1871,,british_columbia,British Columbia,province,Canada
+600023712,1867,1869,north_western_territory,North-Western Territory,unorganized,Britain
+600023712,1870,1894,northwest_territories,North-West Territories,territory,Canada
+600023712,1895,1897,yukon,District of Yukon,district,Canada
+600023712,1898,2002,yukon,Yukon Territory,territory,Canada
+600023712,2003,,yukon,Yukon,territory,Canada
+610023440,1867,1869,north_western_territory,North-Western Territory,unorganized,Britain
+610023440,1870,1894,northwest_territories,North-West Territories,territory,Canada
+610023440,1895,1998,district_of_mackenzie,District of Mackenzie,district,Canada
+610023440,1999,,northwest_territories,Northwest Territories,territory,Canada
+620018255,1867,1879,arctic_islands,British Arctic Islands,unorganized,Britain
+620018255,1880,1894,northwest_territories,North-West Territories,territory,Canada
+620018255,1895,1998,district_of_franklin,District of Franklin,district,Canada
+620018255,1999,,nunavut,Nunavut,territory,Canada

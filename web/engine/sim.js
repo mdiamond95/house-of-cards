@@ -324,7 +324,12 @@ export class World {
     this._part = null;
     this._turnCache = new Map();
     this._expansionClaims = new Map();
+    this._openingYears = new Map();
     this._provinceDistance = new Map();
+    // Rules 1.0 `land_rush`: whether this set is the hex board (its
+    // riding_stats.csv carries `resolution`), and the rushes its atlas holds.
+    this._boardSet = [...this.state.map.ridingStats.values()].some((s) => 'resolution' in s);
+    this._rushes = null;
     // Rules 1.0 `schemes`: set while a scheme resolves through a handler.
     this._schemeTarget = null;
 
@@ -342,6 +347,9 @@ export class World {
     if (this.feature('world_calendar')) this.eras = rules.game.chapters;
     this.actions = new Map(rules.actions.map((a) => [a.action, a]));
     this.objectives = new Map(rules.objectives.map((o) => [o.objective, o]));
+    // Rules 1.0 `water_crossings` (hoc/sim.py _linked): water rows join two
+    // houses' ground for expansion, claims and neighbours.
+    this.state.linkWater = this.feature('water_crossings');
 
     this.communitiesByRegion = new Map();
     for (const community of rules.communities) {
@@ -371,19 +379,48 @@ export class World {
     return stats.opens_year;
   }
 
+  // Rules 1.0 `dated_openings` (hoc/sim.py opening_year): the later of the
+  // unit's opens_year and its first year under Canada; null if never.
+  openingYear(fedId) {
+    if (!this._openingYears.has(fedId)) {
+      const spans = this.state.map.ridingJurisdictions.get(fedId) || [];
+      let first = this.opensYear(fedId);
+      if (spans.length) {
+        const canada = spans.filter((s) => s.sovereign === 'Canada');
+        first = canada.length ? Math.max(first, canada[0].from_year) : null;
+      }
+      this._openingYears.set(fedId, first);
+    }
+    return this._openingYears.get(fedId);
+  }
+
   ridingOpen(fedId, personalYear) {
-    if (this.feature('world_calendar')) return this.inPlay(fedId, personalYear);
+    if (this.feature('world_calendar')) {
+      if (this.feature('dated_openings')) {
+        const opening = this.openingYear(fedId);
+        return opening !== null && personalYear >= opening;
+      }
+      return this.inPlay(fedId, personalYear);
+    }
     if (!this.feature('atlas_jurisdiction')) return true;
     return personalYear >= this.opensYear(fedId);
   }
 
   foundable(fedId) {
-    if (this.feature('world_calendar')) return this.crownMayFound(fedId, this.yearNow());
+    if (this.feature('world_calendar')) {
+      const year = this.yearNow();
+      if (this.feature('dated_openings') && !this.ridingOpen(fedId, year)) return false;
+      return this.crownMayFound(fedId, year);
+    }
     return this.ridingOpen(fedId, FOUNDING_YEAR);
   }
 
   closedMessage(fedId, who, personalYear) {
     if (this.feature('world_calendar')) {
+      const opening = this.feature('dated_openings') ? this.openingYear(fedId) : null;
+      if (opening !== null && personalYear < opening && this.inPlay(fedId, personalYear)) {
+        return `${this.ridingName(fedId)} is closed to ${who} in ${personalYear}: it opens in ${opening}`;
+      }
       const span = this.span(fedId, personalYear);
       const where = span ? `${span.name}, a ${span.status} under ${span.sovereign}` : 'no jurisdiction';
       return `${this.ridingName(fedId)} is closed to ${who} in ${personalYear}: it lies in ${where}`;
@@ -436,6 +473,127 @@ export class World {
     const stats = this.state.map.ridingStats.get(fedId) || {};
     const tier = stats.wealth_tier === undefined ? NEUTRAL_WEALTH_TIER : stats.wealth_tier;
     return tier - NEUTRAL_WEALTH_TIER;
+  }
+
+  // hoc/sim.py expand_cost: 15 + (wealth_tier - 3), and under rules 1.0
+  // `water_crossings` board.json's water cost when the house reaches the
+  // target across water: a water row joins it to one of the house's holdings
+  // and no land row does. Read before the riding is taken.
+  expandCost(house, fedId) {
+    let cost = 15 + this.wealthOffset(fedId);
+    if (this.feature('water_crossings')) {
+      const held = (n) => this.state.holderOfRiding(n) === house;
+      const byLand = this.state.map.land(fedId).some(held);
+      const byWater = (this.state.map.waterNeighbours.get(fedId) ?? []).some(held);
+      if (byWater && !byLand) cost += this.rules.board.water_crossings.expand_cost;
+    }
+    if (this.rushApplies() && this.rushing(fedId, this.yearNow())) {
+      cost -= this.rules.board.land_rush.expand_discount;
+    }
+    return cost;
+  }
+
+  // hoc/sim.py: rules 1.0 `land_rush`, a province's first years.
+  rushApplies() {
+    if (!(this.feature('land_rush') && this.feature('world_calendar'))) return false;
+    return this._boardSet || Boolean(this.rules.board.land_rush.riding_sets);
+  }
+
+  // [[fromYear, unit, name]]: each jurisdiction the atlas first has as a
+  // province after the start year, by (year, unit key).
+  rushes() {
+    if (this._rushes === null) {
+      const first = new Map();
+      for (const spans of this.state.map.ridingJurisdictions.values()) {
+        for (const s of spans) {
+          if (s.status !== 'province' || s.sovereign !== 'Canada') continue;
+          const was = first.get(s.unit);
+          if (was === undefined || s.from_year < was[0]
+            || (s.from_year === was[0] && compareStrings(s.name, was[1]) < 0)) {
+            first.set(s.unit, [s.from_year, s.name]);
+          }
+        }
+      }
+      const start = this.rules.game.start_year;
+      this._rushes = [...first.entries()]
+        .filter(([, [year]]) => year > start)
+        .map(([unit, [year, name]]) => [year, unit, name])
+        .sort((a, b) => a[0] - b[0] || compareStrings(a[1], b[1]) || compareStrings(a[2], b[2]));
+    }
+    return this._rushes;
+  }
+
+  rushesIn(year) {
+    const years = this.rules.board.land_rush.years;
+    return this.rushes().filter((r) => r[0] <= year && year < r[0] + years);
+  }
+
+  rushing(fedId, year) {
+    const span = this.span(fedId, year);
+    if (span === null || span.status !== 'province') return false;
+    return this.rushesIn(year).some(([, unit]) => unit === span.unit);
+  }
+
+  rushUnits(unit, year) {
+    const out = [];
+    for (const riding of this.state.map.ridings) {
+      const fedId = riding.fed_id;
+      const span = this.span(fedId, year);
+      if (span !== null && span.unit === unit && span.status === 'province'
+        && span.sovereign === 'Canada' && this.ridingOpen(fedId, year)) out.push(fedId);
+    }
+    return out;
+  }
+
+  rushPhase(season, year) {
+    if (!this.rushApplies()) return;
+    const n = this.rules.board.land_rush.years;
+    const band = this.bandFor(year);
+    for (const [start, unit, name] of this.rushesIn(year)) {
+      const k = year - start + 1;
+      const delta = {
+        world: k === 1 ? 'rush' : 'rush_continues', event: `Land rush in ${name}`,
+        jurisdiction: name, status: 'province', year, year_of: k, years: n,
+      };
+      let line;
+      let title;
+      if (k === 1) {
+        const feds = this.rushUnits(unit, year);
+        delta.ridings = feds.map((f) => this.ridingName(f));
+        delta.fed_ids = feds;
+        line = `Season ${season} · A land rush opens in ${name}: for ${n} years the Crown`
+          + ' founds there more readily, and land there costs less.';
+        title = `${name}: land rush`;
+      } else {
+        line = `Season ${season} · The land rush in ${name} continues: year ${k} of ${n}.`;
+        title = `${name}: land rush, year ${k} of ${n}`;
+      }
+      this.record('other', title, [], season, { band, line, delta });
+    }
+  }
+
+  rushRoll(season, rng) {
+    const spec = this.rules.board.land_rush;
+    const year = this.yearNow();
+    const founded = [];
+    for (const [, unit, name] of this.rushesIn(year)) {
+      const feds = this.rushUnits(unit, year);
+      const held = feds.filter((f) => this.state.holderOfRiding(f) !== null).length;
+      rng.draw(`rush.${unit}`, { held, open: feds.length });
+      if (feds.length === 0 || held * 100 >= spec.until_held_pct * feds.length) continue;
+      if (!rng.chance(spec.roll_pct, `rush.roll.${unit}`)) continue;
+      const house = this.foundHouse(season, { rng, rush: [unit, name] });
+      if (house !== null) founded.push(house);
+    }
+    return founded;
+  }
+
+  drawRushSeat(rng, unit) {
+    const year = this.yearNow();
+    const candidates = this.rushUnits(unit, year)
+      .filter((f) => this.state.holderOfRiding(f) === null && this.foundable(f));
+    if (candidates.length === 0) return null;
+    return rng.choice(candidates, 'rush.seat');
   }
 
   jurisdictionName(fedId, year) {
@@ -588,6 +746,19 @@ export class World {
   }
 
   // hoc/rules.py _next_seat_order.
+  // hoc/sim.py block_grant: rules 1.0 `block_grants`, the hexagons a Crown
+  // founding on a resolution-4 seat grants beside it.
+  blockGrant(fedId) {
+    if (!this.feature('block_grants')) return [];
+    const stats = this.state.map.ridingStats;
+    if ((stats.get(fedId) || {}).resolution !== 4) return [];
+    const year = this.foundingYear();
+    const candidates = this.state.map.land(fedId).filter((n) => (stats.get(n) || {}).resolution === 4
+      && this.state.holderOfRiding(n) === null && this.ridingOpen(n, year));
+    candidates.sort((a, b) => stats.get(b).population - stats.get(a).population || compareStrings(a, b));
+    return candidates.slice(0, this.rules.board.block_grants.extra_hexes);
+  }
+
   nextSeatOrder(house) {
     let highest = 0;
     for (const holding of this.state.holdings) {
@@ -722,7 +893,9 @@ export class World {
     );
   }
 
-  foundHouse(season, { seat = null, rng = null, community = null, tag = null, rank = null, surname = null } = {}) {
+  foundHouse(season, {
+    seat = null, rng = null, community = null, tag = null, rank = null, surname = null, rush = null,
+  } = {}) {
     const draws = rng || this.rngFor(season);
     this.initialClimate();
 
@@ -737,6 +910,12 @@ export class World {
         throw new SimError(this.closedMessage(fedId, 'a new house', this.foundingYear())
           + (this.feature('world_calendar') ? '; the Crown founds only in a province' : ''));
       }
+      province = this.state.map.province(fedId);
+      region = PROVINCE_REGION[province] ?? 'north';
+    } else if (rush !== null) {
+      // Rules 1.0 `land_rush`: a seat in the rushing province.
+      fedId = this.drawRushSeat(draws, rush[0]);
+      if (fedId === null) return null;
       province = this.state.map.province(fedId);
       region = PROVINCE_REGION[province] ?? 'north';
     } else {
@@ -870,6 +1049,13 @@ export class World {
         result: { riding: this.ridingName(fedId), jurisdiction: seatJurisdiction },
       });
     }
+    const block = this.blockGrant(fedId);
+    if (block.length > 0) foundingDelta.block = block.map((f) => this.ridingName(f));
+    let granted = block.length > 0 ? ` with ${block.map((f) => this.ridingName(f)).join(', ')}` : '';
+    if (rush !== null) {
+      foundingDelta.rush = rush[1];
+      granted += `, in the ${rush[1]} land rush`;
+    }
     const eventId = this.record(
       'founding',
       `${drawn.peerage} founded`,
@@ -878,11 +1064,17 @@ export class World {
       {
         band: this.feature('world_calendar') ? this.bandFor(this.yearNow()) : 'confederation',
         line: `Season ${season} · ${drawn.peerage} is created, seated at ${this.ridingName(fedId)}`
-          + `${this.jurisdictionSuffix(fedId, this.foundingYear())}.`,
+          + `${this.jurisdictionSuffix(fedId, this.foundingYear())}${granted}.`,
         delta: foundingDelta,
       },
     );
     this.state.addHolding({ house, fedId, seatOrder: 1, hex: primary, acquiredEventId: eventId });
+    for (const extra of block) {
+      this.state.addHolding({
+        house, fedId: extra, seatOrder: this.nextSeatOrder(house),
+        hex: this.expansionHex(house), acquiredEventId: eventId,
+      });
+    }
 
     this.drawFoundingObjectives(house, season, draws);
     return house;
@@ -1319,6 +1511,7 @@ export class World {
   worldPhase(season, rng) {
     const year = this.yearNow();
     this.accessions(season, year);
+    this.rushPhase(season, year);
     const band = this.bandFor(year);
     for (const event of this.rules.events) {
       if (event.throughYear === null || !(event.personalYear < year && year <= event.throughYear)) continue;
@@ -1338,12 +1531,19 @@ export class World {
   accessions(season, year) {
     if (year <= this.rules.game.start_year) return;
     const groups = new Map();
+    const dated = this.feature('dated_openings');
     for (const riding of this.state.map.ridings) {
       const fedId = riding.fed_id;
       let kind;
       if (this.inPlay(fedId, year) && !this.inPlay(fedId, year - 1)) kind = 'accession';
       else if (this.crownMayFound(fedId, year) && !this.crownMayFound(fedId, year - 1)) kind = 'extension';
+      // Rules 1.0 `dated_openings`: opening after coming under Canada.
+      else if (dated && this.openingYear(fedId) === year) kind = 'opening';
       else continue;
+      // Not open yet: it is named in its own opening, later.
+      if (dated && kind !== 'opening' && !this.ridingOpen(fedId, year)) continue;
+      // Open already: not named again (Kenora, open in 1882, joins Ontario in 1889).
+      if (dated && kind === 'accession' && this.ridingOpen(fedId, year - 1)) continue;
       const span = this.span(fedId, year);
       const key = JSON.stringify([kind, span.name, span.status]);
       if (!groups.has(key)) groups.set(key, { kind, name: span.name, status: span.status, feds: [] });
@@ -1355,11 +1555,17 @@ export class World {
     for (const { kind, name, status, feds } of ordered) {
       const ridings = feds.map((f) => this.ridingName(f));
       const plural = feds.length === 1 ? '' : 's';
-      const line = kind === 'accession'
-        ? `Season ${season} · ${name} comes under Canada as a ${status}:`
-          + ` ${feds.length} riding${plural} open — ${ridings.join(', ')}.`
-        : `Season ${season} · ${name} becomes a province: the Crown may found in`
+      let line;
+      if (kind === 'accession') {
+        line = `Season ${season} · ${name} comes under Canada as a ${status}:`
+          + ` ${feds.length} riding${plural} open — ${ridings.join(', ')}.`;
+      } else if (kind === 'opening') {
+        line = `Season ${season} · In ${name}, ${feds.length} riding${plural}`
+          + ` open${feds.length === 1 ? 's' : ''} — ${ridings.join(', ')}.`;
+      } else {
+        line = `Season ${season} · ${name} becomes a province: the Crown may found in`
           + ` ${feds.length} riding${plural} — ${ridings.join(', ')}.`;
+      }
       this.record('other', `${name}: ${kind}`, [], season, {
         band,
         line,
@@ -1736,7 +1942,7 @@ export class World {
     const found = new Map();
     for (const mine of this.state.holdings) {
       if (mine.house !== house || mine.releasedEventId !== null) continue;
-      for (const neighbour of this.state.map.land(mine.fedId)) {
+      for (const neighbour of this.state.map.linked(mine.fedId, this.state.linkWater)) {
         for (const theirs of this.state.holdings) {
           if (theirs.releasedEventId !== null) continue;
           if (theirs.house !== other || theirs.fedId !== neighbour) continue;
@@ -2012,7 +2218,7 @@ export class World {
     const found = new Map();
     for (const mine of this.state.holdings) {
       if (mine.house !== house || mine.releasedEventId !== null) continue;
-      for (const neighbour of this.state.map.land(mine.fedId)) {
+      for (const neighbour of this.state.map.linked(mine.fedId, this.state.linkWater)) {
         const other = this.state.holderOfRiding(neighbour);
         if (other === null || other === house) continue;
         if (this.state.house(other)?.status !== 'active') continue;
@@ -2211,14 +2417,14 @@ export class World {
         if (marker === KIN || marker === COMPACT) continue;
         if (this.contestCooldown(house, other, season)) continue;
         // Rules 1.0 `world_calendar`: no claim on a riding out of play this year.
-        if (this.feature('world_calendar') && !this.inPlay(fedId, this.yearNow())) continue;
+        if (this.feature('world_calendar') && !this.ridingOpen(fedId, this.yearNow())) continue;
         if (this.affords(house, spec, other)) out.push([other, fedId]);
       }
       return out;
     }
     if (kind === 'frontier') {
       return this.openExpansionTargets(house)
-        .filter((fedId) => this.affords(house, spec, null, 15 + this.wealthOffset(fedId)))
+        .filter((fedId) => this.affords(house, spec, null, this.expandCost(house, fedId)))
         .map((fedId) => [null, fedId]);
     }
     if (kind === 'Purchase riding') {
@@ -2595,11 +2801,13 @@ export class World {
       line: `Season ${season} · ${row.peerage} takes ${name}${this.jurisdictionSuffix(fedId, year)}.`,
       delta,
     });
+    // Read before the riding is taken (rules 1.0 `water_crossings`).
+    const cost = this.expandCost(house, fedId);
     this.state.addHolding({
       house, fedId, seatOrder: this.nextSeatOrder(house),
       hex: this.expansionHex(house), acquiredEventId: eventId,
     });
-    this.setStats(house, { capital: -(15 + this.wealthOffset(fedId)) });
+    this.setStats(house, { capital: -cost });
     return name;
   }
 
@@ -2618,7 +2826,7 @@ export class World {
         .filter((n) => this.state.holderOfRiding(n) === null && this.ridingOpen(n, year));
       if (beside.length > 0) {
         const second = rng.choice(beside, `frontier.second.${house}`);
-        if (this.houseRow(house).capital >= 15 + this.wealthOffset(second)) {
+        if (this.houseRow(house).capital >= this.expandCost(house, second)) {
           outcome.second = this.settle(house, second, season, band, roll, s.id);
         }
       }
@@ -3193,12 +3401,14 @@ export class World {
       line: `Season ${season} · ${row.peerage} takes ${name}${this.jurisdictionSuffix(fedId, year)}.`,
       delta: expansionDelta,
     });
+    // Read before the riding is taken (rules 1.0 `water_crossings`).
+    const cost = this.expandCost(house, fedId);
     this.state.addHolding({
       house, fedId, seatOrder: this.nextSeatOrder(house),
       hex: this.expansionHex(house), acquiredEventId: eventId,
     });
     // Rules 0.9 `riding_endowments`: 15 + (wealth_tier - 3) of the target.
-    this.setStats(house, { capital: -(15 + this.wealthOffset(fedId)) });
+    this.setStats(house, { capital: -cost });
     const outcome = { action: 'Expand', success: true, riding: name };
     if (jurisdiction !== null) outcome.jurisdiction = jurisdiction;
     return outcome;
@@ -4162,6 +4372,8 @@ export class World {
     let founded = null;
     if (roundRecord) this._part = 'close';
     if (this.phases.has('founding')) founded = this.foundingRoll(season, rng);
+    // Rules 1.0 `land_rush`: the rushing provinces' extra rolls.
+    const rushed = this.phases.has('founding') && this.rushApplies() ? this.rushRoll(season, rng) : null;
     if (this.phases.has('enclosure')) this.recomputeEnclosure(season);
 
     // Rules 0.8: say something when nothing happened.
@@ -4189,7 +4401,7 @@ export class World {
 
     // Rules 1.0 `schemes`: every public scheme, as the season left them.
     const plans = this.feature('schemes') ? this.plans() : null;
-    return this.writeSeason(season, outcomes, founded, prestige, plans, reckoning, order);
+    return this.writeSeason(season, outcomes, founded, prestige, plans, reckoning, order, rushed);
   }
 
   // §0.8: the two lines that fire when nothing else did. The mirror of
@@ -4251,7 +4463,7 @@ export class World {
   }
 
   writeSeason(season, outcomes, founded, prestige = null, plans = null, reckoning = null,
-    order = null) {
+    order = null, rushed = null) {
     this.snapshot(season);
     let housesAfter = 0;
     for (const house of this.state.houses.values()) {
@@ -4277,6 +4489,7 @@ export class World {
     if (this.feature('world_calendar')) record.year = this.rules.game.start_year + season - 1;
     if (reckoning !== null) record.reckoning = reckoning;
     if (order !== null) record.order = order;
+    if (rushed !== null && rushed.length > 0) record.rushed = rushed;
 
     this.state.seasons.push({
       seasonNo: season,

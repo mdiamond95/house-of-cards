@@ -52,13 +52,17 @@ BEAT_KINDS = (
     "heir_wanted", "heir_of_age", "bide",
     "scheme_begun", "scheme_step", "scheme_answered", "scheme_abandoned", "scheme_resolved",
     "ally_joins", "ally_declines", "contest_won", "contest_lost", "fallen",
-    "crisis", "accession", "event_continues", "reckoning",
+    "crisis", "accession", "event_continues", "reckoning", "opening", "rush",
 )
 
 # Rules 1.0 `world_calendar`: the world's own events, by their delta's `world`.
 WORLD_KINDS = {
     "accession": "accession", "extension": "accession",
     "continues": "event_continues", "reckoning": "reckoning",
+    # Rules 1.0 `dated_openings`: a unit opening after it came under Canada.
+    "opening": "opening",
+    # Rules 1.0 `land_rush`: a rush's first year, and a chip for each later one.
+    "rush": "rush", "rush_continues": "event_continues",
 }
 
 SCHEME_PHASES = {
@@ -220,8 +224,11 @@ def _world_facts(kind, d, title=None):
         return facts
     if kind == "event_continues":
         return {"event": d["event"], "year_of": d["year_of"], "years": d["years"]}
-    if kind == "accession":
+    if kind in ("accession", "opening"):
         return {"jurisdiction": d["jurisdiction"], "status": d["status"], "change": d["world"]}
+    if kind == "rush":
+        return {"jurisdiction": d["jurisdiction"], "status": d["status"], "change": d["world"],
+                "years": d["years"]}
     return None
 
 
@@ -280,7 +287,7 @@ def type_turn(data):
         if kind == "riding_passes" and outcome == "absorption" and len(houses) > 1:
             removed.append(houses[1])
         world = _world_facts(kind, d, event.get("title"))
-        if kind == "accession":
+        if kind in ("accession", "opening", "rush"):
             # The land it opens, for the map to show.
             ridings = sorted(d.get("fed_ids") or [])
 
@@ -780,16 +787,44 @@ def jurisdiction_spans(conn):
     }
 
 
+def opening_years(conn):
+    """Rules 1.0 `dated_openings`: {fed_id: the year it opens} for every unit,
+    for a calendar game played under the flag, else None — the later of its
+    opens_year and its first year under Canada, as both engines read it
+    (hoc/sim.py World.opening_year). The map view draws a unit closed before
+    that year and open for good from it. Display only."""
+    if calendar_of(conn) is None or not _record_has(conn, "dated_openings"):
+        return None
+    from hoc import places
+
+    reference = places.reference_dir_for(conn)
+    stats = places.riding_stats(reference)
+    spans = places.riding_jurisdictions(reference)
+    out = {}
+    for row in conn.execute("SELECT fed_id FROM ridings ORDER BY fed_id"):
+        fed = row["fed_id"]
+        first = (stats.get(fed) or {}).get("opens_year", 1867)
+        if spans.get(fed):
+            canada = [s["from_year"] for s in spans[fed] if s["sovereign"] == "Canada"]
+            first = max(first, canada[0]) if canada else None
+        out[fed] = first
+    return out
+
+
 def write_atlas(conn, data_dir, people=False):
     """data/beats/atlas.json: what only the map view reads — each house's seat
-    over the game, for a calendar game the jurisdictions by year, and for a
-    game told round by round (`people`) its holders and heirs."""
+    over the game, for a calendar game the jurisdictions by year (and under
+    `dated_openings` each unit's opening year), and for a game told round by
+    round (`people`) its holders and heirs."""
     atlas = {"seats": seat_history(conn)}
     if people:
         atlas["people"] = people_of(conn)
     spans = jurisdiction_spans(conn)
     if spans is not None:
         atlas["jurisdictions"] = spans
+    opens = opening_years(conn)
+    if opens is not None:
+        atlas["opens"] = opens
     path = Path(data_dir) / "beats" / "atlas.json"
     path.write_text(_dumps(atlas) + "\n", encoding="utf-8")
     return path

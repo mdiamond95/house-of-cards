@@ -595,3 +595,89 @@ A new flag in the draft, approved by the director: false in 0.7–0.9, on in 1.0
 What motivated it: the story layer tells a year as the engine plays it (docs/STORY_DESIGN.md §3.6, Phase V2), and the record did not say whose turn every event belonged to. The best rule the exporter could apply (event order, the event's first house and its kind) put 30 of 4,895 events in the wrong turn on seed 1867 over 100 turns, 35 of 4,403 on seed 2 and 34 of 4,132 on seed 3. In 36 of those 99 the house whose turn it was is not named on the event at all: a suit given up because a third house's claim was withdrawn, a defence stood down, an absorption when a line dies out.
 
 The proof that it decides nothing: for seeds 1867, 2 and 3 over 100 turns, the 1.0 season records and events with the flag on and off are identical once `part` and `order` are removed (`tests/test_round_record.py`). The cross-check is byte-identical on seeds 1867, 2 and 3 at 120 turns under 0.9 and 100 under 1.0, the new fields included: it now compares every engine event as well as every season file (docs/DETERMINISM.md, "The round record").
+
+### The hex board: `dated_openings` (10 October 2026)
+
+A new flag in the draft, approved by the director: false in 0.7–0.9, on in 1.0, in both engines. It changes no table.
+
+- Under `world_calendar`, a unit takes no grant, no expansion and no claim before its opening year. That year is the later of `riding_stats.csv`'s `opens_year` and the first year the atlas has the unit under Canada.
+- From that year the unit is open for good, whatever the atlas says of a later year. The Ontario–Manitoba disputed area no longer drops out of play in 1881–1889.
+- A Crown founding still needs the unit to be in a province that year.
+- A unit that opens later than it came under Canada opens as a quiet world event (`world: "opening"`). An accession or a province's extension no longer names a unit that is not yet open.
+
+What motivated it: on the `meridian-hex-v1.0.5` board, `opens_year` carries settlement dates, city years and the director's new towns. Under `world_calendar` neither engine read `opens_year`, so 100-turn draft games on seeds 1867, 2 and 3 held 30, 22 and 18 units before their opening years (docs/hex-trial/v2/README.md).
+
+Why the atlas term is there: the riding sets' `opens_year` was built by 0.9's rule. It reads 1867 for British Columbia's, Prince Edward Island's and Newfoundland's 53 ridings, which the atlas puts under Canada in 1871, 1873 and 1949. The later-of rule makes the flag repeat the atlas there.
+
+What it does to the riding sets: they hold two ridings the atlas takes out of Canada and back again. Labrador (10004) is out 1927–1948, and Nunavut (62001) 1876–1879, when the British Arctic Islands become its largest-share unit. With the flag those two stay open.
+
+- `ne-2026`, seeds 1867, 2 and 3: every season file is identical with the flag on and off over 100 turns.
+- `meridian-v1.0.3`, seeds 1867 and 2: identical.
+- `meridian-v1.0.3`, seed 3: identical through turn 10. In turn 11 (1877) a frontier draw sees Nunavut among its candidates and picks another riding.
+- The story trial's ten seeds (1867–1876) on `meridian-v1.0.3`: nine are identical. Seed 1874 is identical through 1932, and in 1933 a house's scheme choice reads Labrador. Every §6 target that was met is still met; the first house at the reckoning is an Earl or higher in 10 of 10, where it was 9.
+
+The riding preview (seed 1867) is unchanged. On `meridian-hex-v1.0.5`, every §6 target is met on the mean, untuned (docs/hex-trial/v2/trial-table.md).
+
+### The hex board, step 3: `water_crossings` and `block_grants` (10 October 2026)
+
+Two new flags in the draft, approved by the director: false in 0.7–0.9, on in 1.0, in both engines. Their numbers are in a new table, `board.json`.
+
+**`water_crossings`.** A water row of `adjacency.csv` counts as adjacency for expansion targets, claim targets and neighbouring houses.
+- An Expand across water costs `water_crossings.expand_cost` (5) more.
+- Enclosure, cohesion and contiguity stay land only.
+- The rebuilt board keeps a water row only for a water link of 3 hexagons or fewer, plus the director's ferry (Cape Breton–Stephenville).
+
+**`block_grants`.** A Crown founding on a resolution-4 hexagon also grants up to `block_grants.extra_hexes` (2) open, unclaimed resolution-4 neighbours, the most populous first. A city hex is granted alone.
+
+What motivated them: on the hex board the islands could be reached by no expansion (32 units), and a founding seated a house on one hexagon of a map three times finer than the ridings.
+
+What they do to the riding sets: nothing. Neither set has a water row or a `resolution` column, and the season files of seeds 1867, 2 and 3 on both are identical with the flags on and off over 100 turns (`tests/test_board_flags.py`).
+
+On seed 1867 on the hex board:
+- 16 of 30 foundings are granted a block, 31 hexagons in all;
+- 8 expansions cross water.
+
+### The hex board, step 3 continued: `land_rush`, and the tuning (10 October 2026)
+
+A third flag in the draft, approved by the director: false in 0.7–0.9, on in 1.0, in both engines. Its numbers are in `board.json`.
+
+**`land_rush`.** Under `world_calendar`, each jurisdiction the atlas first has as a province after 1867 has a rush there for `land_rush.years`, from that year: Manitoba 1870, British Columbia 1871, Prince Edward Island 1873, Alberta and Saskatchewan 1905, Newfoundland 1949. These are the brief's "extension" events read as "a jurisdiction becomes a province". BC, PEI and Newfoundland join as provinces, which the engine records as an accession, and they rush too. Land joining a province later (Ontario 1889, Manitoba 1881 and 1912) starts no rush, and units opening later in a rushing province do not restart one.
+- In each rush year, while fewer than `until_held_pct` (25%) of the province's open units are held, the Crown makes one extra founding roll at `roll_pct` among its open, unclaimed units, after the founding roll. The season record lists those houses as `rushed`.
+- An Expand into a unit of a rushing province costs `expand_discount` (5) less.
+- A rush is a world event: a `rush` beat in its first year, drawn on the province's open land, and an `event_continues` chip each year after.
+- It runs on a set whose `riding_stats.csv` carries `resolution` (the hex board). On a riding set it runs only when `land_rush.riding_sets` is 1, which only its own test sets, so both riding sets play the same game with it on and off (`tests/test_land_rush.py`).
+
+**`dated_openings`, corrected.** A unit already open is not named again in an accession line (Kenora: open in 1882, joins Ontario in 1889). On `meridian-v1.0.3` this drops the return of Nunavut (1880) and Labrador (1949) from their lines, and nothing else changes. Under the tuned draft, `meridian-v1.0.3` seeds 2 and 3 differ with the flag on and off only by those two lines. On seed 1867 a frontier scheme also sets out to open Labrador in 1927: the same kind of difference that seed 3 and trial seed 1874 showed before the tuning (the `dated_openings` entry above).
+
+**The tuning.** On the hex board, ten seeds (1867–1876), 100 turns, `scripts/story_trial.py --reference meridian-hex-v1.0.5`. With all three flags at the brief's start values, the draft missed:
+- houses fallen or removed: 11.8 (target 4–10);
+- rise and decline storylines: 20.6 (target ≤ 20);
+- turns that pause Auto: 31% (target 15–30%).
+
+The removals came from absorption (about 6 a game), disorderly successions with no successor (about 3) and cohesion collapse (about 2.5). The changes, all to the draft's tables:
+
+| Table | Number | Was | Now |
+|---|---|---|---|
+| `upkeep.json` | `cohesion.recovery` | 3 | 5 |
+| `schemes.csv` | Secure the line, `utility` | 55 | 70 |
+| `schemes.csv` | Claim a riding, `utility` | 20 | 15 |
+| `schemes.json` | `contest.committed_per_point` | 15 | 18 |
+| `board.json` | `land_rush.roll_pct` | 50 | 40 |
+| `board.json` | `land_rush.years` | 8 | 6 |
+
+Tuned, every §6 and D1 target is met on the mean, and so are the director's new ones:
+- map held at turn 100: 56% (40–60%);
+- Prairie held at turn 100: 34% (≥ 30%); British Columbia: 48% (≥ 30%);
+- a holder at turn 100 on Prince Edward Island in 10 seeds, on Vancouver Island in 8, on Newfoundland in 8 (each ≥ 7);
+- houses active at turn 100: 37.1 (24–40);
+- the Prairies' share held in any turn before 1896: at most 7% on the mean, 12% on the worst seed (< 10%);
+- houses fallen or removed: 8.9; attacker wins: 54%.
+
+The thinnest margins are Auto pauses (29.6% against 30%) and rise and decline storylines (19.0 against 20). The full table, beside step 2 and step 3 untuned, is docs/hex-trial/v2/trial-table.md.
+
+What the tuning does to the riding sets: the same draft played on `meridian-v1.0.3` (`scripts/story_trial.py`, the riding preview's set) now misses three targets:
+- median cohesion at turn 100: 86.2 (55–85);
+- median rivalry: 11.2 turns (4–10);
+- attacker wins: 60.1% (35–60%).
+
+The brief tuned the hex board only, so these are left for the director to decide.

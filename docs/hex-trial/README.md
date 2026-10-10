@@ -1,5 +1,11 @@
 # The hex trial
 
+> **Superseded.** The director chose hexes over ridings, and the board was
+> rebuilt on Meridian v1.0.5 as `meridian-hex-v1.0.5` (docs/hex-trial/v2/README.md).
+> The set this page describes, `meridian-hex-v1.0.4`, was removed on 10 October 2026
+> when the preview moved to the new board. Its pin, builder and tests went with it;
+> the trial below stands as it was measured.
+
 A hex board in place of the 343 ridings, tried beside the riding world and not
 in place of it. Ridings run from 7 km² to 2 million km² and make a poor map to
 watch; an H3 resolution-4 hexagon is about 1,770 km² and 45 km across,

@@ -11,7 +11,7 @@
   "cohesion": {
     "base": 1,
     "recovery_below": 50,
-    "recovery": 3
+    "recovery": 5
   },
   "correspondence_pct": 30,
   "strain": {

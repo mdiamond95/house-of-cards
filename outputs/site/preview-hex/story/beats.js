@@ -65,12 +65,16 @@ export const BEAT_KINDS = [
   'ally_joins', 'ally_declines', 'contest_won', 'contest_lost', 'fallen',
   // Rules 1.0 (Phase D1): a crisis, land opened, a year of an event still
   // running, and the reckoning after the last turn.
-  'crisis', 'accession', 'event_continues', 'reckoning',
+  'crisis', 'accession', 'event_continues', 'reckoning', 'opening', 'rush',
 ];
 
 // Rules 1.0 `world_calendar`: the world's own events, by their delta's `world`.
 const WORLD_KINDS = {
   accession: 'accession', extension: 'accession', continues: 'event_continues', reckoning: 'reckoning',
+  // Rules 1.0 `dated_openings`: a unit opening after it came under Canada.
+  opening: 'opening',
+  // Rules 1.0 `land_rush`: a rush's first year, and a chip for each later one.
+  rush: 'rush', rush_continues: 'event_continues',
 };
 
 // A scheme event's phase, as its beat kind (Phase C2).
@@ -255,7 +259,8 @@ export function typeTurn(input) {
     if (kind === 'riding_passes' && outcome === 'absorption' && houses.length > 1) removed.push(houses[1]);
     const world = worldFacts(kind, d, event.title ?? null);
     // The land an accession opens, for the map to show.
-    const shown = kind === 'accession' ? [...(d.fed_ids || [])].sort() : ridings;
+    const shown = kind === 'accession' || kind === 'opening' || kind === 'rush'
+      ? [...(d.fed_ids || [])].sort() : ridings;
 
     beats.push(makeBeat(input.turn, beats.length, {
       kind, houses, ridings: shown, outcome, line: event.line ?? null, owners, ranks, removed, scheme, ran, world,
@@ -317,7 +322,10 @@ function worldFacts(kind, d, title = null) {
     return facts;
   }
   if (kind === 'event_continues') return { event: d.event, year_of: d.year_of, years: d.years };
-  if (kind === 'accession') return { jurisdiction: d.jurisdiction, status: d.status, change: d.world };
+  if (kind === 'accession' || kind === 'opening') {
+    return { jurisdiction: d.jurisdiction, status: d.status, change: d.world };
+  }
+  if (kind === 'rush') return { jurisdiction: d.jurisdiction, status: d.status, change: d.world, years: d.years };
   return null;
 }
 

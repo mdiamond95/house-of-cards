@@ -287,3 +287,64 @@ def test_the_interventions_actually_reach_the_season_record():
     # Each lands in the season after the one it was applied to.
     assert (11, "set_objective") in seen
     assert (41, "grant_house") in seen
+
+
+def _scripted_interventions_10(reference_data, seed=1867):
+    """Every §12 operation for a game under rules 1.0, aimed at houses and a
+    foundable unit a short run under 1.0 has: the 0.9 script's houses are not
+    founded under the draft."""
+    from hoc import rules_data
+
+    workspace = Path(tempfile.mkdtemp(prefix="hoc-script-10-"))
+    try:
+        conn = load_seed.build(workspace / "peek.db", seed=scenario.blank_seed_dir(),
+                               reference_data=reference_data)
+        world = sim.World(conn, rules=rules_data.load_rules(version="1.0"), world_seed=seed,
+                          seasons_dir=None)
+        world.initialise(seed)
+        world.run(9)
+        first, second = [row["house"] for row in world.active_houses()][:2]
+        held = {row["objective"] for row in conn.execute(
+            "SELECT objective FROM objectives WHERE house = ? AND satisfied_season IS NULL", (first,))}
+        objective = next(o.objective for o in world.rules.objectives if o.objective not in held)
+        world.run(29)
+        world._playing_season = 40
+        free = next(row["name_en"] for row in conn.execute(
+            "SELECT r.fed_id, r.name_en FROM ridings r WHERE r.province = 'ON' AND NOT EXISTS"
+            " (SELECT 1 FROM holdings h WHERE h.fed_id = r.fed_id AND h.released_event_id IS NULL)"
+            " ORDER BY r.name_en") if world.foundable(row["fed_id"]))
+        conn.close()
+    finally:
+        shutil.rmtree(workspace, ignore_errors=True)
+    return [
+        {"after_season": 10, "title": "Objective set", "operations": [
+            {"op": "set_objective", "house": first, "objective": objective, "reason": "cross-check"}]},
+        {"after_season": 15, "title": "Objective vetoed", "operations": [
+            {"op": "veto_objective", "house": first, "objective": objective, "reason": "cross-check"}]},
+        {"after_season": 20, "title": "Action forced", "operations": [
+            {"op": "force_action", "house": first, "action": "Dispute", "reason": "cross-check"}]},
+        {"after_season": 25, "title": "Stat adjusted", "operations": [
+            {"op": "adjust_stat", "house": first, "stat": "capital", "delta": 30, "reason": "cross-check"}]},
+        {"after_season": 30, "title": "Clock set and a relation recorded", "operations": [
+            {"op": "set_clock", "house": first, "personal_year": 1880, "basis": "cross-check"},
+            {"op": "relation", "house_a": first, "house_b": second, "marker": "+", "text": "cross-check"}]},
+        {"after_season": 39, "title": "A house granted", "operations": [
+            {"op": "grant_house", "riding": free, "community": "Irish Catholic", "rank": "Baron",
+             "tag": "Mixed", "surname": "Crosscheck", "reason": "cross-check"}]},
+        {"after_season": 70, "title": "Stat adjusted", "operations": [
+            {"op": "adjust_stat", "house": second, "stat": "cohesion", "delta": -15, "reason": "cross-check"}]},
+    ]
+
+
+@pytest.mark.parametrize("reference_data", ["meridian-hex-v1.0.5", "meridian-v1.0.3"])
+def test_every_intervention_operation_lands_the_same_under_10(reference_data):
+    """Phase D2: the seven operations under rules 1.0, the rules the next game
+    plays, on the hex board and on ridings, through its 100 turns. A relation
+    set by the director is the pair's one row in both engines, and every
+    operation is applied under the game's own rules, not rules/current.txt."""
+    script = _scripted_interventions_10(reference_data)
+    differences = crosscheck.crosscheck(1867, 100, script=script, rules_version="1.0",
+                                        reference_data=reference_data)
+    if differences:
+        season, diff = differences[0]
+        pytest.fail(f"a scripted intervention diverges at season {season}.\n\n{diff}")

@@ -62,6 +62,10 @@ COMPASS = {
     "northeast", "northwest", "southeast", "southwest",
     "nord-est", "nord-ouest", "sud-est", "sud-ouest",
     "upper", "lower",
+    # The hex board's compass names (scripts/build_world_hexboard.py): "Ottawa
+    # South-East" is Ottawa, and "Calgary Outer North-West" Calgary. No riding
+    # name of the 2023 order uses them, so the riding sets' tokens are unchanged.
+    "north-east", "north-west", "south-east", "south-west", "outer",
 }
 
 # Tails that qualify rather than name: "Kingston and the Islands" is Kingston.

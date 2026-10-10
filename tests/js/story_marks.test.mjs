@@ -43,6 +43,7 @@ test('every beat kind of the vocabulary becomes its mark', () => {
     [{ kind: 'quarrel', houses: ['A', 'B'] }, 'strife', 'strife'],
     [{ kind: 'dispute_won', houses: ['A', 'B'] }, 'strife', 'strife'],
     [{ kind: 'accession', houses: [], ridings: ['46001', '46002'] }, 'accession', 'open'],
+    [{ kind: 'rush', houses: [], ridings: ['48001', '48002'] }, 'accession', 'open'],
   ];
   for (const [beat, type, glyph] of kinds) {
     const m = markOf(told(beat), c);
@@ -50,6 +51,12 @@ test('every beat kind of the vocabulary becomes its mark', () => {
     assert.equal(m.glyph, glyph, beat.kind);
     assert.ok(MARK_TYPES.includes(m.type));
   }
+});
+
+test('land_rush: a rush is drawn on the province\'s open land, labelled as a rush', () => {
+  const m = markOf(told({ kind: 'rush', houses: [], ridings: ['48001', '48002'] }), ctx());
+  assert.equal(m.label, 'land rush');
+  assert.deepEqual(m.ground, ['48001', '48002']);
 });
 
 test('a bond and a strife are lines between the two seats, in two styles', () => {

@@ -77,11 +77,27 @@ def _op_climate_shift(conn, op, event_id, _turn):
 
 
 def _op_relation(conn, op, event_id, _turn):
-    conn.execute(
-        "INSERT INTO relations (house_a, house_b, marker, event_id, event_text, source)"
-        " VALUES (?, ?, ?, ?, ?, 'turn')",
-        (op["house_a"], op["house_b"], op["marker"], event_id, op["text"]),
-    )
+    """Set the relation between two houses: the pair's one row, ordered, as
+    both engines keep it (sim.World.set_relation; web/engine/state.js
+    setRelation, which World.intervene applies this op through). Inserting a
+    second row, or one in the order given, left the Python engine reading a
+    different relation from the JavaScript one after the op."""
+    low, high = sorted((op["house_a"], op["house_b"]))
+    existing = conn.execute(
+        "SELECT id FROM relations WHERE house_a = ? AND house_b = ? ORDER BY id DESC LIMIT 1",
+        (low, high),
+    ).fetchone()
+    if existing is None:
+        conn.execute(
+            "INSERT INTO relations (house_a, house_b, marker, event_id, event_text, source)"
+            " VALUES (?, ?, ?, ?, ?, 'turn')",
+            (low, high, op["marker"], event_id, op["text"]),
+        )
+    else:
+        conn.execute(
+            "UPDATE relations SET marker = ?, event_id = ?, event_text = ? WHERE id = ?",
+            (op["marker"], event_id, op["text"], existing["id"]),
+        )
 
 
 def _merge_mechanical_delta(conn, event_id, key, value):
@@ -255,7 +271,7 @@ def _op_force_action(conn, op, event_id, data):
 
     from hoc.rules_data import load_rules
 
-    known = {action.action for action in load_rules().actions}
+    known = {action.action for action in load_rules(version=_game_rules_version(conn)).actions}
     if op["action"] not in known:
         raise rules.RuleError(
             f"unknown action {op['action']!r}; valid actions are {', '.join(sorted(known))}"
@@ -268,7 +284,9 @@ def _op_force_action(conn, op, event_id, data):
         from hoc import sim
 
         # No draw is made, so the world needs no seed of its own.
-        refusal = sim.World(conn, world_seed=0).expand_refusal(op["house"])
+        refusal = sim.World(
+            conn, world_seed=0, rules_version=_game_rules_version(conn),
+        ).expand_refusal(op["house"])
         if refusal is not None:
             raise rules.RuleError(f"cannot force Expand: {refusal}")
 
@@ -326,7 +344,7 @@ def _op_grant_house(conn, op, event_id, data):
     from hoc import sim
 
     season = _current_season(conn)
-    world = sim.World(conn, world_seed=_world_seed(conn))
+    world = sim.World(conn, world_seed=_world_seed(conn), rules_version=_game_rules_version(conn))
     house = world.found_house(
         season,
         seat=op["riding"],
@@ -352,6 +370,20 @@ def _op_grant_house(conn, op, event_id, data):
          "rank": op.get("rank"), "tag": op.get("tag"), "reason": op.get("reason"),
          "after_season": season},
     )
+
+
+def _game_rules_version(conn):
+    """The rules the game's last season was played under, which an intervention
+    between seasons is applied under too, as the JavaScript engine's
+    World.intervene applies it under its world's own rules; None (rules/
+    current.txt) before any season. Read from the record, never from
+    current.txt, so an intervention into a game played under an older version
+    is not applied under a newer one."""
+    row = conn.execute(
+        "SELECT rules_version FROM seasons WHERE rules_version IS NOT NULL"
+        " ORDER BY season_no DESC LIMIT 1"
+    ).fetchone()
+    return None if row is None else row["rules_version"]
 
 
 def _world_seed(conn):

@@ -44,7 +44,7 @@ MAX_BYTES = 3 * 1024 * 1024
 # Lambert Conformal Conic, the projection the old map used.
 PROJECTION = "+proj=lcc +lat_1=49 +lat_2=77 +lat_0=49 +lon_0=-95 +datum=WGS84 +units=m +no_defs"
 
-# The hex trial's own drawing files (scripts/build_world_hex.py): every land
+# The hex board's own drawing files (scripts/build_world_hexboard.py): every land
 # hexagon with the unit its land floods to, and the routes between units.
 # Only a set that declares itself a hex board (set.json `hexes`) has them.
 HEXES_FILE = "hexes.geojson"
@@ -52,7 +52,7 @@ ROUTES_FILE = "routes.geojson"
 
 __all__ = [
     "write_maps", "DEFAULT_OUT_DIR", "UNCLAIMED_FILL", "PROJECTION",
-    "projected_hexes", "projected_routes",
+    "projected_hexes", "projected_routes", "projected_jurisdictions",
     "projected_features", "projected_borders",
     "projected_site_features", "projected_site_borders",
     "viewport", "path_data", "border_path_data", "house_fills",
@@ -305,6 +305,35 @@ def projected_hexes(reference_dir=None):
         props = feature["properties"]
         out.append({"h3": props["h3"], "unit": props["unit"], "dist": props["dist"], "rings": rings})
     return out
+
+
+def projected_jurisdictions(reference_dir=None):
+    """A hex set's first-order borders and names by span of years
+    (set.json `jurisdictions`, built by scripts/build_world_hexboard.py),
+    projected: ([{from, to, a, b, lines}], [{from, to, key, name, sovereign,
+    status, point}]). ([], []) for a set without them."""
+    name = places.set_info(_reference(reference_dir)).get("jurisdictions")
+    path = _reference(reference_dir) / name if name else None
+    if path is None or not path.exists():
+        return [], []
+    transformer = Transformer.from_crs("EPSG:4326", PROJECTION, always_xy=True)
+    borders, labels = [], []
+    for feature in json.loads(path.read_text(encoding="utf-8"))["features"]:
+        props = feature["properties"]
+        if props["kind"] == "border":
+            lines = []
+            for line in feature["geometry"]["coordinates"]:
+                xs, ys = transformer.transform([p[0] for p in line], [p[1] for p in line])
+                lines.append(list(zip(xs, ys)))
+            borders.append({"from": props["from_year"], "to": props["to_year"],
+                            "a": props["a"], "b": props["b"], "lines": lines})
+        else:
+            lon, lat = feature["geometry"]["coordinates"]
+            x, y = transformer.transform(lon, lat)
+            labels.append({"from": props["from_year"], "to": props["to_year"],
+                           "key": props["jurisdiction"], "name": props["name"],
+                           "sovereign": props["sovereign"], "status": props["status"], "point": (x, y)})
+    return borders, labels
 
 
 def projected_routes(reference_dir=None):

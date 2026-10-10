@@ -221,8 +221,9 @@ export function markOf(entry, ctx, { headline = false } = {}) {
     return mark.ground.length ? mark : null;
   }
 
-  if (b.kind === 'accession') {
-    Object.assign(mark, { type: 'accession', glyph: 'open', label: 'opens', at: null });
+  if (b.kind === 'accession' || b.kind === 'opening' || b.kind === 'rush') {
+    // Rules 1.0 `land_rush`: a rush is drawn on the province's open land.
+    Object.assign(mark, { type: 'accession', glyph: 'open', label: b.kind === 'rush' ? 'land rush' : 'opens', at: null });
     mark.ground = ridings;
     mark.groundKind = 'ridings';
     return ridings.length ? mark : null;
