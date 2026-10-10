@@ -172,7 +172,7 @@ fed_id,token,token_order
 241369182,Blainville,0
 241369183,Montréal,0
 241369184,Terrebonne,0
-241369185,Montréal North-East,0
+241369185,Montréal,0
 241369186,Sainte-Sophie,0
 241369278,Lévis,0
 241369282,Québec,0
@@ -275,9 +275,9 @@ fed_id,token,token_order
 351360035,Wellington,0
 351360036,Guelph,0
 351367535,Ottawa,0
-351367536,Ottawa South-East,0
+351367536,Ottawa,0
 351367537,Ottawa,0
-351367538,Ottawa South-West,0
+351367538,Ottawa,0
 351367540,Ottawa,0
 351368404,Oshawa,0
 351368405,Whitchurch-Stouffville,0
@@ -288,9 +288,9 @@ fed_id,token,token_order
 351368547,Mississauga,0
 351368548,Oakville,0
 351368554,Grimsby,0
-351368556,Hamilton South-East,0
+351368556,Hamilton,0
 351368571,Toronto,0
-351368572,Toronto South-East,0
+351368572,Toronto,0
 351368573,Brampton,0
 351368574,Mississauga,0
 351368575,Markham,0
@@ -323,7 +323,7 @@ fed_id,token,token_order
 460047172,Cartier,0
 460047232,Gillam,0
 461330190,Winnipeg,0
-461330194,Winnipeg North-West,0
+461330194,Winnipeg,0
 461330195,Winnipeg,0
 470022003,Nipawin,0
 470022015,Melfort,0
@@ -411,17 +411,17 @@ fed_id,token,token_order
 480022929,Calmar,0
 480022930,Wetaskiwin,0
 480047989,Medicine Hat,0
-481159047,Calgary South-West,0
+481159047,Calgary,0
 481159048,Calgary,0
-481159051,Calgary North-West,0
+481159051,Calgary,0
 481159052,Calgary,0
 481160300,Airdrie,0
-481160302,Calgary Outer North-West,0
+481160302,Calgary,0
 481160303,Calgary,0
 481160419,Strathcona County,0
 481160421,Edmonton,0
 481160422,Strathcona County,0
-481160425,Edmonton North-East,0
+481160425,Edmonton,0
 590021775,Pouce Coupe,0
 590021799,Fort St. John,0
 590022301,Kitimat,0
