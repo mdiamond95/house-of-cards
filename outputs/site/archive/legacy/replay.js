@@ -1319,8 +1319,10 @@ function renderRound() {
   if (!app.round) { box.hidden = true; return; }
   box.hidden = false;
   if (!app.d || !app.d.round) {
-    box.innerHTML = '<li class="mv-rchip mv-rchip-cap todo">The world</li><li class="mv-rchip todo">each house in turn</li>'
-      + '<li class="mv-rchip mv-rchip-cap todo">The close</li>';
+    // Before the first year: the shape of a round, as chips that do nothing yet.
+    box.innerHTML = ['The world', 'each house in turn', 'The close'].map((label, i) => (
+      `<li class="mv-rchip todo${i === 1 ? '' : ' mv-rchip-cap'}"><button type="button" disabled>`
+      + `<span class="mv-rchip-name">${label}</span></button></li>`)).join('');
     return;
   }
   const chips = stripOf(app.d.round, app.step);
