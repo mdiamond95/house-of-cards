@@ -120,8 +120,9 @@ svg[data-hexes] #map-borders { display: none; }
 .mv-rchip { flex: none; }
 .mv-rchip button { font: inherit; font-size: 0.76rem; display: inline-flex; align-items: center; gap: 4px;
   padding: 0.18rem 0.55rem; min-height: 30px; border-radius: 999px; border: 1px solid var(--rule);
-  background: #fff; color: var(--ink); white-space: nowrap; }
-.mv-rchip .swatch { width: 0.65rem; height: 0.65rem; margin: 0; }
+  background: #fff; color: var(--ink); white-space: nowrap; max-width: 15em; }
+.mv-rchip-name { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.mv-rchip .swatch { width: 0.65rem; height: 0.65rem; margin: 0; flex: none; }
 .mv-rchip.done button { opacity: 0.45; }
 .mv-rchip.current button { background: var(--ink); color: #fff; border-color: var(--ink); font-weight: 600; }
 .mv-rchip.pace-pause.todo button { border-color: #a3261f; }

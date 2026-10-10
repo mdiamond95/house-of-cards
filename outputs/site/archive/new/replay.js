@@ -1329,14 +1329,19 @@ function renderRound() {
     const cls = `mv-rchip ${c.state} pace-${c.pace}${c.kind !== 'house' ? ' mv-rchip-cap' : ''}${c.gone ? ' gone' : ''}`
       + `${c.house && c.house === app.follow ? ' followed' : ''}`;
     const dot = c.house ? swatch(c.house) : '';
+    // A long name is cut short with an ellipsis, so a chip never outgrows a
+    // phone's strip; the whole name is its title.
     return `<li class="${cls}"><button type="button" data-step="${i}"${c.house ? ` data-house="${escapeHtml(c.house)}"` : ''}`
-      + `${c.state === 'current' ? ' aria-current="step"' : ''}>${dot}${escapeHtml(label)}</button></li>`;
+      + ` title="${escapeHtml(label)}"${c.state === 'current' ? ' aria-current="step"' : ''}>${dot}`
+      + `<span class="mv-rchip-name">${escapeHtml(label)}</span></button></li>`;
   }).join('');
-  // Keep the current chip in view.
+  // Keep the current chip in view, centred: measured against the strip itself,
+  // whatever its offset parent.
   const current = box.querySelector('[aria-current="step"]');
   if (current) {
     const li = current.parentElement;
-    const left = li.offsetLeft - (box.clientWidth - li.offsetWidth) / 2;
+    const at = li.getBoundingClientRect().left - box.getBoundingClientRect().left + box.scrollLeft;
+    const left = at - (box.clientWidth - li.offsetWidth) / 2;
     box.scrollTo({ left: Math.max(0, left), behavior: reduced() ? 'auto' : 'smooth' });
   }
 }
