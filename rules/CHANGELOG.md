@@ -614,5 +614,6 @@ What it does to the riding sets: they hold two ridings the atlas takes out of Ca
 - `ne-2026`, seeds 1867, 2 and 3: every season file is identical with the flag on and off over 100 turns.
 - `meridian-v1.0.3`, seeds 1867 and 2: identical.
 - `meridian-v1.0.3`, seed 3: identical through turn 10. In turn 11 (1877) a frontier draw sees Nunavut among its candidates and picks another riding.
+- The story trial's ten seeds (1867–1876) on `meridian-v1.0.3`: nine are identical. Seed 1874 is identical through 1932, and in 1933 a house's scheme choice reads Labrador. Every §6 target that was met is still met; the first house at the reckoning is an Earl or higher in 10 of 10, where it was 9.
 
-The riding preview (seed 1867) is unchanged.
+The riding preview (seed 1867) is unchanged. On `meridian-hex-v1.0.5`, every §6 target is met on the mean, untuned (docs/hex-trial/v2/trial-table.md).
