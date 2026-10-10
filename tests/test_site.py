@@ -683,7 +683,7 @@ def test_the_hex_preview_sits_beside_the_riding_preview_and_draws_the_hex_board(
     assert "unit_word" not in json.loads((preview_site / "data" / "beats" / "index.json").read_text(encoding="utf-8"))
     assert len(index["ridings"]) == 494
     routes = json.loads((hexes / "data" / "routes.json").read_text(encoding="utf-8"))
-    assert len(routes["lines"]) == 460 and len(routes["links"]) == 1273
+    assert len(routes["lines"]) == 461 and len(routes["links"]) == 1274  # with the ferry
     assert not (preview_site / "data" / "routes.json").exists()
     borders = json.loads((hexes / "data" / "borders.json").read_text(encoding="utf-8"))
     assert [s["from"] for s in borders["spans"]][:3] == [1867, 1870, 1871]
