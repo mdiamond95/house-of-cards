@@ -7,5 +7,5 @@
   ],
   "water_crossings": {"expand_cost": 5},
   "block_grants": {"extra_hexes": 2},
-  "land_rush": {"years": 8, "roll_pct": 50, "until_held_pct": 25, "expand_discount": 5, "riding_sets": 0}
+  "land_rush": {"years": 6, "roll_pct": 40, "until_held_pct": 25, "expand_discount": 5, "riding_sets": 0}
 }

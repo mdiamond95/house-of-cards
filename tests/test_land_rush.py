@@ -74,7 +74,8 @@ def test_the_flag_is_the_drafts_alone():
         assert rules_data.load_features(version)["land_rush"] is False
     assert rules_data.load_features("1.0")["land_rush"] is True
     rush = rules_data.load_rules(version="1.0").board["land_rush"]
-    assert rush == {"years": 8, "roll_pct": 50, "until_held_pct": 25, "expand_discount": 5, "riding_sets": 0}
+    # The brief's start (8 years, 50%) tuned to 6 years and 40% (rules/CHANGELOG.md).
+    assert rush == {"years": 6, "roll_pct": 40, "until_held_pct": 25, "expand_discount": 5, "riding_sets": 0}
 
 
 def test_a_rush_for_each_jurisdiction_first_a_province_after_1867(tmp_path):
@@ -84,7 +85,8 @@ def test_a_rush_for_each_jurisdiction_first_a_province_after_1867(tmp_path):
         (1873, "prince_edward_island", "Prince Edward Island"), (1905, "alberta", "Alberta"),
         (1905, "saskatchewan", "Saskatchewan"), (1949, "newfoundland", "Newfoundland"),
     ]
-    assert [r[1] for r in w.rushes_in(1877)] == ["manitoba", "british_columbia", "prince_edward_island"]
+    assert [r[1] for r in w.rushes_in(1875)] == ["manitoba", "british_columbia", "prince_edward_island"]
+    assert [r[1] for r in w.rushes_in(1876)] == ["british_columbia", "prince_edward_island"]
     assert w.rushes_in(1890) == []
 
 
@@ -96,10 +98,10 @@ def test_each_rush_is_a_world_event_for_its_years(hex_game):
         ("Alberta", 1905), ("Saskatchewan", 1905), ("Newfoundland", 1949)]
     for d in first:
         unit = next(u for y, u, n in w.rushes() if n == d["jurisdiction"])
-        assert d["fed_ids"] == w.rush_units(unit, d["year"]) and d["years"] == 8 and d["year_of"] == 1
+        assert d["fed_ids"] == w.rush_units(unit, d["year"]) and d["years"] == 6 and d["year_of"] == 1
     later = deltas(w, "rush_continues")
-    assert len(later) == 6 * 7
-    assert all(2 <= d["year_of"] <= 8 for d in later)
+    assert len(later) == 6 * 5
+    assert all(2 <= d["year_of"] <= 6 for d in later)
 
 
 def test_a_rush_founds_only_in_its_province_and_only_while_few_are_held(hex_game):
@@ -135,7 +137,7 @@ def test_an_expand_into_a_rushing_province_costs_less(tmp_path):
         w._playing_season = 1905 - 1867 + 1
     assert on.expand_cost(None, fed["Red Deer"]) == off.expand_cost(None, fed["Red Deer"]) - 5
     assert on.expand_cost(None, fed["Brantford"]) == off.expand_cost(None, fed["Brantford"])
-    on._playing_season = off._playing_season = 1913 - 1867 + 1
+    on._playing_season = off._playing_season = 1911 - 1867 + 1
     assert on.expand_cost(None, fed["Red Deer"]) == off.expand_cost(None, fed["Red Deer"])
 
 
@@ -160,5 +162,5 @@ def test_a_riding_game_is_the_same_with_the_flag_on_and_off(tmp_path):
 
 def test_the_flags_own_switch_turns_it_on_for_a_riding_set(tmp_path):
     w = world(tmp_path, "meridian-v1.0.3", board={"riding_sets": 1})
-    play(w, 8)
+    play(w, 8)  # through 1874
     assert [d["jurisdiction"] for d in deltas(w, "rush")] == ["Manitoba", "British Columbia", "Prince Edward Island"]

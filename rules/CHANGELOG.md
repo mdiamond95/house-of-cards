@@ -637,4 +637,47 @@ On seed 1867 on the hex board:
 - 16 of 30 foundings are granted a block, 31 hexagons in all;
 - 8 expansions cross water.
 
-`land_rush`, the third flag of the brief, and the tuning that follows it wait on the rest of the director's brief, which arrived cut off.
+### The hex board, step 3 continued: `land_rush`, and the tuning (10 October 2026)
+
+A third flag in the draft, approved by the director: false in 0.7–0.9, on in 1.0, in both engines. Its numbers are in `board.json`.
+
+**`land_rush`.** Under `world_calendar`, each jurisdiction the atlas first has as a province after 1867 has a rush there for `land_rush.years`, from that year: Manitoba 1870, British Columbia 1871, Prince Edward Island 1873, Alberta and Saskatchewan 1905, Newfoundland 1949. These are the brief's "extension" events read as "a jurisdiction becomes a province". BC, PEI and Newfoundland join as provinces, which the engine records as an accession, and they rush too. Land joining a province later (Ontario 1889, Manitoba 1881 and 1912) starts no rush, and units opening later in a rushing province do not restart one.
+- In each rush year, while fewer than `until_held_pct` (25%) of the province's open units are held, the Crown makes one extra founding roll at `roll_pct` among its open, unclaimed units, after the founding roll. The season record lists those houses as `rushed`.
+- An Expand into a unit of a rushing province costs `expand_discount` (5) less.
+- A rush is a world event: a `rush` beat in its first year, drawn on the province's open land, and an `event_continues` chip each year after.
+- It runs on a set whose `riding_stats.csv` carries `resolution` (the hex board). On a riding set it runs only when `land_rush.riding_sets` is 1, which only its own test sets, so both riding sets play the same game with it on and off (`tests/test_land_rush.py`).
+
+**`dated_openings`, corrected.** A unit already open is not named again in an accession line (Kenora: open in 1882, joins Ontario in 1889). On `meridian-v1.0.3` this drops the return of Nunavut (1880) and Labrador (1949) from their lines, and nothing else changes.
+
+**The tuning.** On the hex board, ten seeds (1867–1876), 100 turns, `scripts/story_trial.py --reference meridian-hex-v1.0.5`. With all three flags at the brief's start values, the draft missed:
+- houses fallen or removed: 11.8 (target 4–10);
+- rise and decline storylines: 20.6 (target ≤ 20);
+- turns that pause Auto: 31% (target 15–30%).
+
+The removals came from absorption (about 6 a game), disorderly successions with no successor (about 3) and cohesion collapse (about 2.5). The changes, all to the draft's tables:
+
+| Table | Number | Was | Now |
+|---|---|---|---|
+| `upkeep.json` | `cohesion.recovery` | 3 | 5 |
+| `schemes.csv` | Secure the line, `utility` | 55 | 70 |
+| `schemes.csv` | Claim a riding, `utility` | 20 | 15 |
+| `schemes.json` | `contest.committed_per_point` | 15 | 18 |
+| `board.json` | `land_rush.roll_pct` | 50 | 40 |
+| `board.json` | `land_rush.years` | 8 | 6 |
+
+Tuned, every §6 and D1 target is met on the mean, and so are the director's new ones:
+- map held at turn 100: 56% (40–60%);
+- Prairie held at turn 100: 34% (≥ 30%); British Columbia: 48% (≥ 30%);
+- a holder at turn 100 on Prince Edward Island in 10 seeds, on Vancouver Island in 8, on Newfoundland in 8 (each ≥ 7);
+- houses active at turn 100: 37.1 (24–40);
+- the Prairies' share held in any turn before 1896: at most 7% on the mean, 12% on the worst seed (< 10%);
+- houses fallen or removed: 8.9; attacker wins: 54%.
+
+The thinnest margins are Auto pauses (29.6% against 30%) and rise and decline storylines (19.0 against 20). The full table, beside step 2 and step 3 untuned, is docs/hex-trial/v2/trial-table.md.
+
+What the tuning does to the riding sets: the same draft played on `meridian-v1.0.3` (`scripts/story_trial.py`, the riding preview's set) now misses three targets:
+- median cohesion at turn 100: 86.2 (55–85);
+- median rivalry: 11.2 turns (4–10);
+- attacker wins: 60.1% (35–60%).
+
+The brief tuned the hex board only, so these are left for the director to decide.

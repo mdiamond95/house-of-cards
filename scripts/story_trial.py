@@ -92,6 +92,28 @@ NEW_FLAGS = (
 C2_FLAGS = ("schemes", "contested_claims", "prestige_politics", "cohesion_strain")
 DECISIVE = ("won in a contest", "held in a contest", "ceded under a claim", "a house removed")
 REPORT = ROOT / "tests" / "js" / "story_report.mjs"
+# The hex board's step-3 tuning: the islands that must have a holder at turn
+# 100, each the land group (land rows of adjacency.csv) of a unit named here.
+ISLANDS = (("pei", "Charlottetown"), ("vancouver_island", "Victoria"), ("newfoundland", "St. John's"))
+# ... and the Prairies held before 1896 (game.json's start_year is 1867).
+PRAIRIE_BEFORE = 1896
+
+
+def _land_groups(conn):
+    """{fed_id: root} over the land rows of adjacency.csv."""
+    parent = {r["fed_id"]: r["fed_id"] for r in conn.execute("SELECT fed_id FROM ridings")}
+
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    for r in conn.execute("SELECT fed_id_a, fed_id_b FROM adjacency WHERE adjacency_type = 'land'"):
+        a, b = find(r["fed_id_a"]), find(r["fed_id_b"])
+        if a != b:
+            parent[max(a, b)] = min(a, b)
+    return {f: find(f) for f in parent}
 
 
 def _counts(conn):
@@ -102,7 +124,39 @@ def _counts(conn):
     return houses, ridings
 
 
-def play_one(version, overrides, seed, turns=TURNS, reference=REFERENCE):
+def _set_tables(rules, tables):
+    """Apply {"board.land_rush.roll_pct": 40, ...} to a loaded rules bundle:
+    the first part names one of its tables (founding, succession, board,
+    scheme_rules, game, upkeep, friction, responses), the rest a key path in
+    it. For trying numbers before they are written into a version's tables."""
+    def step(node, key):
+        if isinstance(node, list):
+            # A CSV table: its row by name ("schemes.Secure the line.utility").
+            for row in node:
+                if key in (getattr(row, "scheme", None), getattr(row, "action", None)):
+                    return row
+            return node[int(key)]
+        return node[key] if isinstance(node, dict) else getattr(node, key)
+
+    for path, value in (tables or {}).items():
+        head, *keys = path.split(".")
+        node = getattr(rules, head)
+        for key in keys[:-1]:
+            node = step(node, key)
+        last = keys[-1]
+        if isinstance(node, dict):
+            if last not in node:
+                raise KeyError(f"--set {path}: no such key")
+            node[last] = value
+        elif isinstance(node, list):
+            node[int(last)] = value
+        else:
+            if not hasattr(node, last):
+                raise KeyError(f"--set {path}: no such field")
+            setattr(node, last, value)
+
+
+def play_one(version, overrides, seed, turns=TURNS, reference=REFERENCE, tables=None):
     """One seed: the trial's raw numbers for it, on the `reference` set."""
     import load_seed
 
@@ -115,16 +169,28 @@ def play_one(version, overrides, seed, turns=TURNS, reference=REFERENCE):
         )
         rules = rules_data.load_rules(version=version)
         rules.features.update(overrides)
+        _set_tables(rules, tables)
         world = sim.World(conn, rules=rules, world_seed=seed)
         open_1867 = {
             fed for fed, stats in world.riding_stats.items() if stats.get("opens_year", 1867) <= 1867
         } or {row["fed_id"] for row in conn.execute("SELECT fed_id FROM ridings")}
         at = {}
+        groups = _land_groups(conn)
+        named = {r["name_en"]: r["fed_id"] for r in conn.execute("SELECT fed_id, name_en FROM ridings")}
+        islands = {key: {f for f, g in groups.items() if g == groups[named[name]]}
+                   for key, name in ISLANDS if name in named}
+        prairie = {r["fed_id"] for r in conn.execute("SELECT fed_id, province FROM ridings")
+                   if sim.PROVINCE_REGION.get(r["province"]) == "prairie"}
+        prairie_before = 0.0
         with conn:
             world.initialise(seed)
             last = None
             for season in range(2, turns + 1):
                 last = world.run_season()
+                if world.rules.features.get("world_calendar") and 1866 + season < PRAIRIE_BEFORE and prairie:
+                    held_now = {r["fed_id"] for r in conn.execute(
+                        "SELECT fed_id FROM holdings WHERE released_event_id IS NULL")}
+                    prairie_before = max(prairie_before, len(held_now & prairie) / len(prairie))
                 if season in (25, 50, 60, 75, 100):
                     at[season] = _counts(conn)
                 if season in (25, 50, 75, 100):
@@ -150,6 +216,8 @@ def play_one(version, overrides, seed, turns=TURNS, reference=REFERENCE):
                         regions[region] = (total + 1, mine + (1 if r["fed_id"] in held else 0))
                     at[f"regions{season}"] = {k: v[1] / v[0] for k, v in sorted(regions.items())}
                     at[f"held{season}"] = len(held) / len(feds)
+                    if season == 100:
+                        at["islands100"] = {k: (1 if held & units else 0) for k, units in sorted(islands.items())}
                 if season == 60:
                     ranked = sorted((-world.standing(r["house"]), r["house"]) for r in world.active_houses())
                     top = [world.rank_index.get(world.house_row(h)["rank"], 0) for _, h in ranked[:8]]
@@ -269,6 +337,8 @@ def play_one(version, overrides, seed, turns=TURNS, reference=REFERENCE):
         "crown_by_25": sum(1 for s in crown if s <= 25),
         "crown_late_window": late_window,
         "removed_100": removed,
+        "prairie_before_1896": prairie_before,
+        "island_held_100": at.get("islands100", {}),
         **c2,
         **d1,
     }
@@ -307,7 +377,7 @@ ROWS = (
     ("§6 chapters II–V with top-eight churn (target 4)", "chapters_churned", "num"),
     ("D1 turns with a headline ≥ pause (target 40–65%)", "heavy_share", "pct"),
     ("§6 longest quiet run after turn 10 (target ≤ 3)", "max_quiet_run", "num"),
-    ("§6 houses active at turn 100 (target 20–40)", "houses_100", "num"),
+    ("§6 houses active at turn 100 (target 20–40; hex board 24–40)", "houses_100", "num"),
     ("D1 ranks spanned by the top eight at turn 60 (target ≥ 3)", "rank_span_60", "num"),
     ("D1 rise and decline storylines (target ≤ 20)", "rise_decline", "num"),
     ("D1 turns that pause Auto (target 15–30%)", "pause_share", "pct"),
@@ -322,7 +392,11 @@ ROWS = (
     ("units of the whole map held at turn 25", "held_25", "pct"),
     ("units of the whole map held at turn 50", "held_50", "pct"),
     ("units of the whole map held at turn 75", "held_75", "pct"),
-    ("units of the whole map held at turn 100", "held_100", "pct"),
+    ("units of the whole map held at turn 100 (hex board target 40–60%)", "held_100", "pct"),
+    ("Prairie held at turn 100 (hex board target ≥ 30%)", "region_held_100.prairie", "pct"),
+    ("British Columbia held at turn 100 (hex board target ≥ 30%)", "region_held_100.bc", "pct"),
+    ("most of the Prairies held in a turn before 1896 (hex board target < 10%)",
+     "prairie_before_1896", "pct"),
     ("ridings claimed at turn 25", "ridings_25", "num"),
     ("ridings claimed at turn 50", "ridings_50", "num"),
     ("ridings claimed at turn 100", "ridings_100", "num"),
@@ -369,15 +443,17 @@ def table(configs, markdown=True):
     labels = [label for label, _ in configs]
     flats = [_flat(results) for _, results in configs]
     rows = [(name, key, style) for name, key, style in ROWS]
-    extra = sorted({k for f in flats for k in f if "." in k})
+    listed = {key for _, key, _ in ROWS}
+    extra = sorted({k for f in flats for k in f if "." in k and k not in listed})
     for key in extra:
         group, sub = key.split(".", 1)
-        style = "pct" if group == "headline_types" or group.startswith("region_held") else "num"
+        style = "pct" if group in ("headline_types", "island_held_100") or group.startswith("region_held") else "num"
         title = {
             "five_plus_by_type": "storylines of 5+ beats", "headline_types": "headlines in",
             "rivalry_outcomes": "rivalries",
             "region_held_25": "held at turn 25 in", "region_held_50": "held at turn 50 in",
             "region_held_75": "held at turn 75 in", "region_held_100": "held at turn 100 in",
+            "island_held_100": "seeds with a holder on the island at turn 100 (hex board target ≥ 70%)",
         }[group]
         rows.append((f"{title}: {sub}", key, style))
     out = ["| metric | " + " | ".join(labels) + " |", "|---|" + "---|" * len(labels)]
@@ -458,6 +534,10 @@ def main(argv=None):
     parser.add_argument("--markdown", default=None, help="also write the table here")
     parser.add_argument("--json", default=None, help="also write the raw results here")
     parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument("--set", action="append", default=[], metavar="TABLE.KEY=N",
+                        help="try a number in the version's tables, e.g. board.land_rush.roll_pct=40"
+                        " (repeatable; the files are not changed)")
+    parser.add_argument("--label", default=None, help="the column's label")
     parser.add_argument("--reference", default=REFERENCE,
                         help=f"the reference-data set to play on (default {REFERENCE};"
                         " meridian-hex-v1.0.5 for the hex board)")
@@ -476,12 +556,19 @@ def main(argv=None):
     else:
         version = args.rules_version or rules_data.current_version()
         overrides = _parse_flags(args.flags)
+        tables = {}
+        for item in args.set:
+            path, _, value = item.partition("=")
+            tables[path.strip()] = json.loads(value)
         label = version + (f" {args.flags}" if args.flags else "")
         if args.reference != REFERENCE:
             label += f" on {args.reference}"
+        if tables:
+            label += " " + ", ".join(f"{k}={v}" for k, v in tables.items())
+        label = args.label or label
         with ProcessPoolExecutor(max_workers=args.workers) as pool:
             results = list(pool.map(play_one, *zip(*[(version, overrides, seed, args.turns,
-                                                      args.reference)
+                                                      args.reference, tables)
                                                      for seed in seeds])))
         configs = [(label, results)]
     if args.prepend:
