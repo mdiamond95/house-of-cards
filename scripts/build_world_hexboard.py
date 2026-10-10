@@ -90,7 +90,6 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from hoc.names import name_key  # noqa: E402  (after sys.path setup)
 
 import build_places  # noqa: E402
-import build_world_hex as bwh  # noqa: E402  (the trial's rules, reused as they stand)
 import build_world_meridian as bwm  # noqa: E402
 import fetch_meridian as fm  # noqa: E402
 
@@ -103,7 +102,6 @@ RIDINGS = ROOT / "data" / "reference" / "ridings.csv"
 MIN_POPULATION = 5000
 SPLIT_POPULATION = 500000
 CITY_HEX_POPULATION = 25000
-LENGTH_CAP = bwh.LENGTH_CAP
 CANADA = "Canada"
 
 # The year each split parent's metropolitan core was incorporated as a city,
@@ -179,6 +177,39 @@ NWT = "northwest_territories"
 LAST_YEAR = 2026
 
 
+# The trial's rules (docs/DETERMINISM.md, "The hex board", rules 9-13), as
+# they were written for meridian-hex-v1.0.4, which this set replaced.
+LENGTH_CAP = 6
+# The distance between neighbouring H3 resolution-4 centres, about 45 km
+# (twice the cell's apothem; interop.md gives "about 45 km across"). Used only
+# to state a length, in steps, for a link drawn straight across open sea.
+HEX_SPACING_METRES = 45000
+# The federal two-digit province codes, the prefix of every FED number.
+PROVINCE_CODES = {
+    "NL": 10, "PE": 11, "NS": 12, "NB": 13, "QC": 24, "ON": 35, "MB": 46,
+    "SK": 47, "AB": 48, "BC": 59, "YT": 60, "NT": 61, "NU": 62,
+}
+# csdType codes (the table's lookups.csdType). A city, town, village or the
+# like: a named settlement.
+TOWN_TYPES = (
+    "C", "CY", "CV", "CÉ", "T", "TV", "V", "VL", "VN", "VC", "NV", "NVL",
+    "SV", "RV", "HAM", "NH",
+)
+# A general municipal type: a municipality, township, parish, canton, rural or
+# district municipality and the like. Not reserves and other First Nations
+# lands (IRI, S-É, TC, TK, TAL, TWL, NL, SG, IGD), unorganized areas and their
+# subdivisions (NO, SNO), regional district electoral areas (RDA), county
+# subdivisions (SC), fire districts (FD), special areas (SA), regions (GR, RG)
+# or a Crown colony (CN): those are census bookkeeping or another nation's
+# land, not a seat to be styled after.
+MUNICIPAL_TYPES = (
+    "MÉ", "MU", "M", "MD", "DM", "RM", "TP", "CT", "CU", "P", "PE", "RGM",
+    "MRM", "CM", "SM", "RCR", "ID", "LGD", "IM", "RMU", "CC", "CG", "COM",
+    "SÉ", "SET",
+)
+NAMEABLE = TOWN_TYPES + MUNICIPAL_TYPES
+
+
 class BoardBuildError(Exception):
     """The tables did not support a rule; the build stops rather than guess."""
 
@@ -209,7 +240,256 @@ def h3_sequence(index, resolution):
 
 def unit_id(row, resolution):
     t = h3_sequence(row["id"], 4) if resolution == 4 else 1_000_000 + h3_sequence(row["id"], 5)
-    return bwh.PROVINCE_CODES[row["province"]] * 10_000_000 + t
+    return PROVINCE_CODES[row["province"]] * 10_000_000 + t
+
+
+# ------------------------------------------------- the trial's primitives --
+
+
+def _candidates(places, types):
+    return [p for p in places if p["csdType"] in types]
+
+def own_candidates(row):
+    """The places a unit may be named for, in the order they are tried."""
+    return _candidates(row["places"], TOWN_TYPES) + _candidates(row["places"], MUNICIPAL_TYPES)
+
+def flood(unit_of_hex, land):
+    """{h3: (unit fed_id, distance)} over land links from every unit at once.
+
+    Level by level: a hexagon first reached at distance d takes the lowest unit
+    id among the hexagons of distance d − 1 that reach it."""
+    owner = {h: (fed, 0) for h, fed in unit_of_hex.items()}
+    frontier = sorted(unit_of_hex)
+    d = 0
+    while frontier:
+        d += 1
+        offers = {}
+        for h in frontier:
+            fed = owner[h][0]
+            for n in land[h]:
+                if n in owner:
+                    continue
+                if n not in offers or fed < offers[n]:
+                    offers[n] = fed
+        for n, fed in offers.items():
+            owner[n] = (fed, d)
+        frontier = sorted(offers)
+    return owner
+
+def parent_of(h, owner, land, unit_of_hex):
+    """The next hexagon from h towards its own unit: a land neighbour one step
+    nearer with the same unit, the lowest H3 index if several."""
+    fed, d = owner[h]
+    for n in land[h]:
+        if n in owner and owner[n] == (fed, d - 1):
+            return n
+    raise BoardBuildError(f"{h}: no step towards unit {fed}")
+
+def path_home(h, owner, land, unit_of_hex):
+    path = [h]
+    while owner[path[-1]][1] > 0:
+        path.append(parent_of(path[-1], owner, land, unit_of_hex))
+    return path
+
+def touching(owner, links):
+    """{(a, b): (length, x, y)} for each pair of units whose territories meet
+    along one of `links`, a < b, at the least dist(x) + 1 + dist(y), ties by
+    the pair of hexagons (x on a's side)."""
+    best = {}
+    for x in sorted(links):
+        if x not in owner:
+            continue
+        for y in links[x]:
+            if y not in owner:
+                continue
+            ux, dx = owner[x]
+            uy, dy = owner[y]
+            if ux == uy:
+                continue
+            if ux < uy:
+                a, b, hx, hy = ux, uy, x, y
+            else:
+                a, b, hx, hy = uy, ux, y, x
+            candidate = (dx + 1 + dy, hx, hy)
+            if (a, b) not in best or candidate < best[(a, b)]:
+                best[(a, b)] = candidate
+    return best
+
+class Groups:
+    """Union-find over unit ids, with the lower id as each group's root."""
+
+    def __init__(self, ids):
+        self.parent = {i: i for i in ids}
+
+    def find(self, i):
+        while self.parent[i] != i:
+            self.parent[i] = self.parent[self.parent[i]]
+            i = self.parent[i]
+        return i
+
+    def union(self, a, b):
+        ra, rb = self.find(a), self.find(b)
+        if ra == rb:
+            return False
+        self.parent[max(ra, rb)] = min(ra, rb)
+        return True
+
+    def sizes(self):
+        out = {}
+        for i in self.parent:
+            out[self.find(i)] = out.get(self.find(i), 0) + 1
+        return sorted(out.values(), reverse=True)
+
+def nearest_unit(start, units, rows_by_h3):
+    """(fed_id, metres) of the unit whose hexagon centre is nearest `start`'s,
+    on the WGS84 ellipsoid (pyproj's geodesic), ties to the lower id.
+
+    For a unit the table links to nothing at all (Les Îles-de-la-Madeleine:
+    every hexagon round it is open sea, which has no row). It is the only
+    measure here taken in floating point, once, at build time; what it decides
+    — which unit — is committed as a row of adjacency.csv, and no engine sees
+    the distance."""
+    from pyproj import Geod
+
+    geod = Geod(ellps="WGS84")
+    lon0, lat0 = (float(Decimal(v)) for v in rows_by_h3[start]["centroid"])
+    best = None
+    for fed, row in units:
+        if row["id"] == start:
+            continue
+        lon, lat = (float(Decimal(v)) for v in row["centroid"])
+        metres = round(geod.inv(lon0, lat0, lon, lat)[2])
+        if best is None or (metres, fed) < best:
+            best = (metres, fed)
+    return best[1], best[0]
+
+def build_links(units, land, water, rows_by_h3):
+    """(links, report). links: [{a, b, kind, length, path}] in (a, b) order,
+    path the hexagons from a's to b's."""
+    unit_of_hex = {row["id"]: fed for fed, row in units}
+    hex_of_unit = {fed: row["id"] for fed, row in units}
+    owner = flood(unit_of_hex, land)
+    land_touch = touching(owner, land)
+    water_touch = {k: v for k, v in touching(owner, water).items() if k not in land_touch}
+
+    ids = sorted(fed for fed, _ in units)
+    before = Groups(ids)
+    for a, b in land_touch:
+        before.union(a, b)
+
+    kept = Groups(ids)
+    chosen = {}
+    for pair in sorted(land_touch):
+        if land_touch[pair][0] <= LENGTH_CAP:
+            chosen[pair] = "land"
+            kept.union(*pair)
+    bridged = []
+    for pair in sorted((p for p in land_touch if land_touch[p][0] > LENGTH_CAP),
+                       key=lambda p: (land_touch[p][0], p)):
+        if kept.union(*pair):
+            chosen[pair] = "land"
+            bridged.append({"a": pair[0], "b": pair[1], "length": land_touch[pair][0]})
+    for pair in water_touch:
+        chosen[pair] = "water"
+
+    def path_of(pair, how):
+        length, x, y = how
+        return list(reversed(path_home(x, owner, land, unit_of_hex))) + path_home(y, owner, land, unit_of_hex)
+
+    links = []
+    for pair in sorted(chosen):
+        how = land_touch[pair] if chosen[pair] == "land" else water_touch[pair]
+        links.append({"a": pair[0], "b": pair[1], "kind": chosen[pair], "length": how[0],
+                      "path": path_of(pair, how)})
+
+    linked = {l["a"] for l in links} | {l["b"] for l in links}
+    alone = []
+    for fed in ids:
+        if fed in linked:
+            continue
+        # Its length is the hexagon steps of a straight line between the two
+        # centres: metres over the H3 resolution-4 centre spacing, rounded up.
+        other, metres = nearest_unit(hex_of_unit[fed], units, rows_by_h3)
+        steps = -(-metres // HEX_SPACING_METRES)
+        a, b = min(fed, other), max(fed, other)
+        path = [hex_of_unit[a], hex_of_unit[b]]
+        links.append({"a": a, "b": b, "kind": "water", "length": steps, "path": path})
+        alone.append({"unit": fed, "to": other, "length": steps, "metres": metres})
+    links.sort(key=lambda l: (l["a"], l["b"]))
+
+    after = Groups(ids)
+    for l in links:
+        if l["kind"] == "land":
+            after.union(l["a"], l["b"])
+    board = Groups(ids)
+    for l in links:
+        board.union(l["a"], l["b"])
+    lengths = {}
+    for pair, how in land_touch.items():
+        lengths[how[0]] = lengths.get(how[0], 0) + 1
+    report = {
+        "hexagons": len(land),
+        "hexagons_flooded": len(owner),
+        "hexagons_unreached_by_land": len(land) - len(owner),
+        "before_cap": {
+            "land_links": len(land_touch),
+            "mean_land_links_per_unit": str(
+                (Decimal(2 * len(land_touch)) / len(ids)).quantize(Decimal("0.01"))
+            ),
+            "land_groups": before.sizes(),
+            "land_link_lengths": {str(k): lengths[k] for k in sorted(lengths)},
+        },
+        "after_cap": {
+            "length_cap": LENGTH_CAP,
+            "land_links": sum(1 for l in links if l["kind"] == "land"),
+            "dropped_over_cap": len(land_touch) - sum(1 for l in links if l["kind"] == "land"),
+            "bridges_kept_over_cap": bridged,
+            "water_links": sum(1 for l in links if l["kind"] == "water"),
+            "units_alone_given_a_water_link": alone,
+            "land_groups": after.sizes(),
+            "groups_counting_water_links": board.sizes(),
+            "mean_links_per_unit": str(
+                (Decimal(2 * len(links)) / len(ids)).quantize(Decimal("0.01"))
+            ),
+        },
+    }
+    return links, owner, report
+
+def places_rows(units):
+    out = []
+    for fed, row in units:
+        for place in row["places"]:
+            spans = 1 if place["population"] > row["population"] else 0
+            out.append({
+                "fed_id": str(fed),
+                "place": place["name"],
+                "population": place["population"],
+                "spans_ridings": spans,
+                "designation_ok": 1 if place["csdType"] in NAMEABLE and not spans else 0,
+            })
+    return out
+
+def hex_geometries(layer):
+    """{h3: GeoJSON geometry or None}, from the clipped layer, exactly decoded."""
+    arcs = bwm.decode_arcs(layer)
+    out, users = {}, {}
+    for geom in layer["objects"]["hexes"]["geometries"]:
+        h = geom["properties"]["id"]
+        if geom.get("type") is None:
+            out[h] = None
+            continue
+        polygons = [geom["arcs"]] if geom["type"] == "Polygon" else geom["arcs"]
+        rings_out = []
+        for polygon in polygons:
+            rings_out.append([bwm._coords(bwm._ring(arcs, ring)) for ring in polygon])
+            for ring in polygon:
+                for index in ring:
+                    users.setdefault(index if index >= 0 else ~index, set()).add(h)
+        out[h] = (
+            {"type": "Polygon", "coordinates": rings_out[0]} if len(rings_out) == 1
+            else {"type": "MultiPolygon", "coordinates": rings_out}
+        )
+    return out, arcs, users
 
 
 # -------------------------------------------------------------------- board --
@@ -374,8 +654,8 @@ def municipality(cell, mesh, places):
     4. else None (the riding token, then borrowing, name it)."""
     people = cell["population"]
     csd = mesh["csd"][cell["id"]]
-    own = [p for p in cell["places"] if p["csdType"] in bwh.NAMEABLE]
-    towns = [p for p in own if p["csdType"] in bwh.TOWN_TYPES]
+    own = [p for p in cell["places"] if p["csdType"] in NAMEABLE]
+    towns = [p for p in own if p["csdType"] in TOWN_TYPES]
     mesh_people = places[csd][0]["population"] if csd in places else -1
     if mesh_people >= people and not any(p["population"] > mesh_people for p in towns):
         return csd, "the mesh's municipality"
@@ -473,7 +753,7 @@ def name_units(board, units, geometries, mesh):
     for fed, row, res, role in order:
         if res != 4:
             continue
-        pick = next((p for p in bwh.own_candidates(row) if name_key(p["name"]) not in taken), None)
+        pick = next((p for p in own_candidates(row) if name_key(p["name"]) not in taken), None)
         if pick is None:
             deferred.append((fed, row, res, role))
             continue
@@ -521,7 +801,7 @@ def name_units(board, units, geometries, mesh):
                         seen.add(n)
                         nxt.append(n)
             ring = sorted(nxt)
-            for types in (bwh.TOWN_TYPES, bwh.MUNICIPAL_TYPES):
+            for types in (TOWN_TYPES, MUNICIPAL_TYPES):
                 pool = [
                     (-p["population"], h, i, p)
                     for h in ring for i, p in enumerate(board.row(h)["places"])
@@ -813,13 +1093,13 @@ def join_groups(units, links, rows):
     """Give each land group no water link reaches another one water link: from
     its unit nearest any unit outside it to that unit."""
     ids = sorted(fed for fed, *_ in units)
-    land = bwh.Groups(ids)
+    land = Groups(ids)
     for l in links:
         if l["kind"] == "land":
             land.union(l["a"], l["b"])
     added = []
     while True:
-        board = bwh.Groups(ids)
+        board = Groups(ids)
         for l in links:
             board.union(l["a"], l["b"])
         groups = {}
@@ -833,14 +1113,14 @@ def join_groups(units, links, rows):
         best = None
         for fed in smallest:
             row = next(r for f, r, *_ in units if f == fed)
-            other, metres = bwh.nearest_unit(row["id"], outside, rows)
+            other, metres = nearest_unit(row["id"], outside, rows)
             if best is None or (metres, fed, other) < best:
                 best = (metres, fed, other)
         metres, fed, other = best
         a, b = min(fed, other), max(fed, other)
         hexes = {f: r["id"] for f, r, *_ in units}
         links.append({"a": a, "b": b, "kind": "water",
-                      "length": -(-metres // bwh.HEX_SPACING_METRES),
+                      "length": -(-metres // HEX_SPACING_METRES),
                       "path": [hexes[a], hexes[b]]})
         links.sort(key=lambda l: (l["a"], l["b"]))
         added.append({"group_size": len(smallest), "a": a, "b": b, "metres": metres})
@@ -848,7 +1128,7 @@ def join_groups(units, links, rows):
 
 def link_report(units, links, report):
     ids = sorted(fed for fed, *_ in units)
-    land = bwh.Groups(ids)
+    land = Groups(ids)
     for l in links:
         if l["kind"] == "land":
             land.union(l["a"], l["b"])
@@ -878,15 +1158,15 @@ def build(out_dir=OUT_DIR, raw_dir=RAW_DIR, verbose=True):
         raise BoardBuildError(f"split parents {sorted(board.split)} are not CITY_YEARS' {sorted(CITY_YEARS)}")
     units = board.units()
 
-    g4, _, users4 = bwh.hex_geometries(l4)
-    g5, _, users5 = bwh.hex_geometries(l5)
+    g4, _, users4 = hex_geometries(l4)
+    g5, _, users5 = hex_geometries(l5)
     geometries = {h: (g4 if res == 4 else g5).get(h) for h, (_, res) in board.nodes.items()}
 
     mesh = mesh_lookup(fm.read_board_mesh(raw_dir))
     names, coverage, city = name_units(board, units, geometries, mesh)
     pair_units = [(fed, row) for fed, row, *_ in units]
     rows_by_node = {h: row for h, (row, _) in board.nodes.items()}
-    links, owner, lreport = bwh.build_links(pair_units, board.land, board.water, rows_by_node)
+    links, owner, lreport = build_links(pair_units, board.land, board.water, rows_by_node)
     joined = join_groups(units, links, rows_by_node)
     groups, water_between = link_report(units, links, lreport)
 
@@ -899,7 +1179,7 @@ def build(out_dir=OUT_DIR, raw_dir=RAW_DIR, verbose=True):
         {"fed_id_a": str(l["a"]), "fed_id_b": str(l["b"]), "adjacency_type": l["kind"]}
         for l in links
     ]
-    places = bwh.places_rows(pair_units)
+    places = places_rows(pair_units)
     tokens = build_places.build_tokens(ridings)
     jurisdictions, dropped = bwm.jurisdiction_rows(
         {"meta": r4["meta"], "rows": [{"id": fed, "jurisdictions": row["jurisdictions"]}

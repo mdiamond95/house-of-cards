@@ -209,10 +209,10 @@ def test_links_are_symmetric_and_stored_once():
 
 
 def test_six_land_groups_all_joined_by_water(report):
-    import build_world_hex
+    import build_world_hexboard
 
     ids = sorted(r["fed_id"] for r in load("ridings.csv"))
-    land, board = build_world_hex.Groups(ids), build_world_hex.Groups(ids)
+    land, board = build_world_hexboard.Groups(ids), build_world_hexboard.Groups(ids)
     for a in load("adjacency.csv"):
         board.union(a["fed_id_a"], a["fed_id_b"])
         if a["adjacency_type"] == "land":
@@ -371,3 +371,21 @@ def test_no_unit_is_held_before_its_opening_year(tmp_path):
                 world.run_season()
         conn.close()
     assert early == []
+
+
+def test_a_draft_game_on_the_board_names_its_units_holdings_and_opens_them_quietly(tmp_path):
+    from hoc.export import beats as beats_export
+
+    conn = load_seed.build(tmp_path / "board.db", seed=scenario.blank_seed_dir(), reference_data=KEY)
+    world = sim.World(conn, rules=rules_data.load_rules(version="1.0"), world_seed=1867)
+    with conn:
+        world.initialise(1867)
+        while world.season_no < 20:
+            world.run_season()
+    openings = [json.loads(row["mechanical_delta"]) for row in conn.execute(
+        "SELECT mechanical_delta FROM events WHERE mechanical_delta LIKE '%\"world\": \"opening\"%'")]
+    assert openings and all(d["world"] == "opening" and d.get("part") == "world" for d in openings)
+    beats_export.write_beats(conn, tmp_path / "data")
+    index = json.loads((tmp_path / "data" / "beats" / "index.json").read_text(encoding="utf-8"))
+    assert index["unit_word"] == {"singular": "holding", "plural": "holdings"}
+    conn.close()

@@ -4,8 +4,8 @@
     python scripts/story_trial.py --matrix [--markdown FILE]
 
 Plays `--turns` turns (default 100) on scratch copies of the Meridian world
-(`meridian-v1.0.3`, or the set `--reference` names: `meridian-hex-v1.0.4` for
-the hex trial, docs/hex-trial/README.md) for each seed in `--seeds` (default 1867-1876) under a named
+(`meridian-v1.0.3`, or the set `--reference` names: `meridian-hex-v1.0.5` for
+the hex board, docs/hex-trial/v2/README.md) for each seed in `--seeds` (default 1867-1876) under a named
 rules version, with any of its feature flags overridden, builds the game's beats
 (hoc/export/beats.py), replays them as dispatches with the story layer
 (tests/js/story_report.mjs), and prints one table of mean and range across the
@@ -460,7 +460,7 @@ def main(argv=None):
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--reference", default=REFERENCE,
                         help=f"the reference-data set to play on (default {REFERENCE};"
-                        " meridian-hex-v1.0.4 for the hex trial)")
+                        " meridian-hex-v1.0.5 for the hex board)")
     args = parser.parse_args(argv)
     if shutil.which("node") is None:
         raise SystemExit("node is not on PATH: the story report needs it")
