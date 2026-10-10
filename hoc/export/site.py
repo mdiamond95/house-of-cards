@@ -66,8 +66,8 @@ _PREVIEW = None
 # Whether the preview game ended in a reckoning (rules 1.0 `world_calendar`).
 _PREVIEW_RECKONING = False
 PREVIEW_DIRNAME = "preview"
-# The hex trial's preview (docs/hex-trial/README.md): the same draft played on
-# the hex board, meridian-hex-v1.0.4, published beside the riding preview.
+# The hex board's preview (docs/hex-trial/v2/README.md): the same draft played
+# on the hex board, meridian-hex-v1.0.5, published beside the riding preview.
 HEX_PREVIEW_DIRNAME = "preview-hex"
 # Which of the two previews is being rendered.
 _PREVIEW_DIR = PREVIEW_DIRNAME
@@ -86,7 +86,7 @@ HEX_TOLERANCE = 0.3
 def preview_banner(version):
     if _HEX:
         return (
-            f"Hex-board trial — rules {version} (draft) on Meridian v1.0.4's hexagons. Not a"
+            f"Hex-board preview — rules {version} (draft) on Meridian {_HEX['tag']}'s hexagons. Not a"
             " game of record: it is played afresh on a scratch world every time the site is"
             " exported, so it changes whenever the draft does."
         )
@@ -868,6 +868,34 @@ def _hex_routes_json(geometry):
     return json.dumps({"links": _HEX["links"], "lines": lines}, separators=(",", ":"), sort_keys=True) + "\n"
 
 
+def _hex_borders_json(geometry):
+    """data/borders.json for a hex board with jurisdictions by year: the lines
+    between first-order jurisdictions along hexagon edges and each
+    jurisdiction's name at its label point, for each span of years the atlas
+    holds still, in the map's own coordinates. A line drawn in several spans is
+    written once (`lines`) and named by index. The page draws the span of the
+    year on screen; display only."""
+    to_svg = geometry["to_svg"]
+    precision = geometry.get("precision", HEX_PRECISION)
+    lines, index, spans = [], {}, {}
+    for b in _HEX["borders"]:
+        d = map_export.border_path_data(b["lines"], to_svg, precision)
+        if d not in index:
+            index[d] = len(lines)
+            lines.append(d)
+        span = spans.setdefault((b["from"], b["to"]), {"from": b["from"], "to": b["to"], "lines": [], "labels": []})
+        span["lines"].append(index[d])
+    for label in _HEX["labels"]:
+        span = spans.setdefault((label["from"], label["to"]),
+                                {"from": label["from"], "to": label["to"], "lines": [], "labels": []})
+        x, y = to_svg(*label["point"])
+        span["labels"].append({"name": label["name"], "key": label["key"], "sovereign": label["sovereign"],
+                               "status": label["status"], "x": round(x, precision), "y": round(y, precision)})
+    ordered = [spans[k] for k in sorted(spans, key=lambda k: k[0])]
+    return json.dumps({"lines": lines, "spans": ordered}, ensure_ascii=False,
+                      separators=(",", ":"), sort_keys=True) + "\n"
+
+
 def _map_svg(features, geometry, lookup):
     """The map both story pages draw: every riding unclaimed until the page's
     script paints it, the same projection and north/south viewBox pair as the
@@ -893,9 +921,11 @@ def _map_svg(features, geometry, lookup):
     if _HEX:
         label = (
             f"Map of the {len(lookup)} {_HEX['word']['plural']} of the hex board, hexagons of"
-            " 5,000 people or more, coloured by house, on all the land"
+            " 5,000 people or more"
+            + (" and the cities' smaller hexagons" if _HEX["city_hexes"] else "")
+            + ", coloured by house, on all the land"
         )
-        hexes = ' data-hexes="1"'
+        hexes = ' data-hexes="1"' + (' data-city-hexes="1"' if _HEX["city_hexes"] else "")
         under = _hex_layers(to_svg, precision)
     else:
         label = "Map of the 343 federal ridings, coloured by house"
@@ -1036,7 +1066,7 @@ def _map_detail(features, borders, geometry):
 def _short_banner():
     """The few words the map view keeps on screen to say what this game is."""
     if _PREVIEW and _HEX:
-        return f"Hex trial · draft rules {_PREVIEW} · not a game of record"
+        return f"Hex board · draft rules {_PREVIEW} · not a game of record"
     if _PREVIEW:
         return f"Draft rules {_PREVIEW} · not a game of record"
     if _ARCHIVE:
@@ -3376,6 +3406,8 @@ def _write_replay(conn, site_dir, features, borders, reference_dir, key, write):
     )
     if _HEX:
         write(site_dir / "data" / "routes.json", _hex_routes_json(geometry))
+        if _HEX["borders"] or _HEX["labels"]:
+            write(site_dir / "data" / "borders.json", _hex_borders_json(geometry))
     write(site_dir / "replay-text.html", _replay_page(conn, features, borders))
     write(
         site_dir / "replay-text.js",
@@ -3398,11 +3430,17 @@ def _hex_board(reference_dir):
             [row["fed_id_a"], row["fed_id_b"], int(row["length"]), row["adjacency_type"]]
             for row in csv.DictReader(f)
         ]
+    borders, labels = map_export.projected_jurisdictions(reference_dir)
     return {
+        "key": info.get("key", ""),
+        "tag": info.get("key", "").rsplit("-", 1)[-1],
         "hexes": map_export.projected_hexes(reference_dir),
         "routes": map_export.projected_routes(reference_dir),
         "links": links,
         "word": info.get("unit_word") or {"singular": "riding", "plural": "ridings"},
+        "city_hexes": bool(info.get("city_hexes")),
+        "borders": borders,
+        "labels": labels,
     }
 
 
@@ -3427,7 +3465,7 @@ def write_preview(conn, version, out_dir=DEFAULT_OUT_DIR, seed=None, seasons=Non
         f"the whole game, {calendar['start_year']}–{calendar['start_year'] + seasons - 1},"
         if calendar else f"{seasons} seasons"
     )
-    board = " on the hex board (meridian-hex-v1.0.4)" if _HEX else ""
+    board = f" on the hex board ({_HEX['key']})" if _HEX else ""
     _GENERATED_FROM = (
         f"a draft-rules preview: {length} under rules {version} (draft){board}, seed {seed},"
         " played afresh on every export — not a game of record"

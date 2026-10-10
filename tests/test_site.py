@@ -662,9 +662,10 @@ def test_the_preview_has_a_replay_and_a_storylines_page_and_says_it_is_a_draft(p
 
 
 def test_the_hex_preview_sits_beside_the_riding_preview_and_draws_the_hex_board(preview_site):
-    """The hex trial (docs/hex-trial/README.md): preview-hex/ is the same draft on
-    the hex board, the two previews link to each other, and only the hex one
-    draws hexagons, routes and the set's word for a unit."""
+    """The hex board (docs/hex-trial/v2/README.md): preview-hex/ is the same draft
+    on meridian-hex-v1.0.5, the two previews link to each other, and only the
+    hex one draws hexagons and city hexes, routes, the borders by year, units
+    closed until their opening years and the set's word for a unit."""
     hexes = preview_site.parent / site.HEX_PREVIEW_DIRNAME
     riding_html = (preview_site / "replay.html").read_text(encoding="utf-8")
     hex_html = (hexes / "replay.html").read_text(encoding="utf-8")
@@ -672,17 +673,25 @@ def test_the_hex_preview_sits_beside_the_riding_preview_and_draws_the_hex_board(
     assert 'href="../preview/replay.html">Preview on ridings</a>' in hex_html
     assert "data-hexes" not in riding_html and 'id="mv-land"' not in riding_html
     assert 'aria-label="Map of the 343 federal ridings, coloured by house"' in riding_html
-    assert 'data-hexes="1"' in hex_html and 'id="mv-land"' in hex_html and 'id="mv-routes"' in hex_html
-    assert hex_html.count("data-near=") == 372  # units with wilderness within one or two hexagons
-    assert "Hex-board trial — rules" in hex_html and "not a game of record" in hex_html
+    assert 'data-hexes="1" data-city-hexes="1"' in hex_html
+    assert 'id="mv-land"' in hex_html and 'id="mv-routes"' in hex_html
+    assert hex_html.count("data-near=") == 384  # units with wilderness within one or two hexagons
+    assert "Hex-board preview — rules" in hex_html and "Meridian v1.0.5" in hex_html
+    assert "not a game of record" in hex_html
     index = json.loads((hexes / "data" / "beats" / "index.json").read_text(encoding="utf-8"))
     assert index["unit_word"] == {"singular": "holding", "plural": "holdings"}
     assert "unit_word" not in json.loads((preview_site / "data" / "beats" / "index.json").read_text(encoding="utf-8"))
-    assert len(index["ridings"]) == 439
+    assert len(index["ridings"]) == 494
     routes = json.loads((hexes / "data" / "routes.json").read_text(encoding="utf-8"))
-    assert len(routes["lines"]) == 412 and len(routes["links"]) == 1111
+    assert len(routes["lines"]) == 460 and len(routes["links"]) == 1273
     assert not (preview_site / "data" / "routes.json").exists()
-    assert len(hex_html.encode("utf-8")) < 700_000, "the hex page stays light enough for a phone"
+    borders = json.loads((hexes / "data" / "borders.json").read_text(encoding="utf-8"))
+    assert [s["from"] for s in borders["spans"]][:3] == [1867, 1870, 1871]
+    assert all(s["labels"] and s["lines"] for s in borders["spans"])
+    assert not (preview_site / "data" / "borders.json").exists()
+    atlas = json.loads((hexes / "data" / "beats" / "atlas.json").read_text(encoding="utf-8"))
+    assert len(atlas["opens"]) == 494 and max(atlas["opens"].values()) == 1956
+    assert len(hex_html.encode("utf-8")) < 720_000, "the hex page stays light enough for a phone"
 
 
 def test_the_preview_writes_nothing_to_any_scenario_or_season_record(preview_site, tmp_path):

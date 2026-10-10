@@ -782,16 +782,44 @@ def jurisdiction_spans(conn):
     }
 
 
+def opening_years(conn):
+    """Rules 1.0 `dated_openings`: {fed_id: the year it opens} for every unit,
+    for a calendar game played under the flag, else None — the later of its
+    opens_year and its first year under Canada, as both engines read it
+    (hoc/sim.py World.opening_year). The map view draws a unit closed before
+    that year and open for good from it. Display only."""
+    if calendar_of(conn) is None or not _record_has(conn, "dated_openings"):
+        return None
+    from hoc import places
+
+    reference = places.reference_dir_for(conn)
+    stats = places.riding_stats(reference)
+    spans = places.riding_jurisdictions(reference)
+    out = {}
+    for row in conn.execute("SELECT fed_id FROM ridings ORDER BY fed_id"):
+        fed = row["fed_id"]
+        first = (stats.get(fed) or {}).get("opens_year", 1867)
+        if spans.get(fed):
+            canada = [s["from_year"] for s in spans[fed] if s["sovereign"] == "Canada"]
+            first = max(first, canada[0]) if canada else None
+        out[fed] = first
+    return out
+
+
 def write_atlas(conn, data_dir, people=False):
     """data/beats/atlas.json: what only the map view reads — each house's seat
-    over the game, for a calendar game the jurisdictions by year, and for a
-    game told round by round (`people`) its holders and heirs."""
+    over the game, for a calendar game the jurisdictions by year (and under
+    `dated_openings` each unit's opening year), and for a game told round by
+    round (`people`) its holders and heirs."""
     atlas = {"seats": seat_history(conn)}
     if people:
         atlas["people"] = people_of(conn)
     spans = jurisdiction_spans(conn)
     if spans is not None:
         atlas["jurisdictions"] = spans
+    opens = opening_years(conn)
+    if opens is not None:
+        atlas["opens"] = opens
     path = Path(data_dir) / "beats" / "atlas.json"
     path.write_text(_dumps(atlas) + "\n", encoding="utf-8")
     return path
