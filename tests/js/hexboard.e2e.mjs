@@ -13,7 +13,8 @@
 //     settled year (Winnipeg 1870; Calgary and north Calgary 1875);
 //   * the provincial and territorial borders are those of the year shown, and
 //     change on the years the atlas changes (1867, 1871, 1905, 1949), with the
-//     jurisdictions named at wide zoom and not when close;
+//     jurisdictions named at wide zoom and not when close, and a name that
+//     would overlap another hidden rather than crowded in;
 //   * no page logs an error.
 //
 // With a screenshot directory it saves those views and one year (1912) turn
@@ -126,7 +127,15 @@ try {
     check(`borders are drawn for ${year}`, b && b.d > 1000 && b.from <= year && (b.to === null || year <= b.to),
       JSON.stringify(b && { from: b.from, to: b.to, d: b.d }));
     check(`${year}'s jurisdictions are its own`, b && expected[year].every((n) => b.names.includes(n)), b && b.names.join(', '));
-    check(`jurisdictions are named at wide zoom in ${year}`, b && b.drawn >= 5, b && String(b.drawn));
+    check(`jurisdictions are named at wide zoom in ${year}`, b && b.drawn >= 3, b && String(b.drawn));
+    // Names that would overlap at this zoom are hidden, not crowded: no two
+    // drawn names meet, and each lies wholly on the screen.
+    const boxes = (b && b.boxes) || [];
+    const meet = boxes.some((p, i) => boxes.some((q, j) => j > i
+      && p[0] < q[2] && q[0] < p[2] && p[1] < q[3] && q[1] < p[3]));
+    check(`no two jurisdiction names overlap in ${year}`, !meet, JSON.stringify(boxes));
+    check(`every jurisdiction name is on the screen in ${year}`,
+      boxes.every(([x0, , x1]) => x0 >= 0 && x1 <= 390), JSON.stringify(boxes));
     spans.push(b && b.from);
     await shot(page, `country-${year}`);
   }

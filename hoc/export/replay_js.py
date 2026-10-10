@@ -552,9 +552,14 @@ function drawRoutes(layer) {
 // camera wider than JURIS_NAMES_ABOVE map units), the larger first where two
 // would overlap. Land not under Canada is named in italic.
 const JURIS_NAMES_ABOVE = 260;
+// A name keeps this many pixels clear of every other name and mark around it;
+// one that cannot is hidden rather than crowded in.
+const JURIS_GAP = 6;
 
-// A name is moved inside the screen and dropped where it would cover a badge,
-// a mark's label, the turn's houses' names or a jurisdiction already named.
+// A name is moved inside the screen and hidden where it would come within
+// JURIS_GAP of a badge, a mark's label, the turn's houses' names or a
+// jurisdiction already named. Its width is the drawn text's own, measured
+// once it is in the page (an estimate where the page draws nothing).
 // `blocked` holds boxes ({x0, y0, x1, y1} or [x0, y0, x1, y1]). Returns the
 // boxes it placed.
 function drawJurisdictionNames(group, blocked, screen) {
@@ -562,24 +567,30 @@ function drawJurisdictionNames(group, blocked, screen) {
   if (!span || !app.view || app.view.w < JURIS_NAMES_ABOVE) return [];
   const mine = [];
   const boxes = blocked.map((b) => (Array.isArray(b) ? b : [b.x0, b.y0, b.x1, b.y1]));
-  const hits = (box) => boxes.some((b) => box[0] < b[2] && b[0] < box[2] && box[1] < b[3] && b[1] < box[3]);
+  const g = JURIS_GAP;
+  const hits = (box) => boxes.some((b) => box[0] - g < b[2] && b[0] < box[2] + g && box[1] - g < b[3] && b[1] < box[3] + g);
   const top = bars().top;
   for (const label of span.labels) {
     const p = toScreen(app.view, app.screen, [label.x, label.y]);
     if (!onScreen(p, -12) || p[1] < top + 10 || p[1] > screen.h - 10) continue;
-    // Upper case at 11 px with its letter spacing, about 7.6 px a letter.
-    const w = label.name.length * 7.6 + 6;
-    const x = Math.min(screen.w - w / 2 - 4, Math.max(w / 2 + 4, p[0]));
-    const box = [x - w / 2, p[1] - 7, x + w / 2, p[1] + 7];
-    if (hits(box)) continue;
-    boxes.push(box);
-    mine.push(box);
     const text = svgEl('text', {
-      x: x.toFixed(1), y: (p[1] + 4).toFixed(1), 'text-anchor': 'middle',
+      x: p[0].toFixed(1), y: (p[1] + 4).toFixed(1), 'text-anchor': 'middle',
       class: label.sovereign === 'Canada' ? 'mv-juris-name' : 'mv-juris-name mv-juris-other',
     });
     text.textContent = label.name;
     group.appendChild(text);
+    // Upper case at 11 px with its letter spacing, about 7.6 px a letter,
+    // where the page cannot measure it.
+    let w = 0;
+    try { w = text.getComputedTextLength(); } catch (error) { w = 0; }
+    w = (w > 0 ? w : label.name.length * 7.6) + 4;
+    if (w > screen.w - 8) { text.remove(); continue; }
+    const x = Math.min(screen.w - w / 2 - 4, Math.max(w / 2 + 4, p[0]));
+    const box = [x - w / 2, p[1] - 7, x + w / 2, p[1] + 7];
+    if (hits(box)) { text.remove(); continue; }
+    text.setAttribute('x', x.toFixed(1));
+    boxes.push(box);
+    mine.push(box);
   }
   return mine;
 }
@@ -929,7 +940,13 @@ function drawMarks() {
   const jurisBoxes = drawJurisdictionNames(juris, [...taken, ...first], screen);
   const rest = placeLabels(
     candidates.filter((c) => c.priority >= 2 && !first.some((f) => f.house === c.house)),
-    { blocked: [...taken, ...first, ...jurisBoxes.map(([x0, y0, x1, y1]) => ({ x0, y0, x1, y1 }))], screen, size: 12 },
+    {
+      blocked: [...taken, ...first, ...jurisBoxes.map(([x0, y0, x1, y1]) => ({
+        x0: x0 - JURIS_GAP, y0: y0 - JURIS_GAP, x1: x1 + JURIS_GAP, y1: y1 + JURIS_GAP,
+      }))],
+      screen,
+      size: 12,
+    },
   );
   app.labels = [...first, ...rest];
   for (const l of app.labels) {
@@ -1976,6 +1993,11 @@ async function boot() {
     borders: () => (app.bordersShown
       ? { from: app.bordersShown.from, to: app.bordersShown.to, names: app.bordersShown.labels.map((l) => l.name),
         drawn: document.querySelectorAll('.mv-juris-name').length,
+        // Each drawn name's box on the screen, as the page measured it.
+        boxes: [...document.querySelectorAll('.mv-juris-name')].map((n) => {
+          const r = n.getBoundingClientRect();
+          return [r.left, r.top, r.right, r.bottom];
+        }),
         d: (document.getElementById('mv-juris') || { getAttribute: () => '' }).getAttribute('d').length }
       : null),
     closed: (name) => {
