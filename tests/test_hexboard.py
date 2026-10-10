@@ -162,9 +162,11 @@ def test_names_are_unique_and_each_has_a_source(units, report):
         if u["resolution"] == "4":
             assert u["name_source"] in ("own place", "borrowed")
         else:
-            assert u["name_source"] in ("its municipality", "its municipality, with a compass word")
-            # Its own mesh municipality, never a neighbouring one.
-            assert u["municipality"] and u["name_csd"] == u["mesh_csd"]
+            how = u["name_source"].removesuffix(", with a compass word")
+            assert how in ("the mesh's municipality", "its own largest place", "a neighbouring municipality")
+            assert u["municipality"] and u["name_csd"]
+            if how == "the mesh's municipality":
+                assert u["name_csd"] == u["mesh_csd"]
         if u["name_source"] == "borrowed":
             assert u["named_from_h3"]
 
@@ -177,13 +179,17 @@ def by_name():
 COMPASS = {"North", "North-East", "East", "South-East", "South", "South-West", "West", "North-West"}
 
 
-def test_a_city_hex_is_named_for_its_own_municipality_with_a_compass_word():
+CITIES_BACK = ("Kitchener", "Waterloo", "Guelph", "Burnaby", "Markham", "Oshawa", "St. Thomas", "Airdrie",
+               "Saint-Hyacinthe", "Beloeil", "Chambly", "Sainte-Julie", "Blainville", "Terrebonne")
+
+
+def test_a_city_hex_is_named_for_its_municipality_with_a_compass_word():
     units = by_name()
     names = {r["fed_id"]: r["name_en"] for r in load("ridings.csv")}
     # Ottawa's hex is "Ottawa", the one across the river "Gatineau".
     assert units["Ottawa"]["resolution"] == "5" and units["Gatineau"]["role"] == "core"
     for name, u in units.items():
-        if u["name_source"] != "its municipality, with a compass word":
+        if not u["name_source"].endswith(", with a compass word"):
             continue
         # The municipality, then the compass word of its bearing from the
         # plain-named unit (which holds the municipality's place).
@@ -194,6 +200,14 @@ def test_a_city_hex_is_named_for_its_own_municipality_with_a_compass_word():
         assert names[u["plain_fed_id"]] == u["municipality"]
     # No riding token is left in any name.
     assert not any(u["name_source"].endswith("riding token") for u in units.values())
+    # The cities the director named are back, each a city or core hex.
+    for city in CITIES_BACK:
+        assert units[city]["resolution"] == "5", city
+    # No rural hexagon borrows a city's name.
+    city_names = {u["municipality"] for u in units.values() if u["resolution"] == "5"}
+    assert not [n for n, u in units.items() if u["resolution"] == "4" and u["name_source"] == "borrowed"
+                and n in city_names]
+    assert not [n for n, u in units.items() if u["resolution"] == "5" and u["name_source"] == "borrowed"]
     # North Calgary is a Calgary hex.
     assert units["Calgary North"]["role"] == "core"
     assert units["Edmonton"]["resolution"] == "4" and units["Edmonton East"]["role"] == "core"
@@ -264,8 +278,8 @@ def test_the_opening_year_follows_the_directors_rules(units):
         expected = int(u["open_override"]) if u["open_override"] else max(parts)
         assert stats[fed] == int(u["opens_year"]) == expected, fed
         if u["open_city"]:
-            # Only a hex of a city's municipality other than its plain one.
-            assert u["resolution"] == "5" and u["name_source"].endswith("compass word")
+            # Only a city hex that is not a core.
+            assert u["resolution"] == "5" and u["role"] == "city"
 
 
 def test_a_resolution_column_for_block_grants():
@@ -294,12 +308,14 @@ def test_the_directors_overrides_and_city_years():
                         ("Malartic", 1939), ("Fort St. John", 1947), ("Chibougamau", 1952),
                         ("Kitimat", 1953), ("Elliot Lake", 1955), ("Wabush", 1955), ("Thompson", 1956)):
         assert int(units[place]["opens_year"]) == year, place
-    # The plain-named hex opens at its municipality's settled year; the other
-    # hexes of that municipality at the later of it and the city year.
+    # A core opens at its municipality's settled year; any other city hex at
+    # the later of it and the city year.
     assert int(units["Calgary"]["opens_year"]) == 1875
     assert int(units["Calgary North-West"]["opens_year"]) == 1894
-    assert int(units["Calgary North"]["opens_year"]) == 1894  # Airdrie's core: north Calgary
-    assert int(units["Edmonton East"]["opens_year"]) == 1904
+    assert int(units["Calgary North"]["opens_year"]) == 1875  # Airdrie's parent's core: north Calgary
+    assert int(units["Edmonton East"]["opens_year"]) == 1870  # Edmonton's core
+    assert int(units["Edmonton North-East"]["opens_year"]) == 1904
+    assert min(int(u["opens_year"]) for n, u in units.items() if n.startswith("Calgary")) == 1875
     assert int(units["Winnipeg"]["opens_year"]) == 1870
     # settledYear counts only for land that came under Canada after 1867, to 1930.
     assert int(units["Camrose"]["opens_year"]) == 1870  # settled 1944
@@ -317,8 +333,8 @@ def test_units_by_year(report):
     assert by_year["1867"]["in_a_province"] == 265
     assert by_year["1966"]["open"] == 494
     assert [by_year[y]["open"] for y in ("1867", "1885", "1914", "1945", "1966")] == [
-        261, 403, 458, 472, 494]
-    assert report["open_by_year"] == {"1867": 261, "1885": 403, "1914": 458, "1945": 472, "1966": 494}
+        261, 400, 458, 472, 494]
+    assert report["open_by_year"] == {"1867": 261, "1885": 400, "1914": 458, "1945": 472, "1966": 494}
 
 
 # ------------------------------------------------------------- borders by year --

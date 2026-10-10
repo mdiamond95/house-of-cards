@@ -287,20 +287,31 @@ units), except as follows.
     resolution digits read as one base-7 number (the index must be a resolution-5 cell with
     digits 6–15 all 7). So `(T − 1,000,000) // 7` is the parent's `S`.
 17. **Names.** A resolution-4 unit is named by rule 10. A city or core hex is named for
-    its own *municipality*: the census subdivision Meridian v1.0.5's mesh
-    (`mesh.v1.json.gz`, pinned by hash) gives its cell, never a neighbouring one.
+    its *municipality*, the first of:
+    1. the census subdivision Meridian v1.0.5's mesh (`mesh.v1.json.gz`, pinned by hash)
+       gives its cell, when that municipality has at least as many people as the cell and
+       no town-type place in the cell has more;
+    2. the cell's own most populous place of a town or municipal type, when it holds at
+       least a tenth of the cell's people;
+    3. of the municipalities the mesh gives the cell's neighbouring cells in its province
+       with at least as many people as the cell, the one the most neighbours carry (ties
+       to the more populous, then the lower code).
+
+    A cell none of these names borrows by rule 10's pass 2.
     - Where several units carry one municipality, the unit holding the municipality's
-      own place keeps the plain name. If a city hex of another municipality holds it,
-      or no unit does, the most populous of them keeps it.
-    - Every other unit adds the compass word of its bearing from that unit: North,
-      North-East, East, South-East, South, South-West, West or North-West. The
+      own place keeps the plain name. A resolution-4 unit holding it is named for it by
+      rule 10's pass 1. When no unit takes the plain name that way, the most populous
+      city hex of the municipality does.
+    - Every other unit adds the compass word of its bearing from the plain-named unit:
+      North, North-East, East, South-East, South, South-West, West or North-West. The
       bearing is pyproj's WGS84 forward azimuth between the H3 centres, in eighths of
       a turn, a half-eighth rounding clockwise.
     - Where two share a word, the nearer in hexagon steps over the board's links
-      (ties to the lower id) keeps it; the next is "Outer", and past that a numeral.
+      (ties to the lower id) keeps it; the next is "Outer", and past that a numeral. A
+      name another unit holds is passed over for the next.
     - The order is: plain city names, largest first; rule 10's pass 1 for the
-      resolution-4 units (a unit holding a city municipality's place is named for
-      it); the compass names; rule 10's pass 2.
+      resolution-4 units; the compass names; rule 10's pass 2. A resolution-4 unit never
+      borrows a city hex's municipality's name; the build fails if one would.
 
     The azimuth is measured once, at build time, in floating point. As with rule 13's
     nearest unit, what it decides is committed (`ridings.csv`, `units.csv` `compass`),
@@ -315,8 +326,9 @@ units), except as follows.
       names it as its `settledPlace`.
     - **settledYear counts** only when the atlas year is after 1867 and settledYear is
       1930 or earlier.
-    - **The city year** applies to every hex of a `CITY_YEARS` municipality but its
-      plain-named one.
+    - **The city year** is that of the `CITY_YEARS` municipality the hex is named for,
+      and applies only to a city hex that is not a core. A core opens at its
+      municipality's settled year.
 
     `units.csv` records each part. `riding_stats.csv` also carries each unit's
     `resolution` (4, or 5 for a city hex), which rules 1.0's `block_grants` reads.
