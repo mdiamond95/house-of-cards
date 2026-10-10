@@ -67,6 +67,10 @@ export const FEATURE_DEFAULTS = {
   // The hex board (docs/hex-trial/v2/README.md): a unit is closed until its
   // opening year and open for good from it (hoc/rules_data.py).
   dated_openings: false,
+  // The hex board, step 3 (hoc/rules_data.py): water rows join houses'
+  // ground; a founding on a resolution-4 hexagon grants a block.
+  water_crossings: false,
+  block_grants: false,
 };
 
 // "Expand:+2;Dispute:-2" as an ordered object of integers (hoc/rules_data.py
@@ -255,6 +259,8 @@ export function loadRules(read, version = null) {
     schemeRules: JSON.parse(optional(read, rulesPath(rulesVersion, 'schemes.json')) || '{}'),
     // Phase D1: game.json (the calendar, chapters and crisis terms).
     game: JSON.parse(optional(read, rulesPath(rulesVersion, 'game.json')) || '{}'),
+    // The hex board: board.json (water_crossings, block_grants).
+    board: JSON.parse(optional(read, rulesPath(rulesVersion, 'board.json')) || '{}'),
   };
 }
 

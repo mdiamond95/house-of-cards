@@ -8,7 +8,9 @@
 //
 //   * the camera can come close enough to tell Toronto's city hexes apart;
 //   * a unit is drawn closed until its opening year and open from it:
-//     Winnipeg's extra hexes in 1872 and 1874, Calgary's in 1893 and 1895;
+//     Calgary's other hexes, north Calgary among them, in 1893 and 1895
+//     (Winnipeg's, Rosser and Macdonald, open with Manitoba, so 1872 and 1874
+//     show them open);
 //   * the provincial and territorial borders are those of the year shown, and
 //     change on the years the atlas changes (1867, 1871, 1905, 1949), with the
 //     jurisdictions named at wide zoom and not when close;
@@ -96,8 +98,9 @@ try {
 
   // A unit closed until its year, open from it.
   for (const [year, unit, closed, frame] of [
-    [1872, 'Winnipeg Kildonan', true, 'Winnipeg'], [1874, 'Winnipeg Kildonan', false, 'Winnipeg'],
-    [1893, 'Calgary Signal Hill', true, 'Calgary'], [1895, 'Calgary Signal Hill', false, 'Calgary'],
+    [1872, 'Rosser', false, 'Winnipeg'], [1874, 'Rosser', false, 'Winnipeg'],
+    [1893, 'Calgary North-West', true, 'Calgary'], [1895, 'Calgary North-West', false, 'Calgary'],
+    [1893, 'Calgary North', true, 'Calgary'], [1895, 'Calgary North', false, 'Calgary'],
   ]) {
     await open(page, year);
     check(`${unit} is ${closed ? 'closed' : 'open'} in ${year}`,

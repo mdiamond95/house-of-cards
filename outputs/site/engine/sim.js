@@ -343,6 +343,9 @@ export class World {
     if (this.feature('world_calendar')) this.eras = rules.game.chapters;
     this.actions = new Map(rules.actions.map((a) => [a.action, a]));
     this.objectives = new Map(rules.objectives.map((o) => [o.objective, o]));
+    // Rules 1.0 `water_crossings` (hoc/sim.py _linked): water rows join two
+    // houses' ground for expansion, claims and neighbours.
+    this.state.linkWater = this.feature('water_crossings');
 
     this.communitiesByRegion = new Map();
     for (const community of rules.communities) {
@@ -466,6 +469,21 @@ export class World {
     const stats = this.state.map.ridingStats.get(fedId) || {};
     const tier = stats.wealth_tier === undefined ? NEUTRAL_WEALTH_TIER : stats.wealth_tier;
     return tier - NEUTRAL_WEALTH_TIER;
+  }
+
+  // hoc/sim.py expand_cost: 15 + (wealth_tier - 3), and under rules 1.0
+  // `water_crossings` board.json's water cost when the house reaches the
+  // target across water: a water row joins it to one of the house's holdings
+  // and no land row does. Read before the riding is taken.
+  expandCost(house, fedId) {
+    let cost = 15 + this.wealthOffset(fedId);
+    if (this.feature('water_crossings')) {
+      const held = (n) => this.state.holderOfRiding(n) === house;
+      const byLand = this.state.map.land(fedId).some(held);
+      const byWater = (this.state.map.waterNeighbours.get(fedId) ?? []).some(held);
+      if (byWater && !byLand) cost += this.rules.board.water_crossings.expand_cost;
+    }
+    return cost;
   }
 
   jurisdictionName(fedId, year) {
@@ -618,6 +636,19 @@ export class World {
   }
 
   // hoc/rules.py _next_seat_order.
+  // hoc/sim.py block_grant: rules 1.0 `block_grants`, the hexagons a Crown
+  // founding on a resolution-4 seat grants beside it.
+  blockGrant(fedId) {
+    if (!this.feature('block_grants')) return [];
+    const stats = this.state.map.ridingStats;
+    if ((stats.get(fedId) || {}).resolution !== 4) return [];
+    const year = this.foundingYear();
+    const candidates = this.state.map.land(fedId).filter((n) => (stats.get(n) || {}).resolution === 4
+      && this.state.holderOfRiding(n) === null && this.ridingOpen(n, year));
+    candidates.sort((a, b) => stats.get(b).population - stats.get(a).population || compareStrings(a, b));
+    return candidates.slice(0, this.rules.board.block_grants.extra_hexes);
+  }
+
   nextSeatOrder(house) {
     let highest = 0;
     for (const holding of this.state.holdings) {
@@ -900,6 +931,9 @@ export class World {
         result: { riding: this.ridingName(fedId), jurisdiction: seatJurisdiction },
       });
     }
+    const block = this.blockGrant(fedId);
+    if (block.length > 0) foundingDelta.block = block.map((f) => this.ridingName(f));
+    const granted = block.length > 0 ? ` with ${block.map((f) => this.ridingName(f)).join(', ')}` : '';
     const eventId = this.record(
       'founding',
       `${drawn.peerage} founded`,
@@ -908,11 +942,17 @@ export class World {
       {
         band: this.feature('world_calendar') ? this.bandFor(this.yearNow()) : 'confederation',
         line: `Season ${season} · ${drawn.peerage} is created, seated at ${this.ridingName(fedId)}`
-          + `${this.jurisdictionSuffix(fedId, this.foundingYear())}.`,
+          + `${this.jurisdictionSuffix(fedId, this.foundingYear())}${granted}.`,
         delta: foundingDelta,
       },
     );
     this.state.addHolding({ house, fedId, seatOrder: 1, hex: primary, acquiredEventId: eventId });
+    for (const extra of block) {
+      this.state.addHolding({
+        house, fedId: extra, seatOrder: this.nextSeatOrder(house),
+        hex: this.expansionHex(house), acquiredEventId: eventId,
+      });
+    }
 
     this.drawFoundingObjectives(house, season, draws);
     return house;
@@ -1777,7 +1817,7 @@ export class World {
     const found = new Map();
     for (const mine of this.state.holdings) {
       if (mine.house !== house || mine.releasedEventId !== null) continue;
-      for (const neighbour of this.state.map.land(mine.fedId)) {
+      for (const neighbour of this.state.map.linked(mine.fedId, this.state.linkWater)) {
         for (const theirs of this.state.holdings) {
           if (theirs.releasedEventId !== null) continue;
           if (theirs.house !== other || theirs.fedId !== neighbour) continue;
@@ -2053,7 +2093,7 @@ export class World {
     const found = new Map();
     for (const mine of this.state.holdings) {
       if (mine.house !== house || mine.releasedEventId !== null) continue;
-      for (const neighbour of this.state.map.land(mine.fedId)) {
+      for (const neighbour of this.state.map.linked(mine.fedId, this.state.linkWater)) {
         const other = this.state.holderOfRiding(neighbour);
         if (other === null || other === house) continue;
         if (this.state.house(other)?.status !== 'active') continue;
@@ -2259,7 +2299,7 @@ export class World {
     }
     if (kind === 'frontier') {
       return this.openExpansionTargets(house)
-        .filter((fedId) => this.affords(house, spec, null, 15 + this.wealthOffset(fedId)))
+        .filter((fedId) => this.affords(house, spec, null, this.expandCost(house, fedId)))
         .map((fedId) => [null, fedId]);
     }
     if (kind === 'Purchase riding') {
@@ -2636,11 +2676,13 @@ export class World {
       line: `Season ${season} · ${row.peerage} takes ${name}${this.jurisdictionSuffix(fedId, year)}.`,
       delta,
     });
+    // Read before the riding is taken (rules 1.0 `water_crossings`).
+    const cost = this.expandCost(house, fedId);
     this.state.addHolding({
       house, fedId, seatOrder: this.nextSeatOrder(house),
       hex: this.expansionHex(house), acquiredEventId: eventId,
     });
-    this.setStats(house, { capital: -(15 + this.wealthOffset(fedId)) });
+    this.setStats(house, { capital: -cost });
     return name;
   }
 
@@ -2659,7 +2701,7 @@ export class World {
         .filter((n) => this.state.holderOfRiding(n) === null && this.ridingOpen(n, year));
       if (beside.length > 0) {
         const second = rng.choice(beside, `frontier.second.${house}`);
-        if (this.houseRow(house).capital >= 15 + this.wealthOffset(second)) {
+        if (this.houseRow(house).capital >= this.expandCost(house, second)) {
           outcome.second = this.settle(house, second, season, band, roll, s.id);
         }
       }
@@ -3234,12 +3276,14 @@ export class World {
       line: `Season ${season} · ${row.peerage} takes ${name}${this.jurisdictionSuffix(fedId, year)}.`,
       delta: expansionDelta,
     });
+    // Read before the riding is taken (rules 1.0 `water_crossings`).
+    const cost = this.expandCost(house, fedId);
     this.state.addHolding({
       house, fedId, seatOrder: this.nextSeatOrder(house),
       hex: this.expansionHex(house), acquiredEventId: eventId,
     });
     // Rules 0.9 `riding_endowments`: 15 + (wealth_tier - 3) of the target.
-    this.setStats(house, { capital: -(15 + this.wealthOffset(fedId)) });
+    this.setStats(house, { capital: -cost });
     const outcome = { action: 'Expand', success: true, riding: name };
     if (jurisdiction !== null) outcome.jurisdiction = jurisdiction;
     return outcome;
