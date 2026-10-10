@@ -287,12 +287,21 @@ function camp(houses, namer, order) {
 // ridings — named when there are few; the map shows the rest.
 const ACCESSION_NAMED = 4;
 
+// "the District of Alberta", "the North-West Territories", but "Manitoba".
+function withArticle(jurisdiction) {
+  return /^District of |Territor(y|ies)$|disputed area$/.test(jurisdiction) ? `the ${jurisdiction}` : jurisdiction;
+}
+
 export function accessionSentence(beat, ridingName) {
   const w = beat.world;
   const feds = beat.ridings || [];
   const n = feds.length;
   const names = n <= ACCESSION_NAMED ? `: ${listWords(ridingNames(feds, ridingName))}` : '';
   const ridings = `${numberWords(n)} ${unitNoun(n)}`;
+  if (w.change === 'opening') {
+    // Rules 1.0 `dated_openings`: land already Canada's, opening on its year.
+    return `In ${withArticle(w.jurisdiction)}, ${ridings} open${n === 1 ? 's' : ''}${names}.`;
+  }
   return w.change === 'extension'
     ? `${w.jurisdiction} becomes a province, and the Crown may found in ${ridings}${names}.`
     : `${w.jurisdiction} comes under Canada as a ${w.status}, opening ${ridings}${names}.`;
@@ -322,7 +331,7 @@ export function crisisSentence(beat, namer, order = (houses) => houses) {
 export function sentence(beat, namer, ridingName = (fed) => fed, { order } = {}) {
   if (beat.merge) return period(mergedSentence(beat, namer, ridingName));
   if (beat.kind === 'crisis' && beat.world) return crisisSentence(beat, namer, order);
-  if (beat.kind === 'accession' && beat.world) return accessionSentence(beat, ridingName);
+  if ((beat.kind === 'accession' || beat.kind === 'opening') && beat.world) return accessionSentence(beat, ridingName);
   if (beat.kind === 'removed' && (beat.houses || []).length) return period(failure(beat, namer));
   if ((beat.kind === 'riding_passes' && (beat.houses || []).length >= 2 && !NAMES_BOTH.includes(beat.outcome))
       || (beat.kind === 'riding_lost' && (beat.houses || []).length)) {

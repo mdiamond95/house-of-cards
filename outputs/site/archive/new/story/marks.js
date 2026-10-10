@@ -221,7 +221,7 @@ export function markOf(entry, ctx, { headline = false } = {}) {
     return mark.ground.length ? mark : null;
   }
 
-  if (b.kind === 'accession') {
+  if (b.kind === 'accession' || b.kind === 'opening') {
     Object.assign(mark, { type: 'accession', glyph: 'open', label: 'opens', at: null });
     mark.ground = ridings;
     mark.groundKind = 'ridings';

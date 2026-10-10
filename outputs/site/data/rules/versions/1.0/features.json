@@ -16,5 +16,6 @@
   "distinct_surnames": true,
   "world_calendar": true,
   "crises": true,
-  "round_record": true
+  "round_record": true,
+  "dated_openings": true
 }

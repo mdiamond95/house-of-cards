@@ -64,6 +64,9 @@ export const FEATURE_DEFAULTS = {
   // Phase V2 (docs/STORY_DESIGN.md §3.6): `part` on every event, `order` on
   // every season record. Records and decides nothing.
   round_record: false,
+  // The hex board (docs/hex-trial/v2/README.md): a unit is closed until its
+  // opening year and open for good from it (hoc/rules_data.py).
+  dated_openings: false,
 };
 
 // "Expand:+2;Dispute:-2" as an ordered object of integers (hoc/rules_data.py
