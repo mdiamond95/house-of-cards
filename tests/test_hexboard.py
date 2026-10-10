@@ -29,6 +29,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
+import build_world_hexboard  # noqa: E402
 import fetch_meridian  # noqa: E402
 import load_seed  # noqa: E402
 from hoc import places, rules_data, scenario, sim  # noqa: E402
@@ -161,14 +162,9 @@ def test_names_are_unique_and_each_has_a_source(units, report):
         if u["resolution"] == "4":
             assert u["name_source"] in ("own place", "borrowed")
         else:
-            assert u["name_source"] in (
-                "the mesh's municipality", "its own largest place",
-                "the mesh's municipality, with the riding token",
-                "a neighbouring municipality, with the riding token",
-                "its own largest place, with the riding token")
-            assert u["municipality"] and u["mesh_csd"]
-        if "riding token" in u["name_source"]:
-            assert u["name_riding"]
+            assert u["name_source"] in ("its municipality", "its municipality, with a compass word")
+            # Its own mesh municipality, never a neighbouring one.
+            assert u["municipality"] and u["name_csd"] == u["mesh_csd"]
         if u["name_source"] == "borrowed":
             assert u["named_from_h3"]
 
@@ -178,21 +174,29 @@ def by_name():
     return {names[u["fed_id"]]: u for u in load("units.csv")}
 
 
-def test_a_city_hex_is_named_for_its_municipality():
+COMPASS = {"North", "North-East", "East", "South-East", "South", "South-West", "West", "North-West"}
+
+
+def test_a_city_hex_is_named_for_its_own_municipality_with_a_compass_word():
     units = by_name()
+    names = {r["fed_id"]: r["name_en"] for r in load("ridings.csv")}
     # Ottawa's hex is "Ottawa", the one across the river "Gatineau".
-    assert units["Ottawa"]["resolution"] == "5" and units["Ottawa"]["role"] == "city"
-    assert units["Gatineau"]["role"] == "core"
-    # The holder of a municipality's own place keeps the plain name; the
-    # others add the riding token.
-    assert {"Toronto", "Toronto Danforth", "Toronto Scarborough", "Ottawa Nepean", "Ottawa Kanata",
-            "Calgary Signal Hill", "Edmonton Strathcona", "Hamilton Flamborough"} <= set(units)
-    for name in ("Kitchener", "Oshawa", "Burnaby", "Waterloo", "Guelph", "Airdrie", "Markham"):
-        assert units[name]["resolution"] == "5", name
-    # No city hex is named for a county when it lies in a city.
-    cities = [n for n, u in units.items() if u["resolution"] == "5"]
-    assert [n for n in cities if "County" in n] == ["Strathcona County", "Strathcona County Sherwood Park"]
-    assert units["Edmonton"]["resolution"] == "4"  # the hexagon holding Edmonton's place
+    assert units["Ottawa"]["resolution"] == "5" and units["Gatineau"]["role"] == "core"
+    for name, u in units.items():
+        if u["name_source"] != "its municipality, with a compass word":
+            continue
+        # The municipality, then the compass word of its bearing from the
+        # plain-named unit (which holds the municipality's place).
+        assert name == f"{u['municipality']} {u['compass']}"
+        word = u["compass"].removeprefix("Outer ").rsplit(" ", 1)[0] if u["compass"][-1].isdigit() \
+            else u["compass"].removeprefix("Outer ")
+        assert word in COMPASS, name
+        assert names[u["plain_fed_id"]] == u["municipality"]
+    # No riding token is left in any name.
+    assert not any(u["name_source"].endswith("riding token") for u in units.values())
+    # North Calgary is a Calgary hex.
+    assert units["Calgary North"]["role"] == "core"
+    assert units["Edmonton"]["resolution"] == "4" and units["Edmonton East"]["role"] == "core"
 
 
 # ------------------------------------------------------------- links --
@@ -202,26 +206,48 @@ def test_links_are_symmetric_and_stored_once():
     adjacency = load("adjacency.csv")
     pairs = [(a["fed_id_a"], a["fed_id_b"]) for a in adjacency]
     assert all(a < b for a, b in pairs) and len(set(pairs)) == len(pairs)
-    links = {(l["fed_id_a"], l["fed_id_b"]): l["adjacency_type"] for l in load("links.csv")}
+    links = {(l["fed_id_a"], l["fed_id_b"]): l["adjacency_type"] for l in load("links.csv")
+             if l["in_adjacency"] == "1"}
     assert links == {(a["fed_id_a"], a["fed_id_b"]): a["adjacency_type"] for a in adjacency}
     ids = {r["fed_id"] for r in load("ridings.csv")}
     assert all(a in ids and b in ids for a, b in pairs)
 
 
 def test_six_land_groups_all_joined_by_water(report):
-    import build_world_hexboard
-
     ids = sorted(r["fed_id"] for r in load("ridings.csv"))
-    land, board = build_world_hexboard.Groups(ids), build_world_hexboard.Groups(ids)
-    for a in load("adjacency.csv"):
-        board.union(a["fed_id_a"], a["fed_id_b"])
-        if a["adjacency_type"] == "land":
-            land.union(a["fed_id_a"], a["fed_id_b"])
+    links = load("links.csv")
+    land = build_world_hexboard.Groups(ids)
+    for l in links:
+        if l["adjacency_type"] == "land":
+            land.union(l["fed_id_a"], l["fed_id_b"])
     assert land.sizes() == [462, 15, 10, 5, 1, 1]
-    assert board.sizes() == [494]
-    assert all(g["water_links_to"] for g in report["land_groups"])
     assert report["links"]["before_cap"]["land_links"] == 1235
     assert report["links"]["before_cap"]["land_groups"] == [462, 15, 10, 5, 1, 1]
+
+
+def test_adjacency_keeps_short_water_links_and_the_ferry():
+    rows = {(a["fed_id_a"], a["fed_id_b"]): a["adjacency_type"] for a in load("adjacency.csv")}
+    for l in load("links.csv"):
+        kept = (l["fed_id_a"], l["fed_id_b"]) in rows
+        assert kept == (l["in_adjacency"] == "1")
+        if l["adjacency_type"] == "land":
+            assert kept
+        else:
+            assert kept == (int(l["length"]) <= 3 or l["ferry"] == "1"), l
+    ferries = [l for l in load("links.csv") if l["ferry"] == "1"]
+    names = {r["fed_id"]: r["name_en"] for r in load("ridings.csv")}
+    assert [sorted((names[f["fed_id_a"]], names[f["fed_id_b"]])) for f in ferries] == [["Cape Breton", "Stephenville"]]
+
+
+def test_every_island_group_but_iqaluit_reaches_the_mainland_through_the_rows():
+    ids = sorted(r["fed_id"] for r in load("ridings.csv"))
+    g = build_world_hexboard.Groups(ids)
+    for a in load("adjacency.csv"):
+        g.union(a["fed_id_a"], a["fed_id_b"])
+    assert g.sizes() == [493, 1]
+    names = {r["fed_id"]: r["name_en"] for r in load("ridings.csv")}
+    alone = [f for f in ids if sum(1 for x in ids if g.find(x) == g.find(f)) == 1]
+    assert [names[f] for f in alone] == ["Iqaluit"]
 
 
 # ------------------------------------------------------------- opening years --
@@ -238,7 +264,17 @@ def test_the_opening_year_follows_the_directors_rules(units):
         expected = int(u["open_override"]) if u["open_override"] else max(parts)
         assert stats[fed] == int(u["opens_year"]) == expected, fed
         if u["open_city"]:
-            assert u["role"] == "city"
+            # Only a hex of a city's municipality other than its plain one.
+            assert u["resolution"] == "5" and u["name_source"].endswith("compass word")
+
+
+def test_a_resolution_column_for_block_grants():
+    res = {r["fed_id"]: r["resolution"] for r in load("riding_stats.csv")}
+    assert all(res[f] == u["resolution"] for f, u in by_name_ids().items())
+
+
+def by_name_ids():
+    return {u["fed_id"]: u for u in load("units.csv")}
 
 
 def test_the_atlas_part_is_the_first_year_under_canada(units):
@@ -258,15 +294,12 @@ def test_the_directors_overrides_and_city_years():
                         ("Malartic", 1939), ("Fort St. John", 1947), ("Chibougamau", 1952),
                         ("Kitimat", 1953), ("Elliot Lake", 1955), ("Wabush", 1955), ("Thompson", 1956)):
         assert int(units[place]["opens_year"]) == year, place
-    # The city year is for the core city's own extra hexes.
-    assert int(units["Calgary Signal Hill"]["opens_year"]) == 1894
-    assert int(units["Winnipeg Kildonan"]["opens_year"]) == 1873
-    assert int(units["Edmonton St. Albert"]["opens_year"]) == 1904
-    # Another city hex is a town in its own right.
-    assert int(units["Burnaby"]["opens_year"]) == 1871
-    assert int(units["Cambridge"]["opens_year"]) == 1867
-    # A core opens by its parent's rules, its settledYear included.
+    # The plain-named hex opens at its municipality's settled year; the other
+    # hexes of that municipality at the later of it and the city year.
     assert int(units["Calgary"]["opens_year"]) == 1875
+    assert int(units["Calgary North-West"]["opens_year"]) == 1894
+    assert int(units["Calgary North"]["opens_year"]) == 1894  # Airdrie's core: north Calgary
+    assert int(units["Edmonton East"]["opens_year"]) == 1904
     assert int(units["Winnipeg"]["opens_year"]) == 1870
     # settledYear counts only for land that came under Canada after 1867, to 1930.
     assert int(units["Camrose"]["opens_year"]) == 1870  # settled 1944
@@ -284,8 +317,8 @@ def test_units_by_year(report):
     assert by_year["1867"]["in_a_province"] == 265
     assert by_year["1966"]["open"] == 494
     assert [by_year[y]["open"] for y in ("1867", "1885", "1914", "1945", "1966")] == [
-        261, 399, 458, 472, 494]
-    assert report["open_by_year"] == {"1867": 261, "1885": 399, "1914": 458, "1945": 472, "1966": 494}
+        261, 403, 458, 472, 494]
+    assert report["open_by_year"] == {"1867": 261, "1885": 403, "1914": 458, "1945": 472, "1966": 494}
 
 
 # ------------------------------------------------------------- borders by year --

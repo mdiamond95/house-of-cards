@@ -286,47 +286,45 @@ units), except as follows.
     `S` for a resolution-4 unit. For a cell it is `1,000,000 +` its base cell and five
     resolution digits read as one base-7 number (the index must be a resolution-5 cell with
     digits 6–15 all 7). So `(T − 1,000,000) // 7` is the parent's `S`.
-17. **Names.** A resolution-4 unit is named by rule 10. A city hex is named for its
-    *municipality*, read from Meridian v1.0.5's mesh (`mesh.v1.json.gz`, pinned by hash),
-    which gives every resolution-5 cell one census subdivision. A municipality's people are
-    its place's population (the whole CSD's). The municipality is the first of these:
-    - the mesh's subdivision, when it has at least as many people as the cell and no place
-      of a town type in the cell has more;
-    - else the cell's own most populous place of either type list, when it has at least a
-      tenth of the cell's people;
-    - else, among the subdivisions the mesh gives the cell's neighbouring cells in its
-      province with at least as many people as the cell: the one the most neighbours carry,
-      ties to the more populous, then the lower code.
+17. **Names.** A resolution-4 unit is named by rule 10. A city or core hex is named for
+    its own *municipality*: the census subdivision Meridian v1.0.5's mesh
+    (`mesh.v1.json.gz`, pinned by hash) gives its cell, never a neighbouring one.
+    - Where several units carry one municipality, the unit holding the municipality's
+      own place keeps the plain name. If a city hex of another municipality holds it,
+      or no unit does, the most populous of them keeps it.
+    - Every other unit adds the compass word of its bearing from that unit: North,
+      North-East, East, South-East, South, South-West, West or North-West. The
+      bearing is pyproj's WGS84 forward azimuth between the H3 centres, in eighths of
+      a turn, a half-eighth rounding clockwise.
+    - Where two share a word, the nearer in hexagon steps over the board's links
+      (ties to the lower id) keeps it; the next is "Outer", and past that a numeral.
+    - The order is: plain city names, largest first; rule 10's pass 1 for the
+      resolution-4 units (a unit holding a city municipality's place is named for
+      it); the compass names; rule 10's pass 2.
 
-    Where several units carry one municipality, the unit holding that municipality's own
-    place keeps the plain name (failing that, the most populous city hex). The others add
-    the first token of the 2023 ridings covering their land, most first, that is neither
-    the municipality's own name nor another unit's: "Ottawa Nepean". A token that begins
-    with the municipality's name stands alone: "Calgary Signal Hill". The order is:
-    - plain city names, largest first;
-    - rule 10's pass 1 for the resolution-4 units;
-    - the token names;
-    - rule 10's pass 2 for anything left.
+    The azimuth is measured once, at build time, in floating point. As with rule 13's
+    nearest unit, what it decides is committed (`ridings.csv`, `units.csv` `compass`),
+    and no engine sees it.
+18. **`opens_year`** is the greatest of the atlas year, a counting settledYear and the
+    city year. A director's override (`OPENING_OVERRIDES`, by census subdivision)
+    replaces it outright.
+    - **The atlas year** is the first `from_year` of the unit's spans whose sovereign
+      is `Canada`.
+    - **settledYear** is the resolution-4 row's own. A city or core hex takes that of
+      the municipality it is named for, which the tables date only where some row
+      names it as its `settledPlace`.
+    - **settledYear counts** only when the atlas year is after 1867 and settledYear is
+      1930 or earlier.
+    - **The city year** applies to every hex of a `CITY_YEARS` municipality but its
+      plain-named one.
 
-    The riding areas are measured once, at build time, in floating point (shapely, pyproj,
-    EPSG:3347) on Meridian v1.0.3's riding layer. As with rule 13's nearest unit, what they
-    decide is committed (`units.csv` `name_riding`) and no engine sees them.
-18. **`opens_year`.**
-    - **The atlas year** is the first `from_year` of the unit's spans whose sovereign is
-      `Canada` (a core reads its parent's spans).
-    - **settledYear** is the resolution-4 row's. A core takes its parent's. Another cell
-      takes its parent's when the parent's `settledPlace` is one of its places.
-    - **settledYear counts** only when the atlas year is after 1867 and settledYear is 1930
-      or earlier.
-    - **The city year** applies to a cell other than the core whose municipality is its
-      parent's core city (`CITY_YEARS`, by census subdivision, each with its source).
-    - **`opens_year`** is the greatest of the atlas year, a counting settledYear and the
-      city year. A director's override (`OPENING_OVERRIDES`, by census subdivision) replaces
-      it outright.
-
-    `units.csv` records each part. Rules 1.0's `dated_openings` reads `opens_year`: a unit
-    is open from the later of `opens_year` and its first year under Canada.
-19. **Joining groups.** After rule 13, while the units fall into more than one group counting
+    `units.csv` records each part. `riding_stats.csv` also carries each unit's
+    `resolution` (4, or 5 for a city hex), which rules 1.0's `block_grants` reads.
+19. **Water rows.** `adjacency.csv` keeps a water link only when its length is 3 or less,
+    or when it is a director's ferry (`FERRIES`, between the units whose hinterlands hold
+    two named places' points). `links.csv` keeps every link, with `in_adjacency` and
+    `ferry`.
+20. **Joining groups.** After rule 13, while the units fall into more than one group counting
     water links, the smallest group (ties by its lowest id) gets one water link: from its
     unit nearest a unit outside it, to that unit, measured as in rule 13. At v1.0.5 no group
     needs one.

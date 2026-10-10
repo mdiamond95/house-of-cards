@@ -48,30 +48,28 @@ as one base-7 number (as in the trial), or for a city hex 1,000,000 plus its
 base cell and five digits in base 7 (so a city hex's T − 1,000,000, divided by
 7, is its parent's). Fixed width; the first two digits are the province.
 
-**Names**, units by population, largest first, ties by id:
-1. a core is named for its parent's principal city, Meridian's principal place
-   (the parent's most populous place);
-2. every other unit takes its largest unused place of a town type, else of a
-   municipal type (the trial's rule);
-3. a city hex left without a name takes the first unused name token of the 2023
-   riding covering most of its land (data/reference/ riding tokens; coverage
-   measured on Meridian v1.0.3's riding layer, the only floating-point measure
-   here besides the trial's nearest-unit one, taken once and committed);
-4. anything still unnamed borrows, ring by ring over land links, as in the trial.
+**Names.** A resolution-4 unit takes its largest unused place of a town type,
+else of a municipal type, else borrows one ring by ring over land links (the
+trial's rule). A city or core hex is named for its own municipality, the census
+subdivision Meridian's mesh gives its cell, never a neighbouring one. Where
+several units carry one municipality, the unit holding the municipality's place
+keeps the plain name and each other adds the compass word of its bearing from
+that unit ("Toronto East"; pyproj's azimuth, taken once and committed); two on
+one bearing are told apart by "Outer", then a numeral.
 
-**Opening year**, the latest of: (a) the first year a span of the unit's land
-is under Canada; (b) its resolution-4 row's settledYear, where it has one (the
-city-hex table carries no dates); (c) for a city hex that is not a core, its
-parent's city year (CITY_YEARS, each with its source); (d) the director's
-overrides (OPENING_OVERRIDES), by the census place they name.
+**Opening year**, the latest of: (a) the first year the unit's land is under
+Canada; (b) its settledYear (a resolution-4 row's own; a city hex's is its
+municipality's), counted only for land under Canada after 1867 and only to
+1930; (c) for a city hex of a CITY_YEARS municipality other than its plain one,
+that city's year. The director's overrides (OPENING_OVERRIDES) beat them all.
 
-**Adjacency.** The trial's rule (build_world_hex.py) on this board: a city hex
-links to another by its own neighbour entry, and to an unsplit hexagon by its
-entries for that hexagon's cells (land if any is land); unsplit hexagons link
-as `hexes.r4.v1.2` links them. A land-connected group of units that no water
-link joins to another gets one water link from whichever of its units is
-nearest a unit outside it (pyproj's geodesic between H3 centres, as the trial's
-lone-unit rule).
+**Adjacency.** The trial's rule on this board: a city hex links to another by
+its own neighbour entry, and to an unsplit hexagon by its entries for that
+hexagon's cells (land if any is land); unsplit hexagons link as `hexes.r4.v1.2`
+links them. adjacency.csv keeps every land link, a water link of WATER_ROW_MAX
+(3) hexagons or fewer, and the director's ferries (FERRIES); links.csv keeps
+every link. A land group no water link joins to another gets one water link
+from whichever of its units is nearest a unit outside it.
 
 No float leaves this script for a table an engine reads (docs/DETERMINISM.md,
 "The hex board").
@@ -96,8 +94,6 @@ import fetch_meridian as fm  # noqa: E402
 KEY = "meridian-hex-v1.0.5"
 OUT_DIR = fm.BOARD_OUT_DIR
 RAW_DIR = fm.BOARD_RAW_DIR
-RIDING_TOKENS = ROOT / "data" / "reference" / "riding_tokens.csv"
-RIDINGS = ROOT / "data" / "reference" / "ridings.csv"
 
 MIN_POPULATION = 5000
 SPLIT_POPULATION = 500000
@@ -164,9 +160,6 @@ OPENING_OVERRIDES = (
 # when it is this year or earlier (the director, 10 October 2026).
 SETTLED_FIRST_YEAR = 1867
 SETTLED_LAST_YEAR = 1930
-# A city hex's own place names it (rule 2 of `municipality`) only when it holds
-# at least this share of the hex's people, as [numerator, denominator].
-OWN_PLACE_SHARE = (1, 10)
 
 # Keewatin was a district apart from the North-West Territories from the
 # Keewatin Act (1876) until it was returned to them in 1905 (Natural Resources
@@ -580,53 +573,6 @@ class Board:
 # -------------------------------------------------------------------- names --
 
 
-def riding_shapes():
-    """{fed_id: shapely geometry in EPSG:3347} from Meridian v1.0.3's riding
-    layer, the polygons the 2023 riding table was built on."""
-    from pyproj import Transformer
-    from shapely.geometry import MultiPolygon, Polygon
-    from shapely.ops import transform  # noqa: F401
-
-    layer = fm.read_layer()
-    arcs = bwm.decode_arcs(layer)
-    project = Transformer.from_crs("EPSG:4326", "EPSG:3347", always_xy=True).transform
-    out = {}
-    for geom in layer["objects"]["ridings"]["geometries"]:
-        polygons = [geom["arcs"]] if geom["type"] == "Polygon" else geom["arcs"]
-        shapes = []
-        for polygon in polygons:
-            rings = [bwm._coords(bwm._ring(arcs, ring)) for ring in polygon]
-            shapes.append(Polygon(rings[0], rings[1:]))
-        shape = shapes[0] if len(shapes) == 1 else MultiPolygon(shapes)
-        out[str(geom["properties"]["fed"])] = transform(project, shape.buffer(0))
-    return out
-
-
-def hex_shape(geometry):
-    from pyproj import Transformer
-    from shapely.geometry import shape
-    from shapely.ops import transform  # noqa: F401
-
-    project = Transformer.from_crs("EPSG:4326", "EPSG:3347", always_xy=True).transform
-    return transform(project, shape(geometry).buffer(0))
-
-
-def ranked_ridings(geometry, ridings):
-    """[(fed_id, share per mille)] of the 2023 ridings holding a hexagon's land,
-    most first, ties to the lower fed_id. Measured once, in floating point, at
-    build time; what it decides is committed in units.csv."""
-    land = hex_shape(geometry)
-    areas = []
-    for fed in sorted(ridings):
-        shape = ridings[fed]
-        if shape.intersects(land):
-            area = shape.intersection(land).area
-            if area > 0:
-                areas.append((fed, area))
-    areas.sort(key=lambda t: (-t[1], t[0]))
-    return [(fed, int(round(1000 * area / land.area))) for fed, area in areas]
-
-
 def place_index(board):
     """{csd: (place, h3 of the board hexagon holding its point)} over the board."""
     out = {}
@@ -640,153 +586,110 @@ def place_index(board):
     return out
 
 
-def municipality(cell, mesh, places):
-    """(csd, how) of the municipality a city hex is named for:
-
-    1. the census subdivision the mesh gives the cell (the one covering most of
-       it), when that municipality has at least as many people as the cell, and
-       no place of a town type in the cell has more;
-    2. else the cell's own most populous place of a town or municipal type,
-       when it holds at least OWN_PLACE_SHARE of the cell's people;
-    3. else, of the municipalities the mesh gives the cell's neighbouring cells
-       in its province, those with at least as many people as the cell: the one
-       the most neighbours carry, ties to the more populous, then the lower code;
-    4. else None (the riding token, then borrowing, name it)."""
-    people = cell["population"]
-    csd = mesh["csd"][cell["id"]]
-    own = [p for p in cell["places"] if p["csdType"] in NAMEABLE]
-    towns = [p for p in own if p["csdType"] in TOWN_TYPES]
-    mesh_people = places[csd][0]["population"] if csd in places else -1
-    if mesh_people >= people and not any(p["population"] > mesh_people for p in towns):
-        return csd, "the mesh's municipality"
-    if own:
-        best = min(own, key=lambda p: (-p["population"], p["csd"]))
-        num, den = OWN_PLACE_SHARE
-        if best["population"] * den >= people * num:
-            return best["csd"], "its own largest place"
-    counts = {}
-    for n in mesh["neighbours"][cell["id"]]:
-        c = mesh["csd"][n]
-        if c in places and mesh["province"][n] == cell["province"] and places[c][0]["population"] >= people:
-            counts[c] = counts.get(c, 0) + 1
-    if counts:
-        best = min(counts, key=lambda c: (-counts[c], -places[c][0]["population"], c))
-        return best, "a neighbouring municipality"
-    return None, None
-
-
 def mesh_lookup(mesh):
-    """The mesh as {"csd", "province", "neighbours"} keyed by H3 index."""
-    cells = mesh["cells"]
-    return {
-        "csd": {c["id"]: c["csd"] for c in cells},
-        "province": {c["id"]: c["province"] for c in cells},
-        "neighbours": {c["id"]: [cells[i]["id"] for i in c["neighbours"]] for c in cells},
-    }
+    """The mesh's census subdivision for each resolution-5 cell, by H3 index."""
+    return {"csd": {c["id"]: c["csd"] for c in mesh["cells"]}}
 
 
-def name_units(board, units, geometries, mesh):
-    """({fed_id: {name, source, csd, municipality, riding, from_h3}}, coverage).
+# The eight compass words, clockwise from north, for a bearing in eighths.
+COMPASS = ("North", "North-East", "East", "South-East", "South", "South-West", "West", "North-West")
 
-    Resolution-4 units are named as in the trial (their own largest unused
-    place, else borrowed). A city hex is named for its municipality
-    (`municipality`). Where several units carry one municipality's name, the
-    unit holding that municipality's own place keeps the plain name (failing
-    that, the most populous city hex), and the others add the first usable
-    token of the 2023 riding covering most of their land: "Ottawa Nepean"; a
-    token that already begins with the name stands alone ("Calgary Signal Hill"),
-    and a token that is another unit's name is passed over for the next one, or
-    the next riding's."""
+
+def bearing_word(origin, target):
+    """The compass word for the bearing from one hexagon's H3 centre to
+    another's: pyproj's WGS84 forward azimuth, taken once at build time, in
+    eighths of a turn (a half-eighth rounds clockwise). What it decides is
+    committed in ridings.csv; no engine sees it."""
+    from pyproj import Geod
+
+    lon0, lat0 = (float(Decimal(v)) for v in origin["centroid"])
+    lon1, lat1 = (float(Decimal(v)) for v in target["centroid"])
+    azimuth = Geod(ellps="WGS84").inv(lon0, lat0, lon1, lat1)[0] % 360
+    return COMPASS[int((azimuth + 22.5) // 45) % 8]
+
+
+def name_units(board, units, mesh):
+    """({fed_id: {name, source, csd, municipality, plain, compass}}, groups).
+
+    A resolution-4 unit is named as in the trial: its own largest unused place
+    of a town type, else of a municipal type, else one borrowed from the
+    nearest hexagons. A city or core hex is named for its own municipality: the
+    census subdivision the mesh gives its cell, never a neighbouring one. Where
+    several units carry one municipality, the unit holding the municipality's
+    own place keeps the plain name (failing that, the most populous of them),
+    and every other adds the compass word of its bearing from that unit:
+    "Toronto East". Where two would still share a word, the one farther in
+    hexagon steps over land (ties to the lower id) is "Outer", and past that a
+    numeral: "Toronto Outer East", "Toronto East 3"."""
     places = place_index(board)
-    holder = {csd: h for csd, (_, h) in places.items()}
     order = sorted(units, key=lambda u: (-u[1]["population"], u[0]))
+    row_of = {fed: (row, res, role) for fed, row, res, role in units}
+    unit_of_hex = {row["id"]: fed for fed, row, *_ in units}
     taken, names = set(), {}
 
     def take(fed, name, **how):
         if name_key(name) in taken:
             raise BoardBuildError(f"{name}: taken twice")
         taken.add(name_key(name))
-        names[fed] = {"name": name, "csd": "", "municipality": "", "riding": "", "from_h3": "", **how}
+        names[fed] = {"name": name, "csd": "", "municipality": "", "plain": "", "compass": "", **how}
 
-    city = {}
-    for fed, row, res, role in units:
-        if res == 5:
-            city[fed] = municipality(row, mesh, places)
     groups = {}
-    for fed in sorted(city):
-        if city[fed][0] is not None:
-            groups.setdefault(city[fed][0], []).append(fed)
-    row_of = {fed: row for fed, row, *_ in units}
-    unit_of_hex = {row["id"]: fed for fed, row, *_ in units}
-    plain = {}
-    for csd, feds in groups.items():
-        holding = unit_of_hex.get(holder[csd])
-        if holding in feds:
-            plain[csd] = holding
-        elif holding is not None:
-            plain[csd] = None  # a resolution-4 unit holds it, and is named for it
-        else:
-            plain[csd] = min(feds, key=lambda f: (-row_of[f]["population"], f))
-
-    tokens = {}
-    with open(RIDING_TOKENS, newline="", encoding="utf-8") as f:
-        for t in csv.DictReader(f):
-            tokens.setdefault(t["fed_id"], []).append((int(t["token_order"]), t["token"]))
-    with open(RIDINGS, newline="", encoding="utf-8") as f:
-        riding_names = {r["fed_id"]: r["name_en"] for r in csv.DictReader(f)}
-    shapes = riding_shapes()
-    coverage = {}
     for fed, row, res, role in units:
         if res == 5:
-            ranked = ranked_ridings(geometries[row["id"]], shapes)
-            coverage[fed] = {"riding": ranked[0][0] if ranked else "",
-                             "riding_name": riding_names.get(ranked[0][0], "") if ranked else "",
-                             "share_permille": ranked[0][1] if ranked else 0, "ranked": ranked}
+            csd = mesh["csd"][row["id"]]
+            if csd not in places:
+                raise BoardBuildError(f"{row['id']}: the mesh's municipality {csd} has no place")
+            groups.setdefault(csd, []).append(fed)
+    for csd, feds in groups.items():
+        holding = unit_of_hex.get(places[csd][1])
+        if holding is not None and holding not in feds and row_of[holding][1] == 5:
+            holding = None  # a city hex of another municipality holds the place
+        if holding is None or (holding not in feds and row_of[holding][1] != 4):
+            holding = min(feds, key=lambda f: (-row_of[f][0]["population"], f))
+        groups[csd] = {"plain": holding, "feds": sorted(feds)}
 
-    # 1. city hexes keeping their municipality's plain name
-    for fed in sorted(city, key=lambda f: (-row_of[f]["population"], f)):
-        csd, how = city[fed]
-        if csd is not None and plain[csd] == fed:
-            take(fed, places[csd][0]["name"], source=how, csd=csd, municipality=places[csd][0]["name"])
-    # 2. resolution-4 units by their own places
+    # 1. the plain city names, largest first
+    for fed, row, res, role in order:
+        if res == 5:
+            csd = mesh["csd"][row["id"]]
+            if groups[csd]["plain"] == fed:
+                take(fed, places[csd][0]["name"], source="its municipality", csd=csd,
+                     municipality=places[csd][0]["name"])
+    # 2. resolution-4 units by their own places; a resolution-4 unit holding a
+    #    city municipality's place is named for it first
     deferred = []
     for fed, row, res, role in order:
         if res != 4:
             continue
-        pick = next((p for p in own_candidates(row) if name_key(p["name"]) not in taken), None)
+        mine = [csd for csd, g in groups.items() if g["plain"] == fed]
+        pick = None
+        if mine:
+            pick = places[mine[0]][0]
+        if pick is None or name_key(pick["name"]) in taken:
+            pick = next((p for p in own_candidates(row) if name_key(p["name"]) not in taken), None)
         if pick is None:
             deferred.append((fed, row, res, role))
             continue
         take(fed, pick["name"], source="own place", csd=pick["csd"])
-    # 3. city hexes sharing a municipality, or with none: the riding token
-    for fed, row, res, role in order:
-        if res != 5 or fed in names:
-            continue
-        csd, how = city[fed]
-        base = places[csd][0]["name"] if csd is not None else None
-        pick = None
-        for riding, _ in coverage[fed]["ranked"]:
-            for _, tok in sorted(tokens.get(riding, [])):
-                if name_key(tok) in taken and (base is None or name_key(tok) != name_key(base)):
-                    continue  # it names another unit: "Calgary Airdrie" beside Airdrie
-                if base is None:
-                    candidate = tok
-                elif name_key(tok) == name_key(base):
-                    continue
-                elif name_key(tok).startswith(name_key(base) + " "):
-                    candidate = tok
-                else:
-                    candidate = f"{base} {tok}"
-                if name_key(candidate) not in taken:
-                    pick = (candidate, riding)
-                    break
-            if pick:
-                break
-        if pick is None:
-            deferred.append((fed, row, res, role))
-            continue
-        take(fed, pick[0], source=(how + ", with the riding token") if how else "riding token",
-             csd=csd or "", municipality=base or "", riding=pick[1])
+    # 3. the other city hexes of a shared municipality: the compass word
+    hops = {}
+    for csd, g in sorted(groups.items()):
+        plain = g["plain"]
+        base = places[csd][0]["name"]
+        origin = row_of[plain][0]
+        words = {}
+        for fed in g["feds"]:
+            if fed == plain:
+                continue
+            words.setdefault(bearing_word(origin, row_of[fed][0]), []).append(fed)
+        steps = hop_distances(board, origin["id"])
+        for word, feds in sorted(words.items()):
+            ranked = sorted(feds, key=lambda f: (steps.get(row_of[f][0]["id"], 10 ** 6), f))
+            for i, fed in enumerate(ranked):
+                name = f"{base} {word}" if i == 0 else (f"{base} Outer {word}" if i == 1 else f"{base} {word} {i + 1}")
+                take(fed, name, source="its municipality, with a compass word", csd=csd,
+                     municipality=base, plain=str(plain), compass=name[len(base) + 1:])
+                hops[fed] = steps.get(row_of[fed][0]["id"])
     # 4. anything left borrows, ring by ring over land links, as in the trial
     unnamed = []
     for fed, row, res, role in sorted(deferred, key=lambda u: (-u[1]["population"], u[0])):
@@ -818,9 +721,24 @@ def name_units(board, units, geometries, mesh):
         take(fed, p["name"], source="borrowed", csd=p["csd"], from_h3=h)
     if unnamed:
         raise BoardBuildError(f"no name for these units: {', '.join(unnamed)}")
-    for c in coverage.values():
-        del c["ranked"]
-    return names, coverage, city
+    for fed in names:
+        names[fed].setdefault("from_h3", "")
+    return names, groups
+
+
+def hop_distances(board, start):
+    """{h3: steps} from `start` over the board's land and water links."""
+    out = {start: 0}
+    frontier = [start]
+    while frontier:
+        nxt = []
+        for h in frontier:
+            for n in board.land[h] + board.water[h]:
+                if n not in out:
+                    out[n] = out[h] + 1
+                    nxt.append(n)
+        frontier = sorted(set(nxt))
+    return out
 
 
 # ------------------------------------------------------------ opening years --
@@ -833,26 +751,34 @@ def first_canadian_year(spans):
     return None
 
 
-def opening_years(board, units, jurisdictions, city):
-    """{fed_id: {opens_year, atlas, settled, city, override}}.
+def settled_years(board):
+    """{csd: settled year} for every place the tables date: a row's
+    settledYear is its settledPlace's, the earliest of its places. Places a
+    row does not name as its settled place carry no date in the tables."""
+    out = {}
+    for row in board.r4_rows.values():
+        place = row.get("settledPlace")
+        if place and row.get("settledYear") is not None:
+            out[place["csd"]] = row["settledYear"]
+    return out
+
+
+def opening_years(board, units, jurisdictions, names, groups):
+    """{fed_id: {opens_year, atlas, settled, settled_counted, city, override}}.
 
     The latest of the atlas (the first year the unit's land is under Canada),
-    its settledYear where that counts, and for a city hex whose municipality is
-    its parent's core city, that city's year; a director's override beats them
-    all. A core opens by its parent's rules: the parent's atlas and settledYear.
-    Another city hex is a town in its own right and opens as a hexagon would,
-    taking its parent's settledYear when the parent's settled place is in it.
-    settledYear counts only for land that came under Canada after 1867, and only
-    when it is 1930 or earlier."""
+    its settledYear where that counts, and the city year where it applies; a
+    director's override beats them all. A resolution-4 unit's settledYear is
+    its row's. A city or core hex's is that of the municipality it is named
+    for. The plain-named hex of a municipality opens at its settled year; every
+    other hex of it at the later of the settled year and the city year (a
+    municipality in CITY_YEARS). settledYear counts only for land that came
+    under Canada after 1867, and only when it is 1930 or earlier."""
     spans = {}
     for j in jurisdictions:
         spans.setdefault(j["fed_id"], []).append(j)
-    parent_rows, _ = bwm.jurisdiction_rows(
-        {"meta": {"jurisdictionsFrom": "1867-07-01"},
-         "rows": [{"id": h, "jurisdictions": board.r4_rows[h]["jurisdictions"]} for h in sorted(board.split)]})
-    parent_spans = {}
-    for j in parent_rows:
-        parent_spans.setdefault(j["fed_id"], []).append(j)
+    dated = settled_years(board)
+    city_years = {csd: year for _, csd, year, _ in CITY_YEARS.values()}
     overrides = {}
     for csd, place, year in OPENING_OVERRIDES:
         hits = [fed for fed, row, _, _ in units
@@ -862,26 +788,19 @@ def opening_years(board, units, jurisdictions, city):
         overrides[hits[0]] = year
     out = {}
     for fed, row, res, role in units:
-        if role == "core":
-            parent = board.r4_rows[row["parent"]]
-            atlas = first_canadian_year(parent_spans[row["parent"]])
-            settled = parent.get("settledYear")
-        else:
-            atlas = first_canadian_year(spans[str(fed)])
-            if res == 4:
-                settled = row.get("settledYear")
-            else:
-                parent = board.r4_rows[row["parent"]]
-                place = parent.get("settledPlace") or {}
-                settled = (parent.get("settledYear")
-                           if any(p["csd"] == place.get("csd") for p in row["places"]) else None)
+        atlas = first_canadian_year(spans[str(fed)])
         if atlas is None:
             raise BoardBuildError(f"{fed}: never under Canada")
+        city_year = None
+        if res == 4:
+            settled = row.get("settledYear")
+        else:
+            csd = names[fed]["csd"]
+            settled = dated.get(csd)
+            if groups[csd]["plain"] != fed:
+                city_year = city_years.get(csd)
         counted = settled if (settled is not None and atlas > SETTLED_FIRST_YEAR
                               and settled <= SETTLED_LAST_YEAR) else None
-        city_year = None
-        if role == "city" and city[fed][0] == CITY_YEARS[row["parent"]][1]:
-            city_year = CITY_YEARS[row["parent"]][2]
         override = overrides.get(fed)
         opens = override if override is not None else max(
             y for y in (atlas, counted, city_year) if y is not None)
@@ -1144,6 +1063,55 @@ def link_report(units, links, report):
     return groups, water_between
 
 
+# The water links adjacency.csv keeps: those of this many hexagons or fewer,
+# and the director's ferries. Every water link is in links.csv.
+WATER_ROW_MAX = 3
+# The director's ferries (10 October 2026), each between the units whose
+# hinterlands hold two places' points, by census subdivision: Cape Breton to
+# the Newfoundland unit whose hinterland holds Channel-Port aux Basques.
+FERRIES = (("1217030", "Cape Breton", "1003034", "Channel-Port aux Basques"),)
+
+
+def add_ferries(board, units, links, owner, rows):
+    """Mark or add each ferry's water link. Returns [{a, b, length, from, to}]."""
+    places = place_index(board)
+    hex_of = {fed: row["id"] for fed, row, *_ in units}
+    out = []
+    for csd_a, name_a, csd_b, name_b in FERRIES:
+        ends = []
+        for csd, name in ((csd_a, name_a), (csd_b, name_b)):
+            place, h = places[csd]
+            if place["name"] != name or h not in owner:
+                raise BoardBuildError(f"ferry: {name} ({csd}) is not in a unit's hinterland")
+            ends.append(owner[h][0])
+        a, b = min(ends), max(ends)
+        link = next((l for l in links if (l["a"], l["b"]) == (a, b)), None)
+        if link is None:
+            others = [(f, r) for f, r, *_ in units if f == b]
+            metres = nearest_unit(hex_of[a], others, rows)[1]
+            link = {"a": a, "b": b, "kind": "water", "length": -(-metres // HEX_SPACING_METRES),
+                    "path": [hex_of[a], hex_of[b]]}
+            links.append(link)
+            links.sort(key=lambda l: (l["a"], l["b"]))
+        if link["kind"] != "water":
+            raise BoardBuildError(f"ferry {name_a}–{name_b}: the two are linked by land")
+        link["ferry"] = True
+        out.append({"a": a, "b": b, "length": link["length"], "from": name_a, "to": name_b})
+    return out
+
+
+def reachable_groups(units, links):
+    """The groups of units joined through the given links, largest first."""
+    ids = sorted(fed for fed, *_ in units)
+    g = Groups(ids)
+    for l in links:
+        g.union(l["a"], l["b"])
+    out = {}
+    for fed in ids:
+        out.setdefault(g.find(fed), []).append(fed)
+    return sorted(out.values(), key=lambda m: (-len(m), m[0]))
+
+
 # ------------------------------------------------------------------- build --
 
 
@@ -1163,29 +1131,39 @@ def build(out_dir=OUT_DIR, raw_dir=RAW_DIR, verbose=True):
     geometries = {h: (g4 if res == 4 else g5).get(h) for h, (_, res) in board.nodes.items()}
 
     mesh = mesh_lookup(fm.read_board_mesh(raw_dir))
-    names, coverage, city = name_units(board, units, geometries, mesh)
+    names, municipalities = name_units(board, units, mesh)
     pair_units = [(fed, row) for fed, row, *_ in units]
     rows_by_node = {h: row for h, (row, _) in board.nodes.items()}
     links, owner, lreport = build_links(pair_units, board.land, board.water, rows_by_node)
     joined = join_groups(units, links, rows_by_node)
+    ferries = add_ferries(board, units, links, owner, rows_by_node)
     groups, water_between = link_report(units, links, lreport)
+    rows_links = [l for l in links if l["kind"] == "land" or l["length"] <= WATER_ROW_MAX or l.get("ferry")]
+    reach = reachable_groups(units, rows_links)
 
     ridings = [
         {"fed_id": str(fed), "name_en": names[fed]["name"], "name_fr": names[fed]["name"],
          "province": row["province"], "name_key": name_key(names[fed]["name"])}
         for fed, row, *_ in units
     ]
+    # adjacency.csv: every land link, a water link of WATER_ROW_MAX hexagons or
+    # fewer, and the director's ferries. A longer water link is in links.csv only.
     adjacency = [
         {"fed_id_a": str(l["a"]), "fed_id_b": str(l["b"]), "adjacency_type": l["kind"]}
-        for l in links
+        for l in rows_links
     ]
     places = places_rows(pair_units)
     tokens = build_places.build_tokens(ridings)
     jurisdictions, dropped = bwm.jurisdiction_rows(
         {"meta": r4["meta"], "rows": [{"id": fed, "jurisdictions": row["jurisdictions"]}
                                       for fed, row in pair_units]})
-    opening = opening_years(board, units, jurisdictions, city)
+    opening = opening_years(board, units, jurisdictions, names, municipalities)
     stats = stats_with_opening(units, opening)
+    # Rules 1.0 `block_grants` reads a unit's H3 resolution (4, or 5 for a
+    # city hex) from riding_stats.csv, a table both engines already load.
+    resolution = {str(fed): res for fed, row, res, role in units}
+    for row in stats:
+        row["resolution"] = resolution[row["fed_id"]]
 
     # For drawing, every hexagon of the board is read, units or not. A span
     # the atlas marks as a fallback (no unit overlaps the hexagon's land; the
@@ -1214,7 +1192,7 @@ def build(out_dir=OUT_DIR, raw_dir=RAW_DIR, verbose=True):
             "parent_h3": row.get("parent", ""), "name_source": n["source"],
             "name_csd": n["csd"], "municipality": n["municipality"],
             "mesh_csd": mesh["csd"][row["id"]] if res == 5 else "",
-            "name_riding": n["riding"], "named_from_h3": n["from_h3"],
+            "compass": n["compass"], "plain_fed_id": n["plain"], "named_from_h3": n["from_h3"],
             "opens_year": o["opens_year"], "open_atlas": o["atlas"],
             "open_settled": "" if o["settled"] is None else o["settled"],
             "open_settled_counts": 1 if o["settled_counted"] is not None else 0,
@@ -1223,7 +1201,8 @@ def build(out_dir=OUT_DIR, raw_dir=RAW_DIR, verbose=True):
         })
     link_rows = [
         {"fed_id_a": str(l["a"]), "fed_id_b": str(l["b"]), "adjacency_type": l["kind"],
-         "length": l["length"], "hexes": len(l["path"])}
+         "length": l["length"], "hexes": len(l["path"]),
+         "in_adjacency": 1 if l in rows_links else 0, "ferry": 1 if l.get("ferry") else 0}
         for l in links
     ]
 
@@ -1274,13 +1253,13 @@ def build(out_dir=OUT_DIR, raw_dir=RAW_DIR, verbose=True):
     bwm.write_csv(out_dir / "riding_stats.csv", stats, [
         "fed_id", "population", "land_area_km2", "wealth_tier", "resource_tier",
         "french_permille", "indigenous_identity_permille", "urban_class",
-        "industry_dominant", "opens_year",
+        "industry_dominant", "opens_year", "resolution",
     ])
     bwm.write_csv(out_dir / "riding_jurisdictions.csv", jurisdictions,
                   ["fed_id", "from_year", "to_year", "unit", "name", "status", "sovereign"])
     bwm.write_csv(out_dir / "units.csv", unit_rows, list(unit_rows[0]))
     bwm.write_csv(out_dir / "links.csv", link_rows,
-                  ["fed_id_a", "fed_id_b", "adjacency_type", "length", "hexes"])
+                  ["fed_id_a", "fed_id_b", "adjacency_type", "length", "hexes", "in_adjacency", "ferry"])
     bwm.write_geojson(out_dir / "hexes.geojson", backdrop)
     bwm.write_geojson(out_dir / "geometry_simplified.geojson", unit_features)
     bwm.write_geojson(out_dir / "borders_shared.geojson", borders)
@@ -1347,9 +1326,9 @@ def build(out_dir=OUT_DIR, raw_dir=RAW_DIR, verbose=True):
              "parent": board.split[row["parent"]]["places"][0]["name"],
              "population": row["population"], "source": names[fed]["source"],
              "municipality": names[fed]["municipality"],
-             "mesh_municipality": place_names.get(mesh["csd"][row["id"]], ""),
-             "riding": coverage[fed]["riding_name"], "riding_share_permille": coverage[fed]["share_permille"],
-             "opens_year": opening[fed]["opens_year"]}
+             "plain_unit": by_name.get(int(names[fed]["plain"])) if names[fed]["plain"] else "",
+             "opens_year": opening[fed]["opens_year"],
+             "settled": opening[fed]["settled"], "city_year": opening[fed]["city"]}
             for fed, row, res, role in sorted(units, key=lambda u: (u[1].get("parent", ""), -u[1]["population"]))
             if res == 5
         ],
@@ -1406,6 +1385,13 @@ def build(out_dir=OUT_DIR, raw_dir=RAW_DIR, verbose=True):
         "jurisdiction_spans_dropped": dropped,
         "drawing_fallback_spans": fallbacks,
         "links": lreport,
+        "water_row_max": WATER_ROW_MAX,
+        "water_links_in_adjacency": sum(1 for l in rows_links if l["kind"] == "water"),
+        "water_links_in_links_only": sum(1 for l in links if l["kind"] == "water" and l not in rows_links),
+        "ferries": [{**f, "a_name": by_name[f["a"]], "b_name": by_name[f["b"]]} for f in ferries],
+        "groups_through_adjacency_rows": [
+            {"size": len(m), "units": [by_name[f] for f in m][:12]} for m in reach
+        ],
         "land_groups": [
             {"size": len(g), "units": [by_name[f] for f in g][:20],
              "water_links_to": sorted(len(groups[o]) for o in water_between.get(g[0], ()))}

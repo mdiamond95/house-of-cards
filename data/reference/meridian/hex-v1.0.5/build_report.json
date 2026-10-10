@@ -126,12 +126,10 @@
     "city": 55
   },
   "names_by_source": {
-    "a neighbouring municipality, with the riding token": 9,
     "borrowed": 36,
-    "its own largest place": 29,
-    "own place": 387,
-    "the mesh's municipality": 20,
-    "the mesh's municipality, with the riding token": 13
+    "its municipality": 48,
+    "its municipality, with a compass word": 23,
+    "own place": 387
   },
   "city_hexes": [
     {
@@ -140,129 +138,129 @@
       "role": "core",
       "parent": "Calgary",
       "population": 324293,
-      "source": "the mesh's municipality",
+      "source": "its municipality",
       "municipality": "Calgary",
-      "mesh_municipality": "Calgary",
-      "riding": "Calgary East",
-      "riding_share_permille": 403,
-      "opens_year": 1875
+      "plain_unit": "",
+      "opens_year": 1875,
+      "settled": 1875,
+      "city_year": null
     },
     {
       "fed_id": "481159051",
-      "name": "Calgary Signal Hill",
+      "name": "Calgary North-West",
       "role": "city",
       "parent": "Calgary",
       "population": 320249,
-      "source": "the mesh's municipality, with the riding token",
+      "source": "its municipality, with a compass word",
       "municipality": "Calgary",
-      "mesh_municipality": "Calgary",
-      "riding": "Calgary Signal Hill",
-      "riding_share_permille": 266,
-      "opens_year": 1894
+      "plain_unit": "Calgary",
+      "opens_year": 1894,
+      "settled": 1875,
+      "city_year": 1894
     },
     {
       "fed_id": "481159048",
-      "name": "Calgary Foothills",
+      "name": "Foothills County North-East",
       "role": "city",
       "parent": "Calgary",
       "population": 126598,
-      "source": "a neighbouring municipality, with the riding token",
-      "municipality": "Calgary",
-      "mesh_municipality": "Foothills County",
-      "riding": "Foothills",
-      "riding_share_permille": 597,
-      "opens_year": 1894
+      "source": "its municipality, with a compass word",
+      "municipality": "Foothills County",
+      "plain_unit": "Foothills County",
+      "opens_year": 1870,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "481159047",
-      "name": "Calgary Heritage",
+      "name": "Foothills County North",
       "role": "city",
       "parent": "Calgary",
       "population": 117419,
-      "source": "a neighbouring municipality, with the riding token",
-      "municipality": "Calgary",
-      "mesh_municipality": "Foothills County",
-      "riding": "Foothills",
-      "riding_share_permille": 710,
-      "opens_year": 1894
+      "source": "its municipality, with a compass word",
+      "municipality": "Foothills County",
+      "plain_unit": "Foothills County",
+      "opens_year": 1870,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "481160303",
-      "name": "Calgary Skyview",
+      "name": "Calgary North",
       "role": "core",
       "parent": "Airdrie",
       "population": 354992,
-      "source": "the mesh's municipality, with the riding token",
+      "source": "its municipality, with a compass word",
       "municipality": "Calgary",
-      "mesh_municipality": "Calgary",
-      "riding": "Calgary Skyview",
-      "riding_share_permille": 341,
-      "opens_year": 1899
+      "plain_unit": "Calgary",
+      "opens_year": 1894,
+      "settled": 1875,
+      "city_year": 1894
     },
     {
       "fed_id": "481160300",
-      "name": "Airdrie",
+      "name": "Rocky View County West",
       "role": "city",
       "parent": "Airdrie",
       "population": 74974,
-      "source": "its own largest place",
-      "municipality": "Airdrie",
-      "mesh_municipality": "Rocky View County",
-      "riding": "Airdrie—Cochrane",
-      "riding_share_permille": 757,
-      "opens_year": 1899
+      "source": "its municipality, with a compass word",
+      "municipality": "Rocky View County",
+      "plain_unit": "Rocky View County",
+      "opens_year": 1870,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "481160302",
-      "name": "Calgary Crowfoot",
+      "name": "Rocky View County Outer West",
       "role": "city",
       "parent": "Airdrie",
       "population": 74499,
-      "source": "a neighbouring municipality, with the riding token",
-      "municipality": "Calgary",
-      "mesh_municipality": "Rocky View County",
-      "riding": "Airdrie—Cochrane",
-      "riding_share_permille": 673,
-      "opens_year": 1894
+      "source": "its municipality, with a compass word",
+      "municipality": "Rocky View County",
+      "plain_unit": "Rocky View County",
+      "opens_year": 1870,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "481160421",
-      "name": "Edmonton Strathcona",
+      "name": "Edmonton East",
       "role": "core",
       "parent": "Strathcona County",
       "population": 436056,
-      "source": "the mesh's municipality, with the riding token",
+      "source": "its municipality, with a compass word",
       "municipality": "Edmonton",
-      "mesh_municipality": "Edmonton",
-      "riding": "Edmonton Strathcona",
-      "riding_share_permille": 300,
-      "opens_year": 1870
+      "plain_unit": "Edmonton",
+      "opens_year": 1904,
+      "settled": 1795,
+      "city_year": 1904
     },
     {
       "fed_id": "481160422",
-      "name": "Strathcona County Sherwood Park",
+      "name": "Strathcona County South",
       "role": "city",
       "parent": "Strathcona County",
       "population": 69620,
-      "source": "the mesh's municipality, with the riding token",
+      "source": "its municipality, with a compass word",
       "municipality": "Strathcona County",
-      "mesh_municipality": "Strathcona County",
-      "riding": "Sherwood Park—Fort Saskatchewan",
-      "riding_share_permille": 998,
-      "opens_year": 1870
+      "plain_unit": "Strathcona County",
+      "opens_year": 1870,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "481160425",
-      "name": "Edmonton St. Albert",
+      "name": "Sturgeon County South-West",
       "role": "city",
       "parent": "Strathcona County",
       "population": 58877,
-      "source": "a neighbouring municipality, with the riding token",
-      "municipality": "Edmonton",
-      "mesh_municipality": "Sturgeon County",
-      "riding": "St. Albert—Sturgeon River",
-      "riding_share_permille": 742,
-      "opens_year": 1904
+      "source": "its municipality, with a compass word",
+      "municipality": "Sturgeon County",
+      "plain_unit": "Sturgeon County",
+      "opens_year": 1870,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "481160419",
@@ -270,12 +268,12 @@
       "role": "city",
       "parent": "Strathcona County",
       "population": 30853,
-      "source": "the mesh's municipality",
+      "source": "its municipality",
       "municipality": "Strathcona County",
-      "mesh_municipality": "Strathcona County",
-      "riding": "Sherwood Park—Fort Saskatchewan",
-      "riding_share_permille": 715,
-      "opens_year": 1870
+      "plain_unit": "",
+      "opens_year": 1870,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "461330195",
@@ -283,38 +281,38 @@
       "role": "core",
       "parent": "Winnipeg",
       "population": 477741,
-      "source": "the mesh's municipality",
+      "source": "its municipality",
       "municipality": "Winnipeg",
-      "mesh_municipality": "Winnipeg",
-      "riding": "Elmwood—Transcona",
-      "riding_share_permille": 298,
-      "opens_year": 1870
+      "plain_unit": "",
+      "opens_year": 1870,
+      "settled": 1738,
+      "city_year": null
     },
     {
       "fed_id": "461330194",
-      "name": "Winnipeg Kildonan",
+      "name": "Rosser",
       "role": "city",
       "parent": "Winnipeg",
       "population": 119034,
-      "source": "a neighbouring municipality, with the riding token",
-      "municipality": "Winnipeg",
-      "mesh_municipality": "Rosser",
-      "riding": "Winnipeg West",
-      "riding_share_permille": 827,
-      "opens_year": 1873
+      "source": "its municipality",
+      "municipality": "Rosser",
+      "plain_unit": "",
+      "opens_year": 1870,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "461330190",
-      "name": "Winnipeg Portage",
+      "name": "Macdonald",
       "role": "city",
       "parent": "Winnipeg",
       "population": 84057,
-      "source": "a neighbouring municipality, with the riding token",
-      "municipality": "Winnipeg",
-      "mesh_municipality": "Macdonald",
-      "riding": "Portage—Lisgar",
-      "riding_share_permille": 501,
-      "opens_year": 1873
+      "source": "its municipality",
+      "municipality": "Macdonald",
+      "plain_unit": "",
+      "opens_year": 1870,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "591344697",
@@ -322,25 +320,25 @@
       "role": "core",
       "parent": "Vancouver",
       "population": 673589,
-      "source": "its own largest place",
+      "source": "its municipality",
       "municipality": "Vancouver",
-      "mesh_municipality": "Vancouver",
-      "riding": "Vancouver Quadra",
-      "riding_share_permille": 253,
-      "opens_year": 1871
+      "plain_unit": "",
+      "opens_year": 1871,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "591344696",
-      "name": "Burnaby",
+      "name": "Delta North",
       "role": "city",
       "parent": "Vancouver",
       "population": 473062,
-      "source": "its own largest place",
-      "municipality": "Burnaby",
-      "mesh_municipality": "Delta",
-      "riding": "Delta",
-      "riding_share_permille": 271,
-      "opens_year": 1871
+      "source": "its municipality, with a compass word",
+      "municipality": "Delta",
+      "plain_unit": "Delta",
+      "opens_year": 1871,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "591344694",
@@ -348,12 +346,12 @@
       "role": "city",
       "parent": "Vancouver",
       "population": 166950,
-      "source": "the mesh's municipality",
+      "source": "its municipality",
       "municipality": "Richmond",
-      "mesh_municipality": "Richmond",
-      "riding": "Delta",
-      "riding_share_permille": 530,
-      "opens_year": 1871
+      "plain_unit": "",
+      "opens_year": 1871,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "591344700",
@@ -361,12 +359,12 @@
       "role": "city",
       "parent": "Vancouver",
       "population": 40295,
-      "source": "the mesh's municipality",
+      "source": "its municipality",
       "municipality": "Delta",
-      "mesh_municipality": "Delta",
-      "riding": "Delta",
-      "riding_share_permille": 677,
-      "opens_year": 1871
+      "plain_unit": "",
+      "opens_year": 1871,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "591344713",
@@ -374,12 +372,12 @@
       "role": "core",
       "parent": "Surrey",
       "population": 406855,
-      "source": "the mesh's municipality",
+      "source": "its municipality",
       "municipality": "Surrey",
-      "mesh_municipality": "Surrey",
-      "riding": "Fleetwood—Port Kells",
-      "riding_share_permille": 247,
-      "opens_year": 1871
+      "plain_unit": "",
+      "opens_year": 1871,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "591344709",
@@ -387,12 +385,12 @@
       "role": "city",
       "parent": "Surrey",
       "population": 252271,
-      "source": "its own largest place",
+      "source": "its municipality",
       "municipality": "Coquitlam",
-      "mesh_municipality": "Coquitlam",
-      "riding": "Coquitlam—Port Coquitlam",
-      "riding_share_permille": 431,
-      "opens_year": 1871
+      "plain_unit": "",
+      "opens_year": 1871,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "591344708",
@@ -400,12 +398,12 @@
       "role": "city",
       "parent": "Surrey",
       "population": 116271,
-      "source": "its own largest place",
+      "source": "its municipality",
       "municipality": "Maple Ridge",
-      "mesh_municipality": "Maple Ridge",
-      "riding": "Pitt Meadows—Maple Ridge",
-      "riding_share_permille": 798,
-      "opens_year": 1871
+      "plain_unit": "",
+      "opens_year": 1871,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "591344712",
@@ -413,12 +411,12 @@
       "role": "city",
       "parent": "Surrey",
       "population": 70924,
-      "source": "the mesh's municipality",
+      "source": "its municipality",
       "municipality": "Langley",
-      "mesh_municipality": "Langley",
-      "riding": "Langley Township—Fraser Heights",
-      "riding_share_permille": 505,
-      "opens_year": 1871
+      "plain_unit": "",
+      "opens_year": 1871,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "591344714",
@@ -426,12 +424,12 @@
       "role": "city",
       "parent": "Surrey",
       "population": 43556,
-      "source": "its own largest place",
+      "source": "its municipality",
       "municipality": "Mission",
-      "mesh_municipality": "Mission",
-      "riding": "Pitt Meadows—Maple Ridge",
-      "riding_share_permille": 542,
-      "opens_year": 1871
+      "plain_unit": "",
+      "opens_year": 1871,
+      "settled": 1868,
+      "city_year": null
     },
     {
       "fed_id": "351360024",
@@ -439,12 +437,12 @@
       "role": "core",
       "parent": "London",
       "population": 307543,
-      "source": "the mesh's municipality",
+      "source": "its municipality",
       "municipality": "London",
-      "mesh_municipality": "London",
-      "riding": "Elgin—St. Thomas—London South",
-      "riding_share_permille": 462,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "351360028",
@@ -452,12 +450,12 @@
       "role": "city",
       "parent": "London",
       "population": 62655,
-      "source": "its own largest place",
+      "source": "its municipality",
       "municipality": "Thames Centre",
-      "mesh_municipality": "Thames Centre",
-      "riding": "Middlesex—London",
-      "riding_share_permille": 795,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "351360030",
@@ -465,38 +463,38 @@
       "role": "city",
       "parent": "London",
       "population": 60835,
-      "source": "its own largest place",
+      "source": "its municipality",
       "municipality": "Middlesex Centre",
-      "mesh_municipality": "Middlesex Centre",
-      "riding": "Middlesex—London",
-      "riding_share_permille": 945,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "351360025",
-      "name": "St. Thomas",
+      "name": "Central Elgin",
       "role": "city",
       "parent": "London",
       "population": 48613,
-      "source": "its own largest place",
-      "municipality": "St. Thomas",
-      "mesh_municipality": "Central Elgin",
-      "riding": "Elgin—St. Thomas—London South",
-      "riding_share_permille": 993,
-      "opens_year": 1867
+      "source": "its municipality",
+      "municipality": "Central Elgin",
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "351360034",
-      "name": "Kitchener",
+      "name": "Wilmot",
       "role": "core",
       "parent": "Kitchener",
       "population": 237177,
-      "source": "its own largest place",
-      "municipality": "Kitchener",
-      "mesh_municipality": "Wilmot",
-      "riding": "Kitchener—Conestoga",
-      "riding_share_permille": 608,
-      "opens_year": 1867
+      "source": "its municipality",
+      "municipality": "Wilmot",
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "351360032",
@@ -504,38 +502,38 @@
       "role": "city",
       "parent": "Kitchener",
       "population": 203507,
-      "source": "its own largest place",
+      "source": "its municipality",
       "municipality": "Cambridge",
-      "mesh_municipality": "Cambridge",
-      "riding": "Cambridge",
-      "riding_share_permille": 341,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "351360036",
-      "name": "Guelph",
+      "name": "Guelph/Eramosa",
       "role": "city",
       "parent": "Kitchener",
       "population": 146762,
-      "source": "its own largest place",
-      "municipality": "Guelph",
-      "mesh_municipality": "Guelph/Eramosa",
-      "riding": "Wellington—Halton Hills North",
-      "riding_share_permille": 746,
-      "opens_year": 1867
+      "source": "its municipality",
+      "municipality": "Guelph/Eramosa",
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "351360031",
-      "name": "Waterloo",
+      "name": "Woolwich",
       "role": "city",
       "parent": "Kitchener",
       "population": 82162,
-      "source": "its own largest place",
-      "municipality": "Waterloo",
-      "mesh_municipality": "Woolwich",
-      "riding": "Kitchener—Conestoga",
-      "riding_share_permille": 750,
-      "opens_year": 1867
+      "source": "its municipality",
+      "municipality": "Woolwich",
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": 1798,
+      "city_year": null
     },
     {
       "fed_id": "351360035",
@@ -543,12 +541,12 @@
       "role": "city",
       "parent": "Kitchener",
       "population": 29377,
-      "source": "the mesh's municipality",
+      "source": "its municipality",
       "municipality": "Centre Wellington",
-      "mesh_municipality": "Centre Wellington",
-      "riding": "Wellington—Halton Hills North",
-      "riding_share_permille": 997,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "241367539",
@@ -556,12 +554,12 @@
       "role": "core",
       "parent": "Ottawa",
       "population": 444201,
-      "source": "its own largest place",
+      "source": "its municipality",
       "municipality": "Gatineau",
-      "mesh_municipality": "Gatineau",
-      "riding": "Gatineau",
-      "riding_share_permille": 299,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": 1800,
+      "city_year": null
     },
     {
       "fed_id": "351367535",
@@ -569,90 +567,90 @@
       "role": "city",
       "parent": "Ottawa",
       "population": 368226,
-      "source": "the mesh's municipality",
+      "source": "its municipality",
       "municipality": "Ottawa",
-      "mesh_municipality": "Ottawa",
-      "riding": "Nepean",
-      "riding_share_permille": 264,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "351367540",
-      "name": "Ottawa Carleton",
+      "name": "Ottawa East",
       "role": "city",
       "parent": "Ottawa",
       "population": 125345,
-      "source": "the mesh's municipality, with the riding token",
+      "source": "its municipality, with a compass word",
       "municipality": "Ottawa",
-      "mesh_municipality": "Ottawa",
-      "riding": "Carleton",
-      "riding_share_permille": 551,
-      "opens_year": 1867
+      "plain_unit": "Ottawa",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": 1855
     },
     {
       "fed_id": "351367536",
-      "name": "Ottawa Nepean",
+      "name": "Ottawa South-East",
       "role": "city",
       "parent": "Ottawa",
       "population": 51164,
-      "source": "the mesh's municipality, with the riding token",
+      "source": "its municipality, with a compass word",
       "municipality": "Ottawa",
-      "mesh_municipality": "Ottawa",
-      "riding": "Carleton",
-      "riding_share_permille": 958,
-      "opens_year": 1867
+      "plain_unit": "Ottawa",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": 1855
     },
     {
       "fed_id": "351367537",
-      "name": "Ottawa Kanata",
+      "name": "Ottawa West",
       "role": "city",
       "parent": "Ottawa",
       "population": 49003,
-      "source": "the mesh's municipality, with the riding token",
+      "source": "its municipality, with a compass word",
       "municipality": "Ottawa",
-      "mesh_municipality": "Ottawa",
-      "riding": "Carleton",
-      "riding_share_permille": 581,
-      "opens_year": 1867
+      "plain_unit": "Ottawa",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": 1855
     },
     {
       "fed_id": "241367541",
-      "name": "Gatineau Pontiac",
+      "name": "Pontiac South",
       "role": "city",
       "parent": "Ottawa",
       "population": 44717,
-      "source": "a neighbouring municipality, with the riding token",
-      "municipality": "Gatineau",
-      "mesh_municipality": "Pontiac",
-      "riding": "Pontiac—Kitigan Zibi",
-      "riding_share_permille": 548,
-      "opens_year": 1867
+      "source": "its municipality, with a compass word",
+      "municipality": "Pontiac",
+      "plain_unit": "Pontiac",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "351367538",
-      "name": "Ottawa Lanark",
+      "name": "Ottawa South-West",
       "role": "city",
       "parent": "Ottawa",
       "population": 26017,
-      "source": "the mesh's municipality, with the riding token",
+      "source": "its municipality, with a compass word",
       "municipality": "Ottawa",
-      "mesh_municipality": "Ottawa",
-      "riding": "Carleton",
-      "riding_share_permille": 991,
-      "opens_year": 1867
+      "plain_unit": "Ottawa",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": 1855
     },
     {
       "fed_id": "351368404",
-      "name": "Oshawa",
+      "name": "Whitby",
       "role": "core",
       "parent": "Oshawa",
       "population": 302326,
-      "source": "its own largest place",
-      "municipality": "Oshawa",
-      "mesh_municipality": "Whitby",
-      "riding": "Whitby",
-      "riding_share_permille": 317,
-      "opens_year": 1867
+      "source": "its municipality",
+      "municipality": "Whitby",
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "351368406",
@@ -660,12 +658,12 @@
       "role": "city",
       "parent": "Oshawa",
       "population": 163318,
-      "source": "its own largest place",
+      "source": "its municipality",
       "municipality": "Pickering",
-      "mesh_municipality": "Pickering",
-      "riding": "Pickering—Brooklin",
-      "riding_share_permille": 506,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "351368405",
@@ -673,25 +671,25 @@
       "role": "city",
       "parent": "Oshawa",
       "population": 58919,
-      "source": "its own largest place",
+      "source": "its municipality",
       "municipality": "Whitchurch-Stouffville",
-      "mesh_municipality": "Whitchurch-Stouffville",
-      "riding": "York—Durham",
-      "riding_share_permille": 788,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": 1792,
+      "city_year": null
     },
     {
       "fed_id": "351368547",
-      "name": "Mississauga Halton Hills",
+      "name": "Halton Hills",
       "role": "core",
       "parent": "Hamilton",
       "population": 391191,
-      "source": "a neighbouring municipality, with the riding token",
-      "municipality": "Mississauga",
-      "mesh_municipality": "Halton Hills",
-      "riding": "Milton East—Halton Hills South",
-      "riding_share_permille": 533,
-      "opens_year": 1867
+      "source": "its municipality",
+      "municipality": "Halton Hills",
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "351368548",
@@ -699,12 +697,12 @@
       "role": "city",
       "parent": "Hamilton",
       "population": 293403,
-      "source": "its own largest place",
+      "source": "its municipality",
       "municipality": "Oakville",
-      "mesh_municipality": "Oakville",
-      "riding": "Oakville East",
-      "riding_share_permille": 391,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "351368544",
@@ -712,12 +710,12 @@
       "role": "city",
       "parent": "Hamilton",
       "population": 188988,
-      "source": "its own largest place",
+      "source": "its municipality",
       "municipality": "Burlington",
-      "mesh_municipality": "Burlington",
-      "riding": "Burlington",
-      "riding_share_permille": 542,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "351368543",
@@ -725,12 +723,12 @@
       "role": "city",
       "parent": "Hamilton",
       "population": 122349,
-      "source": "the mesh's municipality",
+      "source": "its municipality",
       "municipality": "Milton",
-      "mesh_municipality": "Milton",
-      "riding": "Burlington North—Milton West",
-      "riding_share_permille": 770,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": 1818,
+      "city_year": null
     },
     {
       "fed_id": "351368546",
@@ -738,25 +736,25 @@
       "role": "city",
       "parent": "Hamilton",
       "population": 77407,
-      "source": "the mesh's municipality",
+      "source": "its municipality",
       "municipality": "Hamilton",
-      "mesh_municipality": "Hamilton",
-      "riding": "Flamborough—Glanbrook—Brant North",
-      "riding_share_permille": 792,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "351368556",
-      "name": "Hamilton Flamborough",
+      "name": "Hamilton South-East",
       "role": "core",
       "parent": "Haldimand County",
       "population": 408520,
-      "source": "the mesh's municipality, with the riding token",
+      "source": "its municipality, with a compass word",
       "municipality": "Hamilton",
-      "mesh_municipality": "Hamilton",
-      "riding": "Flamborough—Glanbrook—Brant North",
-      "riding_share_permille": 518,
-      "opens_year": 1867
+      "plain_unit": "Hamilton",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": 1846
     },
     {
       "fed_id": "351368554",
@@ -764,25 +762,25 @@
       "role": "city",
       "parent": "Haldimand County",
       "population": 72352,
-      "source": "its own largest place",
+      "source": "its municipality",
       "municipality": "Grimsby",
-      "mesh_municipality": "Grimsby",
-      "riding": "Niagara West",
-      "riding_share_permille": 528,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "351368576",
-      "name": "Toronto Scarborough",
+      "name": "Toronto East",
       "role": "core",
       "parent": "Toronto",
       "population": 935400,
-      "source": "the mesh's municipality, with the riding token",
+      "source": "its municipality, with a compass word",
       "municipality": "Toronto",
-      "mesh_municipality": "Toronto",
-      "riding": "Scarborough North",
-      "riding_share_permille": 139,
-      "opens_year": 1867
+      "plain_unit": "Toronto",
+      "opens_year": 1867,
+      "settled": 1750,
+      "city_year": 1834
     },
     {
       "fed_id": "351368571",
@@ -790,25 +788,25 @@
       "role": "city",
       "parent": "Toronto",
       "population": 897643,
-      "source": "the mesh's municipality",
+      "source": "its municipality",
       "municipality": "Toronto",
-      "mesh_municipality": "Toronto",
-      "riding": "Thornhill",
-      "riding_share_permille": 186,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": 1750,
+      "city_year": null
     },
     {
       "fed_id": "351368572",
-      "name": "Toronto Danforth",
+      "name": "Toronto South-East",
       "role": "city",
       "parent": "Toronto",
       "population": 859808,
-      "source": "the mesh's municipality, with the riding token",
+      "source": "its municipality, with a compass word",
       "municipality": "Toronto",
-      "mesh_municipality": "Toronto",
-      "riding": "Toronto—Danforth",
-      "riding_share_permille": 199,
-      "opens_year": 1867
+      "plain_unit": "Toronto",
+      "opens_year": 1867,
+      "settled": 1750,
+      "city_year": 1834
     },
     {
       "fed_id": "351368574",
@@ -816,12 +814,12 @@
       "role": "city",
       "parent": "Toronto",
       "population": 623862,
-      "source": "the mesh's municipality",
+      "source": "its municipality",
       "municipality": "Mississauga",
-      "mesh_municipality": "Mississauga",
-      "riding": "Mississauga—Malton",
-      "riding_share_permille": 248,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "351368573",
@@ -829,25 +827,25 @@
       "role": "city",
       "parent": "Toronto",
       "population": 550864,
-      "source": "the mesh's municipality",
+      "source": "its municipality",
       "municipality": "Brampton",
-      "mesh_municipality": "Brampton",
-      "riding": "Brampton East",
-      "riding_share_permille": 272,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "351368575",
-      "name": "Markham",
+      "name": "Richmond Hill",
       "role": "city",
       "parent": "Toronto",
       "population": 394700,
-      "source": "its own largest place",
-      "municipality": "Markham",
-      "mesh_municipality": "Richmond Hill",
-      "riding": "Markham—Unionville",
-      "riding_share_permille": 249,
-      "opens_year": 1867
+      "source": "its municipality",
+      "municipality": "Richmond Hill",
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "351368577",
@@ -855,12 +853,12 @@
       "role": "city",
       "parent": "Toronto",
       "population": 171845,
-      "source": "the mesh's municipality",
+      "source": "its municipality",
       "municipality": "Vaughan",
-      "mesh_municipality": "Vaughan",
-      "riding": "King—Vaughan",
-      "riding_share_permille": 722,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "241369168",
@@ -868,64 +866,64 @@
       "role": "core",
       "parent": "Longueuil",
       "population": 339023,
-      "source": "its own largest place",
+      "source": "its municipality",
       "municipality": "Longueuil",
-      "mesh_municipality": "Longueuil",
-      "riding": "Mont-Saint-Bruno—L’Acadie",
-      "riding_share_permille": 519,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": 1657,
+      "city_year": null
     },
     {
       "fed_id": "241369169",
-      "name": "Chambly",
+      "name": "Saint-Jean-sur-Richelieu North-East",
       "role": "city",
       "parent": "Longueuil",
       "population": 111759,
-      "source": "its own largest place",
-      "municipality": "Chambly",
-      "mesh_municipality": "Saint-Jean-sur-Richelieu",
-      "riding": "Beloeil—Chambly",
-      "riding_share_permille": 438,
-      "opens_year": 1867
+      "source": "its municipality, with a compass word",
+      "municipality": "Saint-Jean-sur-Richelieu",
+      "plain_unit": "Saint-Jean-sur-Richelieu",
+      "opens_year": 1867,
+      "settled": 1667,
+      "city_year": null
     },
     {
       "fed_id": "241369166",
-      "name": "Beloeil",
+      "name": "Saint-Jean-Baptiste",
       "role": "city",
       "parent": "Longueuil",
       "population": 62845,
-      "source": "its own largest place",
-      "municipality": "Beloeil",
-      "mesh_municipality": "Saint-Jean-Baptiste",
-      "riding": "Beloeil—Chambly",
-      "riding_share_permille": 696,
-      "opens_year": 1867
+      "source": "its municipality",
+      "municipality": "Saint-Jean-Baptiste",
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "241369170",
-      "name": "Saint-Hyacinthe",
+      "name": "La Présentation",
       "role": "city",
       "parent": "Longueuil",
       "population": 47317,
-      "source": "its own largest place",
-      "municipality": "Saint-Hyacinthe",
-      "mesh_municipality": "La Présentation",
-      "riding": "Saint-Hyacinthe—Bagot—Acton",
-      "riding_share_permille": 853,
-      "opens_year": 1867
+      "source": "its municipality",
+      "municipality": "La Présentation",
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "241369172",
-      "name": "Sainte-Julie",
+      "name": "Saint-Marc-sur-Richelieu",
       "role": "city",
       "parent": "Longueuil",
       "population": 28730,
-      "source": "its own largest place",
-      "municipality": "Sainte-Julie",
-      "mesh_municipality": "Saint-Marc-sur-Richelieu",
-      "riding": "Pierre-Boucher—Les Patriotes—Verchères",
-      "riding_share_permille": 885,
-      "opens_year": 1867
+      "source": "its municipality",
+      "municipality": "Saint-Marc-sur-Richelieu",
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "241369181",
@@ -933,25 +931,25 @@
       "role": "core",
       "parent": "Montréal",
       "population": 1511898,
-      "source": "the mesh's municipality",
+      "source": "its municipality",
       "municipality": "Montréal",
-      "mesh_municipality": "Montréal",
-      "riding": "Saint-Laurent",
-      "riding_share_permille": 117,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": 1642,
+      "city_year": null
     },
     {
       "fed_id": "241369183",
-      "name": "Montréal Pierrefonds",
+      "name": "Montréal West",
       "role": "city",
       "parent": "Montréal",
       "population": 474200,
-      "source": "the mesh's municipality, with the riding token",
+      "source": "its municipality, with a compass word",
       "municipality": "Montréal",
-      "mesh_municipality": "Montréal",
-      "riding": "Pierrefonds—Dollard",
-      "riding_share_permille": 214,
-      "opens_year": 1867
+      "plain_unit": "Montréal",
+      "opens_year": 1867,
+      "settled": 1642,
+      "city_year": 1832
     },
     {
       "fed_id": "241369180",
@@ -959,64 +957,64 @@
       "role": "city",
       "parent": "Montréal",
       "population": 332940,
-      "source": "the mesh's municipality",
+      "source": "its municipality",
       "municipality": "Laval",
-      "mesh_municipality": "Laval",
-      "riding": "Alfred-Pellan",
-      "riding_share_permille": 346,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "241369185",
-      "name": "Montréal Pierre-Boucher",
+      "name": "Montréal North-East",
       "role": "city",
       "parent": "Montréal",
       "population": 310125,
-      "source": "the mesh's municipality, with the riding token",
+      "source": "its municipality, with a compass word",
       "municipality": "Montréal",
-      "mesh_municipality": "Montréal",
-      "riding": "Pierre-Boucher—Les Patriotes—Verchères",
-      "riding_share_permille": 356,
-      "opens_year": 1867
+      "plain_unit": "Montréal",
+      "opens_year": 1867,
+      "settled": 1642,
+      "city_year": 1832
     },
     {
       "fed_id": "241369182",
-      "name": "Blainville",
+      "name": "Mirabel South-East",
       "role": "city",
       "parent": "Montréal",
       "population": 116910,
-      "source": "its own largest place",
-      "municipality": "Blainville",
-      "mesh_municipality": "Mirabel",
-      "riding": "Mirabel",
-      "riding_share_permille": 712,
-      "opens_year": 1867
+      "source": "its municipality, with a compass word",
+      "municipality": "Mirabel",
+      "plain_unit": "Mirabel",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "241369184",
-      "name": "Terrebonne",
+      "name": "Mascouche",
       "role": "city",
       "parent": "Montréal",
       "population": 90903,
-      "source": "its own largest place",
-      "municipality": "Terrebonne",
-      "mesh_municipality": "Mascouche",
-      "riding": "Montcalm",
-      "riding_share_permille": 822,
-      "opens_year": 1867
+      "source": "its municipality",
+      "municipality": "Mascouche",
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "241369186",
-      "name": "Sainte-Sophie",
+      "name": "Sainte-Anne-des-Plaines",
       "role": "city",
       "parent": "Montréal",
       "population": 46462,
-      "source": "its own largest place",
-      "municipality": "Sainte-Sophie",
-      "mesh_municipality": "Sainte-Anne-des-Plaines",
-      "riding": "Rivière-du-Nord",
-      "riding_share_permille": 607,
-      "opens_year": 1867
+      "source": "its municipality",
+      "municipality": "Sainte-Anne-des-Plaines",
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "241369284",
@@ -1024,25 +1022,25 @@
       "role": "core",
       "parent": "Québec",
       "population": 268405,
-      "source": "the mesh's municipality",
+      "source": "its municipality",
       "municipality": "Québec",
-      "mesh_municipality": "Québec",
-      "riding": "Louis-Hébert",
-      "riding_share_permille": 370,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": 1608,
+      "city_year": null
     },
     {
       "fed_id": "241369282",
-      "name": "Québec Bellechasse",
+      "name": "Lévis North-East",
       "role": "city",
       "parent": "Québec",
       "population": 186010,
-      "source": "a neighbouring municipality, with the riding token",
-      "municipality": "Québec",
-      "mesh_municipality": "Lévis",
-      "riding": "Bellechasse—Les Etchemins—Lévis",
-      "riding_share_permille": 710,
-      "opens_year": 1867
+      "source": "its municipality, with a compass word",
+      "municipality": "Lévis",
+      "plain_unit": "Lévis",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     },
     {
       "fed_id": "241369278",
@@ -1050,12 +1048,12 @@
       "role": "city",
       "parent": "Québec",
       "population": 49801,
-      "source": "the mesh's municipality",
+      "source": "its municipality",
       "municipality": "Lévis",
-      "mesh_municipality": "Lévis",
-      "riding": "Lévis—Lotbinière",
-      "riding_share_permille": 987,
-      "opens_year": 1867
+      "plain_unit": "",
+      "opens_year": 1867,
+      "settled": null,
+      "city_year": null
     }
   ],
   "names_borrowed": [
@@ -1139,8 +1137,8 @@
     },
     {
       "fed_id": "350051405",
-      "name": "Tillsonburg",
-      "from": "842ab43ffffffff",
+      "name": "St. Thomas",
+      "from": "852ab467fffffff",
       "role": "hex"
     },
     {
@@ -1175,7 +1173,7 @@
     },
     {
       "fed_id": "350052651",
-      "name": "Whitby",
+      "name": "Oshawa",
       "from": "852b9867fffffff",
       "role": "hex"
     },
@@ -1289,9 +1287,7 @@
       "year": 1894,
       "source": "https://www.thecanadianencyclopedia.ca/en/article/calgary",
       "city_hexes_opening_by_it": [
-        "Calgary Heritage",
-        "Calgary Foothills",
-        "Calgary Signal Hill"
+        "Calgary North-West"
       ]
     },
     {
@@ -1301,7 +1297,7 @@
       "year": 1894,
       "source": "https://www.thecanadianencyclopedia.ca/en/article/calgary",
       "city_hexes_opening_by_it": [
-        "Calgary Crowfoot"
+        "Calgary North"
       ]
     },
     {
@@ -1311,7 +1307,7 @@
       "year": 1904,
       "source": "https://www.thecanadianencyclopedia.ca/en/article/edmonton",
       "city_hexes_opening_by_it": [
-        "Edmonton St. Albert"
+        "Edmonton East"
       ]
     },
     {
@@ -1320,10 +1316,7 @@
       "csd": "4611040",
       "year": 1873,
       "source": "https://www.thecanadianencyclopedia.ca/en/article/winnipeg",
-      "city_hexes_opening_by_it": [
-        "Winnipeg Portage",
-        "Winnipeg Kildonan"
-      ]
+      "city_hexes_opening_by_it": []
     },
     {
       "parent": "8428de9ffffffff",
@@ -1364,11 +1357,10 @@
       "year": 1855,
       "source": "https://www.thecanadianencyclopedia.ca/en/article/ottawa",
       "city_hexes_opening_by_it": [
-        "Ottawa",
-        "Ottawa Nepean",
-        "Ottawa Kanata",
-        "Ottawa Lanark",
-        "Ottawa Carleton"
+        "Ottawa South-East",
+        "Ottawa West",
+        "Ottawa South-West",
+        "Ottawa East"
       ]
     },
     {
@@ -1385,9 +1377,7 @@
       "csd": "3525005",
       "year": 1846,
       "source": "https://www.thecanadianencyclopedia.ca/en/article/hamilton",
-      "city_hexes_opening_by_it": [
-        "Hamilton"
-      ]
+      "city_hexes_opening_by_it": []
     },
     {
       "parent": "842b9b7ffffffff",
@@ -1395,7 +1385,9 @@
       "csd": "3525005",
       "year": 1846,
       "source": "https://www.thecanadianencyclopedia.ca/en/article/hamilton",
-      "city_hexes_opening_by_it": []
+      "city_hexes_opening_by_it": [
+        "Hamilton South-East"
+      ]
     },
     {
       "parent": "842b9bdffffffff",
@@ -1404,8 +1396,8 @@
       "year": 1834,
       "source": "https://www.thecanadianencyclopedia.ca/en/article/toronto",
       "city_hexes_opening_by_it": [
-        "Toronto",
-        "Toronto Danforth"
+        "Toronto South-East",
+        "Toronto East"
       ]
     },
     {
@@ -1423,8 +1415,8 @@
       "year": 1832,
       "source": "https://www.thecanadianencyclopedia.ca/en/article/montreal",
       "city_hexes_opening_by_it": [
-        "Montréal Pierrefonds",
-        "Montréal Pierre-Boucher"
+        "Montréal West",
+        "Montréal North-East"
       ]
     },
     {
@@ -1433,9 +1425,7 @@
       "csd": "2423027",
       "year": 1833,
       "source": "https://www.thecanadianencyclopedia.ca/en/article/quebec-city",
-      "city_hexes_opening_by_it": [
-        "Québec Bellechasse"
-      ]
+      "city_hexes_opening_by_it": []
     }
   ],
   "city_years_changed": [
@@ -1527,9 +1517,9 @@
   ],
   "opens_year_counts": {
     "1867": 261,
-    "1870": 59,
+    "1870": 65,
     "1871": 44,
-    "1873": 7,
+    "1873": 5,
     "1874": 3,
     "1875": 3,
     "1877": 2,
@@ -1547,12 +1537,12 @@
     "1891": 1,
     "1892": 4,
     "1893": 1,
-    "1894": 7,
+    "1894": 5,
     "1895": 2,
     "1896": 1,
     "1897": 3,
     "1898": 3,
-    "1899": 4,
+    "1899": 2,
     "1901": 3,
     "1902": 2,
     "1903": 2,
@@ -1584,7 +1574,7 @@
   },
   "open_by_year": {
     "1867": 261,
-    "1885": 399,
+    "1885": 403,
     "1914": 458,
     "1945": 472,
     "1966": 494
@@ -1965,22 +1955,22 @@
     "1870": {
       "under_canada": 405,
       "in_a_province": 281,
-      "open": 320
+      "open": 326
     },
     "1871": {
       "under_canada": 472,
       "in_a_province": 348,
-      "open": 364
+      "open": 370
     },
     "1873": {
       "under_canada": 477,
       "in_a_province": 353,
-      "open": 371
+      "open": 375
     },
     "1885": {
       "under_canada": 475,
       "in_a_province": 367,
-      "open": 399
+      "open": 403
     },
     "1905": {
       "under_canada": 478,
@@ -2122,6 +2112,45 @@
       "mean_links_per_unit": "5.15"
     }
   },
+  "water_row_max": 3,
+  "water_links_in_adjacency": 83,
+  "water_links_in_links_only": 9,
+  "ferries": [
+    {
+      "a": 100052022,
+      "b": 120052085,
+      "length": 8,
+      "from": "Cape Breton",
+      "to": "Channel-Port aux Basques",
+      "a_name": "Stephenville",
+      "b_name": "Cape Breton"
+    }
+  ],
+  "groups_through_adjacency_rows": [
+    {
+      "size": 493,
+      "units": [
+        "Pouch Cove",
+        "Bay Roberts",
+        "St. John's",
+        "Holyrood",
+        "Bonavista",
+        "Clarenville",
+        "Marystown",
+        "Springdale",
+        "Lewisporte",
+        "Gander",
+        "Grand Falls-Windsor",
+        "Twillingate"
+      ]
+    },
+    {
+      "size": 1,
+      "units": [
+        "Iqaluit"
+      ]
+    }
+  ],
   "land_groups": [
     {
       "size": 462,
@@ -2231,9 +2260,9 @@
   "water_links_added_to_join_groups": [],
   "links_total": {
     "land": 1182,
-    "water": 91
+    "water": 92
   },
-  "routes": 460,
+  "routes": 461,
   "atlas_years": [
     {
       "from_year": 1867,
