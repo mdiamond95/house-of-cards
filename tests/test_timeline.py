@@ -178,3 +178,28 @@ def test_a_director_scenario_renders_without_engine_sections(tmp_path):
     text = (site_dir / "houses" / f"{site.slugify(house)}.html").read_text(encoding="utf-8")
     assert "<h2>State</h2>" not in text
     assert "<h2>House block</h2>" in text
+
+
+def test_timeline_replays_a_game_where_a_unit_is_taken_and_lost_in_one_year(tmp_path):
+    """Phase D2: under rules 1.0 a holding can be taken and lost in one year (a
+    contest, a fall). The timeline applies every move in the order its event
+    happened, so it lands on the map the database holds, not on the taking."""
+    from hoc import rules_data
+
+    conn = load_seed.build(tmp_path / "ten.db", seed=scenario.blank_seed_dir(),
+                           reference_data="meridian-hex-v1.0.5")
+    world = sim.World(conn, rules=rules_data.load_rules(version="1.0"), world_seed=1905,
+                      seasons_dir=tmp_path / "seasons")
+    with conn:
+        world.initialise(1905)
+        for _ in range(59):
+            world.run_season()
+    data = timeline.build_timeline(conn)
+    owners = {}
+    for season in sorted(data["changes"], key=int):
+        owners.update(data["changes"][season])
+    replayed = {fed: house for fed, house in owners.items() if house is not None}
+    actual = {row["fed_id"]: row["house"] for row in conn.execute(
+        "SELECT fed_id, house FROM holdings WHERE released_event_id IS NULL")}
+    assert replayed == actual
+    conn.close()

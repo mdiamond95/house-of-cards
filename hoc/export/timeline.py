@@ -51,27 +51,23 @@ def build_timeline(conn):
     latest = conn.execute("SELECT MAX(season_no) AS n FROM seasons").fetchone()["n"] or 0
 
     cache = {}
-    # changes[season][fed_id] = house or None. A riding that changes hands twice
-    # in one season keeps only where it ended up, which is all the map can show.
-    changes = defaultdict(dict)
+    # changes[season][fed_id] = house or None: where each riding ended the
+    # season, which is all the map can show. Every acquisition and release is
+    # applied in the order its event happened (event ids are that order), a
+    # release before an acquisition in one event, so a riding taken and lost
+    # in one season reads as lost and one lost and re-taken reads as taken.
+    moves = []
     for row in conn.execute(
         "SELECT fed_id, house, acquired_event_id, released_event_id FROM holdings"
         " ORDER BY id"
     ):
-        acquired = _season_of(conn, row["acquired_event_id"], cache)
-        changes[acquired][row["fed_id"]] = row["house"]
+        moves.append((row["acquired_event_id"] or 0, 1, row["fed_id"], row["house"],
+                      row["acquired_event_id"]))
         if row["released_event_id"] is not None:
-            released = _season_of(conn, row["released_event_id"], cache)
-            # Only record the vacancy if nothing else claimed the riding that
-            # same season; otherwise the later claim is the truth of the frame.
-            changes[released].setdefault(row["fed_id"], None)
-
-    # A riding released and re-taken in one season must read as taken.
-    for season, entries in changes.items():
-        for fed_id, house in list(entries.items()):
-            if house is None:
-                continue
-            entries[fed_id] = house
+            moves.append((row["released_event_id"], 0, row["fed_id"], None, row["released_event_id"]))
+    changes = defaultdict(dict)
+    for _, _, fed_id, house, event_id in sorted(moves, key=lambda m: (m[0], m[1])):
+        changes[_season_of(conn, event_id, cache)][fed_id] = house
 
     houses = {}
     for row in conn.execute(
