@@ -119,6 +119,15 @@ export class ReferenceMap {
     return this.landNeighbours.get(fedId) ?? [];
   }
 
+  // Land neighbours, and under rules 1.0 `water_crossings` water neighbours
+  // too, in fed_id order (hoc/sim.py's IN ('land', 'water') joins).
+  linked(fedId, water) {
+    const land = this.land(fedId);
+    if (!water) return land;
+    const both = new Set([...land, ...(this.waterNeighbours.get(fedId) ?? [])]);
+    return [...both].sort(compareStrings);
+  }
+
   places(fedId) {
     return this.placesByRiding.get(fedId) ?? [];
   }

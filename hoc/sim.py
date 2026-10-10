@@ -411,6 +411,10 @@ class World:
                 for c in self.rules.game["chapters"]
             ]
         self.actions = {a.action: a for a in self.rules.actions}
+        # Rules 1.0 `water_crossings`: the adjacency rows that join two houses'
+        # ground and give expansion and claim targets. Enclosure, cohesion and
+        # contiguity always read land rows alone.
+        self._linked = "('land', 'water')" if self.feature("water_crossings") else "('land')"
         self.objectives = {o.objective: o for o in self.rules.objectives}
         self.communities_by_region = defaultdict(list)
         for community in self.rules.communities:
@@ -555,6 +559,27 @@ class World:
             return 0
         stats = self.riding_stats.get(fed_id) or {}
         return stats.get("wealth_tier", NEUTRAL_WEALTH_TIER) - NEUTRAL_WEALTH_TIER
+
+    def expand_cost(self, house, fed_id):
+        """What a successful Expand into `fed_id` costs: 15 + (wealth_tier - 3)
+        under `riding_endowments`, and under rules 1.0 `water_crossings` the
+        board's water cost when the house reaches it across water: a water row
+        joins it to one of the house's holdings and no land row does. Read
+        before the riding is taken."""
+        cost = 15 + self.wealth_offset(fed_id)
+        if self.feature("water_crossings"):
+            kinds = {
+                row["adjacency_type"] for row in self.conn.execute(
+                    "SELECT DISTINCT a.adjacency_type FROM adjacency a"
+                    " JOIN holdings h ON h.released_event_id IS NULL AND h.house = ?"
+                    "   AND h.fed_id = CASE WHEN a.fed_id_a = ? THEN a.fed_id_b ELSE a.fed_id_a END"
+                    " WHERE a.fed_id_a = ? OR a.fed_id_b = ?",
+                    (house, fed_id, fed_id, fed_id),
+                )
+            }
+            if "water" in kinds and "land" not in kinds:
+                cost += self.rules.board["water_crossings"]["expand_cost"]
+        return cost
 
     def jurisdiction_name(self, fed_id, year):
         """The name of the jurisdiction the riding lay under in `year`, from
@@ -748,7 +773,7 @@ class World:
             row["fed_id"]
             for row in self.conn.execute(
                 "SELECT DISTINCT r.fed_id FROM ridings r"
-                " JOIN adjacency a ON a.adjacency_type = 'land'"
+                f" JOIN adjacency a ON a.adjacency_type IN {self._linked}"
                 "   AND (a.fed_id_a = r.fed_id OR a.fed_id_b = r.fed_id)"
                 " JOIN holdings mine ON mine.released_event_id IS NULL AND mine.house = ?"
                 "   AND mine.fed_id = CASE WHEN a.fed_id_a = r.fed_id THEN a.fed_id_b ELSE a.fed_id_a END"
@@ -1196,6 +1221,10 @@ class World:
                 "purpose": "founding.jurisdiction",
                 "result": {"riding": self._riding_name(fed_id), "jurisdiction": seat_jurisdiction},
             })
+        block = self.block_grant(fed_id)
+        if block:
+            founding_delta["block"] = [self._riding_name(f) for f in block]
+        granted = (" with " + ", ".join(self._riding_name(f) for f in block)) if block else ""
         event_id = self.record(
             "founding",
             f"{drawn['peerage']} founded",
@@ -1204,7 +1233,7 @@ class World:
             band=self.band_for(self.year_now()) if self.feature("world_calendar") else "confederation",
             line=f"Season {season} · {drawn['peerage']} is created, seated at "
                  f"{self._riding_name(fed_id)}"
-                 f"{self._jurisdiction_suffix(fed_id, self._founding_year())}.",
+                 f"{self._jurisdiction_suffix(fed_id, self._founding_year())}{granted}.",
             delta=founding_delta,
         )
         self.conn.execute(
@@ -1212,9 +1241,39 @@ class World:
             " VALUES (?, ?, 1, ?, ?)",
             (house, fed_id, primary, event_id),
         )
+        for extra in block:
+            self.conn.execute(
+                "INSERT INTO holdings (house, fed_id, seat_order, hex, acquired_event_id)"
+                " VALUES (?, ?, ?, ?, ?)",
+                (house, extra, mechanics._next_seat_order(self.conn, house),
+                 mechanics._expansion_hex(self.conn, house), event_id),
+            )
 
         self._draw_founding_objectives(house, season, rng)
         return house
+
+    def block_grant(self, fed_id):
+        """Rules 1.0 `block_grants`: the hexagons a Crown founding on `fed_id`
+        grants beside its seat — when the seat is resolution 4, up to
+        board.json's block_grants.extra_hexes of its land neighbours that are
+        open at the founding year, unclaimed and resolution 4, the most
+        populous first, ties to the lower fed_id (docs/DETERMINISM.md, "Block
+        grants"). [] for a city hex, a set without riding_stats.csv's
+        `resolution`, or with the flag off."""
+        if not self.feature("block_grants"):
+            return []
+        stats = self.riding_stats
+        if (stats.get(fed_id) or {}).get("resolution") != 4:
+            return []
+        year = self._founding_year()
+        candidates = [
+            n for n in self._land_neighbours(fed_id)
+            if (stats.get(n) or {}).get("resolution") == 4
+            and mechanics._holder_of(self.conn, n) is None
+            and self.riding_open(n, year)
+        ]
+        candidates.sort(key=lambda n: (-stats[n]["population"], n))
+        return candidates[: self.rules.board["block_grants"]["extra_hexes"]]
 
     def _draw_founding_objectives(self, house, season, rng):
         row = self.house_row(house)
@@ -2136,7 +2195,7 @@ class World:
             " JOIN houses h ON h.house = s.house AND h.status = 'active'"
             " WHERE s.capital >= 50 AND s.house <> ?"
             "   AND EXISTS (SELECT 1 FROM holdings mine"
-            "               JOIN adjacency a ON a.adjacency_type = 'land'"
+            f"               JOIN adjacency a ON a.adjacency_type IN {self._linked}"
             "                 AND (a.fed_id_a = mine.fed_id OR a.fed_id_b = mine.fed_id)"
             "               JOIN holdings theirs ON theirs.released_event_id IS NULL"
             "                 AND theirs.house = s.house"
@@ -2298,7 +2357,7 @@ class World:
             row["house"]
             for row in self.conn.execute(
                 "SELECT DISTINCT theirs.house FROM holdings mine"
-                " JOIN adjacency a ON a.adjacency_type = 'land'"
+                f" JOIN adjacency a ON a.adjacency_type IN {self._linked}"
                 "   AND (a.fed_id_a = mine.fed_id OR a.fed_id_b = mine.fed_id)"
                 " JOIN holdings theirs ON theirs.released_event_id IS NULL"
                 "   AND theirs.fed_id = CASE WHEN a.fed_id_a = mine.fed_id"
@@ -2322,7 +2381,7 @@ class World:
             return self._turn_cache[key]
         rows = self.conn.execute(
             "SELECT DISTINCT theirs.fed_id, theirs.seat_order FROM holdings mine"
-            " JOIN adjacency a ON a.adjacency_type = 'land'"
+            f" JOIN adjacency a ON a.adjacency_type IN {self._linked}"
             "   AND (a.fed_id_a = mine.fed_id OR a.fed_id_b = mine.fed_id)"
             " JOIN holdings theirs ON theirs.released_event_id IS NULL"
             "   AND theirs.house = ?"
@@ -2655,7 +2714,7 @@ class World:
             (row["house"], row["fed_id"])
             for row in self.conn.execute(
                 "SELECT DISTINCT theirs.house AS house, theirs.fed_id AS fed_id FROM holdings mine"
-                " JOIN adjacency a ON a.adjacency_type = 'land'"
+                f" JOIN adjacency a ON a.adjacency_type IN {self._linked}"
                 "   AND (a.fed_id_a = mine.fed_id OR a.fed_id_b = mine.fed_id)"
                 " JOIN holdings theirs ON theirs.released_event_id IS NULL"
                 "   AND theirs.fed_id = CASE WHEN a.fed_id_a = mine.fed_id"
@@ -2895,7 +2954,7 @@ class World:
         if kind == "frontier":
             return [
                 (None, fed_id) for fed_id in self.open_expansion_targets(house)
-                if self._affords(house, spec, None, 15 + self.wealth_offset(fed_id))
+                if self._affords(house, spec, None, self.expand_cost(house, fed_id))
             ]
         if kind == "Purchase riding":
             if row["capital"] < 70 or not self._affords(house, spec, None):
@@ -3326,13 +3385,15 @@ class World:
                  f"{self._jurisdiction_suffix(fed_id, year)}.",
             delta=delta,
         )
+        # Read before the riding is taken (rules 1.0 `water_crossings`).
+        cost = self.expand_cost(house, fed_id)
         self.conn.execute(
             "INSERT INTO holdings (house, fed_id, seat_order, hex, acquired_event_id)"
             " VALUES (?, ?, ?, ?, ?)",
             (house, fed_id, mechanics._next_seat_order(self.conn, house),
              mechanics._expansion_hex(self.conn, house), event_id),
         )
-        self.set_stats(house, capital=-(15 + self.wealth_offset(fed_id)))
+        self.set_stats(house, capital=-cost)
         return name
 
     def _land_neighbours(self, fed_id):
@@ -3364,7 +3425,7 @@ class World:
             ]
             if beside:
                 second = rng.choice(beside, purpose=f"frontier.second.{house}")
-                if self.house_row(house)["capital"] >= 15 + self.wealth_offset(second):
+                if self.house_row(house)["capital"] >= self.expand_cost(house, second):
                     outcome["second"] = self._settle(house, second, season, band, roll, s["id"])
         return outcome
 
@@ -3636,7 +3697,7 @@ class World:
                 "SELECT DISTINCT MIN(mine.house, theirs.house) AS a,"
                 "                MAX(mine.house, theirs.house) AS b"
                 " FROM holdings mine"
-                " JOIN adjacency adj ON adj.adjacency_type = 'land'"
+                f" JOIN adjacency adj ON adj.adjacency_type IN {self._linked}"
                 "   AND (adj.fed_id_a = mine.fed_id OR adj.fed_id_b = mine.fed_id)"
                 " JOIN holdings theirs ON theirs.released_event_id IS NULL"
                 "   AND theirs.fed_id = CASE WHEN adj.fed_id_a = mine.fed_id"
@@ -4049,6 +4110,8 @@ class World:
                  f"{self._jurisdiction_suffix(fed_id, year)}.",
             delta=expansion_delta,
         )
+        # Read before the riding is taken (rules 1.0 `water_crossings`).
+        cost = self.expand_cost(house, fed_id)
         self.conn.execute(
             "INSERT INTO holdings (house, fed_id, seat_order, hex, acquired_event_id)"
             " VALUES (?, ?, ?, ?, ?)",
@@ -4061,7 +4124,7 @@ class World:
             ),
         )
         # Rules 0.9 `riding_endowments`: 15 + (wealth_tier - 3) of the target.
-        self.set_stats(house, capital=-(15 + self.wealth_offset(fed_id)))
+        self.set_stats(house, capital=-cost)
         outcome = {"action": "Expand", "success": True, "riding": name}
         if jurisdiction is not None:
             outcome["jurisdiction"] = jurisdiction

@@ -335,6 +335,27 @@ hexagon's span at each year from 1867, a district of the North-West Territories 
 drawn as the Territories (Keewatin apart, 1876–1904), and starts a new feature set whenever
 any hexagon's first-order jurisdiction, name, sovereign or status changes.
 
+## The hex board's flags (rules 1.0)
+
+- **`water_crossings`.** Both engines read the adjacency rows with `adjacency_type` in
+  `('land', 'water')` where the flag joins two houses' ground. That covers expansion
+  targets, claim targets, neighbouring houses, bordering pairs, an adjacent holding and
+  a forced sale's buyer. Everything else reads `'land'` alone.
+  - The JavaScript engine's `ReferenceMap.linked(fedId, water)` is the land list, or
+    the sorted union of the land and water lists.
+  - An Expand's cost is read before the riding is taken. It is 15 + (wealth_tier − 3),
+    plus `board.json` `water_crossings.expand_cost` when a water row joins the target
+    to one of the house's holdings and no land row does.
+- **`block_grants`.** After a Crown founding seats a house on `fed_id`, and only when
+  `riding_stats.csv` gives it `resolution` 4, the block is the seat's land neighbours
+  (in fed_id order) that have `resolution` 4, no holder, and are open at the founding
+  year (`riding_open`).
+  - They are sorted by population descending, ties to the lower fed_id, and the first
+    `board.json` `block_grants.extra_hexes` are taken.
+  - They become the house's holdings 2, 3, … in that order, each acquired by the
+    founding event, which names them (`block`).
+  - No draw is made, so the season's draws are those of a founding without the block.
+
 ## Worked examples
 
 All values below are produced by both engines. `tests/test_prng.py` pins them as literals.

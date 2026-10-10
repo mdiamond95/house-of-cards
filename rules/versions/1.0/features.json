@@ -17,5 +17,7 @@
   "world_calendar": true,
   "crises": true,
   "round_record": true,
-  "dated_openings": true
+  "dated_openings": true,
+  "water_crossings": true,
+  "block_grants": true
 }

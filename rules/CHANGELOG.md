@@ -617,3 +617,24 @@ What it does to the riding sets: they hold two ridings the atlas takes out of Ca
 - The story trial's ten seeds (1867–1876) on `meridian-v1.0.3`: nine are identical. Seed 1874 is identical through 1932, and in 1933 a house's scheme choice reads Labrador. Every §6 target that was met is still met; the first house at the reckoning is an Earl or higher in 10 of 10, where it was 9.
 
 The riding preview (seed 1867) is unchanged. On `meridian-hex-v1.0.5`, every §6 target is met on the mean, untuned (docs/hex-trial/v2/trial-table.md).
+
+### The hex board, step 3: `water_crossings` and `block_grants` (10 October 2026)
+
+Two new flags in the draft, approved by the director: false in 0.7–0.9, on in 1.0, in both engines. Their numbers are in a new table, `board.json`.
+
+**`water_crossings`.** A water row of `adjacency.csv` counts as adjacency for expansion targets, claim targets and neighbouring houses.
+- An Expand across water costs `water_crossings.expand_cost` (5) more.
+- Enclosure, cohesion and contiguity stay land only.
+- The rebuilt board keeps a water row only for a water link of 3 hexagons or fewer, plus the director's ferry (Cape Breton–Stephenville).
+
+**`block_grants`.** A Crown founding on a resolution-4 hexagon also grants up to `block_grants.extra_hexes` (2) open, unclaimed resolution-4 neighbours, the most populous first. A city hex is granted alone.
+
+What motivated them: on the hex board the islands could be reached by no expansion (32 units), and a founding seated a house on one hexagon of a map three times finer than the ridings.
+
+What they do to the riding sets: nothing. Neither set has a water row or a `resolution` column, and the season files of seeds 1867, 2 and 3 on both are identical with the flags on and off over 100 turns (`tests/test_board_flags.py`).
+
+On seed 1867 on the hex board:
+- 16 of 30 foundings are granted a block, 31 hexagons in all;
+- 8 expansions cross water.
+
+`land_rush`, the third flag of the brief, and the tuning that follows it wait on the rest of the director's brief, which arrived cut off.
