@@ -1,96 +1,96 @@
-| metric | ridings, first trial (9 Oct) | hexes v1.0.4, first trial (9 Oct) | ridings, now (dated_openings) | hexes v1.0.5 |
-|---|---|---|---|---|
-| §6 actions aimed at another house (target ≥ 30%) | 32% (27–36) | 30% (23–39) | 32% (27–36) | 30% (19–37) |
-| §6 riding passes per turn after 20 (target ≥ 0.33) | 0.34 (0.16–0.47) | 0.33 (0.17–0.57) | 0.35 (0.19–0.47) | 0.34 (0.24–0.46) |
-| ridings passing between houses, all turns | 27.8 (14–38) | 26.5 (14–48) | 28.0 (16–38) | 27.6 (19–37) |
-| §6 lead changes (target ≥ 4) | 18.0 (3–27) | 17.9 (9–28) | 18.2 (3–27) | 17.6 (11–26) |
-| §6 longest single lead, turns (target ≤ 50) | 26.8 (15–52) | 27.8 (12–72) | 26.7 (14–52) | 22.7 (14–39) |
-| §6 chapters II–V with top-eight churn (target 4) | 4.0 (4–4) | 4.0 (4–4) | 4.0 (4–4) | 4.0 (4–4) |
-| D1 turns with a headline ≥ pause (target 40–65%) | 57% (43–63) | 55% (47–69) | 57% (45–63) | 54% (44–65) |
-| §6 longest quiet run after turn 10 (target ≤ 3) | 0.0 (0–0) | 0.0 (0–0) | 0.0 (0–0) | 0.0 (0–0) |
-| §6 houses active at turn 100 (target 20–40) | 21.8 (18–30) | 22.7 (19–26) | 22.1 (18–30) | 21.9 (18–27) |
-| D1 ranks spanned by the top eight at turn 60 (target ≥ 3) | 3.2 (3–4) | 3.8 (3–5) | 3.2 (3–4) | 3.4 (2–5) |
-| D1 rise and decline storylines (target ≤ 20) | 12.8 (6–21) | 14.2 (7–19) | 12.9 (7–21) | 11.0 (6–18) |
-| D1 turns that pause Auto (target 15–30%) | 24% (18–28) | 25% (17–33) | 24% (18–28) | 27% (22–33) |
-| D1 ridings in play held at turn 25 (no target) | 22% (19–24) | 17% (14–22) | 22% (19–24) | 15% (12–17) |
-| D1 ridings in play held at turn 50 (no target) | 38% (31–47) | 30% (25–35) | 38% (31–47) | 28% (23–33) |
-| D1 ridings in play held at turn 75 (no target) | 30% (21–45) | 24% (20–33) | 30% (21–45) | 25% (20–34) |
-| D1 ridings in play held at turn 100 (no target) | 46% (39–59) | 36% (28–42) | 46% (39–59) | 34% (27–45) |
-| §6 storylines of 5+ beats (target ≥ 8) | 32.1 (25–39) | 31.3 (21–41) | 32.4 (25–39) | 29.6 (18–39) |
-| §6 closed storylines without an outcome (target 0) | 0.0 (0–0) | 0.0 (0–0) | 0.0 (0–0) | 0.0 (0–0) |
-| houses active at turn 25 | 23.0 (21–24) | 22.8 (20–24) | 23.0 (21–24) | 22.9 (21–24) |
-| houses active at turn 50 | 23.1 (21–27) | 22.3 (19–26) | 23.1 (21–27) | 22.4 (20–25) |
-| units of the whole map held at turn 25 | 21% (19–23) | 17% (14–21) | 21% (19–23) | 15% (12–17) |
-| units of the whole map held at turn 50 | 37% (30–46) | 29% (24–33) | 37% (30–46) | 27% (23–32) |
-| units of the whole map held at turn 75 | 29% (21–44) | 23% (20–32) | 29% (21–44) | 24% (19–33) |
-| units of the whole map held at turn 100 | 46% (39–59) | 36% (28–42) | 46% (39–59) | 34% (27–45) |
-| ridings claimed at turn 25 | 72.5 (65–80) | 73.1 (61–93) | 72.5 (65–80) | 71.9 (58–83) |
-| ridings claimed at turn 50 | 126.9 (104–158) | 126.2 (107–147) | 126.9 (104–158) | 134.8 (112–159) |
-| ridings claimed at turn 100 | 156.8 (135–204) | 160.0 (125–183) | 159.1 (135–204) | 166.0 (131–222) |
-| Crown foundings by turn 25 | 24.0 (24–24) | 24.0 (24–24) | 24.0 (24–24) | 24.0 (24–24) |
-| most Crown foundings in ten turns after 40 | 0.7 (0–1) | 0.7 (0–1) | 0.7 (0–1) | 0.7 (0–1) |
-| D1 median capital at turn 100 (target 30–70) | 45.2 (32–52.5) | 44.2 (35–54.5) | 44.8 (32–52.5) | 49.0 (39–71) |
-| §6 median influence at turn 100 (target 40–70) | 55.2 (39–70) | 56.8 (50–67) | 55.3 (39–70) | 56.8 (40–65) |
-| §6 median cohesion at turn 100 (target 55–85) | 81.7 (62–94.5) | 85.8 (72.5–96.5) | 82.0 (62–94.5) | 77.0 (59–90.5) |
-| §6 median turns a rivalry runs (target 4–10) | 9.1 (7–13) | 9.1 (5–15) | 9.7 (7–15) | 7.9 (4–15) |
-| §6 houses fallen or removed by turn 100 (target 4–10) | 7.5 (6–12) | 8.5 (3–12) | 7.5 (6–12) | 9.3 (6–13) |
-| §6 rivalries reconciled (target ≤ 40%) | 11% (4–23) | 17% (8–35) | 10% (4–19) | 16% (10–26) |
-| §6 rivalries ended by contest, cession under a claim or a fall (target ≥ 25%) | 51% (38–58) | 44% (26–65) | 51% (38–58) | 50% (33–63) |
-| D1 contests resolved (target 20–35) | 22.9 (11–32) | 16.3 (6–43) | 22.8 (10–32) | 20.5 (11–33) |
-| §6 contests the attacker won (target 35–60%) | 51% (34–64) | 54% (45–67) | 51% (34–64) | 52% (40–70) |
-| §6 claims answered by their target (target ≥ 50%) | 61% (49–74) | 68% (55–78) | 62% (49–79) | 63% (51–77) |
-| §6 ended schemes that reached resolution (target ≥ 60%) | 78% (74–84) | 79% (77–84) | 78% (74–84) | 80% (74–85) |
-| §6 median turns a resolved scheme runs (target 3–6) | 3.0 (3–3) | 3.0 (3–3) | 3.0 (3–3) | 3.0 (3–3) |
-| §6 turns after 15 with 3+ cast schemes (target ≥ 80%) | 99% (98–100) | 99% (99–100) | 99% (98–100) | 100% (100–100) |
-| D1 crises with both camps non-empty (target ≥ 70%) | 92% (89–100) | 91% (83–100) | 92% (89–100) | 91% (83–100) |
-| D1 crises carried by those who lead | 40% (17–61) | 45% (11–72) | 40% (17–61) | 44% (28–56) |
-| D1 games ending with a reckoning (target 100%) | 100% (100–100) | 100% (100–100) | 100% (100–100) | 100% (100–100) |
-| D1 first house at the end an Earl or higher (target ≥ 80%) | 90% (0–100) | 70% (0–100) | 100% (100–100) | 100% (100–100) |
-| D1 a Marquis or Duke active at turn 100 (target ≥ 80%) | 100% (100–100) | 100% (100–100) | 100% (100–100) | 100% (100–100) |
-| D1 a Duke created (target ≥ 30%) | 60% (0–100) | 70% (0–100) | 60% (0–100) | 80% (0–100) |
-| elevations a game | 22.0 (13–27) | 21.3 (12–31) | 21.5 (8–27) | 25.3 (22–30) |
-| storylines of 5+ beats: decline | 2.3 (0–6) | 2.9 (0–6) | 2.4 (0–6) | 2.0 (0–4) |
-| storylines of 5+ beats: frontier | 4.9 (3–7) | 5.6 (4–7) | 5.0 (3–7) | 5.5 (4–7) |
-| storylines of 5+ beats: rise | 1.8 (0–4) | 1.4 (0–4) | 1.8 (0–4) | 1.9 (0–3) |
-| storylines of 5+ beats: rivalry | 18.7 (13–27) | 16.8 (6–25) | 19.0 (14–27) | 16.1 (8–23) |
-| storylines of 5+ beats: succession | 4.4 (2–6) | 4.6 (0–9) | 4.2 (2–6) | 3.9 (2–8) |
-| storylines of 5+ beats: union | — | — | — | 0.2 (0–1) |
-| headlines in: decline | 3% (0–7) | 4% (1–8) | 3% (0–7) | 3% (1–6) |
-| headlines in: frontier | 2% (1–2) | 2% (1–3) | 2% (1–2) | 2% (1–3) |
-| headlines in: none | 34% (25–42) | 38% (25–48) | 34% (25–39) | 36% (22–49) |
-| headlines in: rise | 3% (0–5) | 4% (0–9) | 3% (0–5) | 5% (0–10) |
-| headlines in: rivalry | 50% (46–60) | 44% (25–58) | 50% (46–60) | 45% (37–61) |
-| headlines in: succession | 8% (4–12) | 7% (3–15) | 8% (4–12) | 7% (4–10) |
-| headlines in: union | 1% (0–2) | 1% (0–4) | 1% (0–2) | 2% (1–4) |
-| held at turn 100 in: bc | 22% (0–58) | 22% (0–42) | 22% (0–58) | 13% (0–43) |
-| held at turn 100 in: maritime | 35% (0–62) | 32% (14–51) | 35% (0–69) | 27% (1–48) |
-| held at turn 100 in: north | 7% (0–33) | 7% (0–33) | 7% (0–33) | 0% (0–0) |
-| held at turn 100 in: ontario | 69% (48–87) | 65% (41–91) | 70% (48–87) | 63% (48–74) |
-| held at turn 100 in: prairie | 18% (3–46) | 11% (0–27) | 19% (3–46) | 9% (2–26) |
-| held at turn 100 in: quebec | 51% (29–82) | 54% (29–72) | 52% (29–82) | 49% (28–73) |
-| held at turn 25 in: bc | 11% (0–28) | 8% (0–13) | 11% (0–28) | 5% (0–13) |
-| held at turn 25 in: maritime | 20% (9–41) | 16% (8–32) | 20% (9–41) | 16% (5–27) |
-| held at turn 25 in: north | 0% (0–0) | 0% (0–0) | 0% (0–0) | 0% (0–0) |
-| held at turn 25 in: ontario | 31% (18–44) | 33% (22–56) | 31% (18–44) | 28% (18–42) |
-| held at turn 25 in: prairie | 7% (2–15) | 3% (0–8) | 7% (2–15) | 4% (0–12) |
-| held at turn 25 in: quebec | 25% (18–32) | 25% (9–39) | 25% (18–32) | 17% (13–26) |
-| held at turn 50 in: bc | 18% (0–56) | 18% (0–33) | 18% (0–56) | 8% (0–25) |
-| held at turn 50 in: maritime | 31% (0–53) | 26% (9–51) | 31% (0–53) | 25% (10–42) |
-| held at turn 50 in: north | 0% (0–0) | 7% (0–33) | 0% (0–0) | 0% (0–0) |
-| held at turn 50 in: ontario | 57% (39–72) | 54% (29–73) | 57% (39–72) | 52% (42–59) |
-| held at turn 50 in: prairie | 12% (3–25) | 7% (0–15) | 12% (3–25) | 8% (0–21) |
-| held at turn 50 in: quebec | 40% (14–64) | 41% (21–56) | 40% (14–64) | 38% (28–57) |
-| held at turn 75 in: bc | 17% (0–60) | 14% (0–48) | 17% (0–60) | 8% (0–25) |
-| held at turn 75 in: maritime | 11% (0–31) | 22% (1–42) | 11% (0–31) | 15% (1–27) |
-| held at turn 75 in: north | 0% (0–0) | 3% (0–33) | 0% (0–0) | 0% (0–0) |
-| held at turn 75 in: ontario | 52% (30–73) | 47% (26–67) | 52% (30–73) | 49% (33–64) |
-| held at turn 75 in: prairie | 8% (0–25) | 5% (0–15) | 8% (0–25) | 6% (0–17) |
-| held at turn 75 in: quebec | 26% (12–54) | 30% (9–48) | 27% (12–54) | 34% (16–48) |
-| rivalries: a house removed | 7.9 (2–13) | 8.0 (2–17) | 7.7 (2–13) | 7.1 (3–14) |
-| rivalries: a riding changed hands | 2.4 (1–7) | 4.0 (1–8) | 2.3 (1–7) | 3.7 (0–6) |
-| rivalries: ceded under a claim | 1.6 (0–5) | 1.1 (0–3) | 1.7 (0–5) | 1.0 (0–2) |
-| rivalries: held in a contest | 11.3 (5–21) | 7.2 (3–22) | 11.2 (4–21) | 9.3 (4–14) |
-| rivalries: lapsed | 21.7 (11–29) | 15.7 (10–21) | 22.0 (11–29) | 14.1 (8–23) |
-| rivalries: open | 9.3 (3–20) | 9.2 (6–15) | 10.0 (5–20) | 7.6 (1–13) |
-| rivalries: reconciled | 6.5 (2–12) | 8.7 (5–16) | 6.0 (2–10) | 8.4 (4–13) |
-| rivalries: won in a contest | 10.7 (6–16) | 8.2 (3–19) | 10.7 (6–16) | 9.7 (6–15) |
+| metric | ridings, first trial (9 Oct) | hexes v1.0.4, first trial (9 Oct) | ridings, now (dated_openings) | hexes v1.0.5, step 2 (dated_openings) | hexes v1.0.5, step 3 (water_crossings, block_grants) |
+|---|---|---|---|---|---|
+| §6 actions aimed at another house (target ≥ 30%) | 32% (27–36) | 30% (23–39) | 32% (27–36) | 30% (19–37) | 32% (27–39) |
+| §6 riding passes per turn after 20 (target ≥ 0.33) | 0.34 (0.16–0.47) | 0.33 (0.17–0.57) | 0.35 (0.19–0.47) | 0.34 (0.24–0.46) | 0.47 (0.35–0.56) |
+| ridings passing between houses, all turns | 27.8 (14–38) | 26.5 (14–48) | 28.0 (16–38) | 27.6 (19–37) | 37.9 (29–45) |
+| §6 lead changes (target ≥ 4) | 18.0 (3–27) | 17.9 (9–28) | 18.2 (3–27) | 17.6 (11–26) | 18.6 (10–25) |
+| §6 longest single lead, turns (target ≤ 50) | 26.8 (15–52) | 27.8 (12–72) | 26.7 (14–52) | 22.7 (14–39) | 26.6 (12–51) |
+| §6 chapters II–V with top-eight churn (target 4) | 4.0 (4–4) | 4.0 (4–4) | 4.0 (4–4) | 4.0 (4–4) | 4.0 (4–4) |
+| D1 turns with a headline ≥ pause (target 40–65%) | 57% (43–63) | 55% (47–69) | 57% (45–63) | 54% (44–65) | 59% (49–63) |
+| §6 longest quiet run after turn 10 (target ≤ 3) | 0.0 (0–0) | 0.0 (0–0) | 0.0 (0–0) | 0.0 (0–0) | 0.0 (0–0) |
+| §6 houses active at turn 100 (target 20–40) | 21.8 (18–30) | 22.7 (19–26) | 22.1 (18–30) | 21.9 (18–27) | 21.6 (17–28) |
+| D1 ranks spanned by the top eight at turn 60 (target ≥ 3) | 3.2 (3–4) | 3.8 (3–5) | 3.2 (3–4) | 3.4 (2–5) | 3.6 (3–4) |
+| D1 rise and decline storylines (target ≤ 20) | 12.8 (6–21) | 14.2 (7–19) | 12.9 (7–21) | 11.0 (6–18) | 15.2 (11–18) |
+| D1 turns that pause Auto (target 15–30%) | 24% (18–28) | 25% (17–33) | 24% (18–28) | 27% (22–33) | 29% (22–35) |
+| D1 ridings in play held at turn 25 (no target) | 22% (19–24) | 17% (14–22) | 22% (19–24) | 15% (12–17) | 21% (16–24) |
+| D1 ridings in play held at turn 50 (no target) | 38% (31–47) | 30% (25–35) | 38% (31–47) | 28% (23–33) | 31% (27–35) |
+| D1 ridings in play held at turn 75 (no target) | 30% (21–45) | 24% (20–33) | 30% (21–45) | 25% (20–34) | 26% (20–33) |
+| D1 ridings in play held at turn 100 (no target) | 46% (39–59) | 36% (28–42) | 46% (39–59) | 34% (27–45) | 37% (27–47) |
+| §6 storylines of 5+ beats (target ≥ 8) | 32.1 (25–39) | 31.3 (21–41) | 32.4 (25–39) | 29.6 (18–39) | 29.9 (22–38) |
+| §6 closed storylines without an outcome (target 0) | 0.0 (0–0) | 0.0 (0–0) | 0.0 (0–0) | 0.0 (0–0) | 0.0 (0–0) |
+| houses active at turn 25 | 23.0 (21–24) | 22.8 (20–24) | 23.0 (21–24) | 22.9 (21–24) | 22.8 (20–24) |
+| houses active at turn 50 | 23.1 (21–27) | 22.3 (19–26) | 23.1 (21–27) | 22.4 (20–25) | 22.0 (20–25) |
+| units of the whole map held at turn 25 | 21% (19–23) | 17% (14–21) | 21% (19–23) | 15% (12–17) | 21% (16–23) |
+| units of the whole map held at turn 50 | 37% (30–46) | 29% (24–33) | 37% (30–46) | 27% (23–32) | 30% (26–34) |
+| units of the whole map held at turn 75 | 29% (21–44) | 23% (20–32) | 29% (21–44) | 24% (19–33) | 25% (20–32) |
+| units of the whole map held at turn 100 | 46% (39–59) | 36% (28–42) | 46% (39–59) | 34% (27–45) | 37% (27–47) |
+| ridings claimed at turn 25 | 72.5 (65–80) | 73.1 (61–93) | 72.5 (65–80) | 71.9 (58–83) | 102.4 (77–114) |
+| ridings claimed at turn 50 | 126.9 (104–158) | 126.2 (107–147) | 126.9 (104–158) | 134.8 (112–159) | 148.8 (128–166) |
+| ridings claimed at turn 100 | 156.8 (135–204) | 160.0 (125–183) | 159.1 (135–204) | 166.0 (131–222) | 180.4 (135–230) |
+| Crown foundings by turn 25 | 24.0 (24–24) | 24.0 (24–24) | 24.0 (24–24) | 24.0 (24–24) | 24.0 (24–24) |
+| most Crown foundings in ten turns after 40 | 0.7 (0–1) | 0.7 (0–1) | 0.7 (0–1) | 0.7 (0–1) | 0.9 (0–1) |
+| D1 median capital at turn 100 (target 30–70) | 45.2 (32–52.5) | 44.2 (35–54.5) | 44.8 (32–52.5) | 49.0 (39–71) | 39.9 (31–50) |
+| §6 median influence at turn 100 (target 40–70) | 55.2 (39–70) | 56.8 (50–67) | 55.3 (39–70) | 56.8 (40–65) | 54.2 (38–75) |
+| §6 median cohesion at turn 100 (target 55–85) | 81.7 (62–94.5) | 85.8 (72.5–96.5) | 82.0 (62–94.5) | 77.0 (59–90.5) | 76.5 (63–91.5) |
+| §6 median turns a rivalry runs (target 4–10) | 9.1 (7–13) | 9.1 (5–15) | 9.7 (7–15) | 7.9 (4–15) | 6.7 (5–11) |
+| §6 houses fallen or removed by turn 100 (target 4–10) | 7.5 (6–12) | 8.5 (3–12) | 7.5 (6–12) | 9.3 (6–13) | 10.9 (5–17) |
+| §6 rivalries reconciled (target ≤ 40%) | 11% (4–23) | 17% (8–35) | 10% (4–19) | 16% (10–26) | 14% (8–17) |
+| §6 rivalries ended by contest, cession under a claim or a fall (target ≥ 25%) | 51% (38–58) | 44% (26–65) | 51% (38–58) | 50% (33–63) | 54% (40–67) |
+| D1 contests resolved (target 20–35) | 22.9 (11–32) | 16.3 (6–43) | 22.8 (10–32) | 20.5 (11–33) | 21.8 (14–30) |
+| §6 contests the attacker won (target 35–60%) | 51% (34–64) | 54% (45–67) | 51% (34–64) | 52% (40–70) | 60% (46–72) |
+| §6 claims answered by their target (target ≥ 50%) | 61% (49–74) | 68% (55–78) | 62% (49–79) | 63% (51–77) | 65% (61–75) |
+| §6 ended schemes that reached resolution (target ≥ 60%) | 78% (74–84) | 79% (77–84) | 78% (74–84) | 80% (74–85) | 79% (74–83) |
+| §6 median turns a resolved scheme runs (target 3–6) | 3.0 (3–3) | 3.0 (3–3) | 3.0 (3–3) | 3.0 (3–3) | 3.0 (3–3) |
+| §6 turns after 15 with 3+ cast schemes (target ≥ 80%) | 99% (98–100) | 99% (99–100) | 99% (98–100) | 100% (100–100) | 100% (99–100) |
+| D1 crises with both camps non-empty (target ≥ 70%) | 92% (89–100) | 91% (83–100) | 92% (89–100) | 91% (83–100) | 91% (83–100) |
+| D1 crises carried by those who lead | 40% (17–61) | 45% (11–72) | 40% (17–61) | 44% (28–56) | 51% (17–72) |
+| D1 games ending with a reckoning (target 100%) | 100% (100–100) | 100% (100–100) | 100% (100–100) | 100% (100–100) | 100% (100–100) |
+| D1 first house at the end an Earl or higher (target ≥ 80%) | 90% (0–100) | 70% (0–100) | 100% (100–100) | 100% (100–100) | 90% (0–100) |
+| D1 a Marquis or Duke active at turn 100 (target ≥ 80%) | 100% (100–100) | 100% (100–100) | 100% (100–100) | 100% (100–100) | 100% (100–100) |
+| D1 a Duke created (target ≥ 30%) | 60% (0–100) | 70% (0–100) | 60% (0–100) | 80% (0–100) | 80% (0–100) |
+| elevations a game | 22.0 (13–27) | 21.3 (12–31) | 21.5 (8–27) | 25.3 (22–30) | 27.1 (18–34) |
+| storylines of 5+ beats: decline | 2.3 (0–6) | 2.9 (0–6) | 2.4 (0–6) | 2.0 (0–4) | 2.0 (1–3) |
+| storylines of 5+ beats: frontier | 4.9 (3–7) | 5.6 (4–7) | 5.0 (3–7) | 5.5 (4–7) | 5.0 (4–7) |
+| storylines of 5+ beats: rise | 1.8 (0–4) | 1.4 (0–4) | 1.8 (0–4) | 1.9 (0–3) | 2.1 (1–4) |
+| storylines of 5+ beats: rivalry | 18.7 (13–27) | 16.8 (6–25) | 19.0 (14–27) | 16.1 (8–23) | 17.2 (12–24) |
+| storylines of 5+ beats: succession | 4.4 (2–6) | 4.6 (0–9) | 4.2 (2–6) | 3.9 (2–8) | 3.6 (2–5) |
+| storylines of 5+ beats: union | — | — | — | 0.2 (0–1) | — |
+| headlines in: decline | 3% (0–7) | 4% (1–8) | 3% (0–7) | 3% (1–6) | 4% (1–7) |
+| headlines in: frontier | 2% (1–2) | 2% (1–3) | 2% (1–2) | 2% (1–3) | 2% (1–3) |
+| headlines in: none | 34% (25–42) | 38% (25–48) | 34% (25–39) | 36% (22–49) | 33% (25–44) |
+| headlines in: rise | 3% (0–5) | 4% (0–9) | 3% (0–5) | 5% (0–10) | 7% (4–13) |
+| headlines in: rivalry | 50% (46–60) | 44% (25–58) | 50% (46–60) | 45% (37–61) | 46% (33–57) |
+| headlines in: succession | 8% (4–12) | 7% (3–15) | 8% (4–12) | 7% (4–10) | 7% (3–10) |
+| headlines in: union | 1% (0–2) | 1% (0–4) | 1% (0–2) | 2% (1–4) | 1% (0–3) |
+| held at turn 100 in: bc | 22% (0–58) | 22% (0–42) | 22% (0–58) | 13% (0–43) | 17% (0–40) |
+| held at turn 100 in: maritime | 35% (0–62) | 32% (14–51) | 35% (0–69) | 27% (1–48) | 36% (8–76) |
+| held at turn 100 in: north | 7% (0–33) | 7% (0–33) | 7% (0–33) | 0% (0–0) | 3% (0–33) |
+| held at turn 100 in: ontario | 69% (48–87) | 65% (41–91) | 70% (48–87) | 63% (48–74) | 57% (38–68) |
+| held at turn 100 in: prairie | 18% (3–46) | 11% (0–27) | 19% (3–46) | 9% (2–26) | 13% (0–25) |
+| held at turn 100 in: quebec | 51% (29–82) | 54% (29–72) | 52% (29–82) | 49% (28–73) | 56% (38–80) |
+| held at turn 25 in: bc | 11% (0–28) | 8% (0–13) | 11% (0–28) | 5% (0–13) | 10% (0–22) |
+| held at turn 25 in: maritime | 20% (9–41) | 16% (8–32) | 20% (9–41) | 16% (5–27) | 20% (10–29) |
+| held at turn 25 in: north | 0% (0–0) | 0% (0–0) | 0% (0–0) | 0% (0–0) | 0% (0–0) |
+| held at turn 25 in: ontario | 31% (18–44) | 33% (22–56) | 31% (18–44) | 28% (18–42) | 31% (18–42) |
+| held at turn 25 in: prairie | 7% (2–15) | 3% (0–8) | 7% (2–15) | 4% (0–12) | 7% (0–10) |
+| held at turn 25 in: quebec | 25% (18–32) | 25% (9–39) | 25% (18–32) | 17% (13–26) | 35% (21–47) |
+| held at turn 50 in: bc | 18% (0–56) | 18% (0–33) | 18% (0–56) | 8% (0–25) | 14% (0–31) |
+| held at turn 50 in: maritime | 31% (0–53) | 26% (9–51) | 31% (0–53) | 25% (10–42) | 29% (6–46) |
+| held at turn 50 in: north | 0% (0–0) | 7% (0–33) | 0% (0–0) | 0% (0–0) | 0% (0–0) |
+| held at turn 50 in: ontario | 57% (39–72) | 54% (29–73) | 57% (39–72) | 52% (42–59) | 47% (42–56) |
+| held at turn 50 in: prairie | 12% (3–25) | 7% (0–15) | 12% (3–25) | 8% (0–21) | 10% (0–17) |
+| held at turn 50 in: quebec | 40% (14–64) | 41% (21–56) | 40% (14–64) | 38% (28–57) | 49% (28–67) |
+| held at turn 75 in: bc | 17% (0–60) | 14% (0–48) | 17% (0–60) | 8% (0–25) | 11% (0–27) |
+| held at turn 75 in: maritime | 11% (0–31) | 22% (1–42) | 11% (0–31) | 15% (1–27) | 21% (1–65) |
+| held at turn 75 in: north | 0% (0–0) | 3% (0–33) | 0% (0–0) | 0% (0–0) | 3% (0–33) |
+| held at turn 75 in: ontario | 52% (30–73) | 47% (26–67) | 52% (30–73) | 49% (33–64) | 44% (33–62) |
+| held at turn 75 in: prairie | 8% (0–25) | 5% (0–15) | 8% (0–25) | 6% (0–17) | 7% (0–18) |
+| held at turn 75 in: quebec | 26% (12–54) | 30% (9–48) | 27% (12–54) | 34% (16–48) | 37% (20–57) |
+| rivalries: a house removed | 7.9 (2–13) | 8.0 (2–17) | 7.7 (2–13) | 7.1 (3–14) | 8.5 (3–17) |
+| rivalries: a riding changed hands | 2.4 (1–7) | 4.0 (1–8) | 2.3 (1–7) | 3.7 (0–6) | 4.0 (1–7) |
+| rivalries: ceded under a claim | 1.6 (0–5) | 1.1 (0–3) | 1.7 (0–5) | 1.0 (0–2) | 2.5 (0–5) |
+| rivalries: held in a contest | 11.3 (5–21) | 7.2 (3–22) | 11.2 (4–21) | 9.3 (4–14) | 8.5 (5–15) |
+| rivalries: lapsed | 21.7 (11–29) | 15.7 (10–21) | 22.0 (11–29) | 14.1 (8–23) | 14.0 (8–25) |
+| rivalries: open | 9.3 (3–20) | 9.2 (6–15) | 10.0 (5–20) | 7.6 (1–13) | 7.5 (3–15) |
+| rivalries: reconciled | 6.5 (2–12) | 8.7 (5–16) | 6.0 (2–10) | 8.4 (4–13) | 8.1 (4–10) |
+| rivalries: won in a contest | 10.7 (6–16) | 8.2 (3–19) | 10.7 (6–16) | 9.7 (6–15) | 11.9 (7–18) |
