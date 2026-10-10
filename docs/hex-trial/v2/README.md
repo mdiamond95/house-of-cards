@@ -72,14 +72,17 @@ the flag on and off. That holds on:
 
 It does not hold quite everywhere. The atlas takes two ridings out of Canada
 and back: Nunavut (62001) is the British Arctic Islands' in 1876–1879, and
-Labrador (10004) is Newfoundland's in 1927–1948. With the flag, both stay open:
-- **`meridian-v1.0.3`, seed 3:** identical through 1876. In 1877 a frontier
-  draw sees Nunavut among its candidates.
-- **Seed 1874:** identical through 1932. In 1933 a house's scheme choice
-  reads Labrador.
-- **`meridian-v1.0.3`, seeds 1867 and 2** (step 3): the two stay open, so their
-  return is not named again. Nunavut's 1880 line goes, and Newfoundland's 1949
-  line names six ridings without Labrador. Nothing else differs.
+Labrador (10004) is Newfoundland's in 1927–1948. With the flag both stay open,
+so their return (1880, 1949) is not named again in an accession line: Nunavut's
+line goes, and Newfoundland's names six ridings without Labrador.
+
+Under the tuned draft (step 3), on `meridian-v1.0.3`:
+- **Seeds 2 and 3:** those two lines are the only difference.
+- **Seed 1867:** the same, and in 1927 a frontier scheme sets out to open
+  Labrador, which without the flag is out of Canada.
+
+Under the untuned draft the examples were seed 3, where a frontier draw saw
+Nunavut in 1877, and trial seed 1874, where a scheme read Labrador in 1933.
 `tests/test_dated_openings.py` holds all of this.
 
 **On the hex board.** In 100-turn games on seeds 1867, 2 and 3, no unit is

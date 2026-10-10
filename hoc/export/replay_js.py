@@ -1344,14 +1344,19 @@ function renderRound() {
     const cls = `mv-rchip ${c.state} pace-${c.pace}${c.kind !== 'house' ? ' mv-rchip-cap' : ''}${c.gone ? ' gone' : ''}`
       + `${c.house && c.house === app.follow ? ' followed' : ''}`;
     const dot = c.house ? swatch(c.house) : '';
+    // A long name is cut short with an ellipsis, so a chip never outgrows a
+    // phone's strip; the whole name is its title.
     return `<li class="${cls}"><button type="button" data-step="${i}"${c.house ? ` data-house="${escapeHtml(c.house)}"` : ''}`
-      + `${c.state === 'current' ? ' aria-current="step"' : ''}>${dot}${escapeHtml(label)}</button></li>`;
+      + ` title="${escapeHtml(label)}"${c.state === 'current' ? ' aria-current="step"' : ''}>${dot}`
+      + `<span class="mv-rchip-name">${escapeHtml(label)}</span></button></li>`;
   }).join('');
-  // Keep the current chip in view.
+  // Keep the current chip in view, centred: measured against the strip itself,
+  // whatever its offset parent.
   const current = box.querySelector('[aria-current="step"]');
   if (current) {
     const li = current.parentElement;
-    const left = li.offsetLeft - (box.clientWidth - li.offsetWidth) / 2;
+    const at = li.getBoundingClientRect().left - box.getBoundingClientRect().left + box.scrollLeft;
+    const left = at - (box.clientWidth - li.offsetWidth) / 2;
     box.scrollTo({ left: Math.max(0, left), behavior: reduced() ? 'auto' : 'smooth' });
   }
 }
@@ -2135,8 +2140,9 @@ svg[data-hexes] #map-borders { display: none; }
 .mv-rchip { flex: none; }
 .mv-rchip button { font: inherit; font-size: 0.76rem; display: inline-flex; align-items: center; gap: 4px;
   padding: 0.18rem 0.55rem; min-height: 30px; border-radius: 999px; border: 1px solid var(--rule);
-  background: #fff; color: var(--ink); white-space: nowrap; }
-.mv-rchip .swatch { width: 0.65rem; height: 0.65rem; margin: 0; }
+  background: #fff; color: var(--ink); white-space: nowrap; max-width: 15em; }
+.mv-rchip-name { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.mv-rchip .swatch { width: 0.65rem; height: 0.65rem; margin: 0; flex: none; }
 .mv-rchip.done button { opacity: 0.45; }
 .mv-rchip.current button { background: var(--ink); color: #fff; border-color: var(--ink); font-weight: 600; }
 .mv-rchip.pace-pause.todo button { border-color: #a3261f; }

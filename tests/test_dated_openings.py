@@ -73,7 +73,22 @@ def test_a_riding_game_is_the_same_with_the_flag_on_and_off(tmp_path, key, seed)
     assert len(on) == 100 and on == off
 
 
-@pytest.mark.parametrize("seed", [1867, 2])
+def _dropped_lines_only(on, off, name, riding):
+    a, b = json.loads(on[name]), json.loads(off[name])
+    dropped = [line for line in b["chronicle"] if line not in a["chronicle"]]
+    added = [line for line in a["chronicle"] if line not in b["chronicle"]]
+    assert len(dropped) == 1 and "comes under Canada" in dropped[0] and riding in dropped[0]
+    assert len(added) == (0 if riding == "Nunavut" else 1)
+    for line in added:
+        assert "comes under Canada" in line and riding not in line
+        assert line == dropped[0].replace("7 ridings", "6 ridings").replace(", Labrador", "")
+    assert [line for line in a["chronicle"] if line not in added] \
+        == [line for line in b["chronicle"] if line != dropped[0]]
+    assert {k: v for k, v in a.items() if k not in ("chronicle", "draws")} \
+        == {k: v for k, v in b.items() if k not in ("chronicle", "draws")}
+
+
+@pytest.mark.parametrize("seed", [2, 3])
 def test_on_meridian_the_flag_drops_only_the_lines_for_land_already_open(tmp_path, seed):
     # The atlas takes Nunavut out of Canada in 1876-1879 and Labrador in
     # 1927-1948; with the flag both stay open, so their return (1880, 1949) is
@@ -84,24 +99,19 @@ def test_on_meridian_the_flag_drops_only_the_lines_for_land_already_open(tmp_pat
     differ = [n for n in sorted(on) if on[n] != off[n]]
     assert differ == ["0014.json", "0083.json"]
     for name, riding in zip(differ, ("Nunavut", "Labrador")):
-        a, b = json.loads(on[name]), json.loads(off[name])
-        dropped = [line for line in b["chronicle"] if line not in a["chronicle"]]
-        added = [line for line in a["chronicle"] if line not in b["chronicle"]]
-        assert len(dropped) == 1 and "comes under Canada" in dropped[0] and riding in dropped[0]
-        assert len(added) == (0 if riding == "Nunavut" else 1)
-        for line in added:
-            assert "comes under Canada" in line and riding not in line
-            assert line == dropped[0].replace("7 ridings", "6 ridings").replace(", Labrador", "")
-        assert [line for line in a["chronicle"] if line not in added] \
-            == [line for line in b["chronicle"] if line != dropped[0]]
-        assert {k: v for k, v in a.items() if k not in ("chronicle", "draws")} \
-            == {k: v for k, v in b.items() if k not in ("chronicle", "draws")}
+        _dropped_lines_only(on, off, name, riding)
 
 
 def test_where_the_atlas_takes_a_riding_out_the_flag_keeps_it(tmp_path):
-    # meridian-v1.0.3, seed 3: identical through turn 10; in 1877 Nunavut, out
-    # of Canada in the atlas, is open, and a frontier draw sees it.
-    on = seasons(world(tmp_path, "meridian-v1.0.3", seed=3), 11)
-    off = seasons(world(tmp_path, "meridian-v1.0.3", on=False, seed=3), 11)
-    assert all(on[n] == off[n] for n in sorted(on)[:10])
-    assert on["0011.json"] != off["0011.json"]
+    # meridian-v1.0.3, seed 1867, under the tuned draft: identical through
+    # 1926 but for Nunavut's dropped line (1880). In 1927 Labrador, out of
+    # Canada in the atlas until 1949, is open, and a frontier scheme sets out
+    # to open it.
+    on = seasons(world(tmp_path, "meridian-v1.0.3", seed=1867), 61)
+    off = seasons(world(tmp_path, "meridian-v1.0.3", on=False, seed=1867), 61)
+    differ = [n for n in sorted(on) if on[n] != off[n]]
+    assert differ == ["0014.json", "0061.json"]
+    _dropped_lines_only(on, off, "0014.json", "Nunavut")
+    a, b = json.loads(on["0061.json"]), json.loads(off["0061.json"])
+    assert any("sets out to open Labrador" in line for line in a["chronicle"])
+    assert not any("Labrador" in line for line in b["chronicle"])

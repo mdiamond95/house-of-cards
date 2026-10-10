@@ -284,6 +284,7 @@ async function viewport(browser, size, label) {
     order[0] === 'world' && order[order.length - 1] === 'close' && order.length > 3, JSON.stringify(order));
   const walked = [(await part(page)).id];
   let stripOk = true;
+  let stripWhy = '';
   const turns = [];
   for (let i = 1; i < order.length; i += 1) {
     const viewBefore = await R(page, () => window.hocReplay.view());
@@ -303,18 +304,24 @@ async function viewport(browser, size, label) {
       const box = document.querySelector('#mv-round').getBoundingClientRect();
       const current = document.querySelector('#mv-round [aria-current="step"]');
       const r = current ? current.getBoundingClientRect() : null;
+      const ul = document.querySelector('#mv-round');
       return {
         states: window.hocReplay.strip(),
         inView: Boolean(r) && r.left >= box.left - 1 && r.right <= box.right + 1,
+        at: r ? `chip ${Math.round(r.left)}-${Math.round(r.right)} in ${Math.round(box.left)}-${Math.round(box.right)},`
+          + ` scrolled ${Math.round(ul.scrollLeft)} of ${ul.scrollWidth - ul.clientWidth}` : 'no chip',
       };
     });
     const states = strip.states;
     const expect = states.every((s, j) => s === (j < p.step ? 'done' : j === p.step ? 'current' : 'todo'));
-    if (!expect || !strip.inView) stripOk = false;
+    if ((!expect || !strip.inView) && stripOk) {
+      stripOk = false;
+      stripWhy = `step ${p.step} of ${states.length}: ${expect ? '' : 'states wrong; '}${strip.inView ? '' : `chip out of view (${strip.at})`}`;
+    }
   }
   check(`${label}: Next walks the world, each house and the close in order`,
     JSON.stringify(walked) === JSON.stringify(order), JSON.stringify(walked));
-  check(`${label}: the strip follows, its current chip in view`, stripOk);
+  check(`${label}: the strip follows, its current chip in view`, stripOk, stripWhy);
   await next(page);
   check(`${label}: Next after the close opens the next year`, (await R(page, () => window.hocReplay.turn())) === 31
     && (await part(page)).id === 'world');
