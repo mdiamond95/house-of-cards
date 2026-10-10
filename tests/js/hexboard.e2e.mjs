@@ -17,8 +17,11 @@
 //     would overlap another hidden rather than crowded in;
 //   * no page logs an error.
 //
-// With a screenshot directory it saves those views and one year (1912) turn
-// by turn. tests/test_mapview.py runs it where Playwright is installed.
+// It also checks Edmonton's core open in 1870 and finds Kitchener. With a
+// screenshot directory it saves those views, the country in 1875, 1900, 1915,
+// 1950 and 1966, Prince Edward Island in 1880, Vancouver Island in 1900,
+// Newfoundland in 1955, and one rush year (1905) turn by turn.
+// tests/test_mapview.py runs it where Playwright is installed.
 //
 // Prints one JSON line: { ok, failures, checks, errors }.
 
@@ -141,15 +144,40 @@ try {
   }
   check('the borders change on the years the atlas changes', new Set(spans).size === 4, spans.join(','));
 
-  // One year turn by turn (1912: Timmins's year, and Manitoba, Ontario and
-  // Quebec take the North).
+  // Edmonton's core opens in 1870, with the city's settlement, and Kitchener
+  // is named on the map (docs/hex-trial/v2/README.md, step 3).
+  await open(page, 1870);
+  check('Edmonton\'s core is open in 1870', (await R(page, (n) => window.hocReplay.closed(n), 'Edmonton East')) === false);
+  await look(page, 'Edmonton', 40);
+  await shot(page, 'edmonton-1870');
+  await look(page, 'Kitchener', 34);
+  await shot(page, 'kitchener-1870');
+
   if (shots) {
-    await open(page, 1912);
+    // The country at 390 px in the director's years.
+    for (const year of [1875, 1900, 1915, 1950, 1966]) {
+      await open(page, year);
+      await R(page, () => window.hocReplay.whole());
+      await wait(500);
+      await shot(page, `country-${year}`);
+    }
+    // The islands.
+    for (const [year, name, width, file] of [
+      [1880, 'Charlottetown', 60, 'pei-1880'], [1900, 'Victoria', 110, 'vancouver-island-1900'],
+      [1955, 'Gander', 150, 'newfoundland-1955'],
+    ]) {
+      await open(page, year);
+      await look(page, name, width);
+      await shot(page, file);
+    }
+    // One rush year turn by turn (1905: Alberta and Saskatchewan become
+    // provinces, and their land rushes open).
+    await open(page, 1905);
     const n = (await R(page, () => window.hocReplay.order())).length;
     for (let i = 0; i < n; i += 1) {
       await wait(1100);
       const p = await R(page, () => window.hocReplay.part());
-      await shot(page, `1912-${String(i).padStart(2, '0')}-${p.kind === 'house' ? 'house' : p.kind}`);
+      await shot(page, `1905-${String(i).padStart(2, '0')}-${p.kind === 'house' ? 'house' : p.kind}`);
       if (i < n - 1) {
         await page.click('#story-next');
         await settled(page);

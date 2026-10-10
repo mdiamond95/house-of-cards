@@ -10,14 +10,19 @@ The preview at `outputs/site/preview-hex/` plays the draft on it. `rules/current
 stays 0.9 and no scenario was created or played. The Dominion and both frozen
 games replay unchanged.
 
-**Step 3** (10 October 2026) tidied the set and added two flags to the 1.0 draft:
-- city hexes named for their own municipality, with compass words;
-- opening years by municipality;
+**Step 3** (10 October 2026) tidied the set, added three flags to the 1.0 draft
+and tuned it:
+- city hexes named by the earlier rule (commit 064a93c), with compass words in
+  place of riding tokens;
+- opening years by the municipality a hex is named for, a core at its city's
+  settled year;
 - water rows and the director's ferry;
-- `water_crossings` and `block_grants`, with their numbers in `board.json`.
-
-The brief's third flag, `land_rush`, and its tuning step arrived cut off, and
-wait on the rest of it.
+- `water_crossings`, `block_grants` and `land_rush`, with their numbers in
+  `board.json`;
+- an accession line no longer names land already open (Kenora, 1889);
+- a jurisdiction's name that would crowd another is hidden;
+- the draft tuned on ten seeds to every §6 and D1 target and the director's
+  new ones.
 
 ## What was built
 
@@ -27,10 +32,12 @@ wait on the rest of it.
 | The reference set `meridian-hex-v1.0.5`, in the six table shapes every set has | `scripts/build_world_hexboard.py`, `data/reference/meridian/hex-v1.0.5/` |
 | The rules that turn the tables into integers | docs/DETERMINISM.md, "The hex board on v1.0.5" (rules 14–20) |
 | `dated_openings`, a flag in the 1.0 draft, in both engines | `hoc/sim.py`, `web/engine/sim.js`; rules/README.md; rules/CHANGELOG.md |
-| `water_crossings` and `block_grants` (step 3), flags in the 1.0 draft, in both engines; their numbers in `rules/versions/1.0/board.json` | `hoc/sim.py`, `web/engine/sim.js`, `web/engine/state.js`, `web/engine/adjacency.js`; DETERMINISM, "The hex board's flags" |
+| `water_crossings`, `block_grants` and `land_rush` (step 3), flags in the 1.0 draft, in both engines; their numbers in `rules/versions/1.0/board.json` | `hoc/sim.py`, `web/engine/sim.js`, `web/engine/state.js`, `web/engine/adjacency.js`; DETERMINISM, "The hex board's flags" |
+| The rush's beat, its map mark and its sentence | `hoc/export/beats.py`, `web/story/beats.js`, `marks.js`, `text.js`, `weights.json` |
+| The tuning, in the draft's tables | `upkeep.json`, `schemes.csv`, `schemes.json`, `board.json`; rules/CHANGELOG.md |
 | The preview, on the new board | `scripts/build_preview.py`, `hoc/export/site.py`, `hoc/export/replay_js.py` |
 | The trial | [trial-table.md](trial-table.md), [trial.json](trial.json) |
-| Tests | `tests/test_hexboard.py`, `tests/test_dated_openings.py`, `tests/test_board_flags.py`, `tests/js/hexboard.e2e.mjs` |
+| Tests | `tests/test_hexboard.py`, `tests/test_dated_openings.py`, `tests/test_board_flags.py`, `tests/test_land_rush.py`, `tests/js/hexboard.e2e.mjs` |
 
 `meridian-hex-v1.0.4`, the first trial's set, was removed once the preview played
 on the new board. Its record is [../README.md](../README.md).
@@ -47,7 +54,9 @@ in both engines. Under `world_calendar`:
 - A Crown founding still needs a province that year.
 - A unit that opens after it came under Canada opens as a quiet world event:
   "In the District of Alberta, one holding opens: Leduc."
-- An accession names only the units it actually opens.
+- An accession names only the units it actually opens, and never a unit already
+  open (step 3): Kenora opens in 1882 and is not named again when the disputed
+  area joins Ontario in 1889.
 
 **Why the later-of rule.** The riding sets' `opens_year` was built by 0.9's
 rule, and reads 1867 for British Columbia, Prince Edward Island and
@@ -68,8 +77,9 @@ Labrador (10004) is Newfoundland's in 1927–1948. With the flag, both stay open
   draw sees Nunavut among its candidates.
 - **Seed 1874:** identical through 1932. In 1933 a house's scheme choice
   reads Labrador.
-
-The riding preview (seed 1867) plays the same game.
+- **`meridian-v1.0.3`, seeds 1867 and 2** (step 3): the two stay open, so their
+  return is not named again. Nunavut's 1880 line goes, and Newfoundland's 1949
+  line names six ridings without Labrador. Nothing else differs.
 `tests/test_dated_openings.py` holds all of this.
 
 **On the hex board.** In 100-turn games on seeds 1867, 2 and 3, no unit is
@@ -130,47 +140,52 @@ reachable by founding alone, as before.
 A resolution-4 unit is named as in the trial: its own largest unused town, or
 municipality, else one borrowed from the nearest hexagons.
 
-**A city or core hex is named for its own municipality** (step 3; DETERMINISM
-rule 17): the census subdivision Meridian's mesh gives its cell, never a
-neighbouring one, and with no riding token. Where several units carry one
-municipality, the unit holding the municipality's own place keeps the plain
-name. Every other adds the compass word of its bearing from it: "Toronto East",
-"Ottawa South-West".
+**A city or core hex is named for its municipality** by the rule of commit
+064a93c, which the director restored at step 3 (DETERMINISM rule 17). The
+municipality is the first of these that holds:
+1. the census subdivision Meridian's mesh gives the cell, when it holds at
+   least the cell's people and no town in the cell is larger;
+2. else the cell's own largest place, when it holds a tenth of the cell's
+   people;
+3. else the neighbouring municipality, by the same people test.
 
-Two hexes fell on one bearing from the same plain-named unit once: Rocky View
-County West and **Rocky View County Outer West** (the next ring's word). No
-numeral was needed.
+Where several units carry one municipality, the unit holding the
+municipality's own place keeps the plain name. Every other adds the compass
+word of its bearing from the plain-named unit: "Toronto East", "Ottawa
+South-West". That word replaces the riding token the earlier build added.
 
-The 71 city and core names, by split parent, with their opening years:
+**Names by source:** the mesh's municipality 20, with a compass word 13; the
+hex's own largest place 29; a neighbouring municipality with a compass word 9.
+No city hex borrows, and no rural hexagon borrows a city's name: the build fails
+if one would.
+
+**One collision.** Two hexes fell on one bearing from Calgary: Calgary North-West
+and **Calgary Outer North-West** (the next ring's word). No numeral was needed.
+
+**The 71 city and core names**, by split parent, with their opening years:
 
 | Parent | City hexes |
 |---|---|
-| Toronto | Toronto East (core) 1867; Toronto 1867; Toronto South-East 1867; Mississauga 1867; Brampton 1867; Richmond Hill 1867; Vaughan 1867 |
-| Montréal | Montréal (core) 1867; Montréal West 1867; Laval 1867; Montréal North-East 1867; Mirabel South-East 1867; Mascouche 1867; Sainte-Anne-des-Plaines 1867 |
-| Vancouver | Vancouver (core) 1871; Delta North 1871; Richmond 1871; Delta 1871 |
-| Ottawa | Gatineau (core) 1867; Ottawa 1867; Ottawa East 1867; Ottawa South-East 1867; Ottawa West 1867; Pontiac South 1867; Ottawa South-West 1867 |
-| Hamilton | Halton Hills (core) 1867; Oakville 1867; Burlington 1867; Milton 1867; Hamilton 1867 |
-| Calgary | Calgary (core) 1875; Calgary North-West 1894; Foothills County North-East 1870; Foothills County North 1870 |
+| Toronto | Toronto East (core) 1867; Toronto 1867; Toronto South-East 1867; Mississauga 1867; Brampton 1867; Markham 1867; Vaughan 1867 |
+| Montréal | Montréal (core) 1867; Montréal West 1867; Laval 1867; Montréal North-East 1867; Blainville 1867; Terrebonne 1867; Sainte-Sophie 1867 |
+| Vancouver | Vancouver (core) 1871; Burnaby 1871; Richmond 1871; Delta 1871 |
+| Ottawa | Gatineau (core) 1867; Ottawa 1867; Ottawa East 1867; Ottawa South-East 1867; Ottawa West 1867; Gatineau West 1867; Ottawa South-West 1867 |
+| Hamilton | Mississauga West (core) 1867; Oakville 1867; Burlington 1867; Milton 1867; Hamilton 1867 |
 | Surrey | Surrey (core) 1871; Coquitlam 1871; Maple Ridge 1871; Langley 1871; Mission 1871 |
-| Kitchener | Wilmot (core) 1867; Cambridge 1867; Guelph/Eramosa 1867; Woolwich 1867; Centre Wellington 1867 |
-| Winnipeg | Winnipeg (core) 1870; Rosser 1870; Macdonald 1870 |
-| Longueuil | Longueuil (core) 1867; Saint-Jean-sur-Richelieu North-East 1867; Saint-Jean-Baptiste 1867; La Présentation 1867; Saint-Marc-sur-Richelieu 1867 |
-| Strathcona County | Edmonton East (core) 1904; Strathcona County South 1870; Sturgeon County South-West 1870; Strathcona County 1870 |
-| Oshawa | Whitby (core) 1867; Pickering 1867; Whitchurch-Stouffville 1867 |
-| Québec | Québec (core) 1867; Lévis North-East 1867; Lévis 1867 |
+| Calgary | Calgary (core) 1875; Calgary North-West 1894; Calgary South 1894; Calgary South-West 1894 |
+| Kitchener | Kitchener (core) 1867; Cambridge 1867; Guelph 1867; Waterloo 1867; Centre Wellington 1867 |
+| Winnipeg | Winnipeg (core) 1870; Winnipeg North-West 1873; Winnipeg West 1873 |
+| Strathcona County | Edmonton East (core) 1870; Strathcona County South 1870; Edmonton North-East 1904; Strathcona County 1870 |
+| Longueuil | Longueuil (core) 1867; Chambly 1867; Beloeil 1867; Saint-Hyacinthe 1867; Sainte-Julie 1867 |
+| Oshawa | Oshawa (core) 1867; Pickering 1867; Whitchurch-Stouffville 1867 |
+| Airdrie | Calgary North (core) 1875; Airdrie 1899; Calgary Outer North-West 1894 |
+| Québec | Québec (core) 1867; Québec East 1867; Lévis 1867 |
 | Haldimand County | Hamilton South-East (core) 1867; Grimsby 1867 |
-| Airdrie | Calgary North (core) 1894; Rocky View County West 1870; Rocky View County Outer West 1870 |
-| London | London (core) 1867; Thames Centre 1867; Middlesex Centre 1867; Central Elgin 1867 |
+| London | London (core) 1867; Thames Centre 1867; Middlesex Centre 1867; St. Thomas 1867 |
 
-**Cities left without a hex of their name.** The mesh gives a cell the
-municipality covering most of its land, so a city that is small in area can
-cover no cell: Kitchener, Waterloo, Guelph, Burnaby, New Westminster, Markham,
-Airdrie, Saint-Hyacinthe, Beloeil, Chambly, Sainte-Julie, Blainville,
-Terrebonne, Repentigny, Brossard, Ajax and Port Coquitlam.
-
-Their places are then free for the trial's borrowing rule:
-- "Oshawa" now names a rural resolution-4 hexagon beside the city;
-- "St. Thomas" names one beside St. Thomas.
+The cities the step-3 brief named are all back: Kitchener, Waterloo, Guelph,
+Burnaby, Markham, Oshawa, St. Thomas, Airdrie, Saint-Hyacinthe, Beloeil,
+Chambly, Sainte-Julie, Blainville and Terrebonne.
 
 ## Opening years
 
@@ -179,22 +194,24 @@ By the director's rules (DETERMINISM rule 18). A unit opens at the latest of:
 - **(b) Its `settledYear`:** this counts only when the land came under Canada
   after 1867, and only when it is 1930 or earlier.
   - A resolution-4 unit's is its own row's.
-  - A city or core hex's is that of the municipality it is named for (step 3).
+  - A city or core hex takes the dates of the municipality it is named for.
     The tables date a municipality only where some row names it as its settled
     place.
-- **(c) The city year:** for every hex of a city's municipality but the
-  plain-named one. The plain-named hex opens at the settled year alone.
+- **(c) The city year:** only for a city hex that is not a core, when its
+  municipality has one. A core opens at its municipality's settled year, so
+  only the outer city hexes wait for the city year (step 3).
 
 **The director's twelve overrides** beat every part. `units.csv` records each
 part.
 
-North Calgary (Calgary North, Airdrie's core) now opens in 1894 with Calgary's
-other extra hexes; Calgary itself opens in 1875.
+So Edmonton's core (Edmonton East) opens in 1870, and north Calgary (Calgary
+North, the core of its parent hexagon) in 1875 with Calgary. No hex named
+Calgary opens before 1875.
 
 | Year | Units open |
 |---|---|
 | 1867 | 261 |
-| 1885 | 403 |
+| 1885 | 400 |
 | 1914 | 458 |
 | 1945 | 472 |
 | 1966 | 494 |
@@ -231,19 +248,14 @@ source is in the script and the report.
 A caveat on the sources: they were read through search results, because this
 environment's network policy refused the pages themselves.
 
-The city years now open:
-- Calgary North-West and Calgary North, 1894;
-- Edmonton East, 1904.
+The city years open only outer city hexes:
+- Winnipeg North-West and Winnipeg West, 1873;
+- Calgary North-West, Calgary South, Calgary South-West and Calgary Outer
+  North-West, 1894;
+- Edmonton North-East, 1904.
 
-The rest of a city's extra hexes date from before 1867 and open with the atlas:
-- Ottawa's four;
-- Toronto's two (Toronto East, the core, among them);
-- Montréal's two;
-- Hamilton South-East.
-
-Winnipeg's other hexes are Rosser and Macdonald, other municipalities, so they
-open with Manitoba in 1870. Vancouver's, Kitchener's, Longueuil's, Oshawa's and
-London's years open no hex.
+Airdrie opens at its own settled year, 1899. Every other city year predates
+the atlas, so those hexes open with it.
 
 ## `water_crossings` and `block_grants` (step 3)
 
@@ -276,6 +288,38 @@ the season files are identical with both flags on and off: seeds 1867, 2 and
 - 16 of 30 foundings are granted a block, 31 hexagons in all;
 - 8 expansions cross water.
 
+## `land_rush` (step 3)
+
+A third flag in the 1.0 draft, in both engines, false in 0.7–0.9; its numbers
+are in `board.json`. Under `world_calendar`:
+- **When.** Each jurisdiction the atlas first has as a province after 1867
+  has a rush there for `land_rush.years` (6), from that year: Manitoba 1870,
+  British Columbia 1871, Prince Edward Island 1873, Alberta and Saskatchewan
+  1905, Newfoundland 1949. The brief named the "extension" event. British
+  Columbia, Prince Edward Island and Newfoundland join as provinces, which the
+  engine records as an accession, so "a jurisdiction becomes a province" is
+  read as either. Land joining a province later (Ontario 1889, Manitoba 1881
+  and 1912) starts no rush, and units opening later in a rushing province do
+  not restart one.
+- **The Crown's roll.** In each rush year, while fewer than `until_held_pct`
+  (25%) of the province's open units are held, the Crown makes one extra
+  founding roll at `roll_pct` (40%) among its open, unclaimed units. The roll
+  comes after the founding roll, and the season record lists the houses it
+  founds as `rushed`. A rush founding takes its block like any other.
+- **Cheaper land.** An Expand into a unit of a rushing province costs
+  `expand_discount` (5) less.
+- **On the map.** A rush is a world event: "A land rush opens in Alberta: for
+  six years the Crown founds there more readily, and its 62 open holdings cost
+  less to take." Its first year is a `rush` beat drawn on the province's open
+  land, and each later year an `event_continues` chip ("Land rush in Alberta,
+  year 3 of 6").
+- **On the riding sets** it does not run unless `land_rush.riding_sets` is 1,
+  which only its own test sets. Both riding sets play the same game with it on
+  and off (`tests/test_land_rush.py`).
+
+The brief's start values were 8 years and 50%. The tuning below took them to 6
+and 40%.
+
 ## Borders by year
 
 `jurisdictions.geojson` holds 21 spans of years, from 1867 to today. Each holds
@@ -302,154 +346,165 @@ the same view as before, plus:
   its year. Its card says "Not yet open: it opens in 1894." Its opening is a
   quiet event on the world's turn.
 - **The provincial and territorial borders** of the year shown are drawn as a
-  dashed line, and change on the years the atlas changes. At wide zoom the
-  jurisdictions are named. Land not under Canada is named in italic. A name
-  gives way to the turn's houses but not to the standings'.
+  dashed line, and change on the years the atlas changes. Land not under
+  Canada is named in italic.
+- **Jurisdiction names** are drawn at wide zoom. A name that would come within
+  6 px of another name, a badge or a house's name is hidden, never crowded in
+  (step 3). Each name is measured as it is drawn, so none runs off a 390 px
+  screen. A name gives way to the turn's houses but not to the standings'.
+- **A land rush** is marked on the province's open land on its first year.
 
-The riding preview plays the same game as before.
+The riding preview plays the same draft on `meridian-v1.0.3`. The tuning moved
+it too: see the trial below.
 
 **Screenshots at 390 × 844** (this directory):
-- `toronto-1867`;
-- `winnipeg-1872` and `winnipeg-1874`;
-- `calgary-1893` and `calgary-1895`;
-- `country-1867`, `country-1871`, `country-1905` and `country-1949`;
-- 1912 turn by turn (`1912-NN-*`).
+- the country in `country-1875`, `-1900`, `-1915`, `-1950` and `-1966`, and the
+  border years `country-1867`, `-1871`, `-1905` and `-1949`;
+- `pei-1880`, `vancouver-island-1900` and `newfoundland-1955`;
+- `kitchener-1870` and `edmonton-1870`;
+- `toronto-1867`, `winnipeg-1872` and `-1874`, `calgary-1893` and `-1895`;
+- one rush year, 1905, turn by turn (`1905-NN-*`): Alberta and Saskatchewan
+  become provinces and their rushes open.
 
 ## The trial
 
-`scripts/story_trial.py --rules-version 1.0`, ten seeds (1867–1876), 100 turns,
-untuned. The full table is [trial-table.md](trial-table.md), with the seeds in
-[trial.json](trial.json). It has five columns:
-- the first trial's ridings and hexes (measured on 9 October, before
-  `dated_openings`);
-- ridings now;
-- the hex board at step 2 (`dated_openings`, the old names and every water
-  link);
-- **the hex board at step 3**: the tidied set (names, opening years, water rows
-  of 3 hexes or fewer and the ferry), with `water_crossings` and
-  `block_grants` on.
+`scripts/story_trial.py --rules-version 1.0 --reference meridian-hex-v1.0.5`,
+ten seeds (1867–1876), 100 turns. The full table is
+[trial-table.md](trial-table.md), with the seeds in [trial.json](trial.json).
+It has four columns:
+- **step 2**: `dated_openings` on the step-2 set, as measured on 10 October;
+- **step 3 as it stands**: the corrected set, with `water_crossings` and
+  `block_grants`, untuned;
+- **three flags, untuned**: `land_rush` at the brief's start values (8 years,
+  50%);
+- **three flags, tuned**.
 
-| §6 measure | Ridings now | Hexes v1.0.4 | Hexes v1.0.5, step 2 | **Hexes v1.0.5, step 3** |
+`story_trial.py` now also measures the islands, the Prairies before 1896, and
+Prairie and BC at turn 100. Its `--set TABLE.KEY=N` tries a number without
+changing a table. The step-2 column predates those measures.
+
+| measure (target) | Step 2 | Step 3 | Three flags, untuned | **Three flags, tuned** |
 |---|---|---|---|---|
-| actions aimed at another house (≥ 30%) | 32% | 30% | 30% | 32% (27–39) |
-| passes a turn after 20 (≥ 0.33) | 0.35 | 0.33 | 0.34 | **0.47** (0.35–0.56) |
-| houses active at turn 100 (20–40) | 22.1 | 22.7 | 21.9 | 21.6 (17–28) |
-| houses fallen or removed (4–10) | 7.5 | 8.5 | 9.3 | **10.9** (5–17) |
-| lead changes (≥ 4) | 18.2 | 17.9 | 17.6 | 18.6 |
-| longest lead (≤ 50) | 26.7 | 27.8 | 22.7 | 26.6 (12–51) |
-| ranks spanned by the top eight at 60 (≥ 3) | 3.2 | 3.8 | 3.4 | 3.6 (3–4) |
-| first at the reckoning Earl or higher (≥ 8 of 10) | 10 | 7 | 10 | 9 |
-| a Marquis or Duke at 100 (≥ 8 of 10) | 10 | 10 | 10 | 10 |
-| a Duke created (≥ 3 of 10) | 6 | 7 | 8 | 8 |
-| headline at or above pause (40–65%) | 57% | 55% | 54% | 59% |
-| Auto pauses (15–30%) | 24% | 25% | 27% | 29% (22–35) |
-| storylines of 5+ beats (≥ 8) | 32.4 | 31.3 | 29.6 | 29.9 |
-| rise and decline storylines (≤ 20) | 12.9 | 14.2 | 11.0 | 15.2 |
-| median rivalry, turns (4–10) | 9.7 | 9.1 | 7.9 | 6.7 |
-| rivalries reconciled (≤ 40%) | 10% | 17% | 16% | 14% |
-| rivalries ended decisively (≥ 25%) | 51% | 44% | 50% | 54% |
-| contests resolved (20–35) | 22.8 | 16.3 | 20.5 | 21.8 (14–30) |
-| attacker wins (35–60%) | 51% | 54% | 52% | **60%** (46–72) |
-| claims answered (≥ 50%) | 62% | 68% | 63% | 65% |
-| schemes resolved (≥ 60%) | 78% | 79% | 80% | 79% |
-| median capital at 100 (30–70) | 44.8 | 44.2 | 49.0 | 39.9 |
-| median influence at 100 (40–70) | 55.3 | 56.8 | 56.8 | 54.2 |
-| median cohesion at 100 (55–85) | 82.0 | 85.8 | 77.0 | 76.5 |
-| crises with both camps (≥ 70%) | 92% | 91% | 91% | 91% |
-| games ending with a reckoning | 10 | 10 | 10 | 10 |
+| actions aimed at another house (≥ 30%) | 30% | 32% | 33% | **32%** |
+| passes a turn after 20 (≥ 0.33) | 0.34 | 0.49 | 0.58 | **0.55** |
+| houses active at turn 100 (24–40) | 21.9 | 21.5 | 35.9 | **37.1** |
+| houses fallen or removed (4–10) | 9.3 | 10.6 | 11.8 | **8.9** |
+| lead changes (≥ 4) | 17.6 | 17.8 | 16.4 | **18.0** |
+| longest lead (≤ 50) | 22.7 | 28.4 | 30.9 | **26.0** |
+| chapters II–V with top-eight churn (4) | 4.0 | 4.0 | 4.0 | **4.0** |
+| ranks spanned by the top eight at 60 (≥ 3) | 3.4 | 3.6 | 3.6 | **3.5** |
+| first at the reckoning Earl or higher (≥ 8 of 10) | 10 | 8 | 10 | **10** |
+| a Marquis or Duke at 100 (≥ 8 of 10) | 10 | 10 | 10 | **10** |
+| a Duke created (≥ 3 of 10) | 8 | 7 | 8 | **9** |
+| headline at or above pause (40–65%) | 54% | 60% | 64% | **60%** |
+| Auto pauses (15–30%) | 27% | 29% | 31% | **29.6%** |
+| storylines of 5+ beats (≥ 8) | 29.6 | 34.3 | 48.7 | **44.7** |
+| rise and decline storylines (≤ 20) | 11.0 | 16.5 | 20.6 | **19.0** |
+| median rivalry, turns (4–10) | 7.9 | 7.0 | 8.2 | **8.5** |
+| rivalries reconciled (≤ 40%) | 16% | 14% | 17% | **15%** |
+| rivalries ended decisively (≥ 25%) | 50% | 54% | 47% | **48%** |
+| contests resolved (20–35) | 20.5 | 22.1 | 31.2 | **32.0** |
+| attacker wins (35–60%) | 52% | 64% | 57% | **54%** |
+| claims answered (≥ 50%) | 63% | 62% | 65% | **64%** |
+| schemes resolved (≥ 60%) | 80% | 77% | 77% | **79%** |
+| median capital at 100 (30–70) | 49.0 | 44.2 | 40.6 | **49.8** |
+| median influence at 100 (40–70) | 56.8 | 54.5 | 53.5 | **47.5** |
+| median cohesion at 100 (55–85) | 77.0 | 72.2 | 76.6 | **73.3** |
+| crises with both camps (≥ 70%) | 91% | 91% | 92% | **92%** |
+| map held at turn 100 (40–60%) | 34% | 35% | 54% | **56%** |
+| Prairie held at turn 100 (≥ 30%) | 9% | 5% | 45% | **34%** |
+| BC held at turn 100 (≥ 30%) | 13% | 14% | 44% | **48%** |
+| Prairies held before 1896, the most in a turn (< 10%) | — | 2% | 9% | **7%** |
+| PEI held at 100 (≥ 7 of 10) | — | 6 | 8 | **10** |
+| Vancouver Island held at 100 (≥ 7 of 10) | — | 4 | 8 | **8** |
+| Newfoundland held at 100 (≥ 7 of 10) | — | 0 | 10 | **8** |
 
-At step 3, every §6 target but one is met on the mean:
-- **Houses fallen or removed** is 10.9, over the 4–10 band. Seed 1875 loses
-  17, and six seeds lose more than 10.
-- **Attacker wins** sits on the band's top edge (60%).
-- Seed 1875 is also the one whose first house at the reckoning is below Earl.
+**Tuned, every §6 and D1 target and each of the director's new ones is met on
+the mean.** The rush is what fills the West and the islands: Newfoundland had
+no holder at turn 100 on any seed without it.
 
-What the two flags did:
-- **More land changes hands.** Passes after turn 20 rose from 0.34 to 0.47 a
-  turn, and ridings passing between houses from 27.6 to 37.9 a game.
-- **The map fills faster at the start.** Units claimed at turn 25 rose from
-  71.9 to 102.4, and Quebec is 35% held at turn 25 against 17%.
-- **Capital is tighter.** The median at 100 is 39.9, down from 49.0. The
-  trial does not say which flag, or the tidied set, accounts for it.
+The tuning, all in the draft's tables (rules/CHANGELOG.md):
 
-These are untuned. Tuning waits on the director's instructions, as does
-`land_rush`.
+| Table | Number | Was | Now |
+|---|---|---|---|
+| `upkeep.json` | `cohesion.recovery` | 3 | 5 |
+| `schemes.csv` | Secure the line, `utility` | 55 | 70 |
+| `schemes.csv` | Claim a riding, `utility` | 20 | 15 |
+| `schemes.json` | `contest.committed_per_point` | 15 | 18 |
+| `board.json` | `land_rush.roll_pct` | 50 | 40 |
+| `board.json` | `land_rush.years` | 8 | 6 |
 
-**The share of the map held, step 3** (step 2 in brackets):
+Why these:
+- **The removals** came from absorption (about 6 a game), disorderly
+  successions with no successor (about 3) and cohesion collapse (about 2.5).
+  Faster cohesion recovery, and a house more ready to name an heir, cut all
+  three.
+- **Fewer houses fell, so more lived.** The smaller rush (40%, 6 years) keeps
+  houses active at 100 inside 24–40, and the map held under 60%.
+- **The claims.** A lower claim utility keeps contests under 35. A dearer point
+  of committed capital brings attacker wins to 54%.
+- **The cooldown is untouched.** Lengthening the contest cooldown instead left
+  a chapter without top-eight churn on some seeds.
 
-| Held | All units | Maritime | Quebec | Ontario | Prairie | BC | North |
-|---|---|---|---|---|---|---|---|
-| Turn 25 (1891) | 21% (15%) | 20% (16%) | 35% (17%) | 31% (28%) | 7% (4%) | 10% (5%) | 0% (0%) |
-| Turn 50 (1916) | 30% (27%) | 29% (25%) | 49% (38%) | 47% (52%) | 10% (8%) | 14% (8%) | 0% (0%) |
-| Turn 75 (1941) | 25% (24%) | 21% (15%) | 37% (34%) | 44% (49%) | 7% (6%) | 11% (8%) | 3% (0%) |
-| Turn 100 (1966) | 37% (34%) | 36% (27%) | 56% (49%) | 57% (63%) | 13% (9%) | 17% (13%) | 3% (0%) |
+**Where it is thin.** The worst seed holds 12% of the Prairies before 1896
+(the mean is 7%). Auto pauses are 29.6% against a ceiling of 30%, and rise and
+decline storylines 19.0 against 20. These numbers are fitted to these ten
+seeds.
 
-Ridings at turn 100, for comparison: 46% in all; Maritime 35%, Quebec 52%,
-Ontario 70%, Prairie 19%, BC 22%, North 7%.
+**What it does to the riding preview.** The same draft on `meridian-v1.0.3`
+now misses three targets: median cohesion 86.2 (55–85), median rivalry 11.2
+turns (4–10) and attacker wins 60.1% (35–60%). The brief tuned the hex board
+only, so this is the director's call.
 
-**Units open**: 261 in 1867, 403 in 1885, 458 in 1914, 472 in 1945, 494 in 1966.
+**The share of the map held, tuned** (step 3 untuned in brackets):
+
+| Held | Maritime | Quebec | Ontario | Prairie | BC | North |
+|---|---|---|---|---|---|---|
+| Turn 25 (1891) | 30% (28%) | 27% (31%) | 38% (40%) | 6% (2%) | 21% (6%) | 0% (0%) |
+| Turn 100 (1966) | 56% (31%) | 62% (52%) | 80% (67%) | 34% (5%) | 48% (14%) | 0% (0%) |
+
+**Units open**: 261 in 1867, 400 in 1885, 458 in 1914, 472 in 1945, 494 in 1966.
 This is the same on every seed, being the data's.
 
 ## What does not read well
 
-- **The North is barely held.** At step 3 one seed of ten holds a northern
-  unit at turns 75 and 100 (3% on the mean); at step 2 none did.
+- **The North is never held** at turn 100, tuned:
   - Whitehorse opens in 1898 and Yellowknife in 1936, at the ends of long
     bridges.
   - Iqaluit can't be reached at all: no land row and no water row of 3 hexes
     or fewer joins it.
-
-  The Prairie is held thinly (13% at 1966) and BC too (17%). The slow West is
-  the intended result, and it is slower here than on ridings.
-- **Cities named for the township around them** (step 3). By the rule of the
-  municipality covering most of the cell, these hexes are named for the
-  township, not the city in them:
-  - Kitchener's core is "Wilmot";
-  - Oshawa's core is "Whitby";
-  - the Burnaby–New Westminster hex is "Delta North";
-  - Waterloo's is "Woolwich" and Guelph's "Guelph/Eramosa";
-  - Saint-Hyacinthe's is "La Présentation";
-  - Airdrie's is "Rocky View County West";
-  - Hamilton's core is "Halton Hills".
-
-  Seventeen cities have no unit of their name (listed under Names). "Oshawa"
-  and "St. Thomas" are borrowed by rural hexagons beside them.
-- **County names on city hexes.** Calgary's southern hexes, of 117,000 and
-  127,000 people, are "Foothills County North" and "Foothills County
-  North-East". Edmonton's northern one is "Sturgeon County South-West".
-- **Suburbs open before their city.** Calgary's two southern hexes and
-  Airdrie's two western ones lie in Foothills and Rocky View counties, so they
-  open at those counties' year (1870), before Calgary (1875). Edmonton's
-  outer hexes open in 1870 too, and its core in 1904.
-- **Thames Centre, Middlesex Centre and Central Elgin** are London's outer
-  hexes.
+  - No territory becomes a province, so no rush runs there.
+- **Names the rule gives.** The restored rule is the one the director chose, so
+  these are as the data has them:
+  - Hamilton's core is "Mississauga West", named for the neighbouring
+    municipality;
+  - London's outer hexes are Thames Centre and Middlesex Centre, and two of
+    Edmonton's are Strathcona County and Strathcona County South.
 - **The cores aren't always named for their cities.** Toronto's core is
-  "Toronto East", and the plain "Toronto" goes to the hex holding Toronto's
-  own place.
-- **Edmonton's core opens late.** It is "Edmonton East", and opens in 1904 with
-  the city year, after the hexagon holding Edmonton's place (1870).
+  "Toronto East", and the plain "Toronto" goes to the hex holding Toronto's own
+  place. Edmonton's core is "Edmonton East" beside the resolution-4 "Edmonton".
+- **Hidden jurisdiction names.** At 390 px on the whole country, a name that
+  would crowd a badge or a house is hidden. In 1905 British Columbia, Alberta,
+  Saskatchewan, Ontario and Quebec go unnamed beside the rush's badges and the
+  houses' names.
 - **Wikidata's settlement dates are sometimes incorporations.** They now count
   only after 1867 and to 1930, which drops Camrose's 1944 and Calmar's 1949.
   Some late ones remain: Barraute, La Sarre and Preissac 1918, Teulon 1919,
   Terrace 1927.
-- **The disputed area's 1889 line.** It stays open, but the atlas's return of
-  Kenora to Ontario in 1889 is still told as an accession ("Ontario comes under
-  Canada as a province, opening one holding: Kenora"), though Kenora opened in
-  1882.
-- **Names crowd out at 390 px.** On the whole country, the houses' names and
-  the year's badges crowd out some jurisdictions' names. In 1871 British
-  Columbia and the North-West Territories go unnamed under the "opens" badge.
 - **"Lloydminster (Part)"** is still the census place's name.
 
 ## Checks
 
 - **The tests:**
-  - `tests/test_hexboard.py`: units, unique names, symmetric links, six land
-    groups joined by water, the opening rules, no unit held before its year
-    on three seeds, no float in a table an engine reads, both engines on three
-    seeds.
-  - `tests/test_dated_openings.py`: the flag on the riding sets.
-  - `tests/js/hexboard.e2e.mjs`, through `tests/test_mapview.py`.
+  - `tests/test_hexboard.py`: units, unique names, the restored names with the
+    fourteen cities, symmetric links, the land groups, water rows and the ferry,
+    the opening rules, no unit held before its year on three seeds, no float
+    in a table an engine reads, both engines on three seeds.
+  - `tests/test_dated_openings.py`: the flag on the riding sets, and the
+    dropped lines for land already open.
+  - `tests/test_board_flags.py` and `tests/test_land_rush.py`: the three flags.
+  - `tests/js/hexboard.e2e.mjs`, through `tests/test_mapview.py`: closed units,
+    borders by year, names that never overlap, Edmonton's core in 1870.
 - **The cross-checks:**
   - under 1.0 on this set, seeds 1867, 2 and 3 over 100 turns: byte-identical;
   - under 1.0 on `meridian-v1.0.3`, seed 3 over 100 turns: byte-identical;

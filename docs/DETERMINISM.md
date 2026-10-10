@@ -367,6 +367,27 @@ any hexagon's first-order jurisdiction, name, sovereign or status changes.
   - They become the house's holdings 2, 3, … in that order, each acquired by the
     founding event, which names them (`block`).
   - No draw is made, so the season's draws are those of a founding without the block.
+- **`land_rush`.** Under `world_calendar`, on a set whose `riding_stats.csv` carries
+  `resolution` (or any set when `board.json` `land_rush.riding_sets` is 1).
+  - **The rushes.** For each `unit` key of `riding_jurisdictions.csv` with a span whose
+    status is `province` and sovereign `Canada`, its first `from_year` (ties to the
+    lower name). The rushes are those after `game.json` `start_year`, sorted by
+    (year, unit key, name). Each runs from that year for `land_rush.years` years.
+  - **A province's units** in a year are the fed_ids, in order, whose span that year
+    has the rush's `unit`, status `province` and sovereign `Canada`, and that are open
+    (`riding_open`).
+  - **The world's turn**, after the accessions: a rush running this year records one
+    event per rush, in rush order. The first year (`world: "rush"`) names the units;
+    a later one (`"rush_continues"`) does not. No draw is made.
+  - **The close**, after the founding roll: for each rush running, in rush order, a
+    logged draw `rush.<unit>` of {held, open}. Then, only when `held * 100 <
+    until_held_pct * open`, `chance(roll_pct)` as `rush.roll.<unit>`. On success a
+    Crown founding is seated by `choice` (`rush.seat`) among the province's units
+    with no holder that the Crown may found on. The rest of the founding draws as any
+    founding does, block included. The houses are the season record's `rushed`, left
+    out when there are none.
+  - **An Expand's cost** is `land_rush.expand_discount` less when the target's span in
+    the world year is a province with a rush running that year.
 
 ## Worked examples
 
