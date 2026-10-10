@@ -2,8 +2,10 @@
   "notes": [
     "The hex board's terms (docs/hex-trial/v2/README.md), read by both engines under rules 1.0's water_crossings and block_grants. Integers only.",
     "water_crossings.expand_cost: the capital an Expand costs on top of 15 + (wealth_tier - 3) when the house holds no land neighbour of the target, which it reaches across a water row of adjacency.csv.",
-    "block_grants.extra_hexes: how many more hexagons a Crown founding on a resolution-4 hexagon grants beside the seat, when they are open, unclaimed and resolution 4: the most populous first, ties to the lower fed_id."
+    "block_grants.extra_hexes: how many more hexagons a Crown founding on a resolution-4 hexagon grants beside the seat, when they are open, unclaimed and resolution 4: the most populous first, ties to the lower fed_id.",
+    "land_rush: under world_calendar, each jurisdiction the atlas first has as a province after the start year has a rush for `years` years from that year. In each rush year, while fewer than `until_held_pct` per cent of the province's open units are held, the Crown makes one extra founding roll at `roll_pct` per cent among its open, unclaimed units; and an Expand into a unit of a rushing province costs `expand_discount` less. It runs on a set whose riding_stats.csv carries `resolution` (the hex board), and on any set when `riding_sets` is 1."
   ],
   "water_crossings": {"expand_cost": 5},
-  "block_grants": {"extra_hexes": 2}
+  "block_grants": {"extra_hexes": 2},
+  "land_rush": {"years": 6, "roll_pct": 40, "until_held_pct": 25, "expand_discount": 5, "riding_sets": 0}
 }

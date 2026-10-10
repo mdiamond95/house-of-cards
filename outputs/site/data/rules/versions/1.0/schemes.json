@@ -38,7 +38,7 @@
     "indemnity_capital": 10
   },
   "contest": {
-    "committed_per_point": 15,
+    "committed_per_point": 18,
     "fortified_per_point": 10,
     "cohesion_per_point": 25,
     "per_ally": 2,
