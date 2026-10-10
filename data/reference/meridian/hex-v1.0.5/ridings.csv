@@ -160,8 +160,8 @@ fed_id,name_en,name_fr,province,name_key
 240052794,Barraute,Barraute,QC,barraute
 240052796,Preissac,Preissac,QC,preissac
 240052797,Malartic,Malartic,QC,malartic
-241367539,Ottawa,Ottawa,QC,ottawa
-241367541,Pontiac,Pontiac,QC,pontiac
+241367539,Gatineau,Gatineau,QC,gatineau
+241367541,Gatineau Pontiac,Gatineau Pontiac,QC,gatineau pontiac
 241369166,Beloeil,Beloeil,QC,beloeil
 241369168,Longueuil,Longueuil,QC,longueuil
 241369169,Chambly,Chambly,QC,chambly
@@ -170,12 +170,12 @@ fed_id,name_en,name_fr,province,name_key
 241369180,Laval,Laval,QC,laval
 241369181,Montréal,Montréal,QC,montréal
 241369182,Blainville,Blainville,QC,blainville
-241369183,Dollard-Des Ormeaux,Dollard-Des Ormeaux,QC,dollard-des ormeaux
+241369183,Montréal Pierrefonds,Montréal Pierrefonds,QC,montréal pierrefonds
 241369184,Terrebonne,Terrebonne,QC,terrebonne
-241369185,Charlemagne,Charlemagne,QC,charlemagne
-241369186,Sainte-Anne-des-Plaines,Sainte-Anne-des-Plaines,QC,sainte-anne-des-plaines
+241369185,Montréal Pierre-Boucher,Montréal Pierre-Boucher,QC,montréal pierre-boucher
+241369186,Sainte-Sophie,Sainte-Sophie,QC,sainte-sophie
 241369278,Lévis,Lévis,QC,lévis
-241369282,Sainte-Pétronille,Sainte-Pétronille,QC,sainte-pétronille
+241369282,Québec Bellechasse,Québec Bellechasse,QC,québec bellechasse
 241369284,Québec,Québec,QC,québec
 350017894,Iroquois Falls,Iroquois Falls,ON,iroquois falls
 350017912,Kapuskasing,Kapuskasing,ON,kapuskasing
@@ -205,7 +205,7 @@ fed_id,name_en,name_fr,province,name_key
 350051431,South Huron,South Huron,ON,south huron
 350051434,Brantford,Brantford,ON,brantford
 350051435,North Perth,North Perth,ON,north perth
-350051442,Brant,Brant,ON,brant
+350051442,Haldimand County,Haldimand County,ON,haldimand county
 350051443,Sarnia,Sarnia,ON,sarnia
 350051444,Petrolia,Petrolia,ON,petrolia
 350051447,West Perth,West Perth,ON,west perth
@@ -275,27 +275,27 @@ fed_id,name_en,name_fr,province,name_key
 351360034,Kitchener,Kitchener,ON,kitchener
 351360035,Centre Wellington,Centre Wellington,ON,centre wellington
 351360036,Guelph,Guelph,ON,guelph
-351367535,Nepean,Nepean,ON,nepean
-351367536,Russell,Russell,ON,russell
-351367537,Arnprior,Arnprior,ON,arnprior
-351367538,Smiths Falls,Smiths Falls,ON,smiths falls
-351367540,Carleton,Carleton,ON,carleton
+351367535,Ottawa,Ottawa,ON,ottawa
+351367536,Ottawa Nepean,Ottawa Nepean,ON,ottawa nepean
+351367537,Ottawa Kanata,Ottawa Kanata,ON,ottawa kanata
+351367538,Ottawa Lanark,Ottawa Lanark,ON,ottawa lanark
+351367540,Ottawa Carleton,Ottawa Carleton,ON,ottawa carleton
 351368404,Oshawa,Oshawa,ON,oshawa
 351368405,Whitchurch-Stouffville,Whitchurch-Stouffville,ON,whitchurch-stouffville
 351368406,Pickering,Pickering,ON,pickering
 351368543,Milton,Milton,ON,milton
 351368544,Burlington,Burlington,ON,burlington
-351368546,Flamborough,Flamborough,ON,flamborough
-351368547,Hamilton,Hamilton,ON,hamilton
+351368546,Hamilton,Hamilton,ON,hamilton
+351368547,Mississauga Halton Hills,Mississauga Halton Hills,ON,mississauga halton hills
 351368548,Oakville,Oakville,ON,oakville
 351368554,Grimsby,Grimsby,ON,grimsby
-351368556,Haldimand County,Haldimand County,ON,haldimand county
-351368571,Thornhill,Thornhill,ON,thornhill
-351368572,Danforth,Danforth,ON,danforth
+351368556,Hamilton Flamborough,Hamilton Flamborough,ON,hamilton flamborough
+351368571,Toronto,Toronto,ON,toronto
+351368572,Toronto Danforth,Toronto Danforth,ON,toronto danforth
 351368573,Brampton,Brampton,ON,brampton
 351368574,Mississauga,Mississauga,ON,mississauga
 351368575,Markham,Markham,ON,markham
-351368576,Toronto,Toronto,ON,toronto
+351368576,Toronto Scarborough,Toronto Scarborough,ON,toronto scarborough
 351368577,Vaughan,Vaughan,ON,vaughan
 460017654,Thompson,Thompson,MB,thompson
 460022009,Swan River,Swan River,MB,swan river
@@ -323,8 +323,8 @@ fed_id,name_en,name_fr,province,name_key
 460047171,Steinbach,Steinbach,MB,steinbach
 460047172,Cartier,Cartier,MB,cartier
 460047232,Gillam,Gillam,MB,gillam
-461330190,Headingley,Headingley,MB,headingley
-461330194,Rosser,Rosser,MB,rosser
+461330190,Winnipeg Portage,Winnipeg Portage,MB,winnipeg portage
+461330194,Winnipeg Kildonan,Winnipeg Kildonan,MB,winnipeg kildonan
 461330195,Winnipeg,Winnipeg,MB,winnipeg
 470022003,Nipawin,Nipawin,SK,nipawin
 470022015,Melfort,Melfort,SK,melfort
@@ -412,17 +412,17 @@ fed_id,name_en,name_fr,province,name_key
 480022929,Calmar,Calmar,AB,calmar
 480022930,Wetaskiwin,Wetaskiwin,AB,wetaskiwin
 480047989,Medicine Hat,Medicine Hat,AB,medicine hat
-481159047,Strathmore,Strathmore,AB,strathmore
-481159048,Foothills,Foothills,AB,foothills
+481159047,Calgary Heritage,Calgary Heritage,AB,calgary heritage
+481159048,Calgary Foothills,Calgary Foothills,AB,calgary foothills
 481159051,Calgary Signal Hill,Calgary Signal Hill,AB,calgary signal hill
 481159052,Calgary,Calgary,AB,calgary
-481160300,Crossfield,Crossfield,AB,crossfield
-481160302,Ghost Lake,Ghost Lake,AB,ghost lake
-481160303,Airdrie,Airdrie,AB,airdrie
-481160419,Fort Saskatchewan,Fort Saskatchewan,AB,fort saskatchewan
-481160421,Strathcona County,Strathcona County,AB,strathcona county
-481160422,Sherwood Park,Sherwood Park,AB,sherwood park
-481160425,St. Albert,St. Albert,AB,st. albert
+481160300,Airdrie,Airdrie,AB,airdrie
+481160302,Calgary Crowfoot,Calgary Crowfoot,AB,calgary crowfoot
+481160303,Calgary Skyview,Calgary Skyview,AB,calgary skyview
+481160419,Strathcona County,Strathcona County,AB,strathcona county
+481160421,Edmonton Strathcona,Edmonton Strathcona,AB,edmonton strathcona
+481160422,Strathcona County Sherwood Park,Strathcona County Sherwood Park,AB,strathcona county sherwood park
+481160425,Edmonton St. Albert,Edmonton St. Albert,AB,edmonton st. albert
 590021775,Pouce Coupe,Pouce Coupe,BC,pouce coupe
 590021799,Fort St. John,Fort St. John,BC,fort st. john
 590022301,Kitimat,Kitimat,BC,kitimat

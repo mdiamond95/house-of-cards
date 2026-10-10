@@ -6,7 +6,7 @@
     python scripts/fetch_meridian.py --hexes [--check]
                                                 the same for the hex trial's pin (v1.0.4)
     python scripts/fetch_meridian.py --board [--check]
-                                                the same for the hex board's pin (v1.0.5)
+                                                the same for the hex board's pin (v1.0.5, five files)
 
 Meridian (github.com/mdiamond95/meridian) publishes a *unit table* for the 343
 federal ridings of the 2023 Representation Order: population, an allocated GDP,
@@ -131,7 +131,18 @@ BOARD_FILES = (
         "hexes.r5.v1.topojson.gz",
         "95f864b1623ecbf445a22f6e54dcec4a17190982def486db34c148d43bb791e7",
     ),
+    # The mesh at v1.0.5: each resolution-5 cell's census subdivision, which
+    # names the city hexes. Its hash was recorded on the first fetch at this
+    # tag (10 October 2026) and is pinned from then on, as the riding layer's
+    # was: a released file never changes (Meridian versioning rule 7).
+    (
+        "data/build/mesh.v1.json.gz",
+        "mesh.v1.json.gz",
+        "f29ac1afe20ff33caa0cf6928f7979101617a71455210ba564a8a7bc86725677",
+    ),
 )
+BOARD_MESH = "mesh.v1.json.gz"
+MESH_FORMAT, MESH_VERSION, MESH_RESOLUTION = "meridian.mesh", "v1", 5
 # The two tables, each with the unit it must declare, and their layers.
 BOARD_TABLES = {"hexes.r4.v1.2.json.gz": "h3_r4", "hexes.r5.v1.json.gz": "h3_r5"}
 BOARD_R4_TABLE, BOARD_R5_TABLE = "hexes.r4.v1.2.json.gz", "hexes.r5.v1.json.gz"
@@ -208,6 +219,18 @@ def read_board_table(name, raw_dir=BOARD_RAW_DIR, parse_float=None):
     check_hash(name, data, dict((f[1], f[2]) for f in BOARD_FILES)[name], BOARD_TAG)
     kwargs = {} if parse_float is None else {"parse_float": parse_float}
     return check_table(json.loads(gzip.decompress(data).decode("utf-8"), **kwargs), BOARD_TABLES[name])
+
+
+def read_board_mesh(raw_dir=BOARD_RAW_DIR):
+    """The hex board's committed mesh (v1.0.5), hash-checked, and refused unless
+    its format, version and resolution are `meridian.mesh`, `v1` and 5."""
+    data = (Path(raw_dir) / BOARD_MESH).read_bytes()
+    check_hash(BOARD_MESH, data, dict((f[1], f[2]) for f in BOARD_FILES)[BOARD_MESH], BOARD_TAG)
+    mesh = json.loads(gzip.decompress(data).decode("utf-8"))
+    got = (mesh.get("format"), mesh.get("version"), mesh.get("h3Resolution"))
+    if got != (MESH_FORMAT, MESH_VERSION, MESH_RESOLUTION):
+        raise MeridianError(f"mesh is {got}, expected {(MESH_FORMAT, MESH_VERSION, MESH_RESOLUTION)}")
+    return mesh
 
 
 def read_board_layer(name, raw_dir=BOARD_RAW_DIR, parse_float=None):
@@ -348,7 +371,7 @@ def board_source_md(tables):
         "",
         "## What this is",
         "",
-        "The four files below, downloaded unmodified by `scripts/fetch_meridian.py --board` from",
+        "The five files below, downloaded unmodified by `scripts/fetch_meridian.py --board` from",
         f"the Meridian repository (`{REPOSITORY}`) at release tag `{BOARD_TAG}`, and the input to",
         "`scripts/build_world_hexboard.py`, which builds the `meridian-hex-v1.0.5` reference-data",
         "version (the hex board) in the directory above this one.",
@@ -374,6 +397,14 @@ def board_source_md(tables):
             f" H3 resolution {m['h3Resolution']}, mesh `{m['meshVersion']}`, layer `{m['layer']}`,"
             f" neighbour rule `{m['neighbourRule']}`",
         ]
+    mesh = tables.get(BOARD_MESH)
+    if mesh is not None:
+        lines.append(
+            f"- `{BOARD_MESH}`: format `{mesh['format']}`, version `{mesh['version']}`, H3 resolution"
+            f" {mesh['h3Resolution']} (checked; anything else is refused), {len(mesh['cells'])} cells,"
+            f" census subdivisions from `{mesh['meta'].get('csd_source')}`. Its hash was recorded on the"
+            " first fetch at this tag; the other four were given by the director."
+        )
     lines += [
         f"- `{BOARD_R5_TABLE}`'s parent table: `{r5['meta']['parentTable']}`",
         f"- census year {meta['censusYear']}; GDP method `{meta['gdpMethod']}`, reference year"
@@ -420,6 +451,11 @@ def fetch_board():
         name: check_table(json.loads(gzip.decompress(fetched[name]).decode("utf-8")), unit)
         for name, unit in BOARD_TABLES.items()
     }
+    mesh = json.loads(gzip.decompress(fetched[BOARD_MESH]).decode("utf-8"))
+    if (mesh.get("format"), mesh.get("version"), mesh.get("h3Resolution")) != (
+            MESH_FORMAT, MESH_VERSION, MESH_RESOLUTION):
+        raise MeridianError("the mesh is not meridian.mesh v1 at resolution 5")
+    tables[BOARD_MESH] = mesh
     for local, data in fetched.items():
         (BOARD_RAW_DIR / local).write_bytes(data)
     (BOARD_RAW_DIR / "SOURCE.md").write_text(board_source_md(tables), encoding="utf-8")
@@ -461,7 +497,8 @@ def main(argv=None):
                     counts.append(f"{name} {len(read_board_table(name)['rows'])} rows")
                 for name in (BOARD_R4_LAYER, BOARD_R5_LAYER):
                     read_board_layer(name)
-                print(f"{BOARD_RAW_DIR.relative_to(ROOT)}: all four files match {BOARD_TAG};"
+                read_board_mesh()
+                print(f"{BOARD_RAW_DIR.relative_to(ROOT)}: all five files match {BOARD_TAG};"
                       f" {', '.join(counts)}")
             else:
                 fetch_board()

@@ -2,18 +2,18 @@
 
 What is held here:
 
-* the raw files are the four pinned v1.0.5 ones, refused on any other hash or unit;
+* the raw files are the five pinned v1.0.5 ones, refused on any other hash or unit;
 * the committed tables are exactly what scripts/build_world_hexboard.py builds;
 * 494 units: 423 resolution-4 hexagons, and 71 city hexes of the 16 split
-  parents (16 cores, 55 others), with unique names, each recorded with its source;
+  parents (16 cores, 55 others), with unique names, each recorded with its
+  source, a city hex named for its municipality;
 * the links: symmetric, six land groups before water links, all joined by water;
 * every unit's opening year is the latest of its four parts, as units.csv records;
 * the border drawing by year;
 * nothing an engine reads holds a float, and both engines play the same game
   on the set;
-* and, recorded as an expected failure, that the engines do not yet keep a unit
-  closed until its opening year under the 1.0 draft (the stop this set was
-  built to: docs/hex-trial/v2/README.md, "Where this stopped").
+* and, under the 1.0 draft's `dated_openings`, no unit is held before its
+  opening year in a 100-turn game on three seeds.
 """
 
 import csv
@@ -74,6 +74,7 @@ def test_the_raw_files_are_the_pinned_ones():
         "hexes.r4.v1.2.topojson.gz": "817ccf7d03c18e6bee8cd093ce98bd2f0473b979412c9e9547ca0c114942c279",
         "hexes.r5.v1.json.gz": "2b0e76bf0c8cba89df845f5d42fe7403a2001661a44230e4b9b762288cf75d1e",
         "hexes.r5.v1.topojson.gz": "95f864b1623ecbf445a22f6e54dcec4a17190982def486db34c148d43bb791e7",
+        "mesh.v1.json.gz": "f29ac1afe20ff33caa0cf6928f7979101617a71455210ba564a8a7bc86725677",
     }
     r4 = fetch_meridian.read_board_table(fetch_meridian.BOARD_R4_TABLE)
     r5 = fetch_meridian.read_board_table(fetch_meridian.BOARD_R5_TABLE)
@@ -81,6 +82,8 @@ def test_the_raw_files_are_the_pinned_ones():
     assert (r5["unit"], len(r5["rows"])) == ("h3_r5", 407)
     fetch_meridian.read_board_layer(fetch_meridian.BOARD_R4_LAYER)
     fetch_meridian.read_board_layer(fetch_meridian.BOARD_R5_LAYER)
+    mesh = fetch_meridian.read_board_mesh()
+    assert len(mesh["cells"]) == 38432
 
 
 def test_a_table_of_the_other_unit_is_refused(tmp_path):
@@ -154,24 +157,42 @@ def test_names_are_unique_and_each_has_a_source(units, report):
     rows = load("ridings.csv")
     assert len({r["name_key"] for r in rows}) == len(rows)
     assert all(r["name_key"] == name_key(r["name_en"]) for r in rows)
-    sources = {u["name_source"] for u in units.values()}
-    assert sources == {"parent's principal city", "own place", "riding token", "borrowed"}
     for u in units.values():
-        if u["role"] == "core":
-            assert u["name_source"] == "parent's principal city"
-        if u["name_source"] == "riding token":
-            assert u["role"] == "city" and u["name_riding"]
+        if u["resolution"] == "4":
+            assert u["name_source"] in ("own place", "borrowed")
+        else:
+            assert u["name_source"] in (
+                "the mesh's municipality", "its own largest place",
+                "the mesh's municipality, with the riding token",
+                "a neighbouring municipality, with the riding token",
+                "its own largest place, with the riding token")
+            assert u["municipality"] and u["mesh_csd"]
+        if "riding token" in u["name_source"]:
+            assert u["name_riding"]
         if u["name_source"] == "borrowed":
             assert u["named_from_h3"]
-    # The director's count: 17 city hexes hold no place of a town or municipal
-    # type (12 others and 5 cores).
-    assert report["city_hexes_without_a_place_of_their_own"] == 17
 
 
-def test_a_core_is_named_for_its_parents_principal_city():
+def by_name():
     names = {r["fed_id"]: r["name_en"] for r in load("ridings.csv")}
-    cores = {names[u["fed_id"]] for u in load("units.csv") if u["role"] == "core"}
-    assert {"Toronto", "Montréal", "Vancouver", "Calgary", "Winnipeg", "Québec"} <= cores
+    return {names[u["fed_id"]]: u for u in load("units.csv")}
+
+
+def test_a_city_hex_is_named_for_its_municipality():
+    units = by_name()
+    # Ottawa's hex is "Ottawa", the one across the river "Gatineau".
+    assert units["Ottawa"]["resolution"] == "5" and units["Ottawa"]["role"] == "city"
+    assert units["Gatineau"]["role"] == "core"
+    # The holder of a municipality's own place keeps the plain name; the
+    # others add the riding token.
+    assert {"Toronto", "Toronto Danforth", "Toronto Scarborough", "Ottawa Nepean", "Ottawa Kanata",
+            "Calgary Signal Hill", "Edmonton Strathcona", "Hamilton Flamborough"} <= set(units)
+    for name in ("Kitchener", "Oshawa", "Burnaby", "Waterloo", "Guelph", "Airdrie", "Markham"):
+        assert units[name]["resolution"] == "5", name
+    # No city hex is named for a county when it lies in a city.
+    cities = [n for n, u in units.items() if u["resolution"] == "5"]
+    assert [n for n in cities if "County" in n] == ["Strathcona County", "Strathcona County Sherwood Park"]
+    assert units["Edmonton"]["resolution"] == "4"  # the hexagon holding Edmonton's place
 
 
 # ------------------------------------------------------------- links --
@@ -206,17 +227,18 @@ def test_six_land_groups_all_joined_by_water(report):
 # ------------------------------------------------------------- opening years --
 
 
-def test_the_opening_year_is_the_latest_of_its_parts(units):
+def test_the_opening_year_follows_the_directors_rules(units):
     stats = {r["fed_id"]: int(r["opens_year"]) for r in load("riding_stats.csv")}
     for fed, u in units.items():
-        parts = [int(u[k]) for k in ("open_atlas", "open_settled", "open_city", "open_override") if u[k]]
-        assert stats[fed] == int(u["opens_year"]) == max(parts)
-        if u["role"] == "city":
-            assert u["open_city"]
-        else:
-            assert not u["open_city"]
-        if u["resolution"] == "5":
-            assert not u["open_settled"]  # the city-hex table carries no dates
+        atlas = int(u["open_atlas"])
+        settled = int(u["open_settled"]) if u["open_settled"] else None
+        counts = settled is not None and atlas > 1867 and settled <= 1930
+        assert int(u["open_settled_counts"]) == int(counts), fed
+        parts = [atlas] + ([settled] if counts else []) + ([int(u["open_city"])] if u["open_city"] else [])
+        expected = int(u["open_override"]) if u["open_override"] else max(parts)
+        assert stats[fed] == int(u["opens_year"]) == expected, fed
+        if u["open_city"]:
+            assert u["role"] == "city"
 
 
 def test_the_atlas_part_is_the_first_year_under_canada(units):
@@ -225,21 +247,30 @@ def test_the_atlas_part_is_the_first_year_under_canada(units):
         spans.setdefault(j["fed_id"], []).append(j)
     for fed, u in units.items():
         first = next(int(s["from_year"]) for s in spans[fed] if s["sovereign"] == "Canada")
-        assert int(u["open_atlas"]) == first
+        if u["role"] != "core":  # a core reads its parent's atlas
+            assert int(u["open_atlas"]) == first
 
 
 def test_the_directors_overrides_and_city_years():
-    names = {r["fed_id"]: r["name_en"] for r in load("ridings.csv")}
-    by_name = {names[u["fed_id"]]: u for u in load("units.csv")}
-    for place, year in (("Thompson", 1956), ("Elliot Lake", 1955), ("Chibougamau", 1952),
-                        ("Wabush", 1955), ("Kitimat", 1953)):
-        assert int(by_name[place]["opens_year"]) == year, place
-    # A city hex that is not its parent's core opens with its metropolitan core's city.
-    assert int(by_name["Burnaby"]["opens_year"]) == 1886
-    assert int(by_name["Calgary Signal Hill"]["opens_year"]) == 1894
-    assert int(by_name["Calgary"]["opens_year"]) < 1894
-    assert int(by_name["Headingley"]["opens_year"]) == 1873
-    assert int(by_name["Winnipeg"]["opens_year"]) == 1870
+    units = by_name()
+    for place, year in (("Greater Sudbury / Grand Sudbury", 1883), ("Dawson Creek", 1932),
+                        ("Meadow Lake", 1931), ("Yellowknife", 1936), ("Baie-Comeau", 1937),
+                        ("Malartic", 1939), ("Fort St. John", 1947), ("Chibougamau", 1952),
+                        ("Kitimat", 1953), ("Elliot Lake", 1955), ("Wabush", 1955), ("Thompson", 1956)):
+        assert int(units[place]["opens_year"]) == year, place
+    # The city year is for the core city's own extra hexes.
+    assert int(units["Calgary Signal Hill"]["opens_year"]) == 1894
+    assert int(units["Winnipeg Kildonan"]["opens_year"]) == 1873
+    assert int(units["Edmonton St. Albert"]["opens_year"]) == 1904
+    # Another city hex is a town in its own right.
+    assert int(units["Burnaby"]["opens_year"]) == 1871
+    assert int(units["Cambridge"]["opens_year"]) == 1867
+    # A core opens by its parent's rules, its settledYear included.
+    assert int(units["Calgary"]["opens_year"]) == 1875
+    assert int(units["Winnipeg"]["opens_year"]) == 1870
+    # settledYear counts only for land that came under Canada after 1867, to 1930.
+    assert int(units["Camrose"]["opens_year"]) == 1870  # settled 1944
+    assert int(units["Sarnia"]["opens_year"]) == 1867  # settled 1878, Ontario in 1867
 
 
 def test_quebecs_city_year_is_the_corrected_one(report):
@@ -253,7 +284,8 @@ def test_units_by_year(report):
     assert by_year["1867"]["in_a_province"] == 265
     assert by_year["1966"]["open"] == 494
     assert [by_year[y]["open"] for y in ("1867", "1885", "1914", "1945", "1966")] == [
-        220, 361, 444, 469, 494]
+        261, 399, 458, 472, 494]
+    assert report["open_by_year"] == {"1867": 261, "1885": 399, "1914": 458, "1945": 472, "1966": 494}
 
 
 # ------------------------------------------------------------- borders by year --
@@ -319,11 +351,6 @@ def test_both_engines_play_the_same_game_on_the_board(seed):
     assert differences == [], differences[0][1][:4000]
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "under the 1.0 draft (`world_calendar`) neither engine reads opens_year: a unit"
-    " is open while the atlas has it under Canada. Keeping it closed until its"
-    " opening year is a rules change the director has not made"
-    " (docs/hex-trial/v2/README.md, 'Where this stopped')."))
 def test_no_unit_is_held_before_its_opening_year(tmp_path):
     opens = {r["fed_id"]: int(r["opens_year"]) for r in load("riding_stats.csv")}
     early = []

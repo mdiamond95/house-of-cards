@@ -282,27 +282,46 @@ units), except as follows.
     `S` for a resolution-4 unit. For a cell it is `1,000,000 +` its base cell and five
     resolution digits read as one base-7 number (the index must be a resolution-5 cell with
     digits 6–15 all 7). So `(T − 1,000,000) // 7` is the parent's `S`.
-17. **Names.** Rule 10, with these steps first and in between:
-    - First, every core takes its parent's first place (the most populous).
-    - Then pass 1 runs, over the other units.
-    - Then each cell still unnamed takes the first token, by `token_order` in
-      `data/reference/riding_tokens.csv`, whose `name_key` is unused, of the 2023 riding
-      holding the largest area of the cell's land.
-    - Then pass 2 runs.
+17. **Names.** A resolution-4 unit is named by rule 10. A city hex is named for its
+    *municipality*, read from Meridian v1.0.5's mesh (`mesh.v1.json.gz`, pinned by hash),
+    which gives every resolution-5 cell one census subdivision. A municipality's people are
+    its place's population (the whole CSD's). The municipality is the first of these:
+    - the mesh's subdivision, when it has at least as many people as the cell and no place
+      of a town type in the cell has more;
+    - else the cell's own most populous place of either type list, when it has at least a
+      tenth of the cell's people;
+    - else, among the subdivisions the mesh gives the cell's neighbouring cells in its
+      province with at least as many people as the cell: the one the most neighbours carry,
+      ties to the more populous, then the lower code.
 
-    The area is measured once, at build time, in floating point (shapely, pyproj,
-    EPSG:3347, ties to the lower fed id) on Meridian v1.0.3's riding layer. Like rule 13's
-    nearest unit, what it decides is committed (`units.csv` `name_riding`), and no engine
-    sees the measure.
-18. **`opens_year`** is the greatest of these:
-    - the first `from_year` of the unit's spans whose sovereign is `Canada`;
-    - the resolution-4 row's `settledYear` where it is not null (cells have none);
-    - for a cell that is not a core, its parent's city year (`CITY_YEARS` in the script,
-      each with its source);
-    - a director's override, matched by census subdivision code (`OPENING_OVERRIDES`).
+    Where several units carry one municipality, the unit holding that municipality's own
+    place keeps the plain name (failing that, the most populous city hex). The others add
+    the first token of the 2023 ridings covering their land, most first, that is neither
+    the municipality's own name nor another unit's: "Ottawa Nepean". A token that begins
+    with the municipality's name stands alone: "Calgary Signal Hill". The order is:
+    - plain city names, largest first;
+    - rule 10's pass 1 for the resolution-4 units;
+    - the token names;
+    - rule 10's pass 2 for anything left.
 
-    Integers throughout. `units.csv` records each part. Neither engine reads `opens_year`
-    under `world_calendar` (docs/hex-trial/v2/README.md, "Where this stopped").
+    The riding areas are measured once, at build time, in floating point (shapely, pyproj,
+    EPSG:3347) on Meridian v1.0.3's riding layer. As with rule 13's nearest unit, what they
+    decide is committed (`units.csv` `name_riding`) and no engine sees them.
+18. **`opens_year`.**
+    - **The atlas year** is the first `from_year` of the unit's spans whose sovereign is
+      `Canada` (a core reads its parent's spans).
+    - **settledYear** is the resolution-4 row's. A core takes its parent's. Another cell
+      takes its parent's when the parent's `settledPlace` is one of its places.
+    - **settledYear counts** only when the atlas year is after 1867 and settledYear is 1930
+      or earlier.
+    - **The city year** applies to a cell other than the core whose municipality is its
+      parent's core city (`CITY_YEARS`, by census subdivision, each with its source).
+    - **`opens_year`** is the greatest of the atlas year, a counting settledYear and the
+      city year. A director's override (`OPENING_OVERRIDES`, by census subdivision) replaces
+      it outright.
+
+    `units.csv` records each part. Rules 1.0's `dated_openings` reads `opens_year`: a unit
+    is open from the later of `opens_year` and its first year under Canada.
 19. **Joining groups.** After rule 13, while the units fall into more than one group counting
     water links, the smallest group (ties by its lowest id) gets one water link: from its
     unit nearest a unit outside it, to that unit, measured as in rule 13. At v1.0.5 no group
