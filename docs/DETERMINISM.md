@@ -215,6 +215,10 @@ read identical integers in identical row order.
 
 ## The hex board (the hex trial)
 
+The rules in this section were written for `meridian-hex-v1.0.4`, the first hex trial's set,
+removed on 10 October 2026. Rules 9–13 stand, as `meridian-hex-v1.0.5` builds by them
+(next section).
+
 The `meridian-hex-v1.0.4` set (`data/reference/meridian/hex-v1.0.4/`, docs/hex-trial/) is
 built by `scripts/build_world_hex.py` from Meridian v1.0.4's H3 resolution-4 hexagon table,
 in the same table shapes as every set. Rules 1–6 above apply to it as they stand (the
