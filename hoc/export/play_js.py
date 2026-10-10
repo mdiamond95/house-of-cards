@@ -58,6 +58,36 @@ const FOLLOW_KEY = `hoc-story-follow:${SCENARIO.name}`;
 // Auto plays a season this often and stops on a headline at or above the pause
 // threshold (story/weights.json).
 const AUTO_MS = 1600;
+// The reference set's word for a unit (set.json `unit_word`): "holding" on the
+// hex board, "riding" on the riding sets.
+const UNIT_WORD = __UNIT_WORD__;
+
+// Rules 1.0 `world_calendar` (Phase D2): one turn is one year for every house,
+// so the page says years; game.json's calendar, or null for any other game.
+function calendarOf() {
+  if (!app.world || !app.world.feature('world_calendar')) return null;
+  const game = app.world.rules.game;
+  return {
+    start_year: game.start_year, turns: game.turns,
+    chapters: game.chapters.map(({ id, name, numeral, start_year: s, end_year: e }) => (
+      { id, name, numeral, start_year: s, end_year: e })),
+  };
+}
+
+// "1867" under the world calendar; otherwise "season 1" ("Season 1").
+function when(season, capital = false) {
+  const calendar = calendarOf();
+  if (calendar) return String(calendar.start_year + season - 1);
+  return `${capital ? 'Season' : 'season'} ${season}`;
+}
+
+function unitWord(n = 2) {
+  return n === 1 ? UNIT_WORD.singular : UNIT_WORD.plural;
+}
+
+function capitalised(text) {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
 const DB_NAME = 'house-of-cards-play';
 const DB_STORE = 'worlds';
 
@@ -284,7 +314,9 @@ function renderStatus() {
   const world = app.world;
   const active = world.state.activeHouses().length;
   const held = world.state.totalCurrentHoldings();
-  const bands = world.eras
+  // Rules 1.0 `world_calendar`: one ledger, the world's, not one per era.
+  const ledgers = calendarOf() ? [{ id: 'world', name: 'Climate' }] : world.eras;
+  const bands = ledgers
     .map((era) => {
       const value = world.currentClimate(era.id);
       const shown = value === null ? '—' : (value > 0 ? `+${value}` : String(value));
@@ -292,9 +324,11 @@ function renderStatus() {
     })
     .join('');
   el('play-status').innerHTML =
-    `<span class="stat"><b>Season</b> ${currentSeason()}</span>`
+    (calendarOf()
+      ? `<span class="stat"><b>${currentSeason() > 0 ? when(currentSeason()) : 'Not begun'}</b></span>`
+      : `<span class="stat"><b>Season</b> ${currentSeason()}</span>`)
     + `<span class="stat"><b>Houses</b> ${active}</span>`
-    + `<span class="stat"><b>Ridings</b> ${held} of ${world.state.map.ridings.length}</span>`
+    + `<span class="stat"><b>${capitalised(unitWord())}</b> ${held} of ${world.state.map.ridings.length}</span>`
     + bands;
 }
 
@@ -371,11 +405,11 @@ function appendFeed(season, lines, { stopped = null } = {}) {
   item.setAttribute('data-season', String(season));
   const body = lines.length
     ? lines.map((line) => `<p>${linkHouses(line)}</p>`).join('')
-    : '<p class="meta">A quiet season.</p>';
+    : `<p class="meta">A quiet ${calendarOf() ? 'year' : 'season'}.</p>`;
   const halt = stopped && stopped.length
     ? `<p class="feed-stop">Stopped: ${escapeHtml(stopped.join(', '))}</p>`
     : '';
-  item.innerHTML = `<h3>Season ${season}</h3>${body}${halt}`;
+  item.innerHTML = `<h3>${escapeHtml(when(season, true))}</h3>${body}${halt}`;
   feed.prepend(item);
   applyFilter();
   // A long game would otherwise grow the DOM without bound; the scrubber and
@@ -399,8 +433,9 @@ function renderUnsaved() {
   const banner = el('unsaved');
   banner.hidden = count === 0;
   if (count === 0) return;
+  const word = calendarOf() ? 'year' : 'season';
   banner.textContent =
-    `${count} season${count === 1 ? '' : 's'} played here and not yet in the repository.`
+    `${count} ${word}${count === 1 ? '' : 's'} played here and not yet in the repository.`
     + ' Save them below to have the referee verify and publish them.';
 }
 
@@ -412,7 +447,7 @@ function renderScrubber() {
   slider.max = String(Math.max(1, highest));
   if (app.viewing === null || app.viewing > highest) app.viewing = highest;
   slider.value = String(app.viewing);
-  el('play-season-label').textContent = `season ${app.viewing}`;
+  el('play-season-label').textContent = when(app.viewing);
   el('play-undo').disabled = app.viewing >= highest || app.viewing < lowest;
 }
 
@@ -442,20 +477,21 @@ function showHouse(house) {
     `<h3><span class="swatch" style="background:${escapeHtml(primary || UNCLAIMED_FILL)}"></span>`
     + `${escapeHtml(row.peerage || house)}</h3>`
     + `<p class="meta">${escapeHtml(row.community || '')} · ${escapeHtml(row.tag || '')}`
-    + ` · personal year ${world.personalYear(house)}</p>`
+    + (calendarOf() ? '</p>' : ` · personal year ${world.personalYear(house)}</p>`)
     + (holder
       ? `<p>${escapeHtml(holder.name)}, aged ${holder.age}</p>`
       : '<p class="meta">No holder.</p>')
     + '<table class="stats">'
     + stat('Capital', row.capital) + stat('Influence', row.influence)
     + stat('Cohesion', row.cohesion) + stat('Ambition', row.ambition)
-    + stat('Ridings', holdings.length)
+    + stat(capitalised(unitWord()), holdings.length)
     + stat('Enclosed', row.enclosed ? 'yes' : 'no')
     + '</table>'
     + (objectives.length
       ? `<p><b>Objectives</b><br>${objectives.map(escapeHtml).join('<br>')}</p>`
       : '<p class="meta">No objectives standing.</p>')
-    + `<p class="meta">${holdings.map((h) => escapeHtml(ridingLabel(world, h.fedId, world.personalYear(house)))).join(', ')}</p>`;
+    + `<p class="meta">${holdings.map((h) => escapeHtml(ridingLabel(world, h.fedId,
+      calendarOf() ? world.yearNow() : world.personalYear(house)))).join(', ')}</p>`;
   el('panel').hidden = false;
 }
 
@@ -482,14 +518,29 @@ function stopsHit(record) {
   return [...hit].filter((name) => app.stopOn.has(name)).sort();
 }
 
+// Rules 1.0 `world_calendar`: the game ends after its last turn with the
+// reckoning, and there is no turn after it (the engine refuses one too).
+function gameOver() {
+  const calendar = calendarOf();
+  return calendar !== null && currentSeason() >= calendar.turns;
+}
+
 function playOne({ zoom = false } = {}) {
+  if (gameOver()) {
+    const calendar = calendarOf();
+    storyNote(`The game ended in ${calendar.start_year + calendar.turns - 1} with its reckoning:`
+      + ` there is no year ${calendar.start_year + calendar.turns}.`);
+    return ['the reckoning'];
+  }
   const record = app.world.runSeason();
   const stopped = stopsHit(record);
   app.playedRecords.push(record);
   app.viewing = record.season;
   appendFeed(record.season, record.chronicle, { stopped });
   renderAll({ flash: true });
-  tellSeason(record.season, { zoom, prestige: record.prestige || null, plans: record.plans || null });
+  tellSeason(record.season, {
+    zoom, prestige: record.prestige || null, plans: record.plans || null, order: record.order || null,
+  });
   autosave();
   return stopped;
 }
@@ -529,14 +580,19 @@ function newStory() {
     styleOf,
     ridings: ridingNames(),
     watch: app.world.feature('succession_watch'),
+    unit: calendarOf() ? 'year' : 'season',
+    calendar: calendarOf(),
+    unitWord: UNIT_WORD,
   });
   // Rules 1.0 `schemes`: the public schemes as this page found them.
   if (app.world.feature('schemes')) app.story.plans = app.world.plans();
   app.afoot = null;
   app.lastDispatch = null;
+  const word = calendarOf() ? 'year' : 'season';
   el('story-dispatch').innerHTML =
-    '<p class="dispatch-quiet">The dispatch begins with the next season played here.'
-    + ' <b>Next season</b> plays one; <b>Auto</b> plays on and stops on a headline.</p>';
+    `<p class="dispatch-quiet">The dispatch begins with the next ${word} played here.`
+    + ` <b>Next ${word}</b> plays one; <b>Auto</b> plays on and stops on a headline.</p>`;
+  el('play-round').hidden = true;
   el('story-log').innerHTML = '';
   renderStrip(app.story.still());
   renderAfoot();
@@ -578,9 +634,33 @@ function focusOf(d) {
     .map(([fed]) => fed);
 }
 
-function tellSeason(season, { zoom = false, prestige = null, plans = null } = {}) {
+// Rules 1.0 `round_record`: the year as it was played — the world's turn,
+// each house's in the engine's order with what it did, and the close.
+function roundHtml(round) {
+  const items = round.parts.map((part) => {
+    if (part.kind === 'world') {
+      const told = part.entries.filter((e) => e.weight > 0).slice(0, 2).map((e) => escapeHtml(e.alone || e.text));
+      return `<li class="round-cap"><b>The world</b>${told.length ? ` — ${told.join(' ')}` : ''}</li>`;
+    }
+    if (part.kind === 'close') {
+      return `<li class="round-cap"><b>The close</b>${round.countLine ? ` — ${escapeHtml(round.countLine)}` : ''}</li>`;
+    }
+    const did = part.card ? part.card.did : 'It kept to its estates.';
+    return `<li class="pace-${escapeHtml(part.pace)}"><b>${escapeHtml(readerName(part.house))}</b> ${escapeHtml(did)}</li>`;
+  });
+  const n = round.parts.length - 2;
+  return `<summary>The round: ${n} house turn${n === 1 ? '' : 's'}, in playing order</summary>`
+    + `<ol class="play-round-list">${items.join('')}</ol>`;
+}
+
+function tellSeason(season, { zoom = false, prestige = null, plans = null, order = null } = {}) {
   if (!app.story) return null;
-  const d = app.story.step(season, typeTurn(inputFromState(app.world.state, season)), { prestige, plans });
+  const d = app.story.step(season, typeTurn(inputFromState(app.world.state, season)), {
+    prestige, plans, playing: order,
+  });
+  const round = el('play-round');
+  round.hidden = !d.round;
+  if (d.round) round.innerHTML = roundHtml(d.round);
   renderAfoot();
   const current = el('story-dispatch');
   if (app.lastDispatch !== null) {
@@ -1223,7 +1303,7 @@ function wire() {
   el('play-season').addEventListener('input', (event) => {
     pause();
     app.viewing = Number(event.target.value);
-    el('play-season-label').textContent = `season ${app.viewing}`;
+    el('play-season-label').textContent = when(app.viewing);
     const floor = savedFloor();
     el('play-undo').disabled = app.viewing >= currentSeason() || app.viewing < floor;
   });
