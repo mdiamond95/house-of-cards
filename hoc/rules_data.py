@@ -154,6 +154,12 @@ FEATURE_DEFAULTS = {
     # resolution 4 (riding_stats.csv `resolution`), the most populous first.
     # On a set without the column it changes nothing.
     "block_grants": False,
+    # Under world_calendar, a jurisdiction first becoming a province after the
+    # start year has a rush there for board.json's land_rush.years: an extra
+    # Crown founding roll among its open, unclaimed units while few are held,
+    # and a cheaper Expand into it. On the hex board only, unless board.json's
+    # land_rush.riding_sets is 1.
+    "land_rush": False,
 }
 
 
@@ -787,7 +793,10 @@ def _load_board(rules_dir):
     """board.json, the hex board's terms; empty for a version without it."""
     path = rules_dir / "board.json"
     board = _read_json(path) if path.exists() else {}
-    for section, key in (("water_crossings", "expand_cost"), ("block_grants", "extra_hexes")):
+    for section, key in (("water_crossings", "expand_cost"), ("block_grants", "extra_hexes"),
+                         ("land_rush", "years"), ("land_rush", "roll_pct"),
+                         ("land_rush", "until_held_pct"), ("land_rush", "expand_discount"),
+                         ("land_rush", "riding_sets")):
         if section in board and not isinstance(board[section].get(key), int):
             raise RulesDataError(f"board.json: {section}.{key} must be an integer")
     return board

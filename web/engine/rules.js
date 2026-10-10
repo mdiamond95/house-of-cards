@@ -71,6 +71,8 @@ export const FEATURE_DEFAULTS = {
   // ground; a founding on a resolution-4 hexagon grants a block.
   water_crossings: false,
   block_grants: false,
+  // A province's first years: a land rush (hoc/rules_data.py).
+  land_rush: false,
 };
 
 // "Expand:+2;Dispute:-2" as an ordered object of integers (hoc/rules_data.py

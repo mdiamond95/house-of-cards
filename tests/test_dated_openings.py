@@ -9,6 +9,7 @@ files of a draft game are the same with it on and off, but for the two ridings
 the atlas takes out of Canada and back.
 """
 
+import json
 import sys
 from pathlib import Path
 
@@ -65,14 +66,36 @@ def seasons(w, turns):
     return files
 
 
-@pytest.mark.parametrize("key,seed", [
-    ("ne-2026", 1867), ("ne-2026", 2), ("ne-2026", 3),
-    ("meridian-v1.0.3", 1867), ("meridian-v1.0.3", 2),
-])
+@pytest.mark.parametrize("key,seed", [("ne-2026", 1867), ("ne-2026", 2), ("ne-2026", 3)])
 def test_a_riding_game_is_the_same_with_the_flag_on_and_off(tmp_path, key, seed):
     on = seasons(world(tmp_path, key, seed=seed), 100)
     off = seasons(world(tmp_path, key, on=False, seed=seed), 100)
     assert len(on) == 100 and on == off
+
+
+@pytest.mark.parametrize("seed", [1867, 2])
+def test_on_meridian_the_flag_drops_only_the_lines_for_land_already_open(tmp_path, seed):
+    # The atlas takes Nunavut out of Canada in 1876-1879 and Labrador in
+    # 1927-1948; with the flag both stay open, so their return (1880, 1949) is
+    # not named again in an accession line: Nunavut's line goes, and
+    # Newfoundland's names six ridings without Labrador. Nothing else differs.
+    on = seasons(world(tmp_path, "meridian-v1.0.3", seed=seed), 100)
+    off = seasons(world(tmp_path, "meridian-v1.0.3", on=False, seed=seed), 100)
+    differ = [n for n in sorted(on) if on[n] != off[n]]
+    assert differ == ["0014.json", "0083.json"]
+    for name, riding in zip(differ, ("Nunavut", "Labrador")):
+        a, b = json.loads(on[name]), json.loads(off[name])
+        dropped = [line for line in b["chronicle"] if line not in a["chronicle"]]
+        added = [line for line in a["chronicle"] if line not in b["chronicle"]]
+        assert len(dropped) == 1 and "comes under Canada" in dropped[0] and riding in dropped[0]
+        assert len(added) == (0 if riding == "Nunavut" else 1)
+        for line in added:
+            assert "comes under Canada" in line and riding not in line
+            assert line == dropped[0].replace("7 ridings", "6 ridings").replace(", Labrador", "")
+        assert [line for line in a["chronicle"] if line not in added] \
+            == [line for line in b["chronicle"] if line != dropped[0]]
+        assert {k: v for k, v in a.items() if k not in ("chronicle", "draws")} \
+            == {k: v for k, v in b.items() if k not in ("chronicle", "draws")}
 
 
 def test_where_the_atlas_takes_a_riding_out_the_flag_keeps_it(tmp_path):

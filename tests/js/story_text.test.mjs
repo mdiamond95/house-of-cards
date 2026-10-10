@@ -156,6 +156,13 @@ test('dated_openings: a unit already Canada\'s opens quietly on its year', async
     'In Alberta, two ridings open: Leduc and Camrose.');
 });
 
+test('land_rush: a rush opens in a province, in one sentence', () => {
+  const rush = { kind: 'rush', ridings: ['48001', '48002', '48003'],
+    world: { jurisdiction: 'Alberta', status: 'province', change: 'rush', years: 8 } };
+  assert.equal(sentence(rush, new Namer(styleOf)),
+    'A land rush opens in Alberta: for eight years the Crown founds there more readily, and its three open ridings cost less to take.');
+});
+
 test('a reader never sees a numeral: two houses of one surname are told apart by their titles', () => {
   assert.equal(surnameOf('Benjamin 2'), 'Benjamin');
   assert.equal(surnameOf('Letendre dit Batoche'), 'Letendre dit Batoche');

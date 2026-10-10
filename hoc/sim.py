@@ -358,6 +358,10 @@ class World:
         self.riding_stats = places.riding_stats(self.reference_dir)
         self.riding_jurisdictions = places.riding_jurisdictions(self.reference_dir)
         self._opening_years = {}
+        # Rules 1.0 `land_rush`: whether this set is the hex board (its
+        # riding_stats.csv carries `resolution`), and the rushes its atlas holds.
+        self._board_set = any("resolution" in s for s in self.riding_stats.values())
+        self._rushes = None
         # How many units the map holds: §10's founding denominator. 343 on
         # both riding sets; whatever the set's ridings.csv holds on any other.
         self.total_units = conn.execute("SELECT COUNT(*) AS n FROM ridings").fetchone()["n"]
@@ -579,7 +583,114 @@ class World:
             }
             if "water" in kinds and "land" not in kinds:
                 cost += self.rules.board["water_crossings"]["expand_cost"]
+        if self._rush_applies() and self._rushing(fed_id, self.year_now()):
+            cost -= self.rules.board["land_rush"]["expand_discount"]
         return cost
+
+    # -- rules 1.0 `land_rush`: a province's first years --
+
+    def _rush_applies(self):
+        """Whether rushes run in this world: under `land_rush` and
+        `world_calendar`, on the hex board, or on any set when board.json's
+        land_rush.riding_sets is 1."""
+        if not (self.feature("land_rush") and self.feature("world_calendar")):
+            return False
+        return self._board_set or bool(self.rules.board["land_rush"]["riding_sets"])
+
+    def rushes(self):
+        """[(from_year, unit, name)]: each jurisdiction the atlas first has as a
+        province after game.json's start_year, from that first year, by
+        (year, unit key). A jurisdiction already a province at the start, and
+        land joining a province later, start none."""
+        if self._rushes is None:
+            first = {}
+            for spans in self.riding_jurisdictions.values():
+                for s in spans:
+                    if s["status"] != "province" or s["sovereign"] != "Canada":
+                        continue
+                    key = (s["from_year"], s["name"])
+                    if s["unit"] not in first or key < first[s["unit"]]:
+                        first[s["unit"]] = key
+            start = self.rules.game["start_year"]
+            self._rushes = sorted(
+                (year, unit, name) for unit, (year, name) in first.items() if year > start)
+        return self._rushes
+
+    def rushes_in(self, year):
+        """The rushes running in `year`: board.json land_rush.years from each start."""
+        years = self.rules.board["land_rush"]["years"]
+        return [r for r in self.rushes() if r[0] <= year < r[0] + years]
+
+    def _rushing(self, fed_id, year):
+        """Whether `fed_id` lies in a province with a rush running in `year`."""
+        span = self._span(fed_id, year)
+        if span is None or span["status"] != "province":
+            return False
+        return any(unit == span["unit"] for _, unit, _ in self.rushes_in(year))
+
+    def rush_units(self, unit, year):
+        """A rushing province's open units in `year`, by fed_id."""
+        out = []
+        for row in self.conn.execute("SELECT fed_id FROM ridings ORDER BY fed_id"):
+            fed_id = row["fed_id"]
+            span = self._span(fed_id, year)
+            if (span is not None and span["unit"] == unit and span["status"] == "province"
+                    and span["sovereign"] == "Canada" and self.riding_open(fed_id, year)):
+                out.append(fed_id)
+        return out
+
+    def _rush_phase(self, season, year):
+        """The world's turn: each rush running this year is a world event,
+        naming the province's open units in its first year."""
+        if not self._rush_applies():
+            return
+        n = self.rules.board["land_rush"]["years"]
+        band = self.band_for(year)
+        for start, unit, name in self.rushes_in(year):
+            k = year - start + 1
+            delta = {"world": "rush" if k == 1 else "rush_continues", "event": f"Land rush in {name}",
+                     "jurisdiction": name, "status": "province", "year": year, "year_of": k, "years": n}
+            if k == 1:
+                feds = self.rush_units(unit, year)
+                delta["ridings"] = [self._riding_name(f) for f in feds]
+                delta["fed_ids"] = feds
+                line = (f"Season {season} · A land rush opens in {name}: for {n} years the Crown"
+                        f" founds there more readily, and land there costs less.")
+                title = f"{name}: land rush"
+            else:
+                line = f"Season {season} · The land rush in {name} continues: year {k} of {n}."
+                title = f"{name}: land rush, year {k} of {n}"
+            self.record("other", title, [], season, band=band, line=line, delta=delta)
+
+    def _rush_roll(self, season, rng):
+        """After the founding roll: for each rush running, while fewer than
+        land_rush.until_held_pct of the province's open units are held, one
+        extra Crown founding at land_rush.roll_pct among its open, unclaimed
+        units. Returns the houses founded."""
+        spec = self.rules.board["land_rush"]
+        year = self.year_now()
+        founded = []
+        for _, unit, name in self.rushes_in(year):
+            feds = self.rush_units(unit, year)
+            held = sum(1 for f in feds if mechanics._holder_of(self.conn, f) is not None)
+            rng.draw(f"rush.{unit}", {"held": held, "open": len(feds)})
+            if not feds or held * 100 >= spec["until_held_pct"] * len(feds):
+                continue
+            if not rng.chance(spec["roll_pct"], purpose=f"rush.roll.{unit}"):
+                continue
+            house = self.found_house(season, rng=rng, rush=(unit, name))
+            if house is not None:
+                founded.append(house)
+        return founded
+
+    def _draw_rush_seat(self, rng, unit):
+        """An open, unclaimed unit of the rushing province the Crown may found on."""
+        year = self.year_now()
+        candidates = [f for f in self.rush_units(unit, year)
+                      if mechanics._holder_of(self.conn, f) is None and self.foundable(f)]
+        if not candidates:
+            return None
+        return rng.choice(candidates, purpose="rush.seat")
 
     def jurisdiction_name(self, fed_id, year):
         """The name of the jurisdiction the riding lay under in `year`, from
@@ -1060,7 +1171,7 @@ class World:
         )
 
     def found_house(self, season, seat=None, rng=None, community=None, tag=None,
-                    rank=None, surname=None):
+                    rank=None, surname=None, rush=None):
         """Found a house (§10 and §4). Returns its name, or None if it cannot.
 
         `seat`, `community`, `tag`, `rank` and `surname` may each be the
@@ -1083,6 +1194,15 @@ class World:
                 raise SimError(self.closed_message(
                     fed_id, "a new house", self._founding_year()) + (
                     "; the Crown founds only in a province" if self.feature("world_calendar") else ""))
+            province = self.conn.execute(
+                "SELECT province FROM ridings WHERE fed_id = ?", (fed_id,)
+            ).fetchone()["province"]
+            region = PROVINCE_REGION.get(province, "north")
+        elif rush is not None:
+            # Rules 1.0 `land_rush`: a seat in the rushing province.
+            fed_id = self._draw_rush_seat(rng, rush[0])
+            if fed_id is None:
+                return None
             province = self.conn.execute(
                 "SELECT province FROM ridings WHERE fed_id = ?", (fed_id,)
             ).fetchone()["province"]
@@ -1225,6 +1345,9 @@ class World:
         if block:
             founding_delta["block"] = [self._riding_name(f) for f in block]
         granted = (" with " + ", ".join(self._riding_name(f) for f in block)) if block else ""
+        if rush is not None:
+            founding_delta["rush"] = rush[1]
+            granted += f", in the {rush[1]} land rush"
         event_id = self.record(
             "founding",
             f"{drawn['peerage']} founded",
@@ -1850,6 +1973,7 @@ class World:
         events still running, and (under `crises`) the year's crises."""
         year = self.year_now()
         self._accessions(season, year)
+        self._rush_phase(season, year)
         band = self.band_for(year)
         for event in self.rules.events:
             if event.through_year is None or not event.personal_year < year <= event.through_year:
@@ -1891,6 +2015,10 @@ class World:
                 continue
             if dated and kind != "opening" and not self.riding_open(fed_id, year):
                 # Not open yet: it is named in its own opening, later.
+                continue
+            if dated and kind == "accession" and self.riding_open(fed_id, year - 1):
+                # Open already: not named again (Kenora, open in 1882, joins
+                # Ontario in 1889).
                 continue
             span = self._span(fed_id, year)
             groups.setdefault((kind, span["name"], span["status"]), []).append(fed_id)
@@ -5008,6 +5136,8 @@ class World:
         if round_record:
             self._part = "close"
         founded = self._founding_roll(season, rng) if "founding" in self.phases else None
+        # Rules 1.0 `land_rush`: the rushing provinces' extra rolls.
+        rushed = self._rush_roll(season, rng) if "founding" in self.phases and self._rush_applies() else None
 
         # 8. Enclosure recompute.
         if "enclosure" in self.phases:
@@ -5044,7 +5174,7 @@ class World:
         # Rules 1.0 `schemes`: every public scheme, as the season left them.
         plans = self._plans() if self.feature("schemes") else None
         return self._write_season(season, outcomes, founded, prestige=prestige, plans=plans,
-                                  reckoning=reckoning, order=order)
+                                  reckoning=reckoning, order=order, rushed=rushed)
 
     # A house that has done nothing worth recording for this many consecutive
     # seasons is noticed once. Ten is long enough that it is a fact about the
@@ -5165,7 +5295,7 @@ class World:
         return out
 
     def _write_season(self, season, outcomes, founded, prestige=None, plans=None, reckoning=None,
-                      order=None):
+                      order=None, rushed=None):
         self._snapshot(season)
         houses_after = self.conn.execute(
             "SELECT COUNT(*) AS n FROM houses WHERE status = 'active'"
@@ -5200,6 +5330,8 @@ class World:
             record["reckoning"] = reckoning
         if order is not None:
             record["order"] = order
+        if rushed:
+            record["rushed"] = rushed
 
         path = self._write_season_file(season, record)
 

@@ -332,6 +332,21 @@ test('dated_openings: an opening is its own quiet beat, naming the land it opens
   assert.deepEqual(typed[0].world, { jurisdiction: 'Manitoba', status: 'province', change: 'opening' });
 });
 
+test('land_rush: a rush\'s first year is its own beat on the province\'s land, and later years are chips', () => {
+  const typed = typeTurn({
+    turn: 39,
+    events: [
+      { id: 1, kind: 'other', houses: [], delta: { world: 'rush', event: 'Land rush in Alberta', jurisdiction: 'Alberta', status: 'province', year: 1905, year_of: 1, years: 8, ridings: ['b', 'a'], fed_ids: ['48002', '48001'] }, line: 'L1' },
+      { id: 2, kind: 'other', houses: [], delta: { world: 'rush_continues', event: 'Land rush in Manitoba', jurisdiction: 'Manitoba', status: 'province', year: 1905, year_of: 3, years: 8 }, line: 'L2' },
+    ],
+    actions: [], holdings: [], ranks: {},
+  });
+  assert.deepEqual(typed.map((b) => [b.kind, b.outcome]), [['rush', 'Land rush in Alberta'], ['event_continues', 'Land rush in Manitoba']]);
+  assert.deepEqual(typed[0].ridings, ['48001', '48002']);
+  assert.deepEqual(typed[0].world, { jurisdiction: 'Alberta', status: 'province', change: 'rush', years: 8 });
+  assert.deepEqual(typed[1].world, { event: 'Land rush in Manitoba', year_of: 3, years: 8 });
+});
+
 test('Phase V3: a house\'s response to an ordinary event carries the event\'s name, from its title', () => {
   const input = {
     turn: 12,

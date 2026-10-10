@@ -52,7 +52,7 @@ BEAT_KINDS = (
     "heir_wanted", "heir_of_age", "bide",
     "scheme_begun", "scheme_step", "scheme_answered", "scheme_abandoned", "scheme_resolved",
     "ally_joins", "ally_declines", "contest_won", "contest_lost", "fallen",
-    "crisis", "accession", "event_continues", "reckoning", "opening",
+    "crisis", "accession", "event_continues", "reckoning", "opening", "rush",
 )
 
 # Rules 1.0 `world_calendar`: the world's own events, by their delta's `world`.
@@ -61,6 +61,8 @@ WORLD_KINDS = {
     "continues": "event_continues", "reckoning": "reckoning",
     # Rules 1.0 `dated_openings`: a unit opening after it came under Canada.
     "opening": "opening",
+    # Rules 1.0 `land_rush`: a rush's first year, and a chip for each later one.
+    "rush": "rush", "rush_continues": "event_continues",
 }
 
 SCHEME_PHASES = {
@@ -224,6 +226,9 @@ def _world_facts(kind, d, title=None):
         return {"event": d["event"], "year_of": d["year_of"], "years": d["years"]}
     if kind in ("accession", "opening"):
         return {"jurisdiction": d["jurisdiction"], "status": d["status"], "change": d["world"]}
+    if kind == "rush":
+        return {"jurisdiction": d["jurisdiction"], "status": d["status"], "change": d["world"],
+                "years": d["years"]}
     return None
 
 
@@ -282,7 +287,7 @@ def type_turn(data):
         if kind == "riding_passes" and outcome == "absorption" and len(houses) > 1:
             removed.append(houses[1])
         world = _world_facts(kind, d, event.get("title"))
-        if kind in ("accession", "opening"):
+        if kind in ("accession", "opening", "rush"):
             # The land it opens, for the map to show.
             ridings = sorted(d.get("fed_ids") or [])
 

@@ -19,5 +19,6 @@
   "round_record": true,
   "dated_openings": true,
   "water_crossings": true,
-  "block_grants": true
+  "block_grants": true,
+  "land_rush": true
 }

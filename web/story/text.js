@@ -292,6 +292,14 @@ function withArticle(jurisdiction) {
   return /^District of |Territor(y|ies)$|disputed area$/.test(jurisdiction) ? `the ${jurisdiction}` : jurisdiction;
 }
 
+// Rules 1.0 `land_rush`: a province's first years, in one sentence.
+export function rushSentence(beat) {
+  const w = beat.world;
+  const n = (beat.ridings || []).length;
+  return `A land rush opens in ${w.jurisdiction}: for ${numberWords(w.years)} years the Crown founds there`
+    + ` more readily, and its ${numberWords(n)} open ${unitNoun(n)} cost${n === 1 ? 's' : ''} less to take.`;
+}
+
 export function accessionSentence(beat, ridingName) {
   const w = beat.world;
   const feds = beat.ridings || [];
@@ -332,6 +340,7 @@ export function sentence(beat, namer, ridingName = (fed) => fed, { order } = {})
   if (beat.merge) return period(mergedSentence(beat, namer, ridingName));
   if (beat.kind === 'crisis' && beat.world) return crisisSentence(beat, namer, order);
   if ((beat.kind === 'accession' || beat.kind === 'opening') && beat.world) return accessionSentence(beat, ridingName);
+  if (beat.kind === 'rush' && beat.world) return rushSentence(beat);
   if (beat.kind === 'removed' && (beat.houses || []).length) return period(failure(beat, namer));
   if ((beat.kind === 'riding_passes' && (beat.houses || []).length >= 2 && !NAMES_BOTH.includes(beat.outcome))
       || (beat.kind === 'riding_lost' && (beat.houses || []).length)) {
