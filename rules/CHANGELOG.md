@@ -595,3 +595,24 @@ A new flag in the draft, approved by the director: false in 0.7–0.9, on in 1.0
 What motivated it: the story layer tells a year as the engine plays it (docs/STORY_DESIGN.md §3.6, Phase V2), and the record did not say whose turn every event belonged to. The best rule the exporter could apply (event order, the event's first house and its kind) put 30 of 4,895 events in the wrong turn on seed 1867 over 100 turns, 35 of 4,403 on seed 2 and 34 of 4,132 on seed 3. In 36 of those 99 the house whose turn it was is not named on the event at all: a suit given up because a third house's claim was withdrawn, a defence stood down, an absorption when a line dies out.
 
 The proof that it decides nothing: for seeds 1867, 2 and 3 over 100 turns, the 1.0 season records and events with the flag on and off are identical once `part` and `order` are removed (`tests/test_round_record.py`). The cross-check is byte-identical on seeds 1867, 2 and 3 at 120 turns under 0.9 and 100 under 1.0, the new fields included: it now compares every engine event as well as every season file (docs/DETERMINISM.md, "The round record").
+
+### The hex board: `dated_openings` (10 October 2026)
+
+A new flag in the draft, approved by the director: false in 0.7–0.9, on in 1.0, in both engines. It changes no table.
+
+- Under `world_calendar`, a unit takes no grant, no expansion and no claim before its opening year. That year is the later of `riding_stats.csv`'s `opens_year` and the first year the atlas has the unit under Canada.
+- From that year the unit is open for good, whatever the atlas says of a later year. The Ontario–Manitoba disputed area no longer drops out of play in 1881–1889.
+- A Crown founding still needs the unit to be in a province that year.
+- A unit that opens later than it came under Canada opens as a quiet world event (`world: "opening"`). An accession or a province's extension no longer names a unit that is not yet open.
+
+What motivated it: on the `meridian-hex-v1.0.5` board, `opens_year` carries settlement dates, city years and the director's new towns. Under `world_calendar` neither engine read `opens_year`, so 100-turn draft games on seeds 1867, 2 and 3 held 30, 22 and 18 units before their opening years (docs/hex-trial/v2/README.md).
+
+Why the atlas term is there: the riding sets' `opens_year` was built by 0.9's rule. It reads 1867 for British Columbia's, Prince Edward Island's and Newfoundland's 53 ridings, which the atlas puts under Canada in 1871, 1873 and 1949. The later-of rule makes the flag repeat the atlas there.
+
+What it does to the riding sets: they hold two ridings the atlas takes out of Canada and back again. Labrador (10004) is out 1927–1948, and Nunavut (62001) 1876–1879, when the British Arctic Islands become its largest-share unit. With the flag those two stay open.
+
+- `ne-2026`, seeds 1867, 2 and 3: every season file is identical with the flag on and off over 100 turns.
+- `meridian-v1.0.3`, seeds 1867 and 2: identical.
+- `meridian-v1.0.3`, seed 3: identical through turn 10. In turn 11 (1877) a frontier draw sees Nunavut among its candidates and picks another riding.
+
+The riding preview (seed 1867) is unchanged.

@@ -324,6 +324,7 @@ export class World {
     this._part = null;
     this._turnCache = new Map();
     this._expansionClaims = new Map();
+    this._openingYears = new Map();
     this._provinceDistance = new Map();
     // Rules 1.0 `schemes`: set while a scheme resolves through a handler.
     this._schemeTarget = null;
@@ -371,19 +372,48 @@ export class World {
     return stats.opens_year;
   }
 
+  // Rules 1.0 `dated_openings` (hoc/sim.py opening_year): the later of the
+  // unit's opens_year and its first year under Canada; null if never.
+  openingYear(fedId) {
+    if (!this._openingYears.has(fedId)) {
+      const spans = this.state.map.ridingJurisdictions.get(fedId) || [];
+      let first = this.opensYear(fedId);
+      if (spans.length) {
+        const canada = spans.filter((s) => s.sovereign === 'Canada');
+        first = canada.length ? Math.max(first, canada[0].from_year) : null;
+      }
+      this._openingYears.set(fedId, first);
+    }
+    return this._openingYears.get(fedId);
+  }
+
   ridingOpen(fedId, personalYear) {
-    if (this.feature('world_calendar')) return this.inPlay(fedId, personalYear);
+    if (this.feature('world_calendar')) {
+      if (this.feature('dated_openings')) {
+        const opening = this.openingYear(fedId);
+        return opening !== null && personalYear >= opening;
+      }
+      return this.inPlay(fedId, personalYear);
+    }
     if (!this.feature('atlas_jurisdiction')) return true;
     return personalYear >= this.opensYear(fedId);
   }
 
   foundable(fedId) {
-    if (this.feature('world_calendar')) return this.crownMayFound(fedId, this.yearNow());
+    if (this.feature('world_calendar')) {
+      const year = this.yearNow();
+      if (this.feature('dated_openings') && !this.ridingOpen(fedId, year)) return false;
+      return this.crownMayFound(fedId, year);
+    }
     return this.ridingOpen(fedId, FOUNDING_YEAR);
   }
 
   closedMessage(fedId, who, personalYear) {
     if (this.feature('world_calendar')) {
+      const opening = this.feature('dated_openings') ? this.openingYear(fedId) : null;
+      if (opening !== null && personalYear < opening && this.inPlay(fedId, personalYear)) {
+        return `${this.ridingName(fedId)} is closed to ${who} in ${personalYear}: it opens in ${opening}`;
+      }
       const span = this.span(fedId, personalYear);
       const where = span ? `${span.name}, a ${span.status} under ${span.sovereign}` : 'no jurisdiction';
       return `${this.ridingName(fedId)} is closed to ${who} in ${personalYear}: it lies in ${where}`;
@@ -1338,12 +1368,17 @@ export class World {
   accessions(season, year) {
     if (year <= this.rules.game.start_year) return;
     const groups = new Map();
+    const dated = this.feature('dated_openings');
     for (const riding of this.state.map.ridings) {
       const fedId = riding.fed_id;
       let kind;
       if (this.inPlay(fedId, year) && !this.inPlay(fedId, year - 1)) kind = 'accession';
       else if (this.crownMayFound(fedId, year) && !this.crownMayFound(fedId, year - 1)) kind = 'extension';
+      // Rules 1.0 `dated_openings`: opening after coming under Canada.
+      else if (dated && this.openingYear(fedId) === year) kind = 'opening';
       else continue;
+      // Not open yet: it is named in its own opening, later.
+      if (dated && kind !== 'opening' && !this.ridingOpen(fedId, year)) continue;
       const span = this.span(fedId, year);
       const key = JSON.stringify([kind, span.name, span.status]);
       if (!groups.has(key)) groups.set(key, { kind, name: span.name, status: span.status, feds: [] });
@@ -1355,11 +1390,17 @@ export class World {
     for (const { kind, name, status, feds } of ordered) {
       const ridings = feds.map((f) => this.ridingName(f));
       const plural = feds.length === 1 ? '' : 's';
-      const line = kind === 'accession'
-        ? `Season ${season} · ${name} comes under Canada as a ${status}:`
-          + ` ${feds.length} riding${plural} open — ${ridings.join(', ')}.`
-        : `Season ${season} · ${name} becomes a province: the Crown may found in`
+      let line;
+      if (kind === 'accession') {
+        line = `Season ${season} · ${name} comes under Canada as a ${status}:`
+          + ` ${feds.length} riding${plural} open — ${ridings.join(', ')}.`;
+      } else if (kind === 'opening') {
+        line = `Season ${season} · In ${name}, ${feds.length} riding${plural}`
+          + ` open${feds.length === 1 ? 's' : ''} — ${ridings.join(', ')}.`;
+      } else {
+        line = `Season ${season} · ${name} becomes a province: the Crown may found in`
           + ` ${feds.length} riding${plural} — ${ridings.join(', ')}.`;
+      }
       this.record('other', `${name}: ${kind}`, [], season, {
         band,
         line,
@@ -2211,7 +2252,7 @@ export class World {
         if (marker === KIN || marker === COMPACT) continue;
         if (this.contestCooldown(house, other, season)) continue;
         // Rules 1.0 `world_calendar`: no claim on a riding out of play this year.
-        if (this.feature('world_calendar') && !this.inPlay(fedId, this.yearNow())) continue;
+        if (this.feature('world_calendar') && !this.ridingOpen(fedId, this.yearNow())) continue;
         if (this.affords(house, spec, other)) out.push([other, fedId]);
       }
       return out;

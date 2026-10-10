@@ -357,6 +357,7 @@ class World:
         # reads them yet.
         self.riding_stats = places.riding_stats(self.reference_dir)
         self.riding_jurisdictions = places.riding_jurisdictions(self.reference_dir)
+        self._opening_years = {}
         # How many units the map holds: §10's founding denominator. 343 on
         # both riding sets; whatever the set's ridings.csv holds on any other.
         self.total_units = conn.execute("SELECT COUNT(*) AS n FROM ridings").fetchone()["n"]
@@ -436,11 +437,30 @@ class World:
             return FOUNDING_YEAR
         return stats["opens_year"]
 
+    def opening_year(self, fed_id):
+        """Rules 1.0 `dated_openings`: the year from which a unit is open for
+        good — the later of its opens_year and the first year the atlas has it
+        under Canada (a set without spans for it: its opens_year). None for a
+        unit the atlas never has under Canada."""
+        cache = self._opening_years
+        if fed_id not in cache:
+            spans = self.riding_jurisdictions.get(fed_id, ())
+            first = self.opens_year(fed_id)
+            if spans:
+                canada = [s["from_year"] for s in spans if s["sovereign"] == "Canada"]
+                first = max(first, canada[0]) if canada else None
+            cache[fed_id] = first
+        return cache[fed_id]
+
     def riding_open(self, fed_id, personal_year):
         """Whether a house at `personal_year` may take the riding. Always true
         unless `atlas_jurisdiction` is on. Under `world_calendar` the year is
-        the world year, and a riding is open while it is in play."""
+        the world year, and a riding is open while it is in play — or, under
+        `dated_openings`, from its opening year on."""
         if self.feature("world_calendar"):
+            if self.feature("dated_openings"):
+                opening = self.opening_year(fed_id)
+                return opening is not None and personal_year >= opening
             return self.in_play(fed_id, personal_year)
         if not self.feature("atlas_jurisdiction"):
             return True
@@ -451,7 +471,10 @@ class World:
         reads FOUNDING_YEAR, so this is `riding_open` at that year. Under
         `world_calendar`, only on a riding in a province this world year."""
         if self.feature("world_calendar"):
-            return self.crown_may_found(fed_id, self.year_now())
+            year = self.year_now()
+            if self.feature("dated_openings") and not self.riding_open(fed_id, year):
+                return False
+            return self.crown_may_found(fed_id, year)
         return self.riding_open(fed_id, FOUNDING_YEAR)
 
     def closed_message(self, fed_id, who, personal_year):
@@ -459,6 +482,12 @@ class World:
         house's personal year, and the riding's opens_year — under
         `world_calendar`, the world year and the riding's standing in it."""
         if self.feature("world_calendar"):
+            opening = self.opening_year(fed_id) if self.feature("dated_openings") else None
+            if opening is not None and personal_year < opening and self.in_play(fed_id, personal_year):
+                return (
+                    f"{self._riding_name(fed_id)} is closed to {who} in {personal_year}:"
+                    f" it opens in {opening}"
+                )
             span = self._span(fed_id, personal_year)
             where = f"{span['name']}, a {span['status']} under {span['sovereign']}" if span else "no jurisdiction"
             return (
@@ -1788,13 +1817,21 @@ class World:
         if year <= self.rules.game["start_year"]:
             return
         groups = {}
+        dated = self.feature("dated_openings")
         for row in self.conn.execute("SELECT fed_id FROM ridings ORDER BY fed_id"):
             fed_id = row["fed_id"]
             if self.in_play(fed_id, year) and not self.in_play(fed_id, year - 1):
                 kind = "accession"
             elif self.crown_may_found(fed_id, year) and not self.crown_may_found(fed_id, year - 1):
                 kind = "extension"
+            elif dated and self.opening_year(fed_id) == year:
+                # Rules 1.0 `dated_openings`: a unit opening after the atlas
+                # brought it under Canada, a quiet event of its own.
+                kind = "opening"
             else:
+                continue
+            if dated and kind != "opening" and not self.riding_open(fed_id, year):
+                # Not open yet: it is named in its own opening, later.
                 continue
             span = self._span(fed_id, year)
             groups.setdefault((kind, span["name"], span["status"]), []).append(fed_id)
@@ -1804,6 +1841,10 @@ class World:
             if kind == "accession":
                 line = (f"Season {season} · {name} comes under Canada as a {status}:"
                         f" {len(feds)} riding{'' if len(feds) == 1 else 's'} open — {', '.join(ridings)}.")
+            elif kind == "opening":
+                line = (f"Season {season} · In {name}, {len(feds)}"
+                        f" riding{'' if len(feds) == 1 else 's'} open{'s' if len(feds) == 1 else ''}"
+                        f" — {', '.join(ridings)}.")
             else:
                 line = (f"Season {season} · {name} becomes a province: the Crown may found in"
                         f" {len(feds)} riding{'' if len(feds) == 1 else 's'} — {', '.join(ridings)}.")
@@ -2844,8 +2885,9 @@ class World:
                     continue
                 if self._contest_cooldown(house, other, season):
                     continue
-                # Rules 1.0 `world_calendar`: no claim on a riding out of play this year.
-                if self.feature("world_calendar") and not self.in_play(fed_id, self.year_now()):
+                # Rules 1.0 `world_calendar`: no claim on a riding out of play this
+                # year (under `dated_openings`, not yet open).
+                if self.feature("world_calendar") and not self.riding_open(fed_id, self.year_now()):
                     continue
                 if self._affords(house, spec, other):
                     out.append((other, fed_id))

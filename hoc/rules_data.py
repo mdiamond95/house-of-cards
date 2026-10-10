@@ -135,6 +135,14 @@ FEATURE_DEFAULTS = {
     # is, or "close" — and each season record carries `order`, the playing
     # order fixed at the start of the house turns.
     "round_record": False,
+    # The hex board (docs/hex-trial/v2/README.md). Under world_calendar a unit
+    # takes no grant, no expansion and no claim before its opening year — the
+    # later of riding_stats.csv's opens_year and the first year the atlas has
+    # it under Canada — and from that year it is open for good, whatever the
+    # atlas says of a later year. A Crown founding still needs a province that
+    # year. A unit that opens after it came under Canada opens as a quiet world
+    # event. On a set whose opens_year repeats the atlas it changes nothing.
+    "dated_openings": False,
 }
 
 

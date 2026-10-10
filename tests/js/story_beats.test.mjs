@@ -321,6 +321,17 @@ test('Phase D1: a crisis, land opened and a year of a running event are typed fr
   assert.deepEqual(typed[2].world, { event: 'The Great War', lead: ['A'], resist: ['B'], carried: 'lead', years: 5 });
 });
 
+test('dated_openings: an opening is its own quiet beat, naming the land it opens', () => {
+  const typed = typeTurn({
+    turn: 16,
+    events: [{ id: 1, kind: 'other', houses: [], delta: { world: 'opening', jurisdiction: 'Manitoba', status: 'province', year: 1882, ridings: ['b', 'a'], fed_ids: ['46002', '46001'] }, line: 'L1' }],
+    actions: [], holdings: [], ranks: {},
+  });
+  assert.deepEqual(typed.map((b) => [b.kind, b.outcome]), [['opening', 'opening']]);
+  assert.deepEqual(typed[0].ridings, ['46001', '46002']);
+  assert.deepEqual(typed[0].world, { jurisdiction: 'Manitoba', status: 'province', change: 'opening' });
+});
+
 test('Phase V3: a house\'s response to an ordinary event carries the event\'s name, from its title', () => {
   const input = {
     turn: 12,
